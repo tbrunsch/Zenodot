@@ -1,6 +1,6 @@
 package dd.kms.zenodot.utils.dataProviders;
 
-import dd.kms.zenodot.ParserToolbox;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogEntry;
 import dd.kms.zenodot.debug.ParserLoggerIF;
@@ -20,7 +20,6 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.ToIntFunction;
 
 public class FieldDataProvider
 {

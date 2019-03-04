@@ -1,7 +1,7 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.ImmutableMap;
-import dd.kms.zenodot.ParserToolbox;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.result.*;

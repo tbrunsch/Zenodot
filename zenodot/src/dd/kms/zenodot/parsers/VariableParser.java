@@ -1,6 +1,6 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.ParserToolbox;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseResultIF;

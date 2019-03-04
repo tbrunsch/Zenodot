@@ -1,6 +1,6 @@
 package dd.kms.zenodot.utils.dataProviders;
 
-import dd.kms.zenodot.ParserToolbox;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.settings.AccessLevel;
 import dd.kms.zenodot.utils.wrappers.ExecutableInfo;

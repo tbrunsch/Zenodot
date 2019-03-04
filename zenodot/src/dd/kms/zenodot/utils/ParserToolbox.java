@@ -1,4 +1,4 @@
-package dd.kms.zenodot;
+package dd.kms.zenodot.utils;
 
 import dd.kms.zenodot.parsers.*;
 import dd.kms.zenodot.settings.EvaluationMode;
