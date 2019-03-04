@@ -1,6 +1,5 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ObjectParseResult;
@@ -9,15 +8,19 @@ import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 /**
- * Parses a sub expression following a complete Java expression, assuming the context
+ * Parses subexpressions
  * <ul>
- *     <li>{@code <object>.} or</li>
- *     <li>{@code <object>[] or</li>
+ *     <li>{@code .<field>} of expressions of the form {@code <instance>.<field>},</li>
+ *     <li>{@code .<method>(<arguments>)} of expressions of the form {@code <instance>.<method>(<arguments>)}, and</li>
+ *     <li>{@code [<array index>]} of expressions of the form {@code <instance>[<array index>]}.</li>
  * </ul>
+ * The instance {@code <instance>} is the context for the parser. If the subexpression neither starts with a dot ({@code .})
+ * nor an opening bracket ({@code [}), then {@code <instance>} is returned as parse result.
  */
 public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 {

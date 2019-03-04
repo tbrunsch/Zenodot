@@ -13,6 +13,10 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+/**
+ * Central utility class that evaluates certain constructs in terms of {@link ObjectInfo}s
+ * taking the {@link EvaluationMode} into account.
+ */
 public class ObjectInfoProvider
 {
 	private final EvaluationMode evaluationMode;

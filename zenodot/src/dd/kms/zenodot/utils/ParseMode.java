@@ -1,5 +1,12 @@
 package dd.kms.zenodot.utils;
 
+import dd.kms.zenodot.settings.ParserSettings;
+
+/**
+ * Internal mode to describe how expressions should be parsed. Together with the flag
+ * {@link ParserSettings#isEnableDynamicTyping()} it specifies which evaluation mode
+ * will be used when evaluating expressions.
+ */
 public enum ParseMode
 {
 	/**

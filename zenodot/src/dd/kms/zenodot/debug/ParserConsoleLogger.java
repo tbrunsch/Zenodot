@@ -2,6 +2,9 @@ package dd.kms.zenodot.debug;
 
 import com.google.common.base.Strings;
 
+/**
+ * Logger that logs all log entries to the console
+ */
 public class ParserConsoleLogger extends AbstractParserLogger
 {
 	private static final int INDENT_SIZE	= 2;

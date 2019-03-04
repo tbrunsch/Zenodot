@@ -1,5 +1,8 @@
 package dd.kms.zenodot.debug;
 
+/**
+ * Logger that ignores all log entries
+ */
 public class ParserNullLogger extends AbstractParserLogger
 {
 	@Override

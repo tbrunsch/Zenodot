@@ -1,12 +1,12 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
@@ -15,6 +15,9 @@ import java.util.Optional;
 
 import static dd.kms.zenodot.result.ParseError.ErrorType;
 
+/**
+ * Base class for {@link ClassFieldParser} and {@link ObjectFieldParser}
+ */
 abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 {
 	AbstractFieldParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {

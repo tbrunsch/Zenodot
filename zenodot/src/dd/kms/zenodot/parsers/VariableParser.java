@@ -1,13 +1,14 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.settings.Variable;
-import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.ParserToolbox;
+import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.Comparator;
@@ -17,6 +18,10 @@ import java.util.stream.Collectors;
 
 import static dd.kms.zenodot.result.ParseError.ErrorType;
 
+/**
+ * Parses expressions of the form {@code <variable>} in the (ignored) context of {@code this}, where
+ * {@code <variable>} refers to one of the variables specified by {@link ParserSettingsBuilder#addVariable(Variable)}.
+ */
 public class VariableParser extends AbstractEntityParser<ObjectInfo>
 {
 	public VariableParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {

@@ -1,20 +1,36 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
+import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.CompletionSuggestions;
+import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseError.ErrorType;
+import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider;
 import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider.OperatorException;
-import dd.kms.zenodot.utils.ParseUtils;
-import com.google.common.collect.ImmutableMap;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.Map;
 
+/**
+ * Parses prefix unary operators applied to an expression in the context of {@code this}. The following
+ * expressions can currently be parsed:
+ * <ul>
+ *     <li>{@code ++<expression>}</li>
+ *     <li>{@code --<expression>}</li>
+ *     <li>{@code +<expression>}</li>
+ *     <li>{@code -<expression>}</li>
+ *     <li>{@code !<expression>}</li>
+ *     <li>{@code ~<expression>}</li>
+ * </ul>
+ * Note that the postfix operators {@code <expression>++} and {@code <expression>--} are not supported.
+ */
 public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 {
 	private static final Map<UnaryOperator, OperatorImplementationIF>	OPERATOR_IMPLEMENTATIONS = ImmutableMap.<UnaryOperator, OperatorImplementationIF>builder()

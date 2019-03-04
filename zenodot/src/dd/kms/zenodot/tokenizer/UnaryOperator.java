@@ -2,8 +2,8 @@ package dd.kms.zenodot.tokenizer;
 
 public enum UnaryOperator
 {
-	INCREMENT	("++"),
-	DECREMENT	("--"),
+	INCREMENT	("++"),	// prefix increment
+	DECREMENT	("--"),	// prefix decrement
 	PLUS		("+"),
 	MINUS		("-"),
 	LOGICAL_NOT	("!"),

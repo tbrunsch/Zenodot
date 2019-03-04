@@ -7,6 +7,11 @@ import dd.kms.zenodot.utils.wrappers.ClassInfo;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Immutable settings for the parsing process. Can only be created with a {@link ParserSettingsBuilder}.<br/>
+ * <br/>
+ * You can either create a new builder or derive one from existing settings via {@link ParserSettings#builder()}.
+ */
 public class ParserSettings
 {
 	private final Imports			imports;

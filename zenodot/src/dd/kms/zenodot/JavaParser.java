@@ -7,9 +7,9 @@ import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionField;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
-import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -22,10 +22,20 @@ import java.util.Map;
 import static dd.kms.zenodot.result.ParseError.ErrorType;
 
 /**
- * API entry point of Zenodot
+ * API entry point of Zenodot<br/>
+ * <br/>
+ * Zenodot suggests completions and evaluates expressions in the context of a certain object referred to by {@code this}.
+ * If the context refers to, e.g., a list, then you can simply type {@code size()} to get the size of that list. You do
+ * not have to enter {@code this.size()}.
  */
 public class JavaParser
 {
+	/**
+	 * Returns a list of potential code completions for a given java expression at a given caret in the context provided
+	 * by {@code valueOfThis}. The list is sorted according to internal matching criteria.
+	 *
+	 * @throws ParseException
+	 */
 	public List<CompletionSuggestionIF> suggestCodeCompletion(String javaExpression, int caret, ParserSettings settings, Object valueOfThis) throws ParseException {
 		ParseResultIF parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caret, valueOfThis);
 
@@ -61,6 +71,11 @@ public class JavaParser
 		}
 	}
 
+	/**
+	 * Evaluates a given java expression in the context provided by {@code valueOfThis}.
+	 *
+	 * @throws ParseException
+	 */
 	public Object evaluate(String javaExpression, ParserSettings settings, Object valueOfThis) throws ParseException {
 		ParseResultIF parseResult;
 

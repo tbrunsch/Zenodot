@@ -2,11 +2,21 @@ package dd.kms.zenodot.tokenizer;
 
 import com.google.common.collect.ImmutableMap;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * View on a given Java expression in form of a stream of {@link Token}s. The {@code TokenStream}
+ * is not responsible for determining how the expression has to be split into tokens. It is the parsers'
+ * responsibility to query the next token with the correct type. If a parser expects a token type
+ * that is not available, then the parser is not the right one for parsing the current subexpression
+ * and the parsing framework will try another parser.
+ */
 public class TokenStream implements Cloneable
 {
 	private static final Pattern		OPTIONAL_SPACE					= Pattern.compile("^(\\s*).*");

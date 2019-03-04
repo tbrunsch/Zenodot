@@ -5,6 +5,9 @@ import dd.kms.zenodot.matching.MatchRating;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * A collection of {@link CompletionSuggestionIF} including their ratings
+ */
 public class CompletionSuggestions implements ParseResultIF
 {
 	public static final CompletionSuggestions none(int position) {

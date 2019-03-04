@@ -1,12 +1,12 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorType;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -16,6 +16,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Parses expressions of the form
+ * <ul>
+ *     <li>{@code new <class>(<arguments>)},</li>
+ *     <li>{@code new <class>[<size>]}, and</li>
+ *     <li>{@code new <class>[]{<elements>}}.</li>
+ * </ul>
+ * The (ignored) context of the parser is {@code this}.
+ */
 public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 {
 	public ConstructorParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {

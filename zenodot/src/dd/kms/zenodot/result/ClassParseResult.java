@@ -2,6 +2,9 @@ package dd.kms.zenodot.result;
 
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
+/**
+ * An instance of this class is returned if the subexpression describes a class.
+ */
 public class ClassParseResult implements ParseResultIF
 {
 	private final int		position; // exclusive

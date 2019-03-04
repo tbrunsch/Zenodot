@@ -6,6 +6,10 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
+/**
+ * Wrapper class of Guava's {@link TypeToken} to minimize explicit dependencies
+ * on the wrapped class throughout the code.
+ */
 public class TypeInfo
 {
 	public static final TypeInfo	NONE	= new TypeInfo(null);

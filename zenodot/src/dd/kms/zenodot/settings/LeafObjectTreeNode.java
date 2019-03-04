@@ -3,6 +3,9 @@ package dd.kms.zenodot.settings;
 import javax.annotation.Nullable;
 import java.util.Collections;
 
+/**
+ * Implementation of {@link ObjectTreeNodeIF} that represents a leaf in the custom hierarchy.
+ */
 public class LeafObjectTreeNode implements ObjectTreeNodeIF
 {
 	static final LeafObjectTreeNode	EMPTY	= new LeafObjectTreeNode(null, null);

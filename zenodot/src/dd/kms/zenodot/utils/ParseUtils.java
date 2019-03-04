@@ -1,25 +1,28 @@
 package dd.kms.zenodot.utils;
 
-import dd.kms.zenodot.common.ReflectionUtils;
-import dd.kms.zenodot.common.RegexUtils;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.parsers.AbstractEntityParser;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.ToIntFunction;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Collection of utility methods for parsers
+ */
 public class ParseUtils
 {
 	/*
 	 * Parsing
+	 */
+
+	/**
+	 * Tries to parse a subexpression with the specified parsers. The result is obtained from merging the result
+	 * of each of the specified parsers.
 	 */
 	public static <C> ParseResultIF parse(TokenStream tokenStream, C context, ParseExpectation expectation, AbstractEntityParser<? super C>... parsers) {
 		List<ParseResultIF> parseResults = Arrays.stream(parsers)

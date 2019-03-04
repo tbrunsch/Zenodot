@@ -1,7 +1,5 @@
 package dd.kms.zenodot.utils.dataProviders;
 
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionMethod;
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
@@ -9,9 +7,11 @@ import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.parsers.ParseExpectationBuilder;
 import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionMethod;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -20,6 +20,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class for providing information about executables (methods, constructors)
+ */
 public class ExecutableDataProvider
 {
 	// defines a priority when determining which overloaded executable (method/constructor) to call

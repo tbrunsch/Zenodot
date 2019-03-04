@@ -6,11 +6,11 @@ import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CompletionSuggestionIF;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.result.CompletionSuggestions;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.settings.Variable;
-import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Comparator;
@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class for providing information about {@link Variable}s
+ */
 public class VariableDataProvider
 {
 	private final VariablePool variablePool;

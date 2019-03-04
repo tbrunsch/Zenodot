@@ -8,7 +8,8 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 import java.util.List;
 
 /**
- * Parses a sub expression starting with a field {@code <field>}, assuming the context {@code <context class>.<field>}
+ * Parses subexpressions {@code <static field>} of expressions of the form {@code <class>.<static field>}.
+ * The class {@code <class>} is the context for the parser.
  */
 public class ClassFieldParser extends AbstractFieldParser<TypeInfo>
 {

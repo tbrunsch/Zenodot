@@ -1,11 +1,11 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
@@ -16,12 +16,7 @@ import java.util.stream.Collectors;
 import static dd.kms.zenodot.result.ParseError.ErrorType;
 
 /**
- * Parses a sub expression starting with a method {@code <method>}, assuming the context
- * <ul>
- *     <li>{@code <context instance>.<method>},</li>
- *     <li>{@code <context class>.<method>}, or</li>
- *     <li>{@code <fmethod} (like {@code <context instance>.<method>} for {@code <context instance> = this})</li>
- * </ul>
+ * Base class for {@link ClassMethodParser} and {@link ObjectMethodParser}
  */
 abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 {

@@ -4,6 +4,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
 
+/**
+ * Wrapper class for fields<br/>
+ * <br/>
+ * Handles parameterized types (Generics) to some extend and keeps track of substituted parameters.
+ */
 public class FieldInfo
 {
 	private final Field		field;

@@ -2,6 +2,13 @@ package dd.kms.zenodot.utils.wrappers;
 
 import com.google.common.base.Preconditions;
 
+/**
+ * Wrapper class for objects<br/>
+ * <br/>
+ * Handles parameterized types (Generics) to some extend and keeps track of substituted parameters.<br/>
+ * <br/>
+ * Distinguishes between l-values and r-values.
+ */
 public class ObjectInfo
 {
 	public static final	Object		INDETERMINATE	= new Object();

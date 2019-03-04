@@ -9,6 +9,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Wrapper class for executables (methods and constructors). Extended by {@link RegularExecutableInfo}
+ * and {@link VariadicExecutableInfo}.<br/>
+ * <br/>
+ * Handles parameterized types (Generics) to some extend and keeps track of substituted parameters.
+ */
 public abstract class AbstractExecutableInfo
 {
 	public static List<AbstractExecutableInfo> getAvailableExecutableInfos(Executable executable, TypeInfo declaringType) {

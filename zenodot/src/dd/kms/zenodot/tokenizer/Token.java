@@ -1,5 +1,8 @@
 package dd.kms.zenodot.tokenizer;
 
+/**
+ * Represents a substring of an expression with a syntactical meaning
+ */
 public class Token
 {
 	private final String	value;

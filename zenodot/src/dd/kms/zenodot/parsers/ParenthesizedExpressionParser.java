@@ -1,6 +1,5 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ObjectParseResult;
@@ -10,8 +9,12 @@ import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
+/**
+ * Parses expressions of the form {@code (<expression>)} in the context of {@code this}.
+ */
 public class ParenthesizedExpressionParser extends AbstractEntityParser<ObjectInfo>
 {
 	public ParenthesizedExpressionParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {

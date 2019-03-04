@@ -1,11 +1,14 @@
 package dd.kms.zenodot.parsers;
 
+import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.result.ParseResultType;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
-import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
+/**
+ * Builder for {@link ParseExpectation}
+ */
 public class ParseExpectationBuilder
 {
 	public static ParseExpectationBuilder expectObject() {

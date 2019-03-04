@@ -7,6 +7,10 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.List;
 
+/**
+ * Parses subexpressions {@code <static method>(<arguments>)} of expressions of the form {@code <class>.<static method>(<arguments>)}.
+ * The class {@code <class>} is the context for the parser.
+ */
 public class ClassMethodParser extends AbstractMethodParser<TypeInfo>
 {
 	public ClassMethodParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {

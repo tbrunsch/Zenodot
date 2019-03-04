@@ -1,8 +1,8 @@
 package dd.kms.zenodot.utils.dataProviders;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.settings.AccessLevel;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -14,23 +14,23 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntPredicate;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Abstraction layer of class {@link ReflectionUtils} that takes the access level configured in
+ * {@link ParserSettings} into account and wraps plain fields and executables in wrapper classes
+ * {@link FieldInfo} and {@link AbstractExecutableInfo}.
+ */
 public class InspectionDataProvider
 {
-	private static final IntPredicate	STATIC_FILTER = Modifier::isStatic;
-
-	private final ParserToolbox		parserToolbox;
-	private final IntPredicate		accessLevelFilter;
+	private final IntPredicate	accessLevelFilter;
 
 	public InspectionDataProvider(ParserToolbox parserToolbox) {
-		this.parserToolbox = parserToolbox;
 		AccessLevel accessLevel = parserToolbox.getSettings().getMinimumAccessLevel();
 		this.accessLevelFilter = createAccessLevelFilter(accessLevel);
 	}
 
-	private static IntPredicate createAccessLevelFilter(final AccessLevel minimumAccessLevel) {
+	private static IntPredicate createAccessLevelFilter(AccessLevel minimumAccessLevel) {
 		switch (minimumAccessLevel) {
 			case PUBLIC:
 				return modifiers -> Modifier.isPublic(modifiers);
@@ -46,7 +46,7 @@ public class InspectionDataProvider
 	}
 
 	public List<FieldInfo> getFieldInfos(TypeInfo contextType, boolean staticOnly) {
-		IntPredicate modifierFilter = staticOnly ? accessLevelFilter.and(STATIC_FILTER) : accessLevelFilter;
+		IntPredicate modifierFilter = staticOnly ? accessLevelFilter.and(Modifier::isStatic) : accessLevelFilter;
 		List<Field> fields = ReflectionUtils.getFields(contextType.getRawType(), true, modifierFilter);
 		return fields.stream()
 				.map(field -> new FieldInfo(field, contextType))
@@ -54,7 +54,7 @@ public class InspectionDataProvider
 	}
 
 	public List<AbstractExecutableInfo> getMethodInfos(TypeInfo contextType, boolean staticOnly) {
-		IntPredicate modifierFilter = staticOnly ? accessLevelFilter.and(STATIC_FILTER) : accessLevelFilter;
+		IntPredicate modifierFilter = staticOnly ? accessLevelFilter.and(Modifier::isStatic) : accessLevelFilter;
 		List<Method> methods = ReflectionUtils.getMethods(contextType.getRawType(), modifierFilter);
 		List<AbstractExecutableInfo> executableInfos = new ArrayList<>(methods.size());
 		for (Method method : methods) {

@@ -1,17 +1,24 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.result.ClassParseResult;
 import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.result.ParseResultType;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 /**
- * Parses a sub expression following a complete Java expression, assuming the context {@code <class>
+ * Parses subexpressions
+ * <ul>
+ *     <li>{@code .<static field>} of expressions of the form {@code <class>.<static field>},</li>
+ *     <li>{@code .<static method>(<arguments>)} of expressions of the form {@code <class>.<static method>(<arguments>)}, and</li>
+ *     <li>{@code .<inner class>} of expressions of the form {@code <class>.<inner class>}.</li>
+ * </ul>
+ * The class {@code <class>} is the context for the parser. If the subexpression does not start with a dot ({@code .}),
+ * then {@code <class>} is returned as parse result.
  */
 public class ClassTailParser extends AbstractTailParser<TypeInfo>
 {

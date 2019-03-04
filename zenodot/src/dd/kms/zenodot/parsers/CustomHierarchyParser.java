@@ -7,6 +7,7 @@ import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.settings.ObjectTreeNodeIF;
+import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -15,6 +16,13 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.regex.Pattern;
 
+/**
+ * Parses expressions of the form {@code {<child level 1>#...#<child level n>}} in
+ * the (ignored) context of {@code this}. {@code <child level 1>} refers to a child
+ * of the root of the custom hierarchy specified by {@link ParserSettingsBuilder#customHierarchyRoot(ObjectTreeNodeIF)}.
+ * With each separator {@code #}, the expression descends to the next lower level
+ * in the hierarchy.
+ */
 public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 {
 	private static final char		HIERARCHY_BEGIN		= '{';

@@ -6,6 +6,10 @@ import dd.kms.zenodot.utils.dataProviders.*;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
+/**
+ * Utility class used by most parsers to access other parsers, data providers,
+ * and the parser settings.
+ */
 public class ParserToolbox
 {
 	private final ObjectInfo						thisInfo;

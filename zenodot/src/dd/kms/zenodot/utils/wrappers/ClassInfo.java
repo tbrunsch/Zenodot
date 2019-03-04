@@ -4,6 +4,12 @@ import dd.kms.zenodot.utils.ClassUtils;
 
 import java.util.Objects;
 
+/**
+ * References a class by its fully qualified (normalized) name. That way, a class does not have to be loaded
+ * until it is used.<br/>
+ * <br/>
+ * See {@link ClassUtils#normalizeClassName(String)} for a description what is meant by "normalized".
+ */
 public class ClassInfo
 {
 	public static ClassInfo forName(String qualifiedClassName) throws ClassNotFoundException {

@@ -13,6 +13,12 @@ import dd.kms.zenodot.utils.dataProviders.ClassDataProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
+/**
+ * Parses subexpressions of the form {@code <package>.<class name>} or {@code <class name>} in
+ * the (ignored) context of {@code this}. The unqualified form can only be parsed if either the
+ * class or its package is imported (see {@link ParserSettingsBuilder#importPackage(String)}
+ * and {@link ParserSettingsBuilder#importClass(String)}).
+ */
 public class ClassParser extends AbstractEntityParser<ObjectInfo>
 {
 	public ClassParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {

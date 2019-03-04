@@ -1,6 +1,5 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ParseError;
@@ -8,11 +7,27 @@ import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.result.ParseResultType;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import static dd.kms.zenodot.result.ParseError.ErrorType;
 
+/**
+ * Parses literals in the context of {@code this}. Supported types of literals are:
+ * <ul>
+ *     <li>true</li>
+ *     <li>false</li>
+ *     <li>null</li>
+ *     <li>this</li>
+ *     <li>string literals</li>
+ *     <li>character literals</li>
+ *     <li>int literals</li>
+ *     <li>long literals (with the suffix {@code L})</li>
+ *     <li>float literals (with the suffix {@code f})</li>
+ *     <li>double literals</li>
+ * </ul>
+ */
 public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 {
 	private static final ObjectInfo	TRUE_INFO	= new ObjectInfo(true, TypeInfo.of(boolean.class));

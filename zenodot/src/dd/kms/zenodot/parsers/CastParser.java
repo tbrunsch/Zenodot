@@ -1,15 +1,18 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorType;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
+/**
+ * Parses expressions of the form {@code (<class>) <expression>} in the context of {@code this}.
+ */
 public class CastParser extends AbstractEntityParser<ObjectInfo>
 {
 	public CastParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {

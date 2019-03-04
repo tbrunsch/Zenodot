@@ -1,11 +1,14 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
+/**
+ * Base class for {@link ClassTailParser} and {@link ObjectTailParser}
+ */
 abstract class AbstractTailParser<C> extends AbstractEntityParser<C>
 {
 	AbstractTailParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {

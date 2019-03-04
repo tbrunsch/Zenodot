@@ -8,6 +8,9 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+/**
+ * Utility class for rating matches
+ */
 public class MatchRatings
 {
 	/*

@@ -8,10 +8,15 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 import java.util.List;
 
 /**
- * Parses a sub expression starting with a field {@code <field>}, assuming the context
+ * Parses
  * <ul>
- *     <li>{@code <context instance>.<field>} or</li>
- *     <li>{@code <field>} (like {@code <context instance>.<field>} for {@code <context instance> = this})</li>
+ *     <li>
+ *         expressions of the form {@code <field>} in the context of {@code this} and
+ *     </li>
+ *     <li>
+ *         subexpressions {@code <field>} of expressions of the form {@code <instance>.<field>} with
+ *         the instance as context.
+ *     </li>
  * </ul>
  */
 public class ObjectFieldParser extends AbstractFieldParser<ObjectInfo>

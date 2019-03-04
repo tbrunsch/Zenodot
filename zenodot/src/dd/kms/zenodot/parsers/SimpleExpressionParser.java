@@ -1,13 +1,14 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 /**
- * Parses an arbitrary Java expression without binary operators
+ * Parses an arbitrary Java expression without binary operators. Use the {@link ExpressionParser}
+ * if binary operators should be considered as well.
  */
 public class SimpleExpressionParser extends AbstractEntityParser<ObjectInfo>
 {

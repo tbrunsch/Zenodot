@@ -1,5 +1,8 @@
 package dd.kms.zenodot.result;
 
+/**
+ * Closed-open interval with integer boundaries
+ */
 public class IntRange
 {
 	/**

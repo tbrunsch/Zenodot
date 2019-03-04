@@ -7,6 +7,11 @@ import dd.kms.zenodot.settings.Variable;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+/**
+ * Manages a collection of variables. If requested (see {@link Variable#isUseHardReference()}),
+ * then the pool will not reference certain variable values by hard references to allow garbage
+ * collection.
+ */
 public class VariablePool
 {
 	private final ImmutableMap<String, ValueData> variables;

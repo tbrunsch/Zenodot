@@ -20,6 +20,9 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * Utility class for evaluating unary and binary operators
+ */
 public class OperatorResultProvider
 {
 	public static final int	MAX_BINARY_OPERATOR_PRECEDENCE_LEVEL			= Arrays.stream(BinaryOperator.values()).mapToInt(BinaryOperator::getPrecedenceLevel).max().getAsInt();

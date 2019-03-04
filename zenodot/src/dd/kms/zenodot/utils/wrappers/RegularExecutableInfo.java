@@ -8,6 +8,12 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Type;
 import java.util.List;
 
+/**
+ * "Regular" view on executables (methods, constructors). For non-variadic executables,
+ * this is the only available view. For variadic methods, this view pretends that the
+ * underlying executable is non-variadic, treating the variadic part as a single array.
+ * The other view on variadic methods is {@link VariadicExecutableInfo}.
+ */
 public class RegularExecutableInfo extends AbstractExecutableInfo
 {
 	RegularExecutableInfo(Executable executable, TypeInfo declaringType) {

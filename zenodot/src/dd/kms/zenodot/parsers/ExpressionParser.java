@@ -1,16 +1,16 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.ImmutableMap;
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorType;
-import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
