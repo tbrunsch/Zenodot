@@ -48,7 +48,7 @@ public class TestExecutor extends AbstractTestExecutor<TestExecutor>
 		int caret = javaExpression.length();
 		List<String> suggestions = null;
 		try {
-			suggestions = extractSuggestions(parser.suggestCodeCompletion(javaExpression, settings, caret, testInstance));
+			suggestions = extractSuggestions(parser.suggestCodeCompletion(javaExpression, caret, settings, testInstance));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				fail("Exception during code completion: " + e.getMessage());

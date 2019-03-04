@@ -18,9 +18,12 @@ import java.util.Map;
 
 import static dd.kms.zenodot.result.ParseError.ErrorType;
 
+/**
+ * API entry point of Zenodot
+ */
 public class JavaParser
 {
-	public List<CompletionSuggestionIF> suggestCodeCompletion(String javaExpression, ParserSettings settings, int caret, Object valueOfThis) throws ParseException {
+	public List<CompletionSuggestionIF> suggestCodeCompletion(String javaExpression, int caret, ParserSettings settings, Object valueOfThis) throws ParseException {
 		ParseResultIF parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caret, valueOfThis);
 
 		switch (parseResult.getResultType()) {

@@ -26,7 +26,7 @@ public class ErrorTestExecutor extends AbstractTestExecutor<ErrorTestExecutor>
 
 		JavaParser parser = new JavaParser();
 		try {
-			parser.suggestCodeCompletion(javaExpression, settings, caret, testInstance);
+			parser.suggestCodeCompletion(javaExpression, caret, settings, testInstance);
 			fail("Expression: " + javaExpression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			assertTrue("Expression: " + javaExpression + " - Expected exception of class '" + expectedExceptionClass.getSimpleName() + "', but caught an exception of class '" + e.getClass().getSimpleName() + "'", expectedExceptionClass.isInstance(e));
