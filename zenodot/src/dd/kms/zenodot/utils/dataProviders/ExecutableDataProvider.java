@@ -1,6 +1,10 @@
 package dd.kms.zenodot.utils.dataProviders;
 
 import dd.kms.zenodot.ParserToolbox;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.parsers.ParseExpectationBuilder;
 import dd.kms.zenodot.result.*;
@@ -12,12 +16,19 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.*;
-import java.util.function.ToIntFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ExecutableDataProvider
 {
+	// defines a priority when determining which overloaded executable (method/constructor) to call
+	private static final List<List<TypeMatch>>	ALLOWED_EXECUTABLE_RATINGS_BY_PHASE = Arrays.asList(
+		Arrays.asList(TypeMatch.FULL),
+		Arrays.asList(TypeMatch.INHERITANCE, TypeMatch.PRIMITIVE_CONVERSION),
+		Arrays.asList(TypeMatch.BOXED, TypeMatch.BOXED_AND_CONVERSION, TypeMatch.BOXED_AND_INHERITANCE)
+	);
+
 	private final ParserToolbox parserToolbox;
 
 	public ExecutableDataProvider(ParserToolbox parserToolbox) {
@@ -25,7 +36,7 @@ public class ExecutableDataProvider
 	}
 
 	public CompletionSuggestions suggestMethods(String expectedName, List<ExecutableInfo> methodInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
-		Map<CompletionSuggestionIF, Integer> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			methodInfos,
 			methodInfo -> new CompletionSuggestionMethod(methodInfo, insertionBegin, insertionEnd),
 			rateMethodByNameAndTypesFunc(expectedName, expectation)
@@ -115,27 +126,21 @@ public class ExecutableDataProvider
 	private boolean acceptsArgumentInfo(ExecutableInfo executableInfo, int argIndex, ObjectInfo argInfo) {
 		TypeInfo expectedArgumentType = executableInfo.getExpectedArgumentType(argIndex);
 		TypeInfo argumentType = parserToolbox.getObjectInfoProvider().getType(argInfo);
-		return ParseUtils.isConvertibleTo(argumentType, expectedArgumentType);
+		return MatchRatings.isConvertibleTo(argumentType, expectedArgumentType);
 	}
 
 	public List<ExecutableInfo> getBestMatchingExecutableInfos(List<ExecutableInfo> availableExecutableInfos, List<ObjectInfo> argumentInfos) {
 		ObjectInfoProvider objectInfoProvider = parserToolbox.getObjectInfoProvider();
 		List<TypeInfo> argumentTypes = argumentInfos.stream().map(objectInfoProvider::getType).collect(Collectors.toList());
-		int[] ratings = availableExecutableInfos.stream()
-				.mapToInt(executableInfo -> executableInfo.rateArgumentMatch(argumentTypes))
-				.toArray();
-
-		List<ExecutableInfo> executableInfos;
-
-		int[][] allowedRatingsByPhase = {
-				{ ParseUtils.TYPE_MATCH_FULL},
-				{ ParseUtils.TYPE_MATCH_INHERITANCE,	ParseUtils.TYPE_MATCH_PRIMITIVE_CONVERSION},
-				{ ParseUtils.TYPE_MATCH_BOXED,			ParseUtils.TYPE_MATCH_BOXED_AND_CONVERSION,	ParseUtils.TYPE_MATCH_BOXED_AND_INHERITANCE}
-		};
+		Map<ExecutableInfo, TypeMatch> ratedExecutableInfos = availableExecutableInfos.stream()
+			.collect(Collectors.toMap(
+				executableInfo -> executableInfo,
+				executableInfo -> executableInfo.rateArgumentMatch(argumentTypes)
+			));
 
 		for (boolean allowVariadicExecutables : Arrays.asList(false, true)) {
-			for (int[] allowedRatings : allowedRatingsByPhase) {
-				executableInfos = filterExecutableInfos(availableExecutableInfos, allowedRatings, allowVariadicExecutables, ratings);
+			for (List<TypeMatch> allowedRatings : ALLOWED_EXECUTABLE_RATINGS_BY_PHASE) {
+				List<ExecutableInfo> executableInfos = filterExecutableInfos(ratedExecutableInfos, allowedRatings, allowVariadicExecutables);
 				if (!executableInfos.isEmpty()) {
 					return executableInfos;
 				}
@@ -144,15 +149,11 @@ public class ExecutableDataProvider
 		return Collections.emptyList();
 	}
 
-	private static List<ExecutableInfo> filterExecutableInfos(List<ExecutableInfo> executableInfos, int[] allowedRatings, boolean allowVariadicExecutables, int[] ratings) {
+	private static List<ExecutableInfo> filterExecutableInfos(Map<ExecutableInfo, TypeMatch> ratedExecutableInfos, List<TypeMatch> allowedRatings, boolean allowVariadicExecutables) {
 		List<ExecutableInfo> filteredExecutableInfos = new ArrayList<>();
-		for (int i = 0; i < executableInfos.size(); i++) {
-			int rating = ratings[i];
-			if (IntStream.of(allowedRatings).noneMatch(allowedRating -> rating == allowedRating)) {
-				continue;
-			}
-			ExecutableInfo executableInfo = executableInfos.get(i);
-			if (allowVariadicExecutables || !executableInfo.isVariadic()) {
+		for (ExecutableInfo executableInfo : ratedExecutableInfos.keySet()) {
+			TypeMatch rating = ratedExecutableInfos.get(executableInfo);
+			if (allowedRatings.contains(rating) && (allowVariadicExecutables || !executableInfo.isVariadic())) {
 				filteredExecutableInfos.add(executableInfo);
 			}
 		}
@@ -162,24 +163,24 @@ public class ExecutableDataProvider
 	/*
 	 * Suggestions
 	 */
-	private int rateMethodByName(ExecutableInfo methodInfo, String expectedName) {
-		return ParseUtils.rateStringMatch(methodInfo.getName(), expectedName);
+	private StringMatch rateMethodByName(ExecutableInfo methodInfo, String expectedName) {
+		return MatchRatings.rateStringMatch(methodInfo.getName(), expectedName);
 	}
 
-	private int rateMethodByTypes(ExecutableInfo methodInfo, ParseExpectation expectation) {
+	private TypeMatch rateMethodByTypes(ExecutableInfo methodInfo, ParseExpectation expectation) {
 		/*
 		 * Even for EvaluationMode.DYNAMICALLY_TYPED we only consider the declared return type of the method instead
 		 * of the runtime type of the returned object. Otherwise, we would have to invoke the method for code
 		 * completion, possibly causing undesired side effects.
 		 */
 		List<TypeInfo> allowedTypes = expectation.getAllowedTypes();
-		return	allowedTypes == null	? ParseUtils.TYPE_MATCH_FULL :
-				allowedTypes.isEmpty()	? ParseUtils.TYPE_MATCH_NONE
-										: allowedTypes.stream().mapToInt(allowedType -> ParseUtils.rateTypeMatch(methodInfo.getReturnType(), allowedType)).min().getAsInt();
+		return	allowedTypes == null
+					? TypeMatch.FULL
+					: allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(methodInfo.getReturnType(), allowedType)).min(TypeMatch::compareTo).orElse(TypeMatch.NONE);
 	}
 
-	private ToIntFunction<ExecutableInfo> rateMethodByNameAndTypesFunc(String methodName, ParseExpectation expectation) {
-		return methodInfo -> (ParseUtils.TYPE_MATCH_NONE + 1)* rateMethodByName(methodInfo, methodName) + rateMethodByTypes(methodInfo, expectation);
+	private Function<ExecutableInfo, MatchRating> rateMethodByNameAndTypesFunc(String methodName, ParseExpectation expectation) {
+		return methodInfo -> new MatchRating(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation));
 	}
 
 	public static String getMethodDisplayText(ExecutableInfo methodInfo) {

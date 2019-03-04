@@ -2,6 +2,7 @@ package dd.kms.zenodot;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogEntry;
+import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.settings.ParseMode;
@@ -55,10 +56,10 @@ public class JavaParser
 			}
 			case COMPLETION_SUGGESTIONS: {
 				CompletionSuggestions completionSuggestions = (CompletionSuggestions) parseResult;
-				Map<CompletionSuggestionIF, Integer> ratedSuggestions = completionSuggestions.getRatedSuggestions();
+				Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = completionSuggestions.getRatedSuggestions();
 				List<CompletionSuggestionIF> sortedSuggestions = new ArrayList<>(ratedSuggestions.keySet());
 				Collections.sort(sortedSuggestions, SUGGESTION_COMPARATOR_BY_CLASS);
-				Collections.sort(sortedSuggestions, Comparator.comparingInt(ratedSuggestions::get));
+				Collections.sort(sortedSuggestions, Comparator.comparing(ratedSuggestions::get));
 				return sortedSuggestions;
 			}
 			default:

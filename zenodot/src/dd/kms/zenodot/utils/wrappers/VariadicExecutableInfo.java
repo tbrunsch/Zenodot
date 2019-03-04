@@ -1,6 +1,8 @@
 package dd.kms.zenodot.utils.wrappers;
 
 import dd.kms.zenodot.common.ReflectionUtils;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.utils.ParseUtils;
 
 import java.lang.reflect.Array;
@@ -30,29 +32,29 @@ public class VariadicExecutableInfo extends ExecutableInfo
 	}
 
 	@Override
-	int doRateArgumentMatch(List<TypeInfo> argumentTypes) {
+	TypeMatch doRateArgumentMatch(List<TypeInfo> argumentTypes) {
 		if (argumentTypes.size() < getNumberOfArguments() - 1) {
-			return ParseUtils.TYPE_MATCH_NONE;
+			return TypeMatch.NONE;
 		}
-		int worstArgumentClassMatchRating = ParseUtils.TYPE_MATCH_FULL;
+		TypeMatch worstArgumentClassMatchRating = TypeMatch.FULL;
 		for (int i = 0; i < argumentTypes.size(); i++) {
-			int argumentClassMatchRating = rateArgumentTypeMatch(i, argumentTypes.get(i));
-			worstArgumentClassMatchRating = Math.max(worstArgumentClassMatchRating, argumentClassMatchRating);
+			TypeMatch argumentClassMatchRating = rateArgumentTypeMatch(i, argumentTypes.get(i));
+			worstArgumentClassMatchRating = MatchRatings.worstOf(worstArgumentClassMatchRating, argumentClassMatchRating);
 		}
 		return worstArgumentClassMatchRating;
 	}
 
-	private int rateArgumentTypeMatch(int argIndex, TypeInfo argumentType) {
+	private TypeMatch rateArgumentTypeMatch(int argIndex, TypeInfo argumentType) {
 		int lastArgIndex = getNumberOfArguments() - 1;
 		if (argIndex == lastArgIndex && argumentType == TypeInfo.NONE) {
 			/*
 			 * If the last argument in a variadic method is null, then the regular array type
 			 * (the one returned in RegularExecutableInfo) is assumed and not its component type.
 			 */
-			return ParseUtils.TYPE_MATCH_NONE;
+			return TypeMatch.NONE;
 		}
 		TypeInfo expectedArgumentType = getExpectedArgumentType(argIndex);
-		return ParseUtils.rateTypeMatch(argumentType, expectedArgumentType);
+		return MatchRatings.rateTypeMatch(argumentType, expectedArgumentType);
 	}
 
 	@Override

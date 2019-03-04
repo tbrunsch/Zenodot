@@ -4,6 +4,10 @@ import dd.kms.zenodot.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogEntry;
 import dd.kms.zenodot.debug.ParserLoggerIF;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CompletionSuggestionField;
 import dd.kms.zenodot.result.CompletionSuggestionIF;
@@ -15,6 +19,7 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
 public class FieldDataProvider
@@ -26,7 +31,7 @@ public class FieldDataProvider
 	}
 
 	public CompletionSuggestions suggestFields(String expectedName, Object contextObject, List<FieldInfo> fieldInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
-		Map<CompletionSuggestionIF, Integer> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			fieldInfos,
 			fieldInfo -> new CompletionSuggestionField(fieldInfo, insertionBegin, insertionEnd),
 			rateFieldByNameAndTypesFunc(expectedName, contextObject, expectation)
@@ -34,31 +39,31 @@ public class FieldDataProvider
 		ParserLoggerIF logger = parserToolbox.getSettings().getLogger();
 		for (CompletionSuggestionIF suggestion : ratedSuggestions.keySet()) {
 			String suggestionText = suggestion.toString();
-			int rating = ratedSuggestions.get(suggestion);
+			MatchRating rating = ratedSuggestions.get(suggestion);
 			logger.log(new ParserLogEntry(LogLevel.INFO, "FieldDataProvider", suggestionText + ": " + rating));
 		}
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
 
-	private int rateFieldByName(FieldInfo fieldInfo, String expectedName) {
-		return ParseUtils.rateStringMatch(fieldInfo.getName(), expectedName);
+	private StringMatch rateFieldByName(FieldInfo fieldInfo, String expectedName) {
+		return MatchRatings.rateStringMatch(fieldInfo.getName(), expectedName);
 	}
 
-	private int rateFieldByTypes(FieldInfo fieldInfo, Object contextObject, ParseExpectation expectation) {
+	private TypeMatch rateFieldByTypes(FieldInfo fieldInfo, Object contextObject, ParseExpectation expectation) {
 		List<TypeInfo> allowedTypes = expectation.getAllowedTypes();
 		if (allowedTypes == null) {
-			return ParseUtils.TYPE_MATCH_FULL;
+			return TypeMatch.FULL;
 		}
 		if (allowedTypes.isEmpty()) {
-			return ParseUtils.TYPE_MATCH_NONE;
+			return TypeMatch.NONE;
 		}
 		ObjectInfo fieldValueInfo = parserToolbox.getObjectInfoProvider().getFieldValueInfo(contextObject, fieldInfo);
 		TypeInfo type = parserToolbox.getObjectInfoProvider().getType(fieldValueInfo);
-		return allowedTypes.stream().mapToInt(allowedType -> ParseUtils.rateTypeMatch(type, allowedType)).min().getAsInt();
+		return allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(type, allowedType)).min(TypeMatch::compareTo).get();
 	}
 
-	private ToIntFunction<FieldInfo> rateFieldByNameAndTypesFunc(String expectedName, Object contextObject, ParseExpectation expectation) {
-		return fieldInfo -> (ParseUtils.TYPE_MATCH_NONE + 1)*rateFieldByName(fieldInfo, expectedName) + rateFieldByTypes(fieldInfo, contextObject, expectation);
+	private Function<FieldInfo, MatchRating> rateFieldByNameAndTypesFunc(String expectedName, Object contextObject, ParseExpectation expectation) {
+		return fieldInfo -> new MatchRating(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation));
 	}
 
 	public static String getFieldDisplayText(FieldInfo fieldInfo) {

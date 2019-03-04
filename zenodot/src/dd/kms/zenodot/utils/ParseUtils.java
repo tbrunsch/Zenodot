@@ -2,6 +2,8 @@ package dd.kms.zenodot.utils;
 
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.common.RegexUtils;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.parsers.AbstractEntityParser;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
@@ -63,18 +65,17 @@ public class ParseUtils
 	}
 
 	private static ParseResultIF mergeCompletionSuggestions(List<CompletionSuggestions> completionSuggestions) {
-		Map<CompletionSuggestionIF, Integer> mergedRatedSuggestions = new LinkedHashMap<>();
+		Map<CompletionSuggestionIF, MatchRating> mergedRatedSuggestions = new LinkedHashMap<>();
 		int position = Integer.MAX_VALUE;
 		for (CompletionSuggestions suggestions : completionSuggestions) {
 			position = Math.min(position, suggestions.getPosition());
-			Map<CompletionSuggestionIF, Integer> ratedSuggestions = suggestions.getRatedSuggestions();
+			Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = suggestions.getRatedSuggestions();
 			for (CompletionSuggestionIF suggestion : ratedSuggestions.keySet()) {
-				int currentRating = mergedRatedSuggestions.containsKey(suggestion)
+				MatchRating rating = mergedRatedSuggestions.containsKey(suggestion)
 										? mergedRatedSuggestions.get(suggestion)
-										: Integer.MAX_VALUE;
-				int newRating = ratedSuggestions.get(suggestion);
-				int bestRating = Math.min(currentRating, newRating);
-				mergedRatedSuggestions.put(suggestion, bestRating);
+										: MatchRating.NONE;
+				MatchRating newRating = ratedSuggestions.get(suggestion);
+				mergedRatedSuggestions.put(suggestion, MatchRatings.bestOf(rating, newRating));
 			}
 		}
 		return new CompletionSuggestions(position, mergedRatedSuggestions);
@@ -122,116 +123,13 @@ public class ParseUtils
 	}
 
 	/*
-	 * String Comparison
-	 */
-	private static final int STRING_MATCH_FULL							= 0;
-	private static final int STRING_MATCH_FULL_IGNORE_CASE				= 1;
-	private static final int STRING_MATCH_PREFIX						= 2;
-	private static final int STRING_MATCH_PREFIX_IGNORE_CASE			= 3;
-	private static final int STRING_MATCH_INVERSE_PREFIX				= 4;
-	private static final int STRING_MATCH_INVERSE_PREFIX_IGNORE_CASE	= 5;
-	private static final int STRING_MATCH_WILDCARD = 6;
-	private static final int STRING_MATCH_MIN_VALUE_OTHER				= 7;
-
-	public static int rateStringMatch(String actual, String expected) {
-		if (actual.equals(expected)) {
-			return STRING_MATCH_FULL;
-		} else if (expected.isEmpty()) {
-			return actual.isEmpty() ? STRING_MATCH_FULL : STRING_MATCH_PREFIX;
-		} else {
-			String actualLowerCase = actual.toLowerCase();
-			String expectedLowerCase = expected.toLowerCase();
-			if (actualLowerCase.equals(expectedLowerCase)) {
-				return STRING_MATCH_FULL_IGNORE_CASE;
-			} else if (actual.startsWith(expected)) {
-				return STRING_MATCH_PREFIX;
-			} else if (actualLowerCase.startsWith(expectedLowerCase)) {
-				return STRING_MATCH_PREFIX_IGNORE_CASE;
-			} else if (expected.startsWith(actual)) {
-				return STRING_MATCH_INVERSE_PREFIX;
-			} else if (expectedLowerCase.startsWith(actualLowerCase)) {
-				return STRING_MATCH_INVERSE_PREFIX_IGNORE_CASE;
-			} else if (WildcardPatternGenerator.generate(expected).matcher(actual).matches()) {
-				return STRING_MATCH_WILDCARD;
-			} else {
-				return STRING_MATCH_MIN_VALUE_OTHER;
-			}
-		}
-	}
-
-	/*
-	 * Type Comparison
-	 */
-	public static final int	TYPE_MATCH_FULL						= 0;
-	public static final int	TYPE_MATCH_INHERITANCE				= 1;
-	public static final int	TYPE_MATCH_PRIMITIVE_CONVERSION		= 2;
-	public static final int	TYPE_MATCH_BOXED					= 3;
-	public static final int	TYPE_MATCH_BOXED_AND_CONVERSION		= 4;
-	public static final int	TYPE_MATCH_BOXED_AND_INHERITANCE	= 5;
-	public static final int	TYPE_MATCH_NONE						= 6;
-
-	public static int rateTypeMatch(TypeInfo actual, TypeInfo expected) {
-		if (actual == TypeInfo.UNKNOWN) {
-			throw new IllegalArgumentException("Internal error: Cannot rate type match for unknown type");
-		}
-		if (expected == TypeInfo.UNKNOWN) {
-			throw new IllegalArgumentException("Internal error: Cannot expect unknown type");
-		}
-
-		if (expected == TypeInfo.NONE) {
-			// no expectations
-			return TYPE_MATCH_FULL;
-		}
-
-		if (actual == TypeInfo.NONE) {
-			// null object (only object without class) is convertible to any non-primitive class
-			return expected.isPrimitive() ? TYPE_MATCH_NONE : TYPE_MATCH_FULL;
-		}
-
-		if (actual.equals(expected)) {
-			return TYPE_MATCH_FULL;
-		}
-
-		Class<?> actualClass = actual.getRawType();
-		Class<?> expectedClass = expected.getRawType();
-		boolean primitiveConvertible = ReflectionUtils.isPrimitiveConvertibleTo(actualClass, expectedClass, false);
-		if (expected.isPrimitive()) {
-			if (actual.isPrimitive()) {
-				return primitiveConvertible
-						? TYPE_MATCH_PRIMITIVE_CONVERSION	// int -> double
-						: TYPE_MATCH_NONE;					// int -> boolean
-			} else {
-				Class<?> actualUnboxedClass = ReflectionUtils.getPrimitiveClass(actualClass);
-				return	actualUnboxedClass == expectedClass	? TYPE_MATCH_BOXED :				// Integer -> int
-						primitiveConvertible				? TYPE_MATCH_BOXED_AND_CONVERSION   // Integer -> double
-															: TYPE_MATCH_NONE;					// Integer -> boolean
-			}
-		} else {
-			if (actual.isPrimitive()) {
-				Class<?> actualBoxedClass = ReflectionUtils.getBoxedClass(actualClass);
-				return	actualBoxedClass == expectedClass					? TYPE_MATCH_BOXED :				// int -> Integer
-						primitiveConvertible								? TYPE_MATCH_BOXED_AND_CONVERSION :	// int -> Double
-						expectedClass.isAssignableFrom(actualBoxedClass)	? TYPE_MATCH_BOXED_AND_INHERITANCE 	// int -> Number
-																			: TYPE_MATCH_NONE;					// int -> String
-			} else {
-				return	expected.isSupertypeOf(actual)	? TYPE_MATCH_INHERITANCE    // Integer -> Number
-														: TYPE_MATCH_NONE;			// Integer -> Double
-			}
-		}
-	}
-
-	public static boolean isConvertibleTo(TypeInfo source, TypeInfo target) {
-		return rateTypeMatch(source, target) != TYPE_MATCH_NONE;
-	}
-
-	/*
 	 * Completion Suggestions
 	 */
-	public static <T> Map<CompletionSuggestionIF, Integer> createRatedSuggestions(Collection<T> objects, Function<T, CompletionSuggestionIF> suggestionBuilder, ToIntFunction<T> ratingFunc) {
-		Map<CompletionSuggestionIF, Integer> ratedSuggestions = new LinkedHashMap<>();
+	public static <T> Map<CompletionSuggestionIF, MatchRating> createRatedSuggestions(Collection<T> objects, Function<T, CompletionSuggestionIF> suggestionBuilder, Function<T, MatchRating> ratingFunc) {
+		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = new LinkedHashMap<>();
 		for (T object : objects) {
 			CompletionSuggestionIF suggestion = suggestionBuilder.apply(object);
-			int rating = ratingFunc.applyAsInt(object);
+			MatchRating rating = ratingFunc.apply(object);
 			ratedSuggestions.put(suggestion, rating);
 		}
 		return ratedSuggestions;
@@ -254,19 +152,5 @@ public class ParseUtils
 			throw new IllegalStateException("Internal error: Expected a class as parse result, but obtained an object");
 		}
 		return parseResultType != expectedEvaluationType;
-	}
-
-	private static class WildcardPatternGenerator
-	{
-		private static String	WILDCARD_STRING;	// caches last wildcard string
-		private static Pattern	PATTERN;
-
-		static Pattern generate(String wildcardString) {
-			if (!Objects.equals(wildcardString, WILDCARD_STRING)) {
-				WILDCARD_STRING = wildcardString;
-				PATTERN = RegexUtils.createRegexForWildcardString(wildcardString);
-			}
-			return PATTERN;
-		}
 	}
 }

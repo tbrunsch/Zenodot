@@ -1,7 +1,9 @@
 package dd.kms.zenodot.parsers;
 
+import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.ParserToolbox;
 import dd.kms.zenodot.debug.LogLevel;
+import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorType;
 import dd.kms.zenodot.settings.ParseMode;
@@ -12,7 +14,6 @@ import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
-import com.google.common.collect.ImmutableMap;
 
 import java.util.List;
 import java.util.Map;
@@ -159,7 +160,7 @@ public class RootParser extends AbstractEntityParser<ObjectInfo>
 		ObjectParseResult objectParseResult = (ObjectParseResult) parseResult;
 		List<TypeInfo> allowedTypes = expectation.getAllowedTypes();
 		TypeInfo resultType = parserToolbox.getObjectInfoProvider().getType(objectParseResult.getObjectInfo());
-		if (allowedTypes != null && allowedTypes.stream().noneMatch(expectedResultType -> ParseUtils.isConvertibleTo(resultType, expectedResultType))) {
+		if (allowedTypes != null && allowedTypes.stream().noneMatch(expectedResultType -> MatchRatings.isConvertibleTo(resultType, expectedResultType))) {
 			String messagePrefix = "The class '" + resultType + "' is not assignable to ";
 			String messageMiddle = allowedTypes.size() > 1
 					? "any of the expected classes "

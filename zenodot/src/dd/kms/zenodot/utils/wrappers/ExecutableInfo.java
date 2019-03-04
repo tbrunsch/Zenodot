@@ -1,6 +1,7 @@
 package dd.kms.zenodot.utils.wrappers;
 
 import com.google.common.base.Joiner;
+import dd.kms.zenodot.matching.TypeMatch;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public abstract class ExecutableInfo
 
 	abstract boolean doIsArgumentIndexValid(int argIndex);
 	abstract Type doGetExpectedArgumentType(int argIndex);
-	abstract int doRateArgumentMatch(List<TypeInfo> argumentTypes);
+	abstract TypeMatch doRateArgumentMatch(List<TypeInfo> argumentTypes);
 	abstract Object[] doCreateArgumentArray(List<ObjectInfo> argumentInfos);
 
 	public String getName() {
@@ -63,7 +64,7 @@ public abstract class ExecutableInfo
 		return declaringType.resolveType(doGetExpectedArgumentType(argIndex));
 	}
 
-	public final int rateArgumentMatch(List<TypeInfo> argumentTypes) {
+	public final TypeMatch rateArgumentMatch(List<TypeInfo> argumentTypes) {
 		return doRateArgumentMatch(argumentTypes);
 	}
 

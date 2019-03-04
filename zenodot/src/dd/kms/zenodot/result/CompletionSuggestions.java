@@ -1,5 +1,7 @@
 package dd.kms.zenodot.result;
 
+import dd.kms.zenodot.matching.MatchRating;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -9,10 +11,10 @@ public class CompletionSuggestions implements ParseResultIF
 		return new CompletionSuggestions(position, Collections.emptyMap());
 	}
 
-	private final int									position;
-	private final Map<CompletionSuggestionIF, Integer>	ratedSuggestions;
+	private final int										position;
+	private final Map<CompletionSuggestionIF, MatchRating>	ratedSuggestions;
 
-	public CompletionSuggestions(int position, Map<CompletionSuggestionIF, Integer> ratedSuggestions) {
+	public CompletionSuggestions(int position, Map<CompletionSuggestionIF, MatchRating> ratedSuggestions) {
 		this.position = position;
 		this.ratedSuggestions = ratedSuggestions;
 	}
@@ -27,7 +29,7 @@ public class CompletionSuggestions implements ParseResultIF
 		return position;
 	}
 
-	public Map<CompletionSuggestionIF, Integer> getRatedSuggestions() {
+	public Map<CompletionSuggestionIF, MatchRating> getRatedSuggestions() {
 		return ratedSuggestions;
 	}
 }

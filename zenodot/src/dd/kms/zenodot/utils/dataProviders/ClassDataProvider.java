@@ -1,7 +1,16 @@
 package dd.kms.zenodot.utils.dataProviders;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.common.reflect.ClassPath;
 import dd.kms.zenodot.ParserToolbox;
 import dd.kms.zenodot.common.ReflectionUtils;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.settings.Imports;
 import dd.kms.zenodot.tokenizer.Token;
@@ -11,15 +20,10 @@ import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.google.common.reflect.ClassPath;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.ToIntFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -113,10 +117,10 @@ public class ClassDataProvider
 		List<ClassInfo> classesToConsider = Arrays.stream(contextClass.getDeclaredClasses())
 											.map(clazz -> ClassInfo.forNameUnchecked(clazz.getName()))
 											.collect(Collectors.toList());
-		Map<CompletionSuggestionIF, Integer> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 				classesToConsider,
 				classInfo -> new CompletionSuggestionClass(classInfo, insertionBegin, insertionEnd),
-				rateClassByNameFunc(expectedName)
+				rateClassFunc(expectedName)
 		);
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
@@ -176,7 +180,7 @@ public class ClassDataProvider
 			return TOP_LEVEL_CLASS_NAMES.stream().anyMatch(name -> name.startsWith(packagePrefix));
 		}
 
-		private Map<CompletionSuggestionIF, Integer> suggestUnqualifiedClasses(String classPrefix, int insertionBegin, int insertionEnd, Set<ClassInfo> classes, Set<ClassInfo> suggestedClasses) {
+		private Map<CompletionSuggestionIF, MatchRating> suggestUnqualifiedClasses(String classPrefix, int insertionBegin, int insertionEnd, Set<ClassInfo> classes, Set<ClassInfo> suggestedClasses) {
 			if (ClassUtils.lastIndexOfPathSeparator(classPrefix) >= 0) {
 				// class is fully qualified, so no match
 				return ImmutableMap.of();
@@ -186,11 +190,11 @@ public class ClassDataProvider
 			return ParseUtils.createRatedSuggestions(
 				newSuggestedClasses,
 				classInfo -> new CompletionSuggestionClass(classInfo, insertionBegin, insertionEnd),
-				rateClassByNameFunc(classPrefix)
+				rateClassFunc(classPrefix)
 			);
 		}
 
-		private static Map<CompletionSuggestionIF, Integer> suggestQualifiedClasses(String classPrefixWithPackage, int insertionBegin, int insertionEnd, Set<ClassInfo> suggestedClasses) {
+		private static Map<CompletionSuggestionIF, MatchRating> suggestQualifiedClasses(String classPrefixWithPackage, int insertionBegin, int insertionEnd, Set<ClassInfo> suggestedClasses) {
 			String packageName = ClassUtils.getParentPath(classPrefixWithPackage);
 			if (packageName == null) {
 				// class is not fully qualified, so no match
@@ -217,11 +221,11 @@ public class ClassDataProvider
 			return ParseUtils.createRatedSuggestions(
 				newSuggestedClasses,
 				classInfo -> new CompletionSuggestionClass(classInfo, insertionBegin, insertionEnd),
-				rateClassByNameFunc(classPrefix)
+				rateClassFunc(classPrefix)
 			);
 		}
 
-		private static Map<CompletionSuggestionIF, Integer> suggestPackages(String packagePrefix, int insertionBegin, int insertionEnd) {
+		private static Map<CompletionSuggestionIF, MatchRating> suggestPackages(String packagePrefix, int insertionBegin, int insertionEnd) {
 			String parentPackage = ClassUtils.getParentPath(packagePrefix);
 			int lastSeparatorIndex = ClassUtils.lastIndexOfPathSeparator(packagePrefix);
 			List<String> suggestedPackageNames = new ArrayList<>();
@@ -238,12 +242,12 @@ public class ClassDataProvider
 			return ParseUtils.createRatedSuggestions(
 				suggestedPackageNames,
 				packageName -> new CompletionSuggestionPackage(packageName, insertionBegin, insertionEnd),
-				ratePackageByNameFunc(subpackagePrefix)
+				ratePackageFunc(subpackagePrefix)
 			);
 		}
 
 		private CompletionSuggestions suggestClassesAndPackages(int insertionBegin, int insertionEnd, String classOrPackagePrefix) {
-			ImmutableMap.Builder<CompletionSuggestionIF, Integer> suggestionBuilder = ImmutableMap.builder();
+			ImmutableMap.Builder<CompletionSuggestionIF, MatchRating> suggestionBuilder = ImmutableMap.builder();
 
 			Set<ClassInfo> importedClasses = getImportedClasses();
 			Set<String> importedPackageNames = getImportedPackageNames();
@@ -332,13 +336,12 @@ public class ClassDataProvider
 	/*
 	 * Class Suggestions
 	 */
-	private static int rateClassByName(ClassInfo classInfo, String expectedSimpleClassName) {
-		// transformation required to make it comparable to rated fields and methods
-		return (ParseUtils.TYPE_MATCH_NONE + 1)*ParseUtils.rateStringMatch(classInfo.getUnqualifiedName(), expectedSimpleClassName) + ParseUtils.TYPE_MATCH_NONE;
+	private static StringMatch rateClassByName(ClassInfo classInfo, String expectedSimpleClassName) {
+		return MatchRatings.rateStringMatch(classInfo.getUnqualifiedName(), expectedSimpleClassName);
 	}
 
-	private static ToIntFunction<ClassInfo> rateClassByNameFunc(final String simpleClassName) {
-		return classInfo -> rateClassByName(classInfo, simpleClassName);
+	private static Function<ClassInfo, MatchRating> rateClassFunc(final String simpleClassName) {
+		return classInfo -> new MatchRating(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE);
 	}
 
 	public static String getClassDisplayText(ClassInfo classInfo) {
@@ -348,14 +351,13 @@ public class ClassDataProvider
 	/*
 	 * Package Suggestions
 	 */
-	private static int ratePackageByName(String packageName, String expectedName) {
+	private static StringMatch ratePackageByName(String packageName, String expectedName) {
 		int lastDotIndex = packageName.lastIndexOf('.');
 		String subpackageName = packageName.substring(lastDotIndex + 1);
-		// transformation required to make it comparable to rated fields and methods
-		return (ParseUtils.TYPE_MATCH_NONE + 1)*ParseUtils.rateStringMatch(subpackageName, expectedName) + ParseUtils.TYPE_MATCH_NONE;
+		return MatchRatings.rateStringMatch(subpackageName, expectedName);
 	}
 
-	private static ToIntFunction<String> ratePackageByNameFunc(String expectedName) {
-		return packageName -> ratePackageByName(packageName, expectedName);
+	private static Function<String, MatchRating> ratePackageFunc(String expectedName) {
+		return packageName -> new MatchRating(ratePackageByName(packageName, expectedName), TypeMatch.NONE);
 	}
 }

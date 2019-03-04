@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import dd.kms.zenodot.ParserToolbox;
 import dd.kms.zenodot.common.ReflectionUtils;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.settings.EvaluationMode;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
@@ -324,7 +326,7 @@ public class OperatorResultProvider
 		TypeInfo rhsType = parserToolbox.getObjectInfoProvider().getType(rhs);
 
 		// declared type of variables is unknown and we want be able to assign them a value
-		if (declaredLhsType != TypeInfo.UNKNOWN && ParseUtils.rateTypeMatch(rhsType, declaredLhsType) == ParseUtils.TYPE_MATCH_NONE) {
+		if (declaredLhsType != TypeInfo.UNKNOWN && !MatchRatings.isConvertibleTo(rhsType, declaredLhsType)) {
 			throw new OperatorException("Cannot assign value of type '" + rhsType + "' to left-hand side. Expected an instance of class '" + declaredLhsType + "'");
 		}
 		TypeInfo declaredResultType = declaredLhsType;
