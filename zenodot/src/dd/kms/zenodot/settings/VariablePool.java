@@ -10,8 +10,12 @@ public class VariablePool
 {
 	private final ImmutableMap<String, ValueData> variables;
 
-	VariablePool(ImmutableMap<String, ValueData> variables) {
-		this.variables = variables;
+	VariablePool(List<Variable> variables) {
+		ImmutableMap.Builder<String, ValueData> variablesBuilder = ImmutableMap.builder();
+		for (Variable variable : variables) {
+			variablesBuilder.put(variable.getName(), new ValueData(variable.getValue(), variable.isUseHardReference()));
+		}
+		this.variables = variablesBuilder.build();
 	}
 
 	public List<Variable> getVariables() {
@@ -26,7 +30,7 @@ public class VariablePool
 		return builder.build();
 	}
 
-	static class ValueData
+	private static class ValueData
 	{
 		private final WeakReference<Object> weakValueReference;	// always set
 		private final Object				hardValueReference;	// only set if user wants to save variables from being garbage collected

@@ -4,12 +4,12 @@ public class Variable
 {
 	private final String	name;
 	private Object			value;
-	private final boolean	useHardReferenceInPool;
+	private final boolean	useHardReference;
 
-	public Variable(String name, Object value, boolean useHardReferenceInPool) {
+	public Variable(String name, Object value, boolean useHardReference) {
 		this.name = name;
 		this.value = value;
-		this.useHardReferenceInPool = useHardReferenceInPool;
+		this.useHardReference = useHardReference;
 	}
 
 	public String getName() {
@@ -24,8 +24,8 @@ public class Variable
 		this.value = value;
 	}
 
-	public boolean isUseHardReferenceInPool() {
-		return useHardReferenceInPool;
+	public boolean isUseHardReference() {
+		return useHardReference;
 	}
 
 	@Override

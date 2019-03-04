@@ -1,25 +1,25 @@
 package dd.kms.zenodot.settings;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.debug.ParserLoggerIF;
 import dd.kms.zenodot.debug.ParserNullLogger;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 public class ParserSettingsBuilder
 {
-	private final ImmutableSet.Builder<ClassInfo> 						importClassesBuilder			= ImmutableSet.builder();
-	private final ImmutableSet.Builder<String>	 						importPackageNamesBuilder		= ImmutableSet.builder();
+	private final ImmutableSet.Builder<ClassInfo> 	importClassesBuilder		= ImmutableSet.builder();
+	private final ImmutableSet.Builder<String>	 	importPackageNamesBuilder	= ImmutableSet.builder();
 
-	private final ImmutableMap.Builder<String, VariablePool.ValueData>	variablesBuilder 				= ImmutableMap.builder();
+	private final ImmutableList.Builder<Variable>	variablesBuilder 			= ImmutableList.builder();
 
-	private AccessLevel													minimumAccessLevel				= AccessLevel.PUBLIC;
+	private AccessLevel								minimumAccessLevel			= AccessLevel.PUBLIC;
 
-	private boolean														enableDynamicTyping				= false;
+	private boolean									enableDynamicTyping			= false;
 
-	private ObjectTreeNodeIF											customHierarchyRoot				= LeafObjectTreeNode.EMPTY;
+	private ObjectTreeNodeIF						customHierarchyRoot			= LeafObjectTreeNode.EMPTY;
 
-	private ParserLoggerIF												logger							= new ParserNullLogger();
+	private ParserLoggerIF							logger						= new ParserNullLogger();
 
 	public ParserSettingsBuilder importClass(String qualifiedClassName) {
 		try {
@@ -36,7 +36,7 @@ public class ParserSettingsBuilder
 	}
 
 	public ParserSettingsBuilder addVariable(Variable variable) {
-		variablesBuilder.put(variable.getName(), new VariablePool.ValueData(variable.getValue(), variable.isUseHardReferenceInPool()));
+		variablesBuilder.add(variable);
 		return this;
 	}
 
