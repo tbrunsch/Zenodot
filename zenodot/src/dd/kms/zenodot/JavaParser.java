@@ -11,27 +11,15 @@ import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 import static dd.kms.zenodot.result.ParseError.ErrorType;
 
 public class JavaParser
 {
-	private static final Comparator<CompletionSuggestionIF> SUGGESTION_COMPARATOR_BY_CLASS = new Comparator<CompletionSuggestionIF>() {
-		@Override
-		public int compare(CompletionSuggestionIF suggestion1, CompletionSuggestionIF suggestion2) {
-			Class<? extends CompletionSuggestionIF> suggestionClass1 = suggestion1.getClass();
-			Class<? extends CompletionSuggestionIF> suggestionClass2 = suggestion2.getClass();
-			if (suggestionClass1 == suggestionClass2) {
-				return 0;
-			}
-			// Prefer variables over fields over methods
-			return	suggestionClass1 == CompletionSuggestionVariable.class	? -1 :
-					suggestionClass1 == CompletionSuggestionField.class		? (suggestionClass2 == CompletionSuggestionVariable.class ? 1 : -1)
-																			: 1;
-		}
-	};
-
 	public List<CompletionSuggestionIF> suggestCodeCompletion(String javaExpression, ParserSettings settings, int caret, Object valueOfThis) throws ParseException {
 		ParseResultIF parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caret, valueOfThis);
 
@@ -58,8 +46,8 @@ public class JavaParser
 				CompletionSuggestions completionSuggestions = (CompletionSuggestions) parseResult;
 				Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = completionSuggestions.getRatedSuggestions();
 				List<CompletionSuggestionIF> sortedSuggestions = new ArrayList<>(ratedSuggestions.keySet());
-				Collections.sort(sortedSuggestions, SUGGESTION_COMPARATOR_BY_CLASS);
-				Collections.sort(sortedSuggestions, Comparator.comparing(ratedSuggestions::get));
+				sortedSuggestions.sort(Comparator.comparingInt(JavaParser::getCompletionSuggestionPriorityByClass));
+				sortedSuggestions.sort(Comparator.comparing(ratedSuggestions::get));
 				return sortedSuggestions;
 			}
 			default:
@@ -135,5 +123,15 @@ public class JavaParser
 			}
 			return new ParseError(-1, message, ErrorType.EVALUATION_EXCEPTION, e);
 		}
+	}
+
+	/**
+	 * Prefers variables ({@link CompletionSuggestionVariable}) over fields ({@link CompletionSuggestionField}) over other suggestions.
+	 */
+	private static int getCompletionSuggestionPriorityByClass(CompletionSuggestionIF suggestion) {
+		Class<? extends CompletionSuggestionIF> suggestionClass = suggestion.getClass();
+		return	suggestionClass == CompletionSuggestionVariable.class	? 0 :
+				suggestionClass == CompletionSuggestionField.class		? 1
+																		: 2;
 	}
 }
