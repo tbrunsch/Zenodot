@@ -4,28 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.AMS.jBEAM.objectInspection</groupId>
-    <artifactId>ObjectInspector</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>27.0-jre</version>
-        </dependency>
-    </dependencies>
+    <groupId>dd.kms.zenodot</groupId>
+    <artifactId>zenodot-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>0.9-SNAPSHOT</version>
+    <name>Zenodot Maven Parent</name>
+    <modules>
+        <module>zenodot</module>
+        <module>zenodot-tests</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>

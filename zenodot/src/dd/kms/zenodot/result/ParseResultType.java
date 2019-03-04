@@ -1,0 +1,10 @@
+package dd.kms.zenodot.result;
+
+public enum ParseResultType
+{
+	COMPLETION_SUGGESTIONS,
+	OBJECT_PARSE_RESULT,
+	CLASS_PARSE_RESULT,
+	PARSE_ERROR,
+	AMBIGUOUS_PARSE_RESULT
+}
