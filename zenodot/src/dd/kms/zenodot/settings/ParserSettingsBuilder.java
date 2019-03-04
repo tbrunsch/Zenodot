@@ -10,16 +10,23 @@ public class ParserSettingsBuilder
 {
 	private final ImmutableSet.Builder<ClassInfo> 	importClassesBuilder		= ImmutableSet.builder();
 	private final ImmutableSet.Builder<String>	 	importPackageNamesBuilder	= ImmutableSet.builder();
-
 	private final ImmutableList.Builder<Variable>	variablesBuilder 			= ImmutableList.builder();
-
 	private AccessLevel								minimumAccessLevel			= AccessLevel.PUBLIC;
-
 	private boolean									enableDynamicTyping			= false;
-
 	private ObjectTreeNodeIF						customHierarchyRoot			= LeafObjectTreeNode.EMPTY;
-
 	private ParserLoggerIF							logger						= new ParserNullLogger();
+
+	public ParserSettingsBuilder() {}
+
+	public ParserSettingsBuilder(ParserSettings settings) {
+		importClassesBuilder.addAll(settings.getImports().getImportedClasses());
+		importPackageNamesBuilder.addAll(settings.getImports().getImportedPackageNames());
+		variablesBuilder.addAll(settings.getVariablePool().getVariables());
+		minimumAccessLevel = settings.getMinimumAccessLevel();
+		enableDynamicTyping = settings.isEnableDynamicTyping();
+		customHierarchyRoot = settings.getCustomHierarchyRoot();
+		logger = settings.getLogger();
+	}
 
 	public ParserSettingsBuilder importClass(String qualifiedClassName) {
 		try {

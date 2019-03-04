@@ -44,4 +44,8 @@ public class ParserSettings
 	public ParserLoggerIF getLogger() {
 		return logger;
 	}
+
+	public ParserSettingsBuilder builder() {
+		return new ParserSettingsBuilder(this);
+	}
 }
