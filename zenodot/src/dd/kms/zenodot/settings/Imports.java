@@ -10,7 +10,7 @@ public class Imports
 	private final ImmutableSet<ClassInfo>	importClasses;
 	private final ImmutableSet<String>		importPackageNames;
 
-	public Imports(Set<ClassInfo> importClasses, Set<String> importPackageNames) {
+	Imports(Set<ClassInfo> importClasses, Set<String> importPackageNames) {
 		this.importClasses = ImmutableSet.copyOf(importClasses);
 		this.importPackageNames = ImmutableSet.copyOf(importPackageNames);
 	}

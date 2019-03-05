@@ -1,8 +1,6 @@
 package dd.kms.zenodot.utils;
 
 import dd.kms.zenodot.parsers.*;
-import dd.kms.zenodot.settings.EvaluationMode;
-import dd.kms.zenodot.settings.ParseMode;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.utils.dataProviders.*;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;

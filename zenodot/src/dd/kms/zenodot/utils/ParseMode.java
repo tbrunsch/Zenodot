@@ -1,9 +1,9 @@
-package dd.kms.zenodot.settings;
+package dd.kms.zenodot.utils;
 
 public enum ParseMode
 {
 	/**
-	 * Used for code completion. Only evaluates expressions if dynamic typing is activated.
+	 * Used for code completion. Expressions are only evaluated if dynamic typing is activated.
 	 */
 	CODE_COMPLETION,
 

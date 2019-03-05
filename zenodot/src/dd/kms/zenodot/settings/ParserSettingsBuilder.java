@@ -68,8 +68,6 @@ public class ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		Imports imports = new Imports(importClassesBuilder.build(), importPackageNamesBuilder.build());
-		VariablePool variablePool = new VariablePool(variablesBuilder.build());
-		return new ParserSettings(imports, variablePool, minimumAccessLevel, enableDynamicTyping, customHierarchyRoot, logger);
+		return new ParserSettings(importClassesBuilder.build(), importPackageNamesBuilder.build(), variablesBuilder.build(), minimumAccessLevel, enableDynamicTyping, customHierarchyRoot, logger);
 	}
 }

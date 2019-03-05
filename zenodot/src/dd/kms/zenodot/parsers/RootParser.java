@@ -6,7 +6,7 @@ import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorType;
-import dd.kms.zenodot.settings.ParseMode;
+import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;

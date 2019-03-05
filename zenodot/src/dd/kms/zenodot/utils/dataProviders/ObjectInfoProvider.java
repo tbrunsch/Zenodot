@@ -1,7 +1,7 @@
 package dd.kms.zenodot.utils.dataProviders;
 
 import dd.kms.zenodot.common.ReflectionUtils;
-import dd.kms.zenodot.settings.EvaluationMode;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;

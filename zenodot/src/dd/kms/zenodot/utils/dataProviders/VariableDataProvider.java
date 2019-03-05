@@ -9,7 +9,7 @@ import dd.kms.zenodot.result.CompletionSuggestionIF;
 import dd.kms.zenodot.result.CompletionSuggestionVariable;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.settings.Variable;
-import dd.kms.zenodot.settings.VariablePool;
+import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 

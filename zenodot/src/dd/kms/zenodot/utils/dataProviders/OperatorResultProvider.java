@@ -6,7 +6,7 @@ import com.google.common.collect.Table;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.matching.MatchRatings;
-import dd.kms.zenodot.settings.EvaluationMode;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;

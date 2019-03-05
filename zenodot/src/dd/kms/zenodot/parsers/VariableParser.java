@@ -5,7 +5,7 @@ import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.settings.Variable;
-import dd.kms.zenodot.settings.VariablePool;
+import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;

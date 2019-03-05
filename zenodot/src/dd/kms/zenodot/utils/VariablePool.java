@@ -1,7 +1,8 @@
-package dd.kms.zenodot.settings;
+package dd.kms.zenodot.utils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import dd.kms.zenodot.settings.Variable;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -10,7 +11,7 @@ public class VariablePool
 {
 	private final ImmutableMap<String, ValueData> variables;
 
-	VariablePool(List<Variable> variables) {
+	public VariablePool(List<Variable> variables) {
 		ImmutableMap.Builder<String, ValueData> variablesBuilder = ImmutableMap.builder();
 		for (Variable variable : variables) {
 			variablesBuilder.put(variable.getName(), new ValueData(variable.getValue(), variable.isUseHardReference()));
