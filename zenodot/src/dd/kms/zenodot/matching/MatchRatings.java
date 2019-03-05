@@ -1,5 +1,6 @@
 package dd.kms.zenodot.matching;
 
+import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.common.RegexUtils;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -80,14 +81,14 @@ public class MatchRatings
 						? TypeMatch.PRIMITIVE_CONVERSION	// int -> double
 						: TypeMatch.NONE;					// int -> boolean
 			} else {
-				Class<?> actualUnboxedClass = ReflectionUtils.getPrimitiveClass(actualClass);
+				Class<?> actualUnboxedClass = Primitives.unwrap(actualClass);
 				return	actualUnboxedClass == expectedClass	? TypeMatch.BOXED :					// Integer -> int
 						primitiveConvertible				? TypeMatch.BOXED_AND_CONVERSION	// Integer -> double
 															: TypeMatch.NONE;					// Integer -> boolean
 			}
 		} else {
 			if (actual.isPrimitive()) {
-				Class<?> actualBoxedClass = ReflectionUtils.getBoxedClass(actualClass);
+				Class<?> actualBoxedClass = Primitives.wrap(actualClass);
 				return	actualBoxedClass == expectedClass					? TypeMatch.BOXED :					// int -> Integer
 						primitiveConvertible								? TypeMatch.BOXED_AND_CONVERSION :	// int -> Double
 						expectedClass.isAssignableFrom(actualBoxedClass)	? TypeMatch.BOXED_AND_INHERITANCE 	// int -> Number

@@ -3,12 +3,13 @@ package dd.kms.zenodot.utils.dataProviders;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
-import dd.kms.zenodot.utils.ParserToolbox;
+import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.matching.MatchRatings;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
+import dd.kms.zenodot.utils.EvaluationMode;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -367,7 +368,7 @@ public class OperatorResultProvider
 		if (clazz.isPrimitive()) {
 			return clazz;
 		}
-		Class<?> primitiveClass = ReflectionUtils.getPrimitiveClass(clazz);
+		Class<?> primitiveClass = Primitives.unwrap(clazz);
 		if (primitiveClass == null) {
 			throw new OperatorException("Class '" + clazz + "' is neither a primitive nor a boxed class");
 		}

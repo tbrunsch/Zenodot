@@ -4,9 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Primitives;
 import com.google.common.reflect.ClassPath;
-import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
@@ -17,6 +16,7 @@ import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ClassUtils;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 public class ClassDataProvider
 {
-	private static final Map<String, Class<?>>	PRIMITIVE_CLASSES_BY_NAME	= ReflectionUtils.getPrimitiveClasses().stream()
+	private static final Map<String, Class<?>>	PRIMITIVE_CLASSES_BY_NAME	= Primitives.allPrimitiveTypes().stream()
 		.collect(Collectors.toMap(
 				Class::getName,
 				clazz -> clazz

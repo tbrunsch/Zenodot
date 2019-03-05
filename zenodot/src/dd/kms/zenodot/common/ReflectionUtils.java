@@ -1,6 +1,7 @@
 package dd.kms.zenodot.common;
 
 import com.google.common.collect.*;
+import com.google.common.primitives.Primitives;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -15,7 +16,6 @@ public class ReflectionUtils
 	/*
 	 * Type Conversions
 	 */
-	private static final BiMap<Class<?>, Class<?>>								PRIMITIVE_TO_BOXED_CLASS		= HashBiMap.create();
 	private static final Table<Class<?>, Class<?>, Function<Object, Object>>	PRIMITIVE_CONVERSIONS 			= HashBasedTable.create();
 	private static final Table<Class<?>, Class<?>, Function<Object, Object>>	PRIMITIVE_NARROWING_CONVERSIONS	= HashBasedTable.create();
 
@@ -32,12 +32,11 @@ public class ReflectionUtils
 		addConversion(primitiveClass, boxedClass,		conversion);
 		addConversion(boxedClass, primitiveClass, 		conversion);
 		addConversion(boxedClass, boxedClass, 			conversion);
-		PRIMITIVE_TO_BOXED_CLASS.put(primitiveClass, boxedClass);
 	}
 
 	private static <S, T> void addConversions(Class<S> primitiveSourceClass, Class<T> primitiveTargetClass, Function<S, T> conversion, Function<T, S> narrowingConversion) {
-		Class<S> boxedSourceClass = (Class<S>) getBoxedClass(primitiveSourceClass);
-		Class<T> boxedTargetClass = (Class<T>) getBoxedClass(primitiveTargetClass);
+		Class<S> boxedSourceClass = Primitives.wrap(primitiveSourceClass);
+		Class<T> boxedTargetClass = Primitives.wrap(primitiveTargetClass);
 		addConversion(primitiveSourceClass, primitiveTargetClass, 	conversion);
 		addConversion(primitiveSourceClass, boxedTargetClass, 		conversion);
 		addConversion(boxedSourceClass, 	primitiveTargetClass, 	conversion);
@@ -46,18 +45,6 @@ public class ReflectionUtils
 		addNarrowingConversion(boxedTargetClass, 		primitiveSourceClass,	narrowingConversion);
 		addNarrowingConversion(primitiveTargetClass, 	boxedSourceClass,		narrowingConversion);
 		addNarrowingConversion(boxedTargetClass, 		boxedSourceClass,		narrowingConversion);
-	}
-
-	public static Class<?> getBoxedClass(Class<?> primitiveClass) {
-		return PRIMITIVE_TO_BOXED_CLASS.get(primitiveClass);
-	}
-
-	public static Class<?> getPrimitiveClass(Class<?> boxedClass) {
-		return PRIMITIVE_TO_BOXED_CLASS.inverse().get(boxedClass);
-	}
-
-	public static Set<Class<?>> getPrimitiveClasses() {
-		return PRIMITIVE_TO_BOXED_CLASS.keySet();
 	}
 
 	public static boolean isPrimitiveConvertibleTo(Class<?> sourceClass, Class<?> targetClass, boolean allowNarrowing) {
