@@ -25,13 +25,9 @@ public class RegexUtils
 				// wild card
 				builder.append(".*");
 			} else if (Character.isUpperCase(c)) {
-				/*
-				 * Insert wild cards before upper-case characters (except for the first character) as known from common IDEs
-				 *
-				 * Example: "ArrLi" will should also match "ArrayList", but not "xArrLi", so the corresponding regex should be "Arr[a-z0-9]*Li"
-				 */
 				if (i > 0) {
-					builder.append("[a-z0-9\\s]*");
+					// Do not insert placeholder at first position to prevent, e.g., wildcard string "ArrLi" from matching "myArrayList"
+					builder.append("[^\\p{javaUpperCase}]*");
 				}
 				builder.append(c);
 			} else {
