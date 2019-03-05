@@ -14,8 +14,7 @@ public class NullTest
 			.test("f(myNull)",				0)
 			.test("f(sNull)",				0)
 			.test("f((String) oNull)",		0)
-			.test("(String) null",			null)
-			.test("myNull = null",			null);
+			.test("(String) null",			null);
 
 		new ErrorTestExecutor(testInstance)
 			.addVariable(new Variable("myNull", null, true))

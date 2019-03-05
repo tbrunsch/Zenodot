@@ -3,7 +3,7 @@ package dd.kms.zenodot.settings;
 public class Variable
 {
 	private final String	name;
-	private Object			value;
+	private final Object	value;
 	private final boolean	useHardReference;
 
 	public Variable(String name, Object value, boolean useHardReference) {
@@ -18,10 +18,6 @@ public class Variable
 
 	public Object getValue() {
 		return value;
-	}
-
-	public void setValue(Object value) {
-		this.value = value;
 	}
 
 	public boolean isUseHardReference() {

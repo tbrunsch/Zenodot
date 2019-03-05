@@ -149,7 +149,6 @@ public class ObjectInfoProvider
 
 	public ObjectInfo getVariableInfo(Variable variable) {
 		Object value = variable.getValue();
-		ObjectInfo.ValueSetterIF valueSetter = newValue -> variable.setValue(newValue);
-		return new ObjectInfo(value, TypeInfo.UNKNOWN, valueSetter);
+		return new ObjectInfo(value, TypeInfo.UNKNOWN);
 	}
 }
