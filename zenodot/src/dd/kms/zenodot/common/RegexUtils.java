@@ -1,12 +1,15 @@
 package dd.kms.zenodot.common;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 public class RegexUtils
 {
-	private static final Set<Character> SPECIAL_REGEX_CHARACTERS	= new HashSet<>();
+	private static final Set<Character> SPECIAL_REGEX_CHARACTERS	= Sets.newHashSet(Lists.charactersOf("\\.[]{}()<>+-=?^$|*"));
 
 	public static String escapeIfSpecial(char c) {
 		return SPECIAL_REGEX_CHARACTERS.contains(c) ? "\\" + c : String.valueOf(c);
@@ -21,9 +24,6 @@ public class RegexUtils
 			if (c == '*') {
 				// wild card
 				builder.append(".*");
-			} else if (SPECIAL_REGEX_CHARACTERS.contains(c)) {
-				// escape character
-				builder.append("\\" + c);
 			} else if (Character.isUpperCase(c)) {
 				/*
 				 * Insert wild cards before upper-case characters (except for the first character) as known from common IDEs
@@ -35,8 +35,7 @@ public class RegexUtils
 				}
 				builder.append(c);
 			} else {
-				// ordinary character requires no special treatment
-				builder.append(c);
+				builder.append(escapeIfSpecial(c));
 			}
 		}
 		// wild card at the end to allow arbitrary suffixes
