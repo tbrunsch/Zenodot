@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 public class ReflectionUtils
@@ -184,7 +184,7 @@ public class ReflectionUtils
 		return getFields(clazz, filterShadowedFields, modifiers -> true);
 	}
 
-	public static List<Field> getFields(Class<?> clazz, boolean filterShadowedFields, Predicate<Integer> modifierFilter) {
+	public static List<Field> getFields(Class<?> clazz, boolean filterShadowedFields, IntPredicate modifierFilter) {
 		Set<String> encounteredFieldNames = new HashSet<>();
 		List<Field> fields = new ArrayList<>();
 		for (Class<?> curClazz = clazz; curClazz != null; curClazz = curClazz.getSuperclass()) {
@@ -215,7 +215,7 @@ public class ReflectionUtils
 		return getMethods(clazz, modifiers -> true);
 	}
 
-	public static List<Method> getMethods(Class<?> clazz, Predicate<Integer> modifierFilter) {
+	public static List<Method> getMethods(Class<?> clazz, IntPredicate modifierFilter) {
 		Multimap<String, Class<?>[]> encounteredSignatures = ArrayListMultimap.create();
 
 		List<Method> methods = new ArrayList<>();
@@ -239,7 +239,7 @@ public class ReflectionUtils
 		return methods;
 	}
 
-	public static List<Constructor<?>> getConstructors(Class<?> clazz, Predicate<Integer> modifierFilter) {
+	public static List<Constructor<?>> getConstructors(Class<?> clazz, IntPredicate modifierFilter) {
 		return Arrays.stream(clazz.getDeclaredConstructors())
 				.filter(constructor -> modifierFilter.test(constructor.getModifiers()))
 				.collect(Collectors.toList());
