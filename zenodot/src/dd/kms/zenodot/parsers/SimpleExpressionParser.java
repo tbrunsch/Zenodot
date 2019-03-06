@@ -9,9 +9,9 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 /**
  * Parses an arbitrary Java expression without binary operators
  */
-public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
+public class SimpleExpressionParser extends AbstractEntityParser<ObjectInfo>
 {
-	public ExpressionParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
+	public SimpleExpressionParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
 	}
 

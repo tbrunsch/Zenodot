@@ -46,7 +46,7 @@ public abstract class AbstractEntityParser<C>
 	 *          a String expression is expected. The expression {@code Double.parseDouble(0 + "1")} is
 	 *          perfectly valid. Technically, the {@link RootParser} is used to parse the
 	 *          method argument and ultimately verifies that the argument is a String. However, for parsing
-	 *          0 and "1", it uses the {@link ExpressionParser}. To allow them to return good completion suggestions,
+	 *          0 and "1", it uses the {@link SimpleExpressionParser}. To allow them to return good completion suggestions,
 	 *          these parsers are told to expect a String expression. However, parsing the 0 must not fail
 	 *          due to this expectation.
 	 */

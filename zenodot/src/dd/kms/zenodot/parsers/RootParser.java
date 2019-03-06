@@ -23,7 +23,7 @@ import static dd.kms.zenodot.utils.dataProviders.OperatorResultProvider.Operator
 
 /**
  * Parses arbitrary Java expressions including binary operators by using the
- * {@link ExpressionParser} for parsing the operands.
+ * {@link SimpleExpressionParser} for parsing the operands.
  */
 public class RootParser extends AbstractEntityParser<ObjectInfo>
 {
@@ -60,7 +60,7 @@ public class RootParser extends AbstractEntityParser<ObjectInfo>
 	@Override
 	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		log(LogLevel.INFO, "parsing first expression");
-		ParseResultIF parseResult = parserToolbox.getExpressionParser().parse(tokenStream, contextInfo, expectation);
+		ParseResultIF parseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
 
 		if (ParseUtils.propagateParseResult(parseResult, expectation)) {
 			return parseResult;

@@ -27,7 +27,6 @@ public class ParserToolbox
 	private final AbstractEntityParser<TypeInfo>	classTailParser;
 	private final AbstractEntityParser<ObjectInfo>	constructorParser;
 	private final AbstractEntityParser<ObjectInfo>	customHierarchyParser;
-	private final AbstractEntityParser<ObjectInfo> 	expressionParser;
 	private final AbstractEntityParser<TypeInfo>	innerClassParser;
 	private final AbstractEntityParser<ObjectInfo>	literalParser;
 	private final AbstractEntityParser<ObjectInfo>	objectFieldParser;
@@ -35,6 +34,7 @@ public class ParserToolbox
 	private final AbstractEntityParser<ObjectInfo>	objectTailParser;
 	private final AbstractEntityParser<ObjectInfo>	parenthesizedExpressionParser;
 	private final AbstractEntityParser<ObjectInfo>	rootParser;
+	private final AbstractEntityParser<ObjectInfo>	simpleExpressionParser;
 	private final AbstractEntityParser<ObjectInfo>	unaryPrefixOperatorParser;
 	private final AbstractEntityParser<ObjectInfo>	variableParser;
 
@@ -60,7 +60,6 @@ public class ParserToolbox
 		classTailParser					= new ClassTailParser(this, thisInfo);
 		constructorParser				= new ConstructorParser(this, thisInfo);
 		customHierarchyParser			= new CustomHierarchyParser(this, thisInfo);
-		expressionParser 				= new ExpressionParser(this, thisInfo);
 		innerClassParser				= new InnerClassParser(this, thisInfo);
 		literalParser					= new LiteralParser(this, thisInfo);
 		objectFieldParser				= new ObjectFieldParser(this, thisInfo);
@@ -68,6 +67,7 @@ public class ParserToolbox
 		objectTailParser				= new ObjectTailParser(this, thisInfo);
 		parenthesizedExpressionParser	= new ParenthesizedExpressionParser(this, thisInfo);
 		rootParser						= createRootParser(OperatorResultProvider.MAX_BINARY_OPERATOR_PRECEDENCE_LEVEL);
+		simpleExpressionParser			= new SimpleExpressionParser(this, thisInfo);
 		unaryPrefixOperatorParser		= new UnaryPrefixOperatorParser(this, thisInfo);
 		variableParser					= new VariableParser(this, thisInfo);
 	}
@@ -150,8 +150,8 @@ public class ParserToolbox
 		return customHierarchyParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getExpressionParser() {
-		return expressionParser;
+	public AbstractEntityParser<ObjectInfo> getSimpleExpressionParser() {
+		return simpleExpressionParser;
 	}
 
 	public AbstractEntityParser<TypeInfo> getInnerClassParser() {

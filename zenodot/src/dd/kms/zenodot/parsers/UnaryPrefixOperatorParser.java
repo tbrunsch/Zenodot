@@ -42,7 +42,7 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 		}
 		UnaryOperator operator = UnaryOperator.getValue(operatorToken.getValue());
 
-		ParseResultIF parseResult = parserToolbox.getExpressionParser().parse(tokenStream, contextInfo, expectation);
+		ParseResultIF parseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
 
 		if (ParseUtils.propagateParseResult(parseResult, expectation)) {
 			return parseResult;

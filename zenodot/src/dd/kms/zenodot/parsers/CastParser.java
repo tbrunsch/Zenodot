@@ -62,7 +62,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 
 	private ParseResultIF parseAndCast(TokenStream tokenStream, TypeInfo targetType) {
 		log(LogLevel.INFO, "parsing object to cast at " + tokenStream);
-		ParseResultIF objectParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
+		ParseResultIF objectParseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
 
 		if (ParseUtils.propagateParseResult(objectParseResult, ParseExpectation.OBJECT)) {
 			return objectParseResult;
