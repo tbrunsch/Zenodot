@@ -106,7 +106,7 @@ public class JavaParser
 		ParserToolbox parserPool  = new ParserToolbox(thisInfo, settings, parseMode);
 		TokenStream tokenStream = new TokenStream(javaExpression, caret);
 		try {
-			return parserPool.getRootParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
+			return parserPool.getExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
 		} catch (Exception e) {
 			String exceptionClassName = e.getClass().getSimpleName();
 			String exceptionMessage = e.getMessage();

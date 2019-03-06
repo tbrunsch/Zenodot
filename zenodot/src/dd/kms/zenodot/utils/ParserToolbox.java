@@ -27,13 +27,13 @@ public class ParserToolbox
 	private final AbstractEntityParser<TypeInfo>	classTailParser;
 	private final AbstractEntityParser<ObjectInfo>	constructorParser;
 	private final AbstractEntityParser<ObjectInfo>	customHierarchyParser;
+	private final AbstractEntityParser<ObjectInfo>	expressionParser;
 	private final AbstractEntityParser<TypeInfo>	innerClassParser;
 	private final AbstractEntityParser<ObjectInfo>	literalParser;
 	private final AbstractEntityParser<ObjectInfo>	objectFieldParser;
 	private final AbstractEntityParser<ObjectInfo>	objectMethodParser;
 	private final AbstractEntityParser<ObjectInfo>	objectTailParser;
 	private final AbstractEntityParser<ObjectInfo>	parenthesizedExpressionParser;
-	private final AbstractEntityParser<ObjectInfo>	rootParser;
 	private final AbstractEntityParser<ObjectInfo>	simpleExpressionParser;
 	private final AbstractEntityParser<ObjectInfo>	unaryPrefixOperatorParser;
 	private final AbstractEntityParser<ObjectInfo>	variableParser;
@@ -60,13 +60,13 @@ public class ParserToolbox
 		classTailParser					= new ClassTailParser(this, thisInfo);
 		constructorParser				= new ConstructorParser(this, thisInfo);
 		customHierarchyParser			= new CustomHierarchyParser(this, thisInfo);
+		expressionParser				= createExpressionParser(OperatorResultProvider.MAX_BINARY_OPERATOR_PRECEDENCE_LEVEL);
 		innerClassParser				= new InnerClassParser(this, thisInfo);
 		literalParser					= new LiteralParser(this, thisInfo);
 		objectFieldParser				= new ObjectFieldParser(this, thisInfo);
 		objectMethodParser				= new ObjectMethodParser(this, thisInfo);
 		objectTailParser				= new ObjectTailParser(this, thisInfo);
 		parenthesizedExpressionParser	= new ParenthesizedExpressionParser(this, thisInfo);
-		rootParser						= createRootParser(OperatorResultProvider.MAX_BINARY_OPERATOR_PRECEDENCE_LEVEL);
 		simpleExpressionParser			= new SimpleExpressionParser(this, thisInfo);
 		unaryPrefixOperatorParser		= new UnaryPrefixOperatorParser(this, thisInfo);
 		variableParser					= new VariableParser(this, thisInfo);
@@ -134,12 +134,12 @@ public class ParserToolbox
 		return classTailParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> createRootParser(int maxOperatorPrecedenceLevelToConsider) {
-		return new RootParser(this, thisInfo, maxOperatorPrecedenceLevelToConsider);
+	public AbstractEntityParser<ObjectInfo> createExpressionParser(int maxOperatorPrecedenceLevelToConsider) {
+		return new ExpressionParser(this, thisInfo, maxOperatorPrecedenceLevelToConsider);
 	}
 
-	public AbstractEntityParser<ObjectInfo> getRootParser() {
-		return rootParser;
+	public AbstractEntityParser<ObjectInfo> getExpressionParser() {
+		return expressionParser;
 	}
 
 	public AbstractEntityParser<ObjectInfo> getConstructorParser() {

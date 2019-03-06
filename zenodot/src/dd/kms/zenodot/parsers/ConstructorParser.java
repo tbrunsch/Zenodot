@@ -176,7 +176,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		ParseExpectation expectation = ParseExpectationBuilder.expectObject().allowedType(TypeInfo.of(int.class)).build();
-		ParseResultIF arraySizeParseResult = parserToolbox.getRootParser().parse(tokenStream, thisInfo, expectation);
+		ParseResultIF arraySizeParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
 
 		if (ParseUtils.propagateParseResult(arraySizeParseResult, expectation)) {
 			return arraySizeParseResult;
@@ -230,7 +230,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			/*
 			 * Parse expression for argument i
 			 */
-			ParseResultIF element = parserToolbox.getRootParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
+			ParseResultIF element = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
 			elements.add(element);
 
 			if (ParseUtils.propagateParseResult(element, expectation)) {
