@@ -5,7 +5,7 @@ import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.result.CompletionSuggestionIF;
-import dd.kms.zenodot.result.CompletionSuggestionObjectTreeNode;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionObjectTreeNode;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.settings.ObjectTreeNodeIF;
 import dd.kms.zenodot.utils.ParseUtils;

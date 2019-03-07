@@ -5,6 +5,8 @@ import dd.kms.zenodot.debug.ParserLogEntry;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionField;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;

@@ -1,6 +1,6 @@
 package dd.kms.zenodot.result;
 
-class IntRange
+public class IntRange
 {
 	/**
 	 * inclusive
@@ -12,16 +12,16 @@ class IntRange
 	 */
 	private final int   end;
 
-	IntRange(int begin, int end) {
+	public IntRange(int begin, int end) {
 		this.begin = begin;
 		this.end = end;
 	}
 
-	int getBegin() {
+	public int getBegin() {
 		return begin;
 	}
 
-	int getEnd() {
+	public int getEnd() {
 		return end;
 	}
 

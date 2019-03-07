@@ -6,7 +6,7 @@ import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CompletionSuggestionIF;
-import dd.kms.zenodot.result.CompletionSuggestionVariable;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.VariablePool;

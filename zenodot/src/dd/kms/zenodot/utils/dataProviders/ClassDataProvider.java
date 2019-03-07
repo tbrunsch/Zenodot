@@ -11,6 +11,8 @@ import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionClass;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionPackage;
 import dd.kms.zenodot.settings.Imports;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;

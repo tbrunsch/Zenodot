@@ -1,15 +1,20 @@
-package dd.kms.zenodot.result;
+package dd.kms.zenodot.result.completionSuggestions;
+
+import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.IntRange;
+import dd.kms.zenodot.utils.dataProviders.FieldDataProvider;
+import dd.kms.zenodot.utils.wrappers.FieldInfo;
 
 import java.util.Objects;
 
-public class CompletionSuggestionPackage implements CompletionSuggestionIF
+public class CompletionSuggestionField implements CompletionSuggestionIF
 {
-	private final String	packageName;
+	private final FieldInfo	fieldInfo;
 	private final int 		insertionBegin;
 	private final int 		insertionEnd;
 
-	public CompletionSuggestionPackage(String packageName, int insertionBegin, int insertionEnd) {
-		this.packageName = packageName;
+	public CompletionSuggestionField(FieldInfo fieldInfo, int insertionBegin, int insertionEnd) {
+		this.fieldInfo = fieldInfo;
 		this.insertionBegin = insertionBegin;
 		this.insertionEnd = insertionEnd;
 	}
@@ -26,27 +31,26 @@ public class CompletionSuggestionPackage implements CompletionSuggestionIF
 
 	@Override
 	public String getTextToInsert() {
-		int lastDotIndex = packageName.lastIndexOf('.');
-		return lastDotIndex < 0 ? packageName : packageName.substring(lastDotIndex + 1);
+		return fieldInfo.getName();
 	}
 
 	@Override
 	public String toString() {
-		return packageName;
+		return FieldDataProvider.getFieldDisplayText(fieldInfo);
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		CompletionSuggestionPackage that = (CompletionSuggestionPackage) o;
+		CompletionSuggestionField that = (CompletionSuggestionField) o;
 		return insertionBegin == that.insertionBegin &&
 				insertionEnd == that.insertionEnd &&
-				Objects.equals(packageName, that.packageName);
+				Objects.equals(fieldInfo, that.fieldInfo);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(packageName, insertionBegin, insertionEnd);
+		return Objects.hash(fieldInfo, insertionBegin, insertionEnd);
 	}
 }

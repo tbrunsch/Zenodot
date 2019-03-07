@@ -1,5 +1,6 @@
 package dd.kms.zenodot.utils.dataProviders;
 
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionMethod;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;

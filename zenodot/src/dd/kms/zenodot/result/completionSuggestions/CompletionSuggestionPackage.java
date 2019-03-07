@@ -1,18 +1,18 @@
-package dd.kms.zenodot.result;
+package dd.kms.zenodot.result.completionSuggestions;
 
-import dd.kms.zenodot.utils.dataProviders.FieldDataProvider;
-import dd.kms.zenodot.utils.wrappers.FieldInfo;
+import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.IntRange;
 
 import java.util.Objects;
 
-public class CompletionSuggestionField implements CompletionSuggestionIF
+public class CompletionSuggestionPackage implements CompletionSuggestionIF
 {
-	private final FieldInfo	fieldInfo;
+	private final String	packageName;
 	private final int 		insertionBegin;
 	private final int 		insertionEnd;
 
-	public CompletionSuggestionField(FieldInfo fieldInfo, int insertionBegin, int insertionEnd) {
-		this.fieldInfo = fieldInfo;
+	public CompletionSuggestionPackage(String packageName, int insertionBegin, int insertionEnd) {
+		this.packageName = packageName;
 		this.insertionBegin = insertionBegin;
 		this.insertionEnd = insertionEnd;
 	}
@@ -29,26 +29,27 @@ public class CompletionSuggestionField implements CompletionSuggestionIF
 
 	@Override
 	public String getTextToInsert() {
-		return fieldInfo.getName();
+		int lastDotIndex = packageName.lastIndexOf('.');
+		return lastDotIndex < 0 ? packageName : packageName.substring(lastDotIndex + 1);
 	}
 
 	@Override
 	public String toString() {
-		return FieldDataProvider.getFieldDisplayText(fieldInfo);
+		return packageName;
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		CompletionSuggestionField that = (CompletionSuggestionField) o;
+		CompletionSuggestionPackage that = (CompletionSuggestionPackage) o;
 		return insertionBegin == that.insertionBegin &&
 				insertionEnd == that.insertionEnd &&
-				Objects.equals(fieldInfo, that.fieldInfo);
+				Objects.equals(packageName, that.packageName);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(fieldInfo, insertionBegin, insertionEnd);
+		return Objects.hash(packageName, insertionBegin, insertionEnd);
 	}
 }

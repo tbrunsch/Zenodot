@@ -1,5 +1,7 @@
-package dd.kms.zenodot.result;
+package dd.kms.zenodot.result.completionSuggestions;
 
+import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.IntRange;
 import dd.kms.zenodot.utils.dataProviders.ClassDataProvider;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 
@@ -8,8 +10,8 @@ import java.util.Objects;
 public class CompletionSuggestionClass implements CompletionSuggestionIF
 {
 	private final ClassInfo classInfo;
-	private final int 			insertionBegin;
-	private final int 			insertionEnd;
+	private final int 		insertionBegin;
+	private final int 		insertionEnd;
 
 	public CompletionSuggestionClass(ClassInfo classInfo, int insertionBegin, int insertionEnd) {
 		this.classInfo = classInfo;
