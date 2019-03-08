@@ -125,7 +125,7 @@ public class ParseUtils
 	/*
 	 * Completion Suggestions
 	 */
-	public static <T> Map<CompletionSuggestionIF, MatchRating> createRatedSuggestions(Collection<T> objects, Function<T, CompletionSuggestionIF> suggestionBuilder, Function<T, MatchRating> ratingFunc) {
+	public static <T> Map<CompletionSuggestionIF, MatchRating> createRatedSuggestions(Iterable<T> objects, Function<T, CompletionSuggestionIF> suggestionBuilder, Function<T, MatchRating> ratingFunc) {
 		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = new LinkedHashMap<>();
 		for (T object : objects) {
 			CompletionSuggestionIF suggestion = suggestionBuilder.apply(object);

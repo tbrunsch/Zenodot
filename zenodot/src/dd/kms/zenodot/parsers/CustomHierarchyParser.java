@@ -1,6 +1,6 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.utils.ParserToolbox;
+import com.google.common.collect.Iterables;
 import dd.kms.zenodot.common.RegexUtils;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
@@ -9,11 +9,10 @@ import dd.kms.zenodot.result.ParseResultIF;
 import dd.kms.zenodot.settings.ObjectTreeNodeIF;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
@@ -67,23 +66,21 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 			return parserToolbox.getObjectTreeNodeDataProvider().suggestNodes(nodeName, contextNode, startPosition, endPosition);
 		}
 
-		List<ObjectTreeNodeIF> childNodes = contextNode.getChildNodes();
-		Optional<ObjectTreeNodeIF> firstChildNodeMatch = childNodes.stream().filter(node -> node.getName().equals(nodeName)).findFirst();
-		if (!firstChildNodeMatch.isPresent()) {
+		Iterable<ObjectTreeNodeIF> childNodes = contextNode.getChildNodes();
+		ObjectTreeNodeIF firstChildNodeMatch = Iterables.getFirst(Iterables.filter(childNodes, node -> node.getName().equals(nodeName)), null);
+		if (firstChildNodeMatch == null) {
 			log(LogLevel.ERROR, "unknown hierarchy node '" + nodeName + "'");
 			return new ParseError(startPosition, "Unknown hierarchy node '" + nodeName + "'", ParseError.ErrorType.SEMANTIC_ERROR);
 		}
 		log(LogLevel.SUCCESS, "detected hierarchy node '" + nodeName + "'");
 
-		ObjectTreeNodeIF childNode = firstChildNodeMatch.get();
-
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		char character = characterToken == null ? (char) 0 : characterToken.toString().charAt(0);
 
 		if (character == HIERARCHY_SEPARATOR) {
-			return parseHierarchyNode(tokenStream, childNode, expectation);
+			return parseHierarchyNode(tokenStream, firstChildNodeMatch, expectation);
 		} else if (character == HIERARCHY_END) {
-			Object userObject = childNode.getUserObject();
+			Object userObject = firstChildNodeMatch.getUserObject();
 			ObjectInfo userObjectInfo = new ObjectInfo(userObject, TypeInfo.UNKNOWN);
 			return parserToolbox.getObjectTailParser().parse(tokenStream, userObjectInfo, expectation);
 		}

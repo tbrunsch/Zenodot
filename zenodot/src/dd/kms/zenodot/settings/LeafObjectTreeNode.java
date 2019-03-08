@@ -2,7 +2,6 @@ package dd.kms.zenodot.settings;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
-import java.util.List;
 
 public class LeafObjectTreeNode implements ObjectTreeNodeIF
 {
@@ -22,7 +21,7 @@ public class LeafObjectTreeNode implements ObjectTreeNodeIF
 	}
 
 	@Override
-	public List<ObjectTreeNodeIF> getChildNodes() {
+	public Iterable<ObjectTreeNodeIF> getChildNodes() {
 		return Collections.emptyList();
 	}
 
