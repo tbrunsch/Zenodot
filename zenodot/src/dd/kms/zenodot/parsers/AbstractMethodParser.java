@@ -6,7 +6,7 @@ import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
-import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.lang.reflect.InvocationTargetException;
@@ -31,7 +31,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 	abstract boolean contextCausesNullPointerException(C context);
 	abstract Object getContextObject(C context);
-	abstract List<ExecutableInfo> getMethodInfos(C context);
+	abstract List<AbstractExecutableInfo> getMethodInfos(C context);
 
 	@Override
 	ParseResultIF doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
@@ -76,8 +76,8 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		}
 
 		// no code completion requested => method name must exist
-		List<ExecutableInfo> methodInfos = getMethodInfos(context);
-		List<ExecutableInfo> matchingMethodInfos = methodInfos.stream().filter(methodInfo -> methodInfo.getName().equals(methodName)).collect(Collectors.toList());
+		List<AbstractExecutableInfo> methodInfos = getMethodInfos(context);
+		List<AbstractExecutableInfo> matchingMethodInfos = methodInfos.stream().filter(methodInfo -> methodInfo.getName().equals(methodName)).collect(Collectors.toList());
 		if (matchingMethodInfos.isEmpty()) {
 			log(LogLevel.ERROR, "unknown method '" + methodName + "'");
 			return new ParseError(startPosition, "Unknown method '" + methodName + "'", ErrorType.SEMANTIC_ERROR);
@@ -103,14 +103,14 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 			.map(ObjectParseResult.class::cast)
 			.map(ObjectParseResult::getObjectInfo)
 			.collect(Collectors.toList());
-		List<ExecutableInfo> bestMatchingMethodInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutableInfos(matchingMethodInfos, argumentInfos);
+		List<AbstractExecutableInfo> bestMatchingMethodInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutableInfos(matchingMethodInfos, argumentInfos);
 
 		switch (bestMatchingMethodInfos.size()) {
 			case 0:
 				log(LogLevel.ERROR, "no matching method found");
 				return new ParseError(tokenStream.getPosition(), "No method matches the given arguments", ErrorType.SEMANTIC_ERROR);
 			case 1: {
-				ExecutableInfo bestMatchingExecutableInfo = bestMatchingMethodInfos.get(0);
+				AbstractExecutableInfo bestMatchingExecutableInfo = bestMatchingMethodInfos.get(0);
 				ObjectInfo methodReturnInfo;
 				try {
 					methodReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(getContextObject(context), bestMatchingExecutableInfo, argumentInfos);

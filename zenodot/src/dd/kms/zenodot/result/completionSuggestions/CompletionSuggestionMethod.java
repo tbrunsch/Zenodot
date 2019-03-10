@@ -3,7 +3,7 @@ package dd.kms.zenodot.result.completionSuggestions;
 import dd.kms.zenodot.result.CompletionSuggestionIF;
 import dd.kms.zenodot.result.IntRange;
 import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
-import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -11,11 +11,11 @@ import java.util.stream.IntStream;
 
 public class CompletionSuggestionMethod implements CompletionSuggestionIF
 {
-	private final ExecutableInfo	methodInfo;
+	private final AbstractExecutableInfo methodInfo;
 	private final int	 			insertionBegin;
 	private final int 				insertionEnd;
 
-	public CompletionSuggestionMethod(ExecutableInfo methodInfo, int insertionBegin, int insertionEnd) {
+	public CompletionSuggestionMethod(AbstractExecutableInfo methodInfo, int insertionBegin, int insertionEnd) {
 		this.methodInfo = methodInfo;
 		this.insertionBegin = insertionBegin;
 		this.insertionEnd = insertionEnd;

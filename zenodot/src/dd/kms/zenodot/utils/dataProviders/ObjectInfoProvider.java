@@ -4,7 +4,7 @@ import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.EvaluationMode;
-import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -74,7 +74,7 @@ public class ObjectInfoProvider
 		};
 	}
 
-	public ObjectInfo getExecutableReturnInfo(Object contextObject, ExecutableInfo executableInfo, List<ObjectInfo> argumentInfos) throws InvocationTargetException, InstantiationException {
+	public ObjectInfo getExecutableReturnInfo(Object contextObject, AbstractExecutableInfo executableInfo, List<ObjectInfo> argumentInfos) throws InvocationTargetException, InstantiationException {
 		final Object methodReturnValue;
 		if (evaluationMode == EvaluationMode.NONE) {
 			methodReturnValue = ObjectInfo.INDETERMINATE;

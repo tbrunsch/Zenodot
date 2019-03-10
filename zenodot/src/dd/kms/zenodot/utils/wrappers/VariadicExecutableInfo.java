@@ -3,14 +3,13 @@ package dd.kms.zenodot.utils.wrappers;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.TypeMatch;
-import dd.kms.zenodot.utils.ParseUtils;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class VariadicExecutableInfo extends ExecutableInfo
+public class VariadicExecutableInfo extends AbstractExecutableInfo
 {
 	VariadicExecutableInfo(Executable executable, TypeInfo declaringType) {
 		super(executable, declaringType);

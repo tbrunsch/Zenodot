@@ -3,7 +3,7 @@ package dd.kms.zenodot.utils.dataProviders;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.settings.AccessLevel;
-import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -53,21 +53,21 @@ public class InspectionDataProvider
 				.collect(Collectors.toList());
 	}
 
-	public List<ExecutableInfo> getMethodInfos(TypeInfo contextType, boolean staticOnly) {
+	public List<AbstractExecutableInfo> getMethodInfos(TypeInfo contextType, boolean staticOnly) {
 		IntPredicate modifierFilter = staticOnly ? accessLevelFilter.and(STATIC_FILTER) : accessLevelFilter;
 		List<Method> methods = ReflectionUtils.getMethods(contextType.getRawType(), modifierFilter);
-		List<ExecutableInfo> executableInfos = new ArrayList<>(methods.size());
+		List<AbstractExecutableInfo> executableInfos = new ArrayList<>(methods.size());
 		for (Method method : methods) {
-			executableInfos.addAll(ExecutableInfo.getAvailableExecutableInfos(method, contextType));
+			executableInfos.addAll(AbstractExecutableInfo.getAvailableExecutableInfos(method, contextType));
 		}
 		return executableInfos;
 	}
 
-	public List<ExecutableInfo> getConstructorInfos(TypeInfo contextType) {
+	public List<AbstractExecutableInfo> getConstructorInfos(TypeInfo contextType) {
 		List<Constructor<?>> constructors = ReflectionUtils.getConstructors(contextType.getRawType(), accessLevelFilter);
-		List<ExecutableInfo> executableInfos = new ArrayList<>(constructors.size());
+		List<AbstractExecutableInfo> executableInfos = new ArrayList<>(constructors.size());
 		for (Constructor<?> constructor : constructors) {
-			executableInfos.addAll(ExecutableInfo.getAvailableExecutableInfos(constructor, contextType));
+			executableInfos.addAll(AbstractExecutableInfo.getAvailableExecutableInfos(constructor, contextType));
 		}
 		return executableInfos;
 	}

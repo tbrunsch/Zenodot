@@ -7,7 +7,7 @@ import dd.kms.zenodot.result.ParseError.ErrorType;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
-import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -70,7 +70,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			log(LogLevel.ERROR, "cannot instantiate non-static inner class");
 			return new ParseError(tokenStream.getPosition(), "Cannot instantiate inner class '" + constructorClass.getName() + "'", ErrorType.SEMANTIC_ERROR);
 		}
-		List<ExecutableInfo> constructorInfos = parserToolbox.getInspectionDataProvider().getConstructorInfos(constructorType);
+		List<AbstractExecutableInfo> constructorInfos = parserToolbox.getInspectionDataProvider().getConstructorInfos(constructorType);
 
 		log(LogLevel.INFO, "parsing constructor arguments");
 		List<ParseResultIF> argumentParseResults = parserToolbox.getExecutableDataProvider().parseExecutableArguments(tokenStream, constructorInfos);
@@ -91,14 +91,14 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			.map(ObjectParseResult.class::cast)
 			.map(ObjectParseResult::getObjectInfo)
 			.collect(Collectors.toList());
-		List<ExecutableInfo> bestMatchingConstructorInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutableInfos(constructorInfos, argumentInfos);
+		List<AbstractExecutableInfo> bestMatchingConstructorInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutableInfos(constructorInfos, argumentInfos);
 
 		switch (bestMatchingConstructorInfos.size()) {
 			case 0:
 				log(LogLevel.ERROR, "no matching constructor found");
 				return new ParseError(tokenStream.getPosition(), "No constructor matches the given arguments", ErrorType.SEMANTIC_ERROR);
 			case 1: {
-				ExecutableInfo bestMatchingConstructorInfo = bestMatchingConstructorInfos.get(0);
+				AbstractExecutableInfo bestMatchingConstructorInfo = bestMatchingConstructorInfos.get(0);
 				ObjectInfo constructorReturnInfo;
 				try {
 					constructorReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(null, bestMatchingConstructorInfo, argumentInfos);
@@ -264,7 +264,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 	}
 
-	private static String formatConstructorInfo(ExecutableInfo constructorInfo) {
+	private static String formatConstructorInfo(AbstractExecutableInfo constructorInfo) {
 		return constructorInfo.getName()
 				+ "("
 				+ constructorInfo.formatArguments()

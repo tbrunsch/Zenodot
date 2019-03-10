@@ -9,9 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class ExecutableInfo
+public abstract class AbstractExecutableInfo
 {
-	public static List<ExecutableInfo> getAvailableExecutableInfos(Executable executable, TypeInfo declaringType) {
+	public static List<AbstractExecutableInfo> getAvailableExecutableInfos(Executable executable, TypeInfo declaringType) {
 		return executable.isVarArgs()
 				? Arrays.asList(new RegularExecutableInfo(executable, declaringType), new VariadicExecutableInfo(executable, declaringType))
 				: Arrays.asList(new RegularExecutableInfo(executable, declaringType));
@@ -20,7 +20,7 @@ public abstract class ExecutableInfo
 	protected final Executable	executable;
 	private final TypeInfo		declaringType;
 
-	ExecutableInfo(Executable executable, TypeInfo declaringType) {
+	AbstractExecutableInfo(Executable executable, TypeInfo declaringType) {
 		this.executable = executable;
 		this.declaringType = declaringType;
 	}
@@ -96,7 +96,7 @@ public abstract class ExecutableInfo
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		ExecutableInfo that = (ExecutableInfo) o;
+		AbstractExecutableInfo that = (AbstractExecutableInfo) o;
 		return Objects.equals(executable, that.executable) &&
 				Objects.equals(declaringType, that.declaringType);
 	}
