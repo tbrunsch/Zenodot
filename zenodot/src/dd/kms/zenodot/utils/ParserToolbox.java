@@ -44,11 +44,12 @@ public class ParserToolbox
 
 		EvaluationMode evaluationMode = getEvaluationMode(settings, parseMode);
 
+		objectInfoProvider				= new ObjectInfoProvider(evaluationMode);
+
 		classDataProvider				= new ClassDataProvider(this);
 		executableDataProvider			= new ExecutableDataProvider(this);
 		fieldDataProvider				= new FieldDataProvider(this);
 		inspectionDataProvider 			= new InspectionDataProvider(this);
-		objectInfoProvider				= new ObjectInfoProvider(evaluationMode);
 		objectTreeNodeDataProvider		= new ObjectTreeNodeDataProvider();
 		operatorResultProvider 			= new OperatorResultProvider(this, evaluationMode);
 		variableDataProvider			= new VariableDataProvider(settings.getVariablePool());
