@@ -11,6 +11,11 @@
 
     <artifactId>zenodot</artifactId>
     <name>Zenodot: Java Expression Parsing and Code Completion Library</name>
+
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

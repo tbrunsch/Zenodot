@@ -11,6 +11,11 @@
 
     <artifactId>zenodot-tests</artifactId>
     <name>Zenodot Unit Tests</name>
+
+    <build>
+        <testSourceDirectory>test</testSourceDirectory>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
