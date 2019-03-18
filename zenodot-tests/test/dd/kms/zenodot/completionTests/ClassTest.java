@@ -13,8 +13,8 @@ public class ClassTest
 		String truncatedPackageName = packageName.substring(0, packageName.length() - subPackageName.length()/2);
 
 		new TestExecutor(null)
-				.test("java.ut",	"util")
-				.test(truncatedPackageName,		subPackageName);
+				.unstableTest("java.ut",	"util")
+				.test(truncatedPackageName,	subPackageName);
 	}
 
 	@Test
@@ -67,9 +67,9 @@ public class ClassTest
 
 		new TestExecutor(null)
 			.minimumAccessLevel(AccessLevel.PUBLIC)
-			.test("Ma",		"Math")
-			.test("Math.p",	"pow(, )", "PI")
-			.test("Math.P",	"PI", "pow(, )");
+			.unstableTest("Ma",		"Math")
+			.unstableTest("Math.p",	"pow(, )", "PI")
+			.unstableTest("Math.P",	"PI", "pow(, )");
 	}
 
 	private static class TestClass

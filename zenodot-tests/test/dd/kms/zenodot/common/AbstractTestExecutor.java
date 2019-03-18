@@ -10,9 +10,10 @@ import dd.kms.zenodot.settings.Variable;
 
 public class AbstractTestExecutor<T extends AbstractTestExecutor>
 {
+	protected static final boolean	SKIP_UNSTABLE_TESTS	= "true".equalsIgnoreCase(System.getProperty("skipUnstableTests"));
+
 	protected final Object					testInstance;
 	protected final ParserSettingsBuilder	settingsBuilder			= new ParserSettingsBuilder().minimumAccessLevel(AccessLevel.PRIVATE);
-
 
 	private boolean							stopAtError				= false;
 	private boolean							printLogEntriesAtError	= false;

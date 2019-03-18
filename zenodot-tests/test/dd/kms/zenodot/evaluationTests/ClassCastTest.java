@@ -18,7 +18,7 @@ public class ClassCastTest
 			.test("getId(o1)",									1)
 			.test("getId((" + className + ") o1)",				3)
 			.test("getId(o2)",									1)
-			.test("getId((java.lang.String) o2)",				2)
+			.unstableTest("getId((java.lang.String) o2)",		2)
 			.test("getId((String) o2)",						2)
 			.test("(int) i",									5)
 			.test("(double) d",								-2.0)

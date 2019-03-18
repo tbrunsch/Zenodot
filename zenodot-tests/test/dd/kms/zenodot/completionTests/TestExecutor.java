@@ -38,6 +38,16 @@ public class TestExecutor extends AbstractTestExecutor<TestExecutor>
 		return this;
 	}
 
+	/**
+	 * Used for tests that might fail when not using the bootstrap class loader
+	 */
+	public TestExecutor unstableTest(String javaExpression, String... expectedSuggestions) {
+		if (!SKIP_UNSTABLE_TESTS) {
+			test(javaExpression, expectedSuggestions);
+		}
+		return this;
+	}
+
 	private boolean runTest(String javaExpression, boolean executeAssertions, String... expectedSuggestions) {
 		ParserSettings settings = settingsBuilder.build();
 		ParserLoggerIF logger = settings.getLogger();
