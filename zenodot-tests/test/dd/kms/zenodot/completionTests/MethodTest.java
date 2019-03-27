@@ -1,40 +1,54 @@
 package dd.kms.zenodot.completionTests;
 
 import dd.kms.zenodot.ParseException;
-import org.junit.Test;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class MethodTest
+@RunWith(Parameterized.class)
+public class MethodTest extends CompletionTest
 {
-	@Test
-	public void testMethod() {
-		/*
-		 * Convention for this test: Methods whose names consist of n characters have n arguments.
-		 *
-		 * This allows for auto-generating the insertion text of a method:
-		 *
-		 * "x" -> "x()", "xy" -> "xy(, )", "xyz" -> "xyz(, , )" etc.
-		 *
-		 * Exception: Method "other" whose sole purpose is not to appear among the first suggestions,
-		 *			which makes this test stronger.
-		 */
-		Object testInstance = new TestClass2();
-		new TestExecutor(testInstance)
-			.test("xy",	formatMethods("xy", "XY", "xy_z", "XYZ", "XYZ", "x", "X"))
-			.test("XYZ",	formatMethods("XYZ", "XYZ", "XY", "X", "x", "xy"))
-			.test("X",		formatMethods("X", "x", "XY", "XYZ", "XYZ", "xy_z", "xy"))
-			.test("XY",	formatMethods("XY", "xy", "XYZ", "XYZ", "xy_z", "X", "x"))
-			.test("xy_z",	formatMethods("xy_z", "x", "xy", "XY", "X"))
-			.test("x",		formatMethods("x", "X", "xy_z", "xy", "XY", "XYZ", "XYZ"))
-			.test("XYW",	formatMethods("XY", "X", "x", "xy"));
+	public MethodTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.test("other()",	-1, IllegalStateException.class)
-			.test("bla",		-1, ParseException.class)
-			.test("other(),",	ParseException.class);
+	/*
+	 * Convention for this test: Methods whose names consist of n characters have n arguments.
+	 *
+	 * This allows auto-generating the insertion text of a method:
+	 *
+	 * "x" -> "x()", "xy" -> "xy(, )", "xyz" -> "xyz(, , )" etc.
+	 *
+	 * Exception: Method "other" whose sole purpose is not to appear among the first suggestions.
+	 */
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		CompletionTestBuilder testBuilder = new CompletionTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("xy",		formatMethods("xy", "XY", "xy_z", "XYZ", "XYZ", "x", "X"))
+			.addTest("XYZ",		formatMethods("XYZ", "XYZ", "XY", "X", "x", "xy"))
+			.addTest("X",		formatMethods("X", "x", "XY", "XYZ", "XYZ", "xy_z", "xy"))
+			.addTest("XY",		formatMethods("XY", "xy", "XYZ", "XYZ", "xy_z", "X", "x"))
+			.addTest("xy_z",	formatMethods("xy_z", "x", "xy", "XY", "X"))
+			.addTest("x",		formatMethods("x", "X", "xy_z", "xy", "XY", "XYZ", "XYZ"))
+			.addTest("XYW",		formatMethods("XY", "X", "x", "xy"));
+
+		testBuilder
+			.addTestWithError("other()",	-1,	IllegalStateException.class)
+			.addTestWithError("bla",		-1,	ParseException.class)
+			.addTestWithError("other(),",		ParseException.class);
+
+		return testBuilder.build();
 	}
 
 	private static String formatMethod(String methodName) {
@@ -46,16 +60,6 @@ public class MethodTest
 		return Arrays.stream(methodNames).map(MethodTest::formatMethod).toArray(size -> new String[size]);
 	}
 
-	private static class TestClass1
-	{
-		private int sideEffectCounter = 0;
-
-		double f(int i, String s) {
-			return 1.0;
-		}
-		int g() { return sideEffectCounter++; }
-	}
-
 	private static abstract class BasicTestClass
 	{
 		private int 	xy(char c, float f)						{ return 13; }
@@ -65,7 +69,7 @@ public class MethodTest
 		private short	other()									{ return 0; }
 	}
 
-	private static class TestClass2 extends BasicTestClass
+	private static class TestClass extends BasicTestClass
 	{
 		private String 	XY(long l, double d)					{ return "27"; }
 		private long	xy_z(double d, short s, int i, byte b)	{ return 13; }

@@ -1,17 +1,32 @@
 package dd.kms.zenodot.completionTests;
 
-import org.junit.Test;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class ParenthesisTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class ParenthesisTest extends CompletionTest
 {
-	@Test
-	public void testParenthesizedExpression() {
+	public ParenthesisTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		final String getClass = "getClass()";
+
 		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("(",								"x", "y", "getFloat()", "goDoNothing()")
-			.test("(g",							"getFloat()", "goDoNothing()", getClass)
-			.test("(getFloat(y).toString()).le",	"length()");
+		return new CompletionTestBuilder()
+			.testInstance(testInstance)
+			.addTest("(",							"x", "y", "getFloat()", "goDoNothing()")
+			.addTest("(g",							"getFloat()", "goDoNothing()", getClass)
+			.addTest("(getFloat(y).toString()).le",	"length()")
+			.build();
 	}
 
 	private static class TestClass

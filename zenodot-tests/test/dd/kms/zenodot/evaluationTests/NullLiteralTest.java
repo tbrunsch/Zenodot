@@ -1,20 +1,37 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class NullLiteralTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class NullLiteralTest extends EvaluationTest
 {
-	@Test
-	public void testNullLiteral() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("null",				null)
-			.test("getObject(null)",	null);
+	public NullLiteralTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.test("nul")
-			.test("getObject(nul)")
-			.test("getObject(null");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("null",			null)
+			.addTest("getObject(null)",	null);
+
+		testBuilder
+			.addTestWithError("nul")
+			.addTestWithError("getObject(nul)")
+			.addTestWithError("getObject(null");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

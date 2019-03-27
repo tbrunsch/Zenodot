@@ -1,31 +1,49 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import dd.kms.zenodot.settings.Variable;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class NullTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class NullTest extends EvaluationTest
 {
-	@Test
-	public void testNull() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.addVariable(new Variable("myNull", null, true))
-			.test("f(null)",				0)
-			.test("f(myNull)",				0)
-			.test("f(sNull)",				0)
-			.test("f((String) oNull)",		0)
-			.test("(String) null",			null);
+	public NullTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.addVariable(new Variable("myNull", null, true))
-			.test("f(oNull)")
-			.test("null + 0")
-			.test("0 + iNull")
-			.test("!null")
-			.test("null.toString()")
-			.test("sNull.length()")
-			.test("((TestClass) null).sNull")
-			.test("daNull[0]");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		Variable myNull = new Variable("myNull", null, true);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder()
+			.testInstance(testInstance)
+			.configurator(test -> test.addVariable(myNull));
+
+		testBuilder
+			.addTest("f(null)",				0)
+			.addTest("f(myNull)",			0)
+			.addTest("f(sNull)",			0)
+			.addTest("f((String) oNull)",	0)
+			.addTest("(String) null",		null);
+
+		testBuilder
+			.addTestWithError("f(oNull)")
+			.addTestWithError("null + 0")
+			.addTestWithError("0 + iNull")
+			.addTestWithError("!null")
+			.addTestWithError("null.toString()")
+			.addTestWithError("sNull.length()")
+			.addTestWithError("((TestClass) null).sNull")
+			.addTestWithError("daNull[0]");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

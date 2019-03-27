@@ -1,22 +1,39 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class FieldTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class FieldTest extends EvaluationTest
 {
-	@Test
-	public void testField() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("i", 3)
-			.test("d", 2.4)
-			.test("s", "xyz")
-			.test("l", (long) 1);
+	public FieldTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.test("")
-			.test("xyz")
-			.test("d,");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("i", 3)
+			.addTest("d", 2.4)
+			.addTest("s", "xyz")
+			.addTest("l", (long) 1);
+
+		testBuilder
+			.addTestWithError("")
+			.addTestWithError("xyz")
+			.addTestWithError("d,");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

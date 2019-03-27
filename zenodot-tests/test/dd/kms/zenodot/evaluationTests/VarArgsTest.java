@@ -1,28 +1,44 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Arrays;
+import java.util.Collection;
 
-public class VarArgsTest
+@RunWith(Parameterized.class)
+public class VarArgsTest extends EvaluationTest
 {
-	@Test
-	public void testVarArgs() {
-		TestClass testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("sum(d)",				3.5)
-			.test("sum(d, i1)",			6.5)
-			.test("sum(d, i1, i2)",		1.5)
-			.test("sum(d, i1, i2, i3)",	12.5)
-			.test("sum(d, i123)",			10.5)
-			.test("sum(i1, i123)",			10.0);
+	public VarArgsTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.test("sum()")
-			.test("sum(i1, d)")
-			.test("sum(d, i123, i1)")
-			.test("sum(d, i1, i123)")
-			.test("sum(d, i123, i123)");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("sum(d)",				3.5)
+			.addTest("sum(d, i1)",			6.5)
+			.addTest("sum(d, i1, i2)",		1.5)
+			.addTest("sum(d, i1, i2, i3)",	12.5)
+			.addTest("sum(d, i123)",		10.5)
+			.addTest("sum(i1, i123)",		10.0);
+
+		testBuilder
+			.addTestWithError("sum()")
+			.addTestWithError("sum(i1, d)")
+			.addTestWithError("sum(d, i123, i1)")
+			.addTestWithError("sum(d, i1, i123)")
+			.addTestWithError("sum(d, i123, i123)");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

@@ -1,26 +1,43 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class IntegerLiteralTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class IntegerLiteralTest extends EvaluationTest
 {
-	@Test
-	public void testIntegerLiteral() {
-		TestClass testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("120",						120)
-			.test("getByte((byte) 120)",		testInstance.getByte((byte) 120))
-			.test("1234",						1234)
-			.test("getShort((short) 1234)",	testInstance.getShort((short) 1234))
-			.test("100000",					100000)
-			.test("getInt(100000)",			testInstance.getInt(100000))
-			.test("5000000000L",				5000000000L)
-			.test("getLong(5000000000l)",		testInstance.getLong(5000000000l));
+	public IntegerLiteralTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.test("getByte(123)")
-			.test("getShort(1000)")
-			.test("getInt(5000000000)");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		TestClass testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("120",						120)
+			.addTest("getByte((byte) 120)",		testInstance.getByte((byte) 120))
+			.addTest("1234",					1234)
+			.addTest("getShort((short) 1234)",	testInstance.getShort((short) 1234))
+			.addTest("100000",					100000)
+			.addTest("getInt(100000)",			testInstance.getInt(100000))
+			.addTest("5000000000L",				5000000000L)
+			.addTest("getLong(5000000000l)",	testInstance.getLong(5000000000l));
+
+		testBuilder
+			.addTestWithError("getByte(123)")
+			.addTestWithError("getShort(1000)")
+			.addTestWithError("getInt(5000000000)");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

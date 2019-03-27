@@ -1,13 +1,14 @@
-package dd.kms.zenodot.completionTests;
+package dd.kms.zenodot.completionTests.framework;
 
 import dd.kms.zenodot.JavaParser;
 import dd.kms.zenodot.ParseException;
-import dd.kms.zenodot.common.AbstractTestExecutor;
-import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.debug.ParserLogEntry;
+import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.debug.ParserLoggerIF;
 import dd.kms.zenodot.result.CompletionSuggestionIF;
 import dd.kms.zenodot.settings.ParserSettings;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -16,16 +17,26 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
-/**
- * Class for creating tests with expected successful code completions
- */
-public class TestExecutor extends AbstractTestExecutor<TestExecutor>
+@RunWith(Parameterized.class)
+public abstract class CompletionTest extends AbstractTest<CompletionTest>
 {
-	public TestExecutor(Object testInstance) {
-		super(testInstance);
+	private final TestExecutor	testExecutor;
+
+	protected CompletionTest(TestData testData) {
+		super(testData.getTestInstance());
+		TestConfigurator testConfigurator = testData.getConfigureSettingsFunction();
+		if (testConfigurator != null) {
+			testConfigurator.configure(this);
+		}
+		this.testExecutor = testData.getTestExecutor();
 	}
 
-	public TestExecutor test(String javaExpression, String... expectedSuggestions) {
+	@Test
+	public void testCompletion() {
+		testExecutor.executeTest(this);
+	}
+
+	void testCompletion(String javaExpression, String[] expectedSuggestions) {
 		ParserLoggerIF logger = prepareLogger(false, -1);
 
 		boolean repeatTestAtError = isStopAtError() || isPrintLogEntriesAtError();
@@ -34,25 +45,23 @@ public class TestExecutor extends AbstractTestExecutor<TestExecutor>
 			prepareLogger(isPrintLogEntriesAtError(), isStopAtError() ? numLoggedEntries : -1);
 			runTest(javaExpression, true, expectedSuggestions);
 		}
-
-		return this;
 	}
 
-	/**
-	 * Used for tests that might fail when not using the bootstrap class loader
-	 */
-	public TestExecutor unstableTest(String javaExpression, String... expectedSuggestions) {
-		if (!SKIP_UNSTABLE_TESTS) {
-			test(javaExpression, expectedSuggestions);
+	void testCompletionWithError(String javaExpression, int caret, Class<? extends Exception> expectedExceptionClass) {
+		ParserSettings settings = settingsBuilder.build();
+
+		JavaParser parser = new JavaParser();
+		try {
+			parser.suggestCodeCompletion(javaExpression, caret, settings, testInstance);
+			fail("Expression: " + javaExpression + " - Expected an exception");
+		} catch (ParseException | IllegalStateException e) {
+			assertEquals(expectedExceptionClass, e.getClass());
 		}
-		return this;
 	}
 
 	private boolean runTest(String javaExpression, boolean executeAssertions, String... expectedSuggestions) {
 		ParserSettings settings = settingsBuilder.build();
 		ParserLoggerIF logger = settings.getLogger();
-
-		logger.log(new ParserLogEntry(LogLevel.INFO, "Test", "Testing expression '" + javaExpression + "'...\n"));
 
 		JavaParser parser = new JavaParser();
 		int caret = javaExpression.length();
@@ -66,7 +75,7 @@ public class TestExecutor extends AbstractTestExecutor<TestExecutor>
 			return false;
 		}
 		if (executeAssertions) {
-			assertTrue(MessageFormat.format("Expression: {0}, expected completions: {1}, actual completions: {2}",
+			assertTrue(MessageFormat.format("expected completions: {1}, actual completions: {2}",
 					javaExpression,
 					expectedSuggestions,
 					suggestions),
@@ -78,7 +87,7 @@ public class TestExecutor extends AbstractTestExecutor<TestExecutor>
 
 		for (int i = 0; i < expectedSuggestions.length; i++) {
 			if (executeAssertions) {
-				assertEquals("Expression: " + javaExpression, expectedSuggestions[i], suggestions.get(i));
+				assertEquals(expectedSuggestions[i], suggestions.get(i));
 			}
 			if (!Objects.equals(expectedSuggestions[i], suggestions.get(i))) {
 				return false;

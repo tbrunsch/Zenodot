@@ -1,23 +1,41 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-public class BooleanLiteralTest
+import java.util.Collection;
+
+import static org.junit.runners.Parameterized.*;
+
+@RunWith(Parameterized.class)
+public class BooleanLiteralTest extends EvaluationTest
 {
-	@Test
-	public void testBooleanLiteral() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("true",				true)
-			.test("false",				false)
-			.test("getBoolean(true)",	true)
-			.test("getBoolean(false)",	false);
+	public BooleanLiteralTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.test("getBoolean(tru)")
-			.test("getBoolean(fals)")
-			.test("getBoolean(TRUE)")
-			.test("getBoolean(FALSE)");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("true",				true)
+			.addTest("false",				false)
+			.addTest("getBoolean(true)",	true)
+			.addTest("getBoolean(false)",	false);
+
+		testBuilder
+			.addTestWithError("getBoolean(tru)")
+			.addTestWithError("getBoolean(fals)")
+			.addTestWithError("getBoolean(TRUE)")
+			.addTestWithError("getBoolean(FALSE)");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

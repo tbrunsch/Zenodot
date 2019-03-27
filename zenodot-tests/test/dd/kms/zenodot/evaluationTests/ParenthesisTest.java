@@ -1,19 +1,34 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class ParenthesisTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class ParenthesisTest extends EvaluationTest
 {
-	@Test
-	public void testParenthesizedExpression() {
-		final String getClass = "getClass()";
+	public ParenthesisTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("(getFloat(y).toString())",			"1.5")
-			.test("(getFloat(y)).toString()",			"1.5")
-			.test("(getFloat(y).toString()).length()",	3)
-			.test("((x))",								2.0)
-			.test("(((1.3e-7)))",						1.3e-7);
+		final String getClass = "getClass()";
+		return new EvaluationTestBuilder()
+			.testInstance(testInstance)
+			.addTest("(getFloat(y).toString())",			"1.5")
+			.addTest("(getFloat(y)).toString()",			"1.5")
+			.addTest("(getFloat(y).toString()).length()",	3)
+			.addTest("((x))",								2.0)
+			.addTest("(((1.3e-7)))",						1.3e-7)
+			.build();
 	}
 
 	private static class TestClass

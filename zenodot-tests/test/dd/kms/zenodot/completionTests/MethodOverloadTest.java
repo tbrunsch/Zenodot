@@ -1,74 +1,55 @@
 package dd.kms.zenodot.completionTests;
 
-import dd.kms.zenodot.ParseException;
-import org.junit.Test;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class MethodOverloadTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class MethodOverloadTest extends CompletionTest
 {
-	@Test
-	public void testMethodOverload() {
+	public MethodOverloadTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		final String hashCode = "hashCode()";
 		final String toString = "toString()";
-		Object testInstance = new TestClass1C();
-		new TestExecutor(testInstance)
-			.test("getTestClass(",							"intValue", "stringValue")
-			.test("getTestClass(i",						"intValue", "int")
-			.test("getTestClass(s",						"stringValue", "short")
-			.test("getTestClass(intValue,",				"stringValue", toString, "intValue")
-			.test("getTestClass(stringValue,",				"intValue", hashCode, "stringValue")
-			.test("getTestClass(intValue,stringValue).",	"myInt")
-			.test("getTestClass(stringValue,intValue).",	"myString");
+
+		Object testInstance = new TestClassC();
+		return new CompletionTestBuilder()
+			.testInstance(testInstance)
+			.addTest("getTestClass(",							"intValue", "stringValue")
+			.addTest("getTestClass(i",							"intValue", "int")
+			.addTest("getTestClass(s",							"stringValue", "short")
+			.addTest("getTestClass(intValue,",					"stringValue", toString, "intValue")
+			.addTest("getTestClass(stringValue,",				"intValue", hashCode, "stringValue")
+			.addTest("getTestClass(intValue,stringValue).",		"myInt")
+			.addTest("getTestClass(stringValue,intValue).",		"myString")
+			.build();
 	}
 
-	@Test
-	public void testMethodOverloadWithEvaluation() {
-		Object testInstance = new TestClass2C();
-		new ErrorTestExecutor(testInstance)
-			.test("getTestClass(getTestClass(i)).", ParseException.class);
-
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("getTestClass(getTestClass(i)).", "myInt")
-			.test("getTestClass(getTestClass(j)).", "myString");
-	}
-
-	private static class TestClass1A
+	private static class TestClassA
 	{
 		private int myInt;
 	}
 
-	private static class TestClass1B
+	private static class TestClassB
 	{
 		private String myString;
 	}
 
-	private static class TestClass1C
+	private static class TestClassC
 	{
 		private int intValue;
 		private String stringValue;
 
-		TestClass1A getTestClass(int i, String s) { return null; }
-		TestClass1B getTestClass(String s, int i) { return null; }
-	}
-
-	private static class TestClass2A
-	{
-		private int myInt;
-	}
-
-	private static class TestClass2B
-	{
-		private String myString;
-	}
-
-	private static class TestClass2C
-	{
-		private int i = 0;
-		private int j = 1;
-
-		Object getTestClass(int i) { return i == 0 ? new TestClass2A() : new TestClass2B(); }
-
-		TestClass2A getTestClass(TestClass2A testClass) { return testClass; }
-		TestClass2B getTestClass(TestClass2B testClass) { return testClass; }
+		TestClassA getTestClass(int i, String s) { return null; }
+		TestClassB getTestClass(String s, int i) { return null; }
 	}
 }

@@ -1,64 +1,56 @@
 package dd.kms.zenodot.completionTests;
 
 import dd.kms.zenodot.ParseException;
-import org.junit.Test;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-import java.util.stream.IntStream;
+import java.util.Collection;
 
-public class MethodArrayTest
+@RunWith(Parameterized.class)
+public class MethodArrayTest extends CompletionTest
 {
-	@Test
-	public void testMethodArray() {
+	public MethodArrayTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		CompletionTestBuilder testBuilder = new CompletionTestBuilder().testInstance(testInstance);
+
 		final String hashCode = "hashCode()";
 		final String getClass = "getClass()";
-		Object testInstance = new TestClass1();
-		new TestExecutor(testInstance)
-			.test("getTestClasses()[",			"xyz", hashCode, "xyzw", "xy")
-			.test("getTestClasses()[x",		"xyz", "xyzw", "xy", hashCode)
-			.test("getTestClasses()[xy",		"xy", "xyz", "xyzw", hashCode)
-			.test("getTestClasses()[xyz",		"xyz", "xyzw", "xy", hashCode)
-			.test("getTestClasses()[xyzw",		"xyzw", "xyz", "xy", hashCode)
-			.test("getTestClasses()[get",		"getTestClasses()", getClass, "xyz", hashCode, "xyzw", "xy")
-			.test("getTestClasses()[xyz].",	"xy", "xyz", "xyzw")
-			.test("getTestClasses()[xyzw].x",	"xy", "xyz", "xyzw");
+		testBuilder
+			.addTest("getTestClasses()[",			"xyz", hashCode, "xyzw", "xy")
+			.addTest("getTestClasses()[x",			"xyz", "xyzw", "xy", hashCode)
+			.addTest("getTestClasses()[xy",			"xy", "xyz", "xyzw", hashCode)
+			.addTest("getTestClasses()[xyz",		"xyz", "xyzw", "xy", hashCode)
+			.addTest("getTestClasses()[xyzw",		"xyzw", "xyz", "xy", hashCode)
+			.addTest("getTestClasses()[get",		"getTestClasses()", getClass, "xyz", hashCode, "xyzw", "xy")
+			.addTest("getTestClasses()[xyz].",		"xy", "xyz", "xyzw")
+			.addTest("getTestClasses()[xyzw].x",	"xy", "xyz", "xyzw");
 
-		new ErrorTestExecutor(testInstance)
-			.test("xy[",								ParseException.class)
-			.test("xyz[",								ParseException.class)
-			.test("xyzw[",								ParseException.class)
-			.test("getTestClasses()[xy].",				ParseException.class)
-			.test("getTestClasses()[xyz]", -1,	IllegalStateException.class)
-			.test("getTestClasses()[xyz)",				ParseException.class);
+		testBuilder
+			.addTestWithError("xy[",						ParseException.class)
+			.addTestWithError("xyz[",						ParseException.class)
+			.addTestWithError("xyzw[",						ParseException.class)
+			.addTestWithError("getTestClasses()[xy].",		ParseException.class)
+			.addTestWithError("getTestClasses()[xyz]", -1,	IllegalStateException.class)
+			.addTestWithError("getTestClasses()[xyz)",		ParseException.class);
+
+		return testBuilder.build();
 	}
 
-	@Test
-	public void testMethodArrayWithEvaluation() {
-		Object testInstance = new TestClass2();
-		new ErrorTestExecutor(testInstance)
-			.test("getArray(size)[", ParseException.class);
-
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("getArray(size)[",			"index", "size")
-			.test("getArray(size)[index].",	"index", "size");
-	}
-
-	private static class TestClass1
+	private static class TestClass
 	{
 		private String 		xy		= "xy";
 		private int 		xyz		= 7;
 		private char		xyzw	= 'W';
 
-		private TestClass1[] getTestClasses() { return new TestClass1[0]; }
-	}
-
-	private static class TestClass2
-	{
-		private int index	= 1;
-		private int size 	= 3;
-
-		private Object getArray(int size) {
-			return IntStream.range(0, size).mapToObj(i -> new TestClass2()).toArray(n -> new TestClass2[n]);
-		}
+		private TestClass[] getTestClasses() { return new TestClass[0]; }
 	}
 }

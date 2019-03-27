@@ -1,41 +1,46 @@
 package dd.kms.zenodot.completionTests;
 
 import dd.kms.zenodot.ParseException;
-import org.junit.Test;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class MethodArgumentsTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class MethodArgumentsTest extends CompletionTest
 {
-	@Test
-	public void testMethodArguments() {
-		Object testInstance = new TestClass1();
-		new TestExecutor(testInstance)
-			.test("prefix",	"prefixC", "prefixD", "prefixI", "prefixC()", "prefixD()", "prefixI()")
-			.test("prefixI",	"prefixI", "prefixI()", "prefixC", "prefixD")
-			.test("prefixD",	"prefixD", "prefixD()", "prefixC", "prefixI")
-			.test("prefixC",	"prefixC", "prefixC()", "prefixD", "prefixI")
-			.test("prefixI(",	"prefixD", "prefixD()", "prefixC", "prefixI", "prefixC()", "prefixI()")
-			.test("prefixD(",	"prefixC", "prefixC()", "prefixD", "prefixI", "prefixD()", "prefixI()")
-			.test("prefixC(",	"prefixI", "prefixI()", "hashCode()", "prefixC", "prefixC()", "prefixD", "prefixD()");
-
-		new ErrorTestExecutor(testInstance)
-			.test("prefixI(prefixD)",	-1, IllegalStateException.class)
-			.test("prefixD(prefixI)",	ParseException.class)
-			.test("prefixC(prefixI,",	ParseException.class)
-			.test("prefixI(prefixD))",	-1, ParseException.class);
+	public MethodArgumentsTest(TestData testData) {
+		super(testData);
 	}
 
-	@Test
-	public void testMethodArgumentsWithEvaluation() {
-		Object testInstance = new TestClass2();
-		new ErrorTestExecutor(testInstance)
-			.test("getTestClassObject(getObject()).get", ParseException.class);
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		CompletionTestBuilder testBuilder = new CompletionTestBuilder().testInstance(testInstance);
 
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("getTestClassObject(getObject()).get", "getObject()", "getTestClassObject()", "getClass()");
+		testBuilder
+			.addTest("prefix",		"prefixC", "prefixD", "prefixI", "prefixC()", "prefixD()", "prefixI()")
+			.addTest("prefixI",		"prefixI", "prefixI()", "prefixC", "prefixD")
+			.addTest("prefixD",		"prefixD", "prefixD()", "prefixC", "prefixI")
+			.addTest("prefixC",		"prefixC", "prefixC()", "prefixD", "prefixI")
+			.addTest("prefixI(",	"prefixD", "prefixD()", "prefixC", "prefixI", "prefixC()", "prefixI()")
+			.addTest("prefixD(",	"prefixC", "prefixC()", "prefixD", "prefixI", "prefixD()", "prefixI()")
+			.addTest("prefixC(",	"prefixI", "prefixI()", "hashCode()", "prefixC", "prefixC()", "prefixD", "prefixD()");
+
+		testBuilder
+			.addTestWithError("prefixI(prefixD)",	-1,	IllegalStateException.class)
+			.addTestWithError("prefixD(prefixI)",		ParseException.class)
+			.addTestWithError("prefixC(prefixI,",		ParseException.class)
+			.addTestWithError("prefixI(prefixD))",	-1,	ParseException.class);
+
+		return testBuilder.build();
 	}
 
-	private static class TestClass1
+	private static class TestClass
 	{
 		private int 	prefixI	= 1;
 		private double 	prefixD	= 1.0;
@@ -44,11 +49,5 @@ public class MethodArgumentsTest
 		private int		prefixI(double arg)	{ return 1; }
 		private double	prefixD(char arg)	{ return 1.0; }
 		private char	prefixC(int arg)	{ return 'A'; }
-	}
-
-	private static class TestClass2
-	{
-		private Object getObject() { return new TestClass2(); }
-		private Object getTestClassObject(TestClass2 testClass) { return testClass.getObject(); }
 	}
 }

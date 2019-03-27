@@ -1,57 +1,54 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
-public class MethodArgumentsTest
+@RunWith(Parameterized.class)
+public class MethodArgumentsTest extends EvaluationTest
 {
-	@Test
-	public void testMethodArguments() {
-		Object testInstance = new TestClass1();
-		new TestExecutor(testInstance)
-			.test("doubleAdd(i,d)", 5.5);
-
-		new ErrorTestExecutor(testInstance)
-			.test("doubleAdd(d,i)");
+	public MethodArgumentsTest(TestData testData) {
+		super(testData);
 	}
 
-	@Test
-	public void testMethodArgumentsWithEvaluation() {
-		Object testInstance = new TestClass1();
-		new ErrorTestExecutor(testInstance)
-			.test("objectAdd(i,objectAdd(i,d))");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("objectAdd(i,objectAdd(i,d))", 8.5);
+		testBuilder
+			.configurator(null)
+			.addTest("doubleAdd(i,d)", 5.5);
+
+		testBuilder
+			.configurator(null)
+			.addTestWithError("doubleAdd(d,i)");
+
+		testBuilder
+			.configurator(null)
+			.addTestWithError("objectAdd(i,objectAdd(i,d))");
+
+		testBuilder
+			.configurator(test -> test.enableDynamicTyping())
+			.addTest("objectAdd(i,objectAdd(i,d))", 8.5);
+
+		return testBuilder.build();
 	}
 
-	@Test
-	public void testMethodParseErrorAndSideEffect() {
-		TestClass2 testInstance = new TestClass2();
-		new ErrorTestExecutor(testInstance)
-				.test("f(g(), s)");
-
-		assertEquals("Triggered side effect despite parse error", testInstance.sideEffectCounter, 0);
-	}
-
-	private static class TestClass1
+	private static class TestClass
 	{
 		private final int i = 3;
 		private final double d = 2.5;
 
 		double doubleAdd(int a, double b) { return a + b; }
 		Object objectAdd(int a, double b) { return a + b; }
-	}
-
-	private static class TestClass2
-	{
-		private int sideEffectCounter = 0;
-
-		double f(int i, String s) {
-			return 1.0;
-		}
-		int g() { return sideEffectCounter++; }
 	}
 }

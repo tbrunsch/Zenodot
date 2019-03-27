@@ -1,31 +1,46 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class MethodDotFieldOrMethodTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class MethodDotFieldOrMethodTest extends EvaluationTest
 {
-	@Test
-	public void testMethodDotFieldOrMethod() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("getTestClass().i",				7)
-			.test("getTestClass().d",				1.2)
-			.test("getTestClass().getString()",	"xyz");
+	public MethodDotFieldOrMethodTest(TestData testData) {
+		super(testData);
 	}
 
-	@Test
-	public void testMethodDotFieldOrMethodWithEvaluation() {
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		new ErrorTestExecutor(testInstance)
-			.test("getTestClassAsObject().i")
-			.test("getTestClassAsObject().d")
-			.test("getTestClassAsObject().getString()");
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("getTestClassAsObject().i",				7)
-			.test("getTestClassAsObject().d",				1.2)
-			.test("getTestClassAsObject().getString()",	"xyz");
+		testBuilder
+			.configurator(null)
+			.addTest("getTestClass().i",			7)
+			.addTest("getTestClass().d",			1.2)
+			.addTest("getTestClass().getString()",	"xyz");
+
+		testBuilder
+			.configurator(null)
+			.addTestWithError("getTestClassAsObject().i")
+			.addTestWithError("getTestClassAsObject().d")
+			.addTestWithError("getTestClassAsObject().getString()");
+
+		testBuilder
+			.configurator(test -> test.enableDynamicTyping())
+			.addTest("getTestClassAsObject().i",			7)
+			.addTest("getTestClassAsObject().d",			1.2)
+			.addTest("getTestClassAsObject().getString()",	"xyz");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

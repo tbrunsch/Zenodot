@@ -1,24 +1,41 @@
 package dd.kms.zenodot.completionTests;
 
 import dd.kms.zenodot.ParseException;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
 import dd.kms.zenodot.settings.Variable;
-import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class NullTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class NullTest extends CompletionTest
 {
-	@Test
-	public void testNull() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.addVariable(new Variable("myNull", null, true))
-			.test("f(",			"myNull", "sNull")
-			.test("f((String) oN",	"oNull")
-			.test("sNull.le",		"length()");
+	public NullTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.addVariable(new Variable("myNull", null, true))
-			.test("myNull.",	ParseException.class)
-			.test("null.",		ParseException.class);
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		Variable nullVariable = new Variable("myNull", null, true);
+		CompletionTestBuilder testBuilder = new CompletionTestBuilder()
+			.testInstance(testInstance)
+			.configurator(test -> test.addVariable(nullVariable));
+
+		testBuilder
+			.addTest("f(",				"myNull", "sNull")
+			.addTest("f((String) oN",	"oNull")
+			.addTest("sNull.le",		"length()");
+
+		testBuilder
+			.addTestWithError("myNull.",	ParseException.class)
+			.addTestWithError("null.",		ParseException.class);
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

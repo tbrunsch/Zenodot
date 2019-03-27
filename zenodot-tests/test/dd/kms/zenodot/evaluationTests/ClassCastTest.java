@@ -1,33 +1,49 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class ClassCastTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class ClassCastTest extends EvaluationTest
 {
-	@Test
-	public void testClassCast() {
+	public ClassCastTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass(5, -2.0, "abc");
 		String className = ClassInfo.forNameUnchecked(TestClass.class.getName()).getUnqualifiedName();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
-		new TestExecutor(testInstance)
-			.test("merge((" + className + ") o1).i",			18)
-			.test("merge((" + className + ") o1).d",			-4.5)
-			.test("((" + className + ") o1).merge(this).i",	18)
-			.test("((" + className + ") o1).merge(this).d",	4.5)
-			.test("getId(o1)",									1)
-			.test("getId((" + className + ") o1)",				3)
-			.test("getId(o2)",									1)
-			.unstableTest("getId((java.lang.String) o2)",		2)
-			.test("getId((String) o2)",						2)
-			.test("(int) i",									5)
-			.test("(double) d",								-2.0)
-			.test("(int) d",									-2)
-			.test("(int) 2.3",									2);
+		testBuilder
+			.addTest("merge((" + className + ") o1).i",			18)
+			.addTest("merge((" + className + ") o1).d",			-4.5)
+			.addTest("((" + className + ") o1).merge(this).i",	18)
+			.addTest("((" + className + ") o1).merge(this).d",	4.5)
+			.addTest("getId(o1)",								1)
+			.addTest("getId((" + className + ") o1)",			3)
+			.addTest("getId(o2)",								1)
+			.addUnstableTest("getId((java.lang.String) o2)",	2)
+			.addTest("getId((String) o2)",						2)
+			.addTest("(int) i",									5)
+			.addTest("(double) d",								-2.0)
+			.addTest("(int) d",									-2)
+			.addTest("(int) 2.3",								2);
 
-		new ErrorTestExecutor(testInstance)
-			.test("(" + className + ") o2")
-			.test("(String) o1");
+		testBuilder
+			.addTestWithError("(" + className + ") o2")
+			.addTestWithError("(String) o1");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

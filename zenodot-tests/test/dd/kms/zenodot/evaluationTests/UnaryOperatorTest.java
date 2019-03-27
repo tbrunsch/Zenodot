@@ -1,44 +1,62 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class UnaryOperatorTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class UnaryOperatorTest extends EvaluationTest
 {
-	@Test
-	public void testUnaryOperator() {
-		new TestExecutor(new TestClass())
-			.test("++reset().b",			(byte) 14)
-			.test("reset().get(++b).b",	(byte) 14)
-			.test("++reset().i",			-20)
-			.test("reset().get(++i).i",	-20)
-			.test("--reset().b",			(byte) 12)
-			.test("reset().get(--b).b",	(byte) 12)
-			.test("--reset().i",			-22)
-			.test("reset().get(--i).i",	-22)
-			.test("+reset().b",			13)
-			.test("+reset().i",			-21)
-			.test("+reset().f",			2.5f)
-			.test("-reset().b",			-13)
-			.test("-reset().i",			21)
-			.test("-reset().f",			-2.5f)
-			.test("!false",				true)
-			.test("!true",					false)
-			.test("!(false || true)",		false)
-			.test("!(true && false)",		true)
-			.test("~12345", ~12345);
+	public UnaryOperatorTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(new TestClass())
-			.test("++f")
-			.test("++j")
-			.test("++s")
-			.test("--f")
-			.test("--j")
-			.test("--s")
-			.test("+s")
-			.test("-s")
-			.test("!1")
-			.test("!null")
-			.test("~f");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("++reset().b",			(byte) 14)
+			.addTest("reset().get(++b).b",	(byte) 14)
+			.addTest("++reset().i",			-20)
+			.addTest("reset().get(++i).i",	-20)
+			.addTest("--reset().b",			(byte) 12)
+			.addTest("reset().get(--b).b",	(byte) 12)
+			.addTest("--reset().i",			-22)
+			.addTest("reset().get(--i).i",	-22)
+			.addTest("+reset().b",			13)
+			.addTest("+reset().i",			-21)
+			.addTest("+reset().f",			2.5f)
+			.addTest("-reset().b",			-13)
+			.addTest("-reset().i",			21)
+			.addTest("-reset().f",			-2.5f)
+			.addTest("!false",				true)
+			.addTest("!true",				false)
+			.addTest("!(false || true)",	false)
+			.addTest("!(true && false)",	true)
+			.addTest("~12345", 				~12345);
+
+		testBuilder
+			.addTestWithError("++f")
+			.addTestWithError("++j")
+			.addTestWithError("++s")
+			.addTestWithError("--f")
+			.addTestWithError("--j")
+			.addTestWithError("--s")
+			.addTestWithError("+s")
+			.addTestWithError("-s")
+			.addTestWithError("!1")
+			.addTestWithError("!null")
+			.addTestWithError("~f");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

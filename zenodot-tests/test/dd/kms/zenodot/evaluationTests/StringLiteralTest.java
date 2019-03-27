@@ -1,26 +1,43 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class StringLiteralTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class StringLiteralTest extends EvaluationTest
 {
-	@Test
-	public void testStringLiteral() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("\"xyz\"", "xyz")
-			.test("getString(\"xyz\")",	"xyz")
-			.test("getString(\"\\\"\")",	"\"")
-			.test("getString(\"\\n\")",	"\n")
-			.test("getString(\"\\r\")",	"\r")
-			.test("getString(\"\\t\")",	"\t");
+	public StringLiteralTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.test("getString(xyz)")
-			.test("getString(\"xyz")
-			.test("getString(\"xyz)")
-			.test("getString(xyz\")")
-			.test("getString(\"\\\")");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("\"xyz\"", "xyz")
+			.addTest("getString(\"xyz\")",	"xyz")
+			.addTest("getString(\"\\\"\")",	"\"")
+			.addTest("getString(\"\\n\")",	"\n")
+			.addTest("getString(\"\\r\")",	"\r")
+			.addTest("getString(\"\\t\")",	"\t");
+
+		testBuilder
+			.addTestWithError("getString(xyz)")
+			.addTestWithError("getString(\"xyz")
+			.addTestWithError("getString(\"xyz)")
+			.addTestWithError("getString(xyz\")")
+			.addTestWithError("getString(\"\\\")");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

@@ -1,15 +1,30 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class ThisLiteralTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class ThisLiteralTest extends EvaluationTest
 {
-	@Test
-	public void testThisLiteral() {
+	public ThisLiteralTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass(23);
-		new TestExecutor(testInstance)
-			.test("this.value",		23)
-			.test("getValue(this)",	23);
+		return new EvaluationTestBuilder()
+			.testInstance(testInstance)
+			.addTest("this.value",		23)
+			.addTest("getValue(this)",	23)
+			.build();
 	}
 
 	private static class TestClass

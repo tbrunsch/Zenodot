@@ -1,27 +1,47 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-public class AmbiguityTest
+import java.util.Collection;
+
+import static org.junit.runners.Parameterized.*;
+
+@RunWith(Parameterized.class)
+public class AmbiguityTest extends EvaluationTest
 {
-	@Test
-	public void testAmbiguity() {
+	public AmbiguityTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		TestClass testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("get(c)",	testInstance.get(testInstance.c))
-			.test("get(b)",	testInstance.get(testInstance.b))
-			.test("get(i)",	testInstance.get(testInstance.i))
-			.test("get(l)",	testInstance.get(testInstance.l))
-			.test("get(o1)",	testInstance.get(testInstance.o1))
-			.test("get(o2)",	testInstance.get(testInstance.o2));
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("get(o1)", testInstance.get(testInstance.o1))
-			.test("get(o2)", testInstance.get((Float) testInstance.o2));
+		testBuilder
+			.configurator(null)
+			.addTest("get(c)",	testInstance.get(testInstance.c))
+			.addTest("get(b)",	testInstance.get(testInstance.b))
+			.addTest("get(i)",	testInstance.get(testInstance.i))
+			.addTest("get(l)",	testInstance.get(testInstance.l))
+			.addTest("get(o1)",	testInstance.get(testInstance.o1))
+			.addTest("get(o2)",	testInstance.get(testInstance.o2));
 
-		new ErrorTestExecutor(testInstance)
-			.test("get(s)");
+		testBuilder
+			.configurator(test -> test.enableDynamicTyping())
+			.addTest("get(o1)", testInstance.get(testInstance.o1))
+			.addTest("get(o2)", testInstance.get((Float) testInstance.o2));
+
+		testBuilder
+			.configurator(null)
+			.addTestWithError("get(s)");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

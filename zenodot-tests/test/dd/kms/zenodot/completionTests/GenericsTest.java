@@ -1,30 +1,45 @@
 package dd.kms.zenodot.completionTests;
 
-import org.junit.Test;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import java.util.*;
 
-public class GenericsTest
+@RunWith(Parameterized.class)
+public class GenericsTest extends CompletionTest
 {
-	@Test
-	public void testGenerics() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("testCollInt(",		"collListInt", "collSetInt", "listInt")
-			.test("testCollString(",	"collListString", "collSetString", "listString")
-			.test("testListInt(",		"listInt")
-			.test("testListString(",	"listString")
-			.test("testSetInt(",		"collListInt", "collListString", "collSetInt", "collSetString", "listInt", "listString")		// no class match, so fields ordered lexicographically
-			.test("testSetString(",	"collListInt", "collListString", "collSetInt", "collSetString", "listInt", "listString");	// no class match, so fields ordered lexicographically
+	public GenericsTest(TestData testData) {
+		super(testData);
+	}
 
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("testCollInt(",		"collListInt", "collSetInt", "listInt")
-			.test("testCollString(",	"collListString", "collSetString", "listString")
-			.test("testListInt(",		"collListInt", "listInt")
-			.test("testListString(",	"collListString", "listString")
-			.test("testSetInt(",		"collSetInt")
-			.test("testSetString(",	"collSetString");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		CompletionTestBuilder testBuilder = new CompletionTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.configurator(null)
+			.addTest("testCollInt(",		"collListInt", "collSetInt", "listInt")
+			.addTest("testCollString(",		"collListString", "collSetString", "listString")
+			.addTest("testListInt(",		"listInt")
+			.addTest("testListString(",		"listString")
+			.addTest("testSetInt(",			"collListInt", "collListString", "collSetInt", "collSetString", "listInt", "listString")		// no class match, so fields ordered lexicographically
+			.addTest("testSetString(",		"collListInt", "collListString", "collSetInt", "collSetString", "listInt", "listString");	// no class match, so fields ordered lexicographically
+
+		testBuilder
+			.configurator(test -> test.enableDynamicTyping())
+			.addTest("testCollInt(",		"collListInt", "collSetInt", "listInt")
+			.addTest("testCollString(",		"collListString", "collSetString", "listString")
+			.addTest("testListInt(",		"collListInt", "listInt")
+			.addTest("testListString(",		"collListString", "listString")
+			.addTest("testSetInt(",			"collSetInt")
+			.addTest("testSetString(",		"collSetString");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

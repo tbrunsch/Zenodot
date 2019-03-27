@@ -1,22 +1,37 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class SpacesTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class SpacesTest extends EvaluationTest
 {
-	@Test
-	public void testSpacesInExpressions() {
+	public SpacesTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass("abc", (short) 13, 'X', 123456789, -13e02f, 1L, false, 2.34e-56);
-		new TestExecutor(testInstance)
-			.test(" s ", "abc")
-			.test("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ) . sValue ",	(short) 13)
-			.test("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ) .s",			"abc" + "_xyz")
-			.test("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ). c",			'X')
-			.test("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ).i ",			123456789 + 1)
-			.test("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d) .f",				-13e02f / 2.f)
-			.test("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d ). l",			1L * 3)
-			.test("  getTestClass (s,sValue,  c,i  ,  f,l,b,d ).b",					!false)
-			.test("  getTestClass( s, sValue, c, i, f, l, b, d  ) . d",				3 - 2.34e-56);
+		return new EvaluationTestBuilder()
+			.testInstance(testInstance)
+			.addTest(" s ", "abc")
+			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ) . sValue ",	(short) 13)
+			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ) .s",			"abc" + "_xyz")
+			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ). c",			'X')
+			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ).i ",			123456789 + 1)
+			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d) .f",			-13e02f / 2.f)
+			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d ). l",			1L * 3)
+			.addTest("  getTestClass (s,sValue,  c,i  ,  f,l,b,d ).b",					!false)
+			.addTest("  getTestClass( s, sValue, c, i, f, l, b, d  ) . d",				3 - 2.34e-56)
+			.build();
 	}
 
 	private static class TestClass

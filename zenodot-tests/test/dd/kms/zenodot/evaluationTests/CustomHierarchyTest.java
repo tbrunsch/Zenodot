@@ -1,31 +1,44 @@
 package dd.kms.zenodot.evaluationTests;
 
 import dd.kms.zenodot.common.CustomHierarchy;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class CustomHierarchyTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class CustomHierarchyTest extends EvaluationTest
 {
-	@Test
-	public void testCustomHierarchy() {
-		CustomHierarchy h = new CustomHierarchy();
+	public CustomHierarchyTest(TestData testData) {
+		super(testData);
+	}
 
-		new TestExecutor(null)
-			.customHierarchyRoot(h.ROOT)
-			.test("{Component Manager}",											h.COMPONENT_MANAGER)
-			.test("{Component Manager}.components.get(0)",							h.COMPONENT_MANAGER.getComponents().get(0))
-			.test("{Excel Importer}",												h.EXCEL_IMPORTER)
-			.test("{Excel Importer}.componentType",								h.EXCEL_IMPORTER.getComponentType())
-			.test("{Excel Importer#Activity}",										h.ACTIVITY)
-			.test("{Excel Importer#Activity}.dataType",							h.ACTIVITY.getDataType())
-			.test("{Productivity Calculation}.dataItems.get(1)",					h.PRODUCTIVITY_CALCULATION.getDataItems().get(1))
-			.test("{Productivity Calculation#Relative Productivity Potential}",	h.RELATIVE_PRODUCTIVITY_POTENTIAL)
-			.test("{Productivity Calculation#Total Productivity (h)}.value",		h.TOTAL_PRODUCTIVITY.getValue());
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().configurator(test -> test.customHierarchyRoot(CustomHierarchy.ROOT));
 
-		new ErrorTestExecutor(null)
-			.customHierarchyRoot(h.ROOT)
-			.test("Component Manager")
-			.test("{Component Manager")
-			.test("{Component Management}")
-			.test("{Excel Importer#componentType}");
+		testBuilder
+			.addTest("{Component Manager}",											CustomHierarchy.COMPONENT_MANAGER)
+			.addTest("{Component Manager}.components.get(0)",						CustomHierarchy.COMPONENT_MANAGER.getComponents().get(0))
+			.addTest("{Excel Importer}",											CustomHierarchy.EXCEL_IMPORTER)
+			.addTest("{Excel Importer}.componentType",								CustomHierarchy.EXCEL_IMPORTER.getComponentType())
+			.addTest("{Excel Importer#Activity}",									CustomHierarchy.ACTIVITY)
+			.addTest("{Excel Importer#Activity}.dataType",							CustomHierarchy.ACTIVITY.getDataType())
+			.addTest("{Productivity Calculation}.dataItems.get(1)",					CustomHierarchy.PRODUCTIVITY_CALCULATION.getDataItems().get(1))
+			.addTest("{Productivity Calculation#Relative Productivity Potential}",	CustomHierarchy.RELATIVE_PRODUCTIVITY_POTENTIAL)
+			.addTest("{Productivity Calculation#Total Productivity (h)}.value",		CustomHierarchy.TOTAL_PRODUCTIVITY.getValue());
+
+		testBuilder
+			.addTestWithError("Component Manager")
+			.addTestWithError("{Component Manager")
+			.addTestWithError("{Component Management}")
+			.addTestWithError("{Excel Importer#componentType}");
+
+		return testBuilder.build();
 	}
 }

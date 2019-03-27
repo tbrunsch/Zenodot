@@ -1,26 +1,42 @@
 package dd.kms.zenodot.completionTests;
 
 import dd.kms.zenodot.ParseException;
-import org.junit.Test;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class FieldTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class FieldTest extends CompletionTest
 {
-	@Test
-	public void testField() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("xy",	"xy", "XY", "xy_z", "XYZ", "x", "X")
-			.test("XYZ",	"XYZ", "XY", "X", "x", "xy")
-			.test("X",		"X", "x", "XY", "XYZ", "xy_z", "xy")
-			.test("XY",	"XY", "xy", "XYZ", "xy_z", "X", "x")
-			.test("xy_z",	"xy_z", "x", "xy", "XY", "X")
-			.test("x",		"x", "X", "xy_z", "xy", "XY", "XYZ")
-			.test("XYW",	"XY", "X", "x", "xy");
+	public FieldTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.test("xy", -1,	IllegalStateException.class)
-			.test("bla", -1, ParseException.class)
-			.test("xy,",			ParseException.class);
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		CompletionTestBuilder testBuilder = new CompletionTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("xy",		"xy", "XY", "xy_z", "XYZ", "x", "X")
+			.addTest("XYZ",		"XYZ", "XY", "X", "x", "xy")
+			.addTest("X",		"X", "x", "XY", "XYZ", "xy_z", "xy")
+			.addTest("XY",		"XY", "xy", "XYZ", "xy_z", "X", "x")
+			.addTest("xy_z",	"xy_z", "x", "xy", "XY", "X")
+			.addTest("x",		"x", "X", "xy_z", "xy", "XY", "XYZ")
+			.addTest("XYW",		"XY", "X", "x", "xy");
+
+		testBuilder
+			.addTestWithError("xy",		-1,	IllegalStateException.class)
+			.addTestWithError("bla",	-1,	ParseException.class)
+			.addTestWithError("xy,",		ParseException.class);
+
+		return testBuilder.build();
 	}
 
 	private static abstract class BasicTestClass

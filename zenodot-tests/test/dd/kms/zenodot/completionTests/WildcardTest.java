@@ -1,33 +1,49 @@
 package dd.kms.zenodot.completionTests;
 
 import dd.kms.zenodot.common.CustomHierarchy;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
 import dd.kms.zenodot.settings.Variable;
-import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class WildcardTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class WildcardTest extends CompletionTest
 {
-	@Test
-	public void testWildcardCompletion() {
+	public WildcardTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
 		Variable variable1 = new Variable("tempFloatVariable", 13.5f, true);
 		Variable variable2 = new Variable("tempCharVariable", 'c', true);
-		new TestExecutor(testInstance)
-			.importPackage("java.util")
-			.addVariable(variable1)
-			.addVariable(variable2)
-			.customHierarchyRoot(CustomHierarchy.ROOT)
-			.test("xY", 							"xYZ", "xyz", "xxYyZz")
-			.test("xYZ",							"xYZ", "xyz", "xxYyZz")
-			.unstableTest("ArLi",					"ArrayList")
-			.unstableTest("LHS",					"LinkedHashSet")
-			.test("gVA",							"getValueAsDouble()", "getValueAsInt()")
-			.test("geValA",						"getValueAsDouble()", "getValueAsInt()")
-			.test("gVAD",							"getValueAsDouble()")
-			.test("gVAI",							"getValueAsInt()")
-			.test("tFV",							"tempFloatVariable")
-			.test("tCV",							"tempCharVariable")
-			.test("{CM",							"Component Manager")
-			.test("{Productivity Calculation#RP",	"Relative Productivity", "Relative Productivity Potential");
+		return new CompletionTestBuilder()
+			.testInstance(testInstance)
+			.configurator(test -> {
+				test.importPackage("java.util");
+				test.addVariable(variable1);
+				test.addVariable(variable2);
+				test.customHierarchyRoot(CustomHierarchy.ROOT);
+			})
+			.addTest("xY", 								"xYZ", "xyz", "xxYyZz")
+			.addTest("xYZ",								"xYZ", "xyz", "xxYyZz")
+			.addUnstableTest("ArLi",					"ArrayList")
+			.addUnstableTest("LHS",						"LinkedHashSet")
+			.addTest("gVA",								"getValueAsDouble()", "getValueAsInt()")
+			.addTest("geValA",							"getValueAsDouble()", "getValueAsInt()")
+			.addTest("gVAD",							"getValueAsDouble()")
+			.addTest("gVAI",							"getValueAsInt()")
+			.addTest("tFV",								"tempFloatVariable")
+			.addTest("tCV",								"tempCharVariable")
+			.addTest("{CM",								"Component Manager")
+			.addTest("{Productivity Calculation#RP",	"Relative Productivity", "Relative Productivity Potential")
+			.build();
 	}
 
 	private static class TestClass

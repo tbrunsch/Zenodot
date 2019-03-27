@@ -1,34 +1,49 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class MethodArrayTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class MethodArrayTest extends EvaluationTest
 {
-	@Test
-	public void testMethodArray() {
-		Object testInstance = new TestClass(0, 1);
-		new TestExecutor(testInstance)
-			.test("getTestClasses()[i0].i0", 13)
-			.test("getTestClasses()[i0].i1", 7)
-			.test("getTestClasses()[i1].i0", 4)
-			.test("getTestClasses()[i1].i1", 9);
+	public MethodArrayTest(TestData testData) {
+		super(testData);
 	}
 
-	@Test
-	public void testMethodArrayWithEvaluation() {
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass(0, 1);
-		new ErrorTestExecutor(testInstance)
-			.test("getTestClasses()[o].o")
-			.test("getTestClasses()[o].getI1()")
-			.test("getTestClasses()[getI1()].o")
-			.test("getTestClasses()[getI1()].getI1()");
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("getTestClasses()[o].o",				13)
-			.test("getTestClasses()[o].getI1()",		7)
-			.test("getTestClasses()[getI1()].o",		4)
-			.test("getTestClasses()[getI1()].getI1()",	9);
+		testBuilder
+			.configurator(null)
+			.addTest("getTestClasses()[i0].i0", 13)
+			.addTest("getTestClasses()[i0].i1", 7)
+			.addTest("getTestClasses()[i1].i0", 4)
+			.addTest("getTestClasses()[i1].i1", 9);
+
+		testBuilder
+			.configurator(null)
+			.addTestWithError("getTestClasses()[o].o")
+			.addTestWithError("getTestClasses()[o].getI1()")
+			.addTestWithError("getTestClasses()[getI1()].o")
+			.addTestWithError("getTestClasses()[getI1()].getI1()");
+
+		testBuilder
+			.configurator(test -> test.enableDynamicTyping())
+			.addTest("getTestClasses()[o].o",				13)
+			.addTest("getTestClasses()[o].getI1()",			7)
+			.addTest("getTestClasses()[getI1()].o",			4)
+			.addTest("getTestClasses()[getI1()].getI1()",	9);
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

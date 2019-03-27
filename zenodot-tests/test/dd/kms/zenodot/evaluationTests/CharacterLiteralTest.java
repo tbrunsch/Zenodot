@@ -1,28 +1,45 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class CharacterLiteralTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class CharacterLiteralTest extends EvaluationTest
 {
-	@Test
-	public void testCharacterLiteral() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("'x'", 'x')
-			.test("getChar('x')",		'x')
-			.test("getChar('\\'')",	'\'')
-			.test("getChar('\"')",		'"')
-			.test("getChar('\\\"')",	'\"')
-			.test("getChar('\\n')",	'\n')
-			.test("getChar('\\r')",	'\r')
-			.test("getChar('\\t')",	'\t');
+	public CharacterLiteralTest(TestData testData) {
+		super(testData);
+	}
 
-		new ErrorTestExecutor(testInstance)
-			.test("getChar(x)")
-			.test("getChar('x")
-			.test("getChar('x)")
-			.test("getChar(x')")
-			.test("getChar('\')");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+
+		testBuilder
+			.addTest("'x'", 			'x')
+			.addTest("getChar('x')",	'x')
+			.addTest("getChar('\\'')",	'\'')
+			.addTest("getChar('\"')",	'"')
+			.addTest("getChar('\\\"')",	'\"')
+			.addTest("getChar('\\n')",	'\n')
+			.addTest("getChar('\\r')",	'\r')
+			.addTest("getChar('\\t')",	'\t');
+
+		testBuilder
+			.addTestWithError("getChar(x)")
+			.addTestWithError("getChar('x")
+			.addTestWithError("getChar('x)")
+			.addTestWithError("getChar(x')")
+			.addTestWithError("getChar('\')");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

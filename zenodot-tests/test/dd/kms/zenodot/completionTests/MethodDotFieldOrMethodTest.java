@@ -1,48 +1,44 @@
 package dd.kms.zenodot.completionTests;
 
 import dd.kms.zenodot.ParseException;
-import org.junit.Test;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class MethodDotFieldOrMethodTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class MethodDotFieldOrMethodTest extends CompletionTest
 {
-	@Test
-	public void testMethodDotFieldOrMethod() {
-		Object testInstance = new TestClass1B();
-		new TestExecutor(testInstance)
-			.test("getTestClass",									"getTestClass()")
-			.test("getTestClass(c).",								"d", "i", "getObject()")
-			.test("getTestClass(c).get",							"getObject()")
-			.test("getTestClass(c).getObject(",					"c", "s")
-			.test("getTestClass(c).getObject(getTestClass(c).d).",	"clone()", "equals()");
-
-		new ErrorTestExecutor(testInstance)
-			.test("getTestClazz().",								-1, ParseException.class)
-			.test("getTestClazz().i",								-1, ParseException.class)
-			.test("getTestClass().i.d",							-1, ParseException.class)
-			.test("getTestClass(c).getObject(getTestClass(c).d)",	-1, IllegalStateException.class);
+	public MethodDotFieldOrMethodTest(TestData testData) {
+		super(testData);
 	}
 
-	@Test
-	public void testMethodDotFieldOrMethodWithEvaluation() {
-		final String getClass = "getClass()";
-		Object testInstance = new TestClass2();
-		new TestExecutor(testInstance)
-			.test("getObject().",		"x", "xyz", "getInt()")
-			.test("getObject().x",		"x", "xyz", "getInt()")
-			.test("getObject().xy",	"xyz", "x", "getInt()")
-			.test("getObject().xyz",	"xyz", "x", "getInt()")
-			.test("getObject().get",	"getInt()", getClass, "x", "xyz");
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClassB();
+		CompletionTestBuilder testBuilder = new CompletionTestBuilder().testInstance(testInstance);
 
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("getObject().",		"xy", "x", "xyz", "getDouble()", "getInt()")
-			.test("getObject().x",		"x", "xy", "xyz", "getDouble()", "getInt()")
-			.test("getObject().xy",	"xy", "xyz", "x", "getDouble()", "getInt()")
-			.test("getObject().xyz",	"xyz", "xy", "x", "getDouble()", "getInt()")
-			.test("getObject().get",	"getDouble()", "getInt()", getClass, "xy", "x", "xyz");
+		testBuilder
+			.addTest("getTestClass",									"getTestClass()")
+			.addTest("getTestClass(c).",								"d", "i", "getObject()")
+			.addTest("getTestClass(c).get",								"getObject()")
+			.addTest("getTestClass(c).getObject(",						"c", "s")
+			.addTest("getTestClass(c).getObject(getTestClass(c).d).",	"clone()", "equals()");
+
+		testBuilder
+			.addTestWithError("getTestClazz().",								-1, ParseException.class)
+			.addTestWithError("getTestClazz().i",								-1, ParseException.class)
+			.addTestWithError("getTestClass().i.d",								-1, ParseException.class)
+			.addTestWithError("getTestClass(c).getObject(getTestClass(c).d)",	-1, IllegalStateException.class);
+
+		return testBuilder.build();
 	}
 
-	private static class TestClass1A
+	private static class TestClassA
 	{
 		private int 	i	= 1;
 		private double	d	= 1.0;
@@ -50,31 +46,11 @@ public class MethodDotFieldOrMethodTest
 		private Object getObject(double d) { return null; }
 	}
 
-	private static class TestClass1B
+	private static class TestClassB
 	{
 		private short	s	= 1;
 		private char	c	= 'A';
 
-		private TestClass1A getTestClass(char c) { return null; }
-	}
-
-	private static class BaseClass
-	{
-		private int x;
-		private int xyz;
-
-		public int getInt() { return 1; }
-	}
-
-	private static class DescendantClass extends BaseClass
-	{
-		private int	xy;
-
-		public double getDouble() { return 1.0; }
-	}
-
-	private static class TestClass2
-	{
-		private BaseClass getObject() { return new DescendantClass(); }
+		private TestClassA getTestClass(char c) { return null; }
 	}
 }

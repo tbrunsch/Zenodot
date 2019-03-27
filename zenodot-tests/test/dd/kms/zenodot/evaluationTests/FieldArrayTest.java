@@ -1,34 +1,49 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class FieldArrayTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class FieldArrayTest extends EvaluationTest
 {
-	@Test
-	public void testFieldArray() {
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("array[i0]", 1)
-			.test("array[i1]", 4)
-			.test("array[i2]", 3)
-			.test("array[i3]", 7);
+	public FieldArrayTest(TestData testData) {
+		super(testData);
 	}
 
-	@Test
-	public void testFieldArrayWithEvaluation() {
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		new ErrorTestExecutor(testInstance)
-			.test("o[i0]")
-			.test("o[i1]")
-			.test("o[i2]")
-			.test("o[i3]");
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
-		new TestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("o[i0]", 1)
-			.test("o[i1]", 4)
-			.test("o[i2]", 3)
-			.test("o[i3]", 7);
+		testBuilder
+			.configurator(null)
+			.addTest("array[i0]", 1)
+			.addTest("array[i1]", 4)
+			.addTest("array[i2]", 3)
+			.addTest("array[i3]", 7);
+
+		testBuilder
+			.configurator(null)
+			.addTestWithError("o[i0]")
+			.addTestWithError("o[i1]")
+			.addTestWithError("o[i2]")
+			.addTestWithError("o[i3]");
+
+		testBuilder
+			.configurator(test -> test.enableDynamicTyping())
+			.addTest("o[i0]", 1)
+			.addTest("o[i1]", 4)
+			.addTest("o[i2]", 3)
+			.addTest("o[i3]", 7);
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

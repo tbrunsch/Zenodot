@@ -1,75 +1,82 @@
 package dd.kms.zenodot.completionTests;
 
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
 import dd.kms.zenodot.settings.AccessLevel;
 import dd.kms.zenodot.utils.ClassUtils;
-import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-public class ClassTest
+import java.util.Collection;
+
+import static org.junit.runners.Parameterized.Parameters;
+
+@RunWith(Parameterized.class)
+public class ClassTest extends CompletionTest
 {
-	@Test
-	public void testPackage() {
-		String packageName = getClass().getPackage().getName();
-		String subPackageName = ClassUtils.getLeafOfPath(packageName);
-		String truncatedPackageName = packageName.substring(0, packageName.length() - subPackageName.length()/2);
-
-		new TestExecutor(null)
-				.unstableTest("java.ut",	"util")
-				.test(truncatedPackageName,	subPackageName);
+	public ClassTest(TestData testData) {
+		super(testData);
 	}
 
-	@Test
-	public void testClass() {
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		CompletionTestBuilder testBuilder = new CompletionTestBuilder();
+
 		String className = ClassUtils.getRegularClassName(TestClass.class.getName());
-		new TestExecutor(null)
-			.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE)
-			.test(className + ".",				"f", "l", "getDouble()", "getInt()", "InnerClass")
-			.test(className + ".I",			"InnerClass")
-			.test(className + ".InnerClass.",	"test")
-			.test("String.CASE_I",				"CASE_INSENSITIVE_ORDER")
-			.test("String.val",				"valueOf()");
+		testBuilder
+			.configurator(test -> test.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE))
+			.addTest(className + ".",				"f", "l", "getDouble()", "getInt()", "InnerClass")
+			.addTest(className + ".I",				"InnerClass")
+			.addTest(className + ".InnerClass.",	"test")
+			.addTest("String.CASE_I",				"CASE_INSENSITIVE_ORDER")
+			.addTest("String.val",					"valueOf()");
 
-		String packageName = ClassUtils.getParentPath(getClass().getPackage().getName()) + ".classesForTest";
-		new TestExecutor(null)
-			.test(packageName + ".du",						"dummies", "DummyClass", "MyDummyClass", "moreDummies")
-			.test(packageName + ".Du",						"DummyClass", "dummies", "MyDummyClass", "moreDummies")
-			.test(packageName + ".m",						"moreDummies")
-			.test(packageName + ".dummies.MyC",			"MyClass")
-			.test(packageName + ".dummies.MyO",			"MyOtherClass")
-			.test(packageName + ".dummies.Y",				"YetAnotherDummyClass")
-			.test(packageName + ".moreDummies.MyDummy",	"MyDummy", "MyDummy2")
-			.test(packageName + ".moreDummies.MyDummy2",	"MyDummy2", "MyDummy");
+		String packageName = ClassUtils.getParentPath(ClassTest.class.getPackage().getName()) + ".classesForTest";
+		testBuilder
+			.configurator(null)
+			.addTest(packageName + ".du",						"dummies", "DummyClass", "MyDummyClass", "moreDummies")
+			.addTest(packageName + ".Du",						"DummyClass", "dummies", "MyDummyClass", "moreDummies")
+			.addTest(packageName + ".m",						"moreDummies")
+			.addTest(packageName + ".dummies.MyC",				"MyClass")
+			.addTest(packageName + ".dummies.MyO",				"MyOtherClass")
+			.addTest(packageName + ".dummies.Y",				"YetAnotherDummyClass")
+			.addTest(packageName + ".moreDummies.MyDummy",		"MyDummy", "MyDummy2")
+			.addTest(packageName + ".moreDummies.MyDummy2",		"MyDummy2", "MyDummy");
 
-		new TestExecutor(null)
-			.importPackage(packageName)
-			.test("Du", "DummyClass")
-			.test("My", "MyDummyClass");
+		testBuilder
+			.configurator(test -> test.importPackage(packageName))
+			.addTest("Du", "DummyClass")
+			.addTest("My", "MyDummyClass");
 
-		new TestExecutor(null)
-			.importPackage(packageName + ".dummies")
-			.test("MyC", "MyClass")
-			.test("Y", "YetAnotherDummyClass");
+		testBuilder
+			.configurator(test -> test.importPackage(packageName + ".dummies"))
+			.addTest("MyC",	"MyClass")
+			.addTest("Y",	"YetAnotherDummyClass");
 
-		new TestExecutor(null)
-			.importClass(packageName + ".moreDummies.MyDummy2")
-			.test("MyDummy", "MyDummy2");
+		testBuilder
+			.configurator(test -> test.importClass(packageName + ".moreDummies.MyDummy2"))
+			.addTest("MyDummy", "MyDummy2");
 
-		new TestExecutor(null)
-			.importClass(packageName + ".DummyClass.InternalClassStage1")
-			.test("InternalC",									"InternalClassStage1")
-			.test("InternalClassStage1.v",						"value")
-			.test("InternalClassStage1.i",						"InternalClassStage2")
-			.test("InternalClassStage1.InternalClassStage2.",	"i");
+		testBuilder
+			.configurator(test -> test.importClass(packageName + ".DummyClass.InternalClassStage1"))
+			.addTest("InternalC",									"InternalClassStage1")
+			.addTest("InternalClassStage1.v",						"value")
+			.addTest("InternalClassStage1.i",						"InternalClassStage2")
+			.addTest("InternalClassStage1.InternalClassStage2.",	"i");
 
-		new TestExecutor(null)
-			.importClass(packageName + ".DummyClass.InternalClassStage1.InternalClassStage2")
-			.test("InternalC",				"InternalClassStage2")
-			.test("InternalClassStage2.",	"i");
+		testBuilder
+			.configurator(test -> test.importClass(packageName + ".DummyClass.InternalClassStage1.InternalClassStage2"))
+			.addTest("InternalC",				"InternalClassStage2")
+			.addTest("InternalClassStage2.",	"i");
 
-		new TestExecutor(null)
-			.minimumAccessLevel(AccessLevel.PUBLIC)
-			.unstableTest("Ma",		"Math")
-			.unstableTest("Math.p",	"pow(, )", "PI")
-			.unstableTest("Math.P",	"PI", "pow(, )");
+		testBuilder
+			.configurator(test -> test.minimumAccessLevel(AccessLevel.PUBLIC))
+			.addUnstableTest("Ma",		"Math")
+			.addUnstableTest("Math.p",	"pow(, )", "PI")
+			.addUnstableTest("Math.P",	"PI", "pow(, )");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass

@@ -1,29 +1,45 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
+import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
+import dd.kms.zenodot.evaluationTests.framework.TestData;
 import dd.kms.zenodot.settings.Variable;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class VariableTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class VariableTest extends EvaluationTest
 {
-	@Test
-	public void testVariable() {
+	public VariableTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
+		Object testInstance = new TestClass();
 		Variable variable1 = new Variable("xyz", 15.0, true);
 		Variable variable2 = new Variable("abc", "Test", true);
-
-		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.addVariable(variable1)
-			.addVariable(variable2)
-			.test("b + xyz",		18.0)
-			.test("xyz * i",		-15000.0)
-			.test("(int) xyz / f",	6.0f)
-			.test("b + abc",		"3Test")
-			.test("abc + i",		"Test-1000")
-			.test("abc + f",		"Test2.5")
-			.test("xyz + xyz",		30.0)
-			.test("abc + abc",		"TestTest")
-			.test("test(xyz)",		"15.0")
-			.test("test(abc)",		"Test");
+		return new EvaluationTestBuilder()
+			.testInstance(testInstance)
+			.configurator(test -> {
+				test.addVariable(variable1);
+				test.addVariable(variable2);
+			})
+			.addTest("b + xyz",			18.0)
+			.addTest("xyz * i",			-15000.0)
+			.addTest("(int) xyz / f",	6.0f)
+			.addTest("b + abc",			"3Test")
+			.addTest("abc + i",			"Test-1000")
+			.addTest("abc + f",			"Test2.5")
+			.addTest("xyz + xyz",		30.0)
+			.addTest("abc + abc",		"TestTest")
+			.addTest("test(xyz)",		"15.0")
+			.addTest("test(abc)",		"Test")
+			.build();
 	}
 
 	private static class TestClass

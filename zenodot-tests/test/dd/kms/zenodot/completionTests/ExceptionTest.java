@@ -1,29 +1,47 @@
 package dd.kms.zenodot.completionTests;
 
 import dd.kms.zenodot.ParseException;
+import dd.kms.zenodot.completionTests.framework.CompletionTest;
+import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
+import dd.kms.zenodot.completionTests.framework.TestData;
 import dd.kms.zenodot.settings.AccessLevel;
-import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class ExceptionTest
+import java.util.Collection;
+
+@RunWith(Parameterized.class)
+public class ExceptionTest extends CompletionTest
 {
-	@Test
-	public void testMethodException() {
+	public ExceptionTest(TestData testData) {
+		super(testData);
+	}
+
+	@Parameters(name = "{0}")
+	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		new TestExecutor(testInstance)
-			.test("doSomething(getInt(s), ",	"x");
+		CompletionTestBuilder testBuilder = new CompletionTestBuilder().testInstance(testInstance);
 
-		new ErrorTestExecutor(testInstance)
-			.test("String.valueOf(x = 2.0).l", ParseException.class);
+		testBuilder
+			.configurator(null)
+			.addTest("doSomething(getInt(s), ",	"x");
 
-		new ErrorTestExecutor(testInstance)
-			.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE)
-			.test("x = 2.0", ParseException.class);
+		testBuilder
+			.configurator(null)
+			.addTestWithError("String.valueOf(x = 2.0).l", ParseException.class);
 
-		new ErrorTestExecutor(testInstance)
-			.enableDynamicTyping()
-			.test("doSomething(getInt(s), ",	ParseException.class)
-			.test("doSomething(++i)",			ParseException.class)
-			.test("new TestClass('c').",		ParseException.class);
+		testBuilder
+			.configurator(test -> test.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE))
+			.addTestWithError("x = 2.0", ParseException.class);
+
+		testBuilder
+			.configurator(test -> test.enableDynamicTyping())
+			.addTestWithError("doSomething(getInt(s), ",	ParseException.class)
+			.addTestWithError("doSomething(++i)",			ParseException.class)
+			.addTestWithError("new TestClass('c').",		ParseException.class);
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass
