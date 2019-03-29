@@ -2,7 +2,7 @@ package dd.kms.zenodot.settings;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import dd.kms.zenodot.debug.ParserLoggerIF;
+import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserNullLogger;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 
@@ -16,8 +16,8 @@ public class ParserSettingsBuilder
 	private final ImmutableList.Builder<Variable>	variablesBuilder 			= ImmutableList.builder();
 	private AccessLevel								minimumAccessLevel			= AccessLevel.PUBLIC;
 	private boolean									enableDynamicTyping			= false;
-	private ObjectTreeNodeIF						customHierarchyRoot			= LeafObjectTreeNode.EMPTY;
-	private ParserLoggerIF							logger						= new ParserNullLogger();
+	private ObjectTreeNode customHierarchyRoot			= LeafObjectTreeNode.EMPTY;
+	private ParserLogger logger						= new ParserNullLogger();
 
 	public ParserSettingsBuilder() {}
 
@@ -84,7 +84,7 @@ public class ParserSettingsBuilder
 	/**
 	 * Call this method if you want to inject a custom hierarchy into the parser that is not represented
 	 * by field and method names of classes. Each node of the custom hierarchy must be wrapped into an
-	 * {@link ObjectTreeNodeIF}. Zenodot then provides code completion and evaluation for this hierarchy.<br/>
+	 * {@link ObjectTreeNode}. Zenodot then provides code completion and evaluation for this hierarchy.<br/>
 	 * <br/>
 	 * An access to a node in the custom hierarchy has to be embraced in curly braces {@code {...}}. The
 	 * character {@code #} is used to separate a child node from its parent node.<br/>
@@ -96,7 +96,7 @@ public class ParserSettingsBuilder
 	 *          {@code {File#Open Recent#README.md}} in the expression.
 	 *
 	 */
-	public ParserSettingsBuilder customHierarchyRoot(ObjectTreeNodeIF customHierarchyRoot) {
+	public ParserSettingsBuilder customHierarchyRoot(ObjectTreeNode customHierarchyRoot) {
 		this.customHierarchyRoot = customHierarchyRoot;
 		return this;
 	}
@@ -105,7 +105,7 @@ public class ParserSettingsBuilder
 	 * Specify a logger that receives messages during the parsing process. This is primarily meant for
 	 * debugging purposes.
 	 */
-	public ParserSettingsBuilder logger(ParserLoggerIF logger) {
+	public ParserSettingsBuilder logger(ParserLogger logger) {
 		this.logger = logger;
 		return this;
 	}

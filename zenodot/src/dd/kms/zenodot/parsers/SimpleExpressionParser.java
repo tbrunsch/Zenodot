@@ -1,6 +1,6 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -17,7 +17,7 @@ public class SimpleExpressionParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		return ParseUtils.parse(tokenStream, contextInfo, expectation,
 			parserToolbox.getLiteralParser(),
 			parserToolbox.getObjectFieldParser(),

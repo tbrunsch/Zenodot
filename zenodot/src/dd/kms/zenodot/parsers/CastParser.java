@@ -20,7 +20,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int position = tokenStream.getPosition();
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != '(') {
@@ -33,7 +33,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
-		ParseResultIF classParseResult = parserToolbox.getClassParser().parse(tokenStream, thisInfo, ParseExpectation.CLASS);
+		ParseResult classParseResult = parserToolbox.getClassParser().parse(tokenStream, thisInfo, ParseExpectation.CLASS);
 		ParseResultType parseResultType = classParseResult.getResultType();
 		log(LogLevel.INFO, "parse result: " + parseResultType);
 
@@ -63,9 +63,9 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		return parseAndCast(tokenStream, targetType);
 	}
 
-	private ParseResultIF parseAndCast(TokenStream tokenStream, TypeInfo targetType) {
+	private ParseResult parseAndCast(TokenStream tokenStream, TypeInfo targetType) {
 		log(LogLevel.INFO, "parsing object to cast at " + tokenStream);
-		ParseResultIF objectParseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
+		ParseResult objectParseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
 
 		if (ParseUtils.propagateParseResult(objectParseResult, ParseExpectation.OBJECT)) {
 			return objectParseResult;

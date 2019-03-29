@@ -1,10 +1,10 @@
 package dd.kms.zenodot.common;
 
 import dd.kms.zenodot.debug.ParserConsoleLogger;
-import dd.kms.zenodot.debug.ParserLoggerIF;
+import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserNullLogger;
 import dd.kms.zenodot.settings.AccessLevel;
-import dd.kms.zenodot.settings.ObjectTreeNodeIF;
+import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.settings.Variable;
 
@@ -46,7 +46,7 @@ public class AbstractTestExecutor<T extends AbstractTestExecutor>
 		return getBuilder();
 	}
 
-	public T customHierarchyRoot(ObjectTreeNodeIF root) {
+	public T customHierarchyRoot(ObjectTreeNode root) {
 		settingsBuilder.customHierarchyRoot(root);
 		return getBuilder();
 	}
@@ -66,8 +66,8 @@ public class AbstractTestExecutor<T extends AbstractTestExecutor>
 		return getBuilder();
 	}
 
-	protected ParserLoggerIF prepareLogger(boolean printToConsole, int numLoggedEntriesToStopAfter) {
-		ParserLoggerIF logger = printToConsole
+	protected ParserLogger prepareLogger(boolean printToConsole, int numLoggedEntriesToStopAfter) {
+		ParserLogger logger = printToConsole
 									? new ParserConsoleLogger().printNumberOfLoggedEntries(true)
 									: new ParserNullLogger();
 		logger.stopAfter(numLoggedEntriesToStopAfter);

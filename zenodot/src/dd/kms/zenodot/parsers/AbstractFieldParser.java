@@ -3,7 +3,7 @@ package dd.kms.zenodot.parsers;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ParseError;
-import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -29,7 +29,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 	abstract List<FieldInfo> getFieldInfos(C context);
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (contextCausesNullPointerException(context)) {

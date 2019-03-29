@@ -4,7 +4,7 @@ package dd.kms.zenodot.result;
  * An instance of this class is returned if an error has been encountered when parsing
  * a certain (sub-) expression.
  */
-public class ParseError implements ParseResultIF
+public class ParseError implements ParseResult
 {
 	/**
 	 * The type of error. The lower the ordinal, the higher the priority.

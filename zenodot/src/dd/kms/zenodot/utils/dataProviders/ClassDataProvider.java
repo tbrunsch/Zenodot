@@ -10,7 +10,7 @@ import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
-import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionClass;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionPackage;
@@ -97,7 +97,7 @@ public class ClassDataProvider
 	}
 
 	public CompletionSuggestions suggestClassesAndPackages(int insertionBegin, int insertionEnd, String classOrPackagePrefix) {
-		ImmutableMap.Builder<CompletionSuggestionIF, MatchRating> suggestionBuilder = ImmutableMap.builder();
+		ImmutableMap.Builder<CompletionSuggestion, MatchRating> suggestionBuilder = ImmutableMap.builder();
 
 		Set<ClassInfo> importedClasses = getImportedClasses();
 		Set<String> importedPackageNames = getImportedPackageNames();
@@ -117,7 +117,7 @@ public class ClassDataProvider
 		List<ClassInfo> classesToConsider = Arrays.stream(contextClass.getDeclaredClasses())
 			.map(clazz -> ClassInfo.forNameUnchecked(clazz.getName()))
 			.collect(Collectors.toList());
-		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			classesToConsider,
 			classInfo -> new CompletionSuggestionClass(classInfo, insertionBegin, insertionEnd),
 			rateClassFunc(expectedName)
@@ -176,7 +176,7 @@ public class ClassDataProvider
 		return classes;
 	}
 
-	private static Map<CompletionSuggestionIF, MatchRating> suggestUnqualifiedClasses(String classPrefix, int insertionBegin, int insertionEnd, Set<ClassInfo> classes, Set<ClassInfo> suggestedClasses) {
+	private static Map<CompletionSuggestion, MatchRating> suggestUnqualifiedClasses(String classPrefix, int insertionBegin, int insertionEnd, Set<ClassInfo> classes, Set<ClassInfo> suggestedClasses) {
 		if (ClassUtils.lastIndexOfPathSeparator(classPrefix) >= 0) {
 			// class is fully qualified, so no match
 			return ImmutableMap.of();
@@ -190,7 +190,7 @@ public class ClassDataProvider
 		);
 	}
 
-	private static Map<CompletionSuggestionIF, MatchRating> suggestQualifiedClasses(String classPrefixWithPackage, int insertionBegin, int insertionEnd, Set<ClassInfo> suggestedClasses) {
+	private static Map<CompletionSuggestion, MatchRating> suggestQualifiedClasses(String classPrefixWithPackage, int insertionBegin, int insertionEnd, Set<ClassInfo> suggestedClasses) {
 		String packageName = ClassUtils.getParentPath(classPrefixWithPackage);
 		if (packageName == null) {
 			// class is not fully qualified, so no match
@@ -221,7 +221,7 @@ public class ClassDataProvider
 		);
 	}
 
-	private static Map<CompletionSuggestionIF, MatchRating> suggestPackages(String packagePrefix, int insertionBegin, int insertionEnd) {
+	private static Map<CompletionSuggestion, MatchRating> suggestPackages(String packagePrefix, int insertionBegin, int insertionEnd) {
 		String parentPackage = ClassUtils.getParentPath(packagePrefix);
 		int lastSeparatorIndex = ClassUtils.lastIndexOfPathSeparator(packagePrefix);
 		List<String> suggestedPackageNames = new ArrayList<>();

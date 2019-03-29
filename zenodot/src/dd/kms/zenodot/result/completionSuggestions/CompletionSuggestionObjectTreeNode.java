@@ -1,18 +1,18 @@
 package dd.kms.zenodot.result.completionSuggestions;
 
-import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.IntRange;
-import dd.kms.zenodot.settings.ObjectTreeNodeIF;
+import dd.kms.zenodot.settings.ObjectTreeNode;
 
 import java.util.Objects;
 
-public class CompletionSuggestionObjectTreeNode implements CompletionSuggestionIF
+public class CompletionSuggestionObjectTreeNode implements CompletionSuggestion
 {
-	private final ObjectTreeNodeIF	node;
+	private final ObjectTreeNode node;
 	private final int 				insertionBegin;
 	private final int 				insertionEnd;
 
-	public CompletionSuggestionObjectTreeNode(ObjectTreeNodeIF node, int insertionBegin, int insertionEnd) {
+	public CompletionSuggestionObjectTreeNode(ObjectTreeNode node, int insertionBegin, int insertionEnd) {
 		this.node = node;
 		this.insertionBegin = insertionBegin;
 		this.insertionEnd = insertionEnd;

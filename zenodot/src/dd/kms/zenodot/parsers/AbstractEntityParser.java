@@ -2,7 +2,7 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogEntry;
-import dd.kms.zenodot.debug.ParserLoggerIF;
+import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -68,7 +68,7 @@ public abstract class AbstractEntityParser<C>
 {
 	final ParserToolbox				parserToolbox;
 	final ObjectInfo				thisInfo;
-	private final ParserLoggerIF	logger;
+	private final ParserLogger logger;
 
 	AbstractEntityParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		this.parserToolbox = parserToolbox;
@@ -83,13 +83,13 @@ public abstract class AbstractEntityParser<C>
 	 * The implementations are given a dedicated copy of the token stream, so they can do with it
 	 * whatever they like.
 	 */
-	abstract ParseResultIF doParse(TokenStream tokenStream, C context, ParseExpectation expectation);
+	abstract ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation);
 
-	public final ParseResultIF parse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	public final ParseResult parse(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		logger.beginChildScope();
 		log(LogLevel.INFO, "parsing at " + tokenStream);
 		try {
-			ParseResultIF parseResult = doParse(tokenStream.clone(), context, expectation);
+			ParseResult parseResult = doParse(tokenStream.clone(), context, expectation);
 			log(LogLevel.INFO, "parse result: " + parseResult.getResultType());
 			return checkExpectations(parseResult, expectation);
 		} finally {
@@ -113,7 +113,7 @@ public abstract class AbstractEntityParser<C>
 	 *          this parser is told to expect a String expression. However, parsing {@code 0} must not fail
 	 *          due to this expectation.
 	 */
-	ParseResultIF checkExpectations(ParseResultIF parseResult, ParseExpectation expectation) {
+	ParseResult checkExpectations(ParseResult parseResult, ParseExpectation expectation) {
 		ParseResultType parseResultType = parseResult.getResultType();
 		if (expectation.getEvaluationType() == ParseResultType.OBJECT_PARSE_RESULT && parseResultType == ParseResultType.CLASS_PARSE_RESULT) {
 			String message = "Expected an object, but found class " + ((ClassParseResult) parseResult).getType();

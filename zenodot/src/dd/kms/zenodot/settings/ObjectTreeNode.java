@@ -4,12 +4,12 @@ import javax.annotation.Nullable;
 
 /**
  * Interface for all nodes in the custom hierarchy injected into the parser. See
- * {@link ParserSettingsBuilder#customHierarchyRoot(ObjectTreeNodeIF)} for more
+ * {@link ParserSettingsBuilder#customHierarchyRoot(ObjectTreeNode)} for more
  * information.
  */
-public interface ObjectTreeNodeIF
+public interface ObjectTreeNode
 {
 	String getName();
-	Iterable<ObjectTreeNodeIF> getChildNodes();
+	Iterable<ObjectTreeNode> getChildNodes();
 	@Nullable Object getUserObject();
 }

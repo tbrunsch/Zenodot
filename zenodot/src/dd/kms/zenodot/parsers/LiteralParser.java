@@ -3,7 +3,7 @@ package dd.kms.zenodot.parsers;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ParseError;
-import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.result.ParseResultType;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -48,7 +48,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		if (!tokenStream.hasMore()) {
 			return new ParseError(tokenStream.getPosition(), "Expected a literal", ErrorType.WRONG_PARSER);
 		}
@@ -70,7 +70,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		}
 	}
 
-	private ParseResultIF parseStringLiteral(TokenStream tokenStream, ParseExpectation expectation) {
+	private ParseResult parseStringLiteral(TokenStream tokenStream, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		Token stringLiteralToken;
 		try {
@@ -90,7 +90,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		return parserToolbox.getObjectTailParser().parse(tokenStream, stringLiteralInfo, expectation);
 	}
 
-	private ParseResultIF parseCharacterLiteral(TokenStream tokenStream, ParseExpectation expectation) {
+	private ParseResult parseCharacterLiteral(TokenStream tokenStream, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		Token characterLiteralToken;
 		try {
@@ -113,7 +113,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		return parserToolbox.getObjectTailParser().parse(tokenStream, stringLiteralInfo, expectation);
 	}
 
-	private ParseResultIF parseNamedLiteral(TokenStream tokenStream, String literalName, ObjectInfo literalInfo, ParseExpectation expectation) {
+	private ParseResult parseNamedLiteral(TokenStream tokenStream, String literalName, ObjectInfo literalInfo, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		Token literalToken = tokenStream.readKeyWordUnchecked();
 		if (literalToken == null) {
@@ -132,7 +132,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		return parserToolbox.getObjectTailParser().parse(tokenStream, literalInfo, expectation);
 	}
 
-	private ParseResultIF parseNumericLiteral(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	private ParseResult parseNumericLiteral(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		char c = tokenStream.peekCharacter();
 		if (!"+-.0123456789".contains(String.valueOf(c))) {
@@ -142,7 +142,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 
 		AbstractEntityParser[] parsers = { longParser, intParser, floatParser, doubleParser };
 		for (AbstractEntityParser parser : parsers) {
-			ParseResultIF parseResult = parser.parse(tokenStream, contextInfo, expectation);
+			ParseResult parseResult = parser.parse(tokenStream, contextInfo, expectation);
 
 			if (parseResult.getResultType() != ParseResultType.PARSE_ERROR) {
 				return parseResult;
@@ -168,7 +168,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		@Override
-		ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+		ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 			int startPosition = tokenStream.getPosition();
 			Token token;
 			try {

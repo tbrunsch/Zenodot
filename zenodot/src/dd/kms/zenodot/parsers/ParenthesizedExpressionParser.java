@@ -5,7 +5,7 @@ import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseError.ErrorType;
-import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -22,7 +22,7 @@ public class ParenthesizedExpressionParser extends AbstractEntityParser<ObjectIn
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int position = tokenStream.getPosition();
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != '(') {
@@ -30,7 +30,7 @@ public class ParenthesizedExpressionParser extends AbstractEntityParser<ObjectIn
 			return new ParseError(position, "Expected opening parenthesis '('", ErrorType.WRONG_PARSER);
 		}
 
-		ParseResultIF expressionParseResult = parserToolbox.getExpressionParser().parse(tokenStream, contextInfo, expectation);
+		ParseResult expressionParseResult = parserToolbox.getExpressionParser().parse(tokenStream, contextInfo, expectation);
 
 		if (ParseUtils.propagateParseResult(expressionParseResult, expectation)) {
 			return expressionParseResult;

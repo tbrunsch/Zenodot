@@ -2,7 +2,7 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.ParseError;
-import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.tokenizer.Token;
@@ -29,7 +29,7 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (tokenStream.isCaretAtPosition()) {

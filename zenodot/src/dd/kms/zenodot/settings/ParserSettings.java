@@ -1,6 +1,6 @@
 package dd.kms.zenodot.settings;
 
-import dd.kms.zenodot.debug.ParserLoggerIF;
+import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 
@@ -18,11 +18,11 @@ public class ParserSettings
 	private final VariablePool variablePool;
 	private final AccessLevel		minimumAccessLevel;
 	private final boolean			enableDynamicTyping;
-	private final ObjectTreeNodeIF	customHierarchyRoot;
+	private final ObjectTreeNode customHierarchyRoot;
 
-	private final ParserLoggerIF	logger;
+	private final ParserLogger logger;
 
-	ParserSettings(Set<ClassInfo> importedClasses, Set<String> importedPackageNames, List<Variable> variables, AccessLevel minimumAccessLevel, boolean enableDynamicTyping, ObjectTreeNodeIF customHierarchyRoot, ParserLoggerIF logger) {
+	ParserSettings(Set<ClassInfo> importedClasses, Set<String> importedPackageNames, List<Variable> variables, AccessLevel minimumAccessLevel, boolean enableDynamicTyping, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
 		this.imports = new Imports(importedClasses, importedPackageNames);
 		this.variablePool = new VariablePool(variables);
 		this.minimumAccessLevel = minimumAccessLevel;
@@ -47,11 +47,11 @@ public class ParserSettings
 		return enableDynamicTyping;
 	}
 
-	public ObjectTreeNodeIF getCustomHierarchyRoot() {
+	public ObjectTreeNode getCustomHierarchyRoot() {
 		return customHierarchyRoot;
 	}
 
-	public ParserLoggerIF getLogger() {
+	public ParserLogger getLogger() {
 		return logger;
 	}
 

@@ -3,7 +3,7 @@ package dd.kms.zenodot.result;
 /**
  * Description of one completion suggestion.
  */
-public interface CompletionSuggestionIF
+public interface CompletionSuggestion
 {
 	/**
 	 * Returns the range that should be replaced by the completion suggestion

@@ -15,13 +15,13 @@ public class ObjectInfo
 
 	private final Object			object;
 	private final TypeInfo			declaredType;
-	private final ValueSetterIF		valueSetter;
+	private final ValueSetter valueSetter;
 
 	public ObjectInfo(Object object, TypeInfo declaredType) {
 		this(object, declaredType, null);
 	}
 
-	public ObjectInfo(Object object, TypeInfo declaredType, ValueSetterIF valueSetter) {
+	public ObjectInfo(Object object, TypeInfo declaredType, ValueSetter valueSetter) {
 		this.object = object;
 		this.declaredType = Preconditions.checkNotNull(declaredType);
 		this.valueSetter = valueSetter;
@@ -35,7 +35,7 @@ public class ObjectInfo
 		return declaredType;
 	}
 
-	public ValueSetterIF getValueSetter() {
+	public ValueSetter getValueSetter() {
 		return valueSetter;
 	}
 
@@ -50,7 +50,7 @@ public class ObjectInfo
 	}
 
 	@FunctionalInterface
-	public interface ValueSetterIF
+	public interface ValueSetter
 	{
 		void setObject(Object object) throws IllegalArgumentException;
 	}

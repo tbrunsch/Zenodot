@@ -1,7 +1,7 @@
 package dd.kms.zenodot.common;
 
 import dd.kms.zenodot.settings.LeafObjectTreeNode;
-import dd.kms.zenodot.settings.ObjectTreeNodeIF;
+import dd.kms.zenodot.settings.ObjectTreeNode;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -28,14 +28,14 @@ public class CustomHierarchy
 
 	public static final ComponentManager	COMPONENT_MANAGER						= new ComponentManager(EXCEL_IMPORTER, PRODUCTIVITY_CALCULATION);
 
-	public static final ObjectTreeNodeIF	ROOT									= new ObjectTreeNodeIF() {
+	public static final ObjectTreeNode ROOT									= new ObjectTreeNode() {
 																						@Override
 																						public String getName() {
 																							return "root";
 																						}
 
 																						@Override
-																						public List<ObjectTreeNodeIF> getChildNodes() {
+																						public List<ObjectTreeNode> getChildNodes() {
 																							return Arrays.asList(
 																									new LeafObjectTreeNode("Component Manager", COMPONENT_MANAGER),
 																									new ComponentNode(EXCEL_IMPORTER),
@@ -104,7 +104,7 @@ public class CustomHierarchy
 		}
 	}
 
-	private static class ComponentNode implements ObjectTreeNodeIF
+	private static class ComponentNode implements ObjectTreeNode
 	{
 		private final Component component;
 
@@ -116,7 +116,7 @@ public class CustomHierarchy
 		}
 
 		@Override
-		public List<ObjectTreeNodeIF> getChildNodes() {
+		public List<ObjectTreeNode> getChildNodes() {
 			return component.dataItems.stream().map(dataItem -> new LeafObjectTreeNode(dataItem.name, dataItem)).collect(Collectors.toList());
 		}
 

@@ -27,7 +27,7 @@ import static dd.kms.zenodot.utils.dataProviders.OperatorResultProvider.Operator
  */
 public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 {
-	private static final Map<BinaryOperator, OperatorImplementationIF>	OPERATOR_IMPLEMENTATIONS = ImmutableMap.<BinaryOperator, OperatorImplementationIF>builder()
+	private static final Map<BinaryOperator, OperatorImplementation>	OPERATOR_IMPLEMENTATIONS = ImmutableMap.<BinaryOperator, OperatorImplementation>builder()
 		.put(BinaryOperator.MULTIPLY, 					OperatorResultProvider::getMultiplicationInfo)
 		.put(BinaryOperator.DIVIDE, 					OperatorResultProvider::getDivisionInfo)
 		.put(BinaryOperator.MODULO,						OperatorResultProvider::getModuloInfo)
@@ -58,9 +58,9 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		log(LogLevel.INFO, "parsing first expression");
-		ParseResultIF parseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
+		ParseResult parseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
 
 		if (ParseUtils.propagateParseResult(parseResult, expectation)) {
 			return parseResult;
@@ -149,7 +149,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF checkExpectations(ParseResultIF parseResult, ParseExpectation expectation) {
+	ParseResult checkExpectations(ParseResult parseResult, ParseExpectation expectation) {
 		parseResult = super.checkExpectations(parseResult, expectation);
 
 		if (parseResult.getResultType() != ParseResultType.OBJECT_PARSE_RESULT) {
@@ -189,7 +189,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@FunctionalInterface
-	private interface OperatorImplementationIF
+	private interface OperatorImplementation
 	{
 		ObjectInfo apply(OperatorResultProvider operatorResultProvider, ObjectInfo lhs, ObjectInfo rhs) throws OperatorException;
 	}

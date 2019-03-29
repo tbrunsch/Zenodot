@@ -5,7 +5,7 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 /**
  * An instance of this class is returned if the subexpression describes an object.
  */
-public class ObjectParseResult implements ParseResultIF
+public class ObjectParseResult implements ParseResult
 {
 	private final int			position; // exclusive
 	private final ObjectInfo 	objectInfo;

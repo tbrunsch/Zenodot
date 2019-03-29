@@ -1,7 +1,7 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.result.ClassParseResult;
-import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.result.ParseResultType;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -27,7 +27,7 @@ public class ClassTailParser extends AbstractTailParser<TypeInfo>
 	}
 
 	@Override
-	ParseResultIF parseDot(TokenStream tokenStream, TypeInfo classType, ParseExpectation expectation) {
+	ParseResult parseDot(TokenStream tokenStream, TypeInfo classType, ParseExpectation expectation) {
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		assert characterToken.getValue().equals(".");
 
@@ -46,7 +46,7 @@ public class ClassTailParser extends AbstractTailParser<TypeInfo>
 	}
 
 	@Override
-	ParseResultIF parseOpeningSquareBracket(TokenStream tokenStream, TypeInfo context, ParseExpectation expectation) {
+	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, TypeInfo context, ParseExpectation expectation) {
 		/*
 		 * If called under ConstructorParser, then this is an array construction. As we do not
 		 * know, in which circumstances this method is called, the caller must handle this
@@ -56,7 +56,7 @@ public class ClassTailParser extends AbstractTailParser<TypeInfo>
 	}
 
 	@Override
-	ParseResultIF createParseResult(int position, TypeInfo type) {
+	ParseResult createParseResult(int position, TypeInfo type) {
 		return new ClassParseResult(position, type);
 	}
 }

@@ -1,6 +1,6 @@
 package dd.kms.zenodot.debug;
 
-public abstract class AbstractParserLogger implements ParserLoggerIF
+public abstract class AbstractParserLogger implements ParserLogger
 {
 	private int 	indent 						= 0;
 	private int		numLoggedEntries			= 0;

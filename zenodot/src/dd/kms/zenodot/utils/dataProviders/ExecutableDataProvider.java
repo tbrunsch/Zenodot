@@ -39,7 +39,7 @@ public class ExecutableDataProvider
 	}
 
 	public CompletionSuggestions suggestMethods(String expectedName, List<AbstractExecutableInfo> methodInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
-		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			methodInfos,
 			methodInfo -> new CompletionSuggestionMethod(methodInfo, insertionBegin, insertionEnd),
 			rateMethodByNameAndTypesFunc(expectedName, expectation)
@@ -47,8 +47,8 @@ public class ExecutableDataProvider
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
 
-	public List<ParseResultIF> parseExecutableArguments(TokenStream tokenStream, List<AbstractExecutableInfo> availableExecutableInfos) {
-		List<ParseResultIF> arguments = new ArrayList<>();
+	public List<ParseResult> parseExecutableArguments(TokenStream tokenStream, List<AbstractExecutableInfo> availableExecutableInfos) {
+		List<ParseResult> arguments = new ArrayList<>();
 
 		int position;
 		Token characterToken = tokenStream.readCharacterUnchecked();
@@ -82,7 +82,7 @@ public class ExecutableDataProvider
 			 * Parse expression for argument i
 			 */
 			ParseExpectation argumentExpectation = ParseExpectationBuilder.expectObject().allowedTypes(expectedArgumentTypes_i).build();
-			ParseResultIF argumentParseResult_i = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argumentExpectation);
+			ParseResult argumentParseResult_i = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argumentExpectation);
 			arguments.add(argumentParseResult_i);
 
 			if (ParseUtils.propagateParseResult(argumentParseResult_i, argumentExpectation)) {

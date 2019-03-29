@@ -3,8 +3,8 @@ package dd.kms.zenodot.completionTests.framework;
 import dd.kms.zenodot.JavaParser;
 import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.common.AbstractTest;
-import dd.kms.zenodot.debug.ParserLoggerIF;
-import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.debug.ParserLogger;
+import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.settings.ParserSettings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +37,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 	}
 
 	void testCompletion(String javaExpression, String[] expectedSuggestions) {
-		ParserLoggerIF logger = prepareLogger(false, -1);
+		ParserLogger logger = prepareLogger(false, -1);
 
 		boolean repeatTestAtError = isStopAtError() || isPrintLogEntriesAtError();
 		if (!runTest(javaExpression, !repeatTestAtError, expectedSuggestions) && repeatTestAtError) {
@@ -61,7 +61,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 
 	private boolean runTest(String javaExpression, boolean executeAssertions, String... expectedSuggestions) {
 		ParserSettings settings = settingsBuilder.build();
-		ParserLoggerIF logger = settings.getLogger();
+		ParserLogger logger = settings.getLogger();
 
 		JavaParser parser = new JavaParser();
 		int caret = javaExpression.length();
@@ -96,7 +96,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		return true;
 	}
 
-	private static List<String> extractSuggestions(List<CompletionSuggestionIF> completions) {
+	private static List<String> extractSuggestions(List<CompletionSuggestion> completions) {
 		return completions.stream()
 				.map(completion -> completion.getTextToInsert())
 				.collect(Collectors.toList());

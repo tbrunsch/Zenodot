@@ -5,7 +5,7 @@ import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.settings.Variable;
@@ -32,7 +32,7 @@ public class VariableDataProvider
 
 	public CompletionSuggestions suggestVariables(String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		List<Variable> variables = variablePool.getVariables().stream().sorted(Comparator.comparing(Variable::getName)).collect(Collectors.toList());
-		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			variables,
 			variable -> new CompletionSuggestionVariable(variable, insertionBegin, insertionEnd),
 			rateVariableByNameAndTypesFunc(expectedName, expectation)

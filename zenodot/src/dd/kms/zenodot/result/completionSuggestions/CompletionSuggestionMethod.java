@@ -1,6 +1,6 @@
 package dd.kms.zenodot.result.completionSuggestions;
 
-import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.IntRange;
 import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
 import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class CompletionSuggestionMethod implements CompletionSuggestionIF
+public class CompletionSuggestionMethod implements CompletionSuggestion
 {
 	private final AbstractExecutableInfo methodInfo;
 	private final int	 			insertionBegin;

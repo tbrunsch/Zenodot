@@ -1,13 +1,13 @@
 package dd.kms.zenodot.result.completionSuggestions;
 
-import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.IntRange;
 import dd.kms.zenodot.utils.dataProviders.FieldDataProvider;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
 
 import java.util.Objects;
 
-public class CompletionSuggestionField implements CompletionSuggestionIF
+public class CompletionSuggestionField implements CompletionSuggestion
 {
 	private final FieldInfo	fieldInfo;
 	private final int 		insertionBegin;

@@ -2,7 +2,7 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.result.ClassParseResult;
 import dd.kms.zenodot.result.ParseError;
-import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -25,8 +25,8 @@ public class InnerClassParser extends AbstractEntityParser<TypeInfo>
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, TypeInfo contextType, ParseExpectation expectation) {
-		ParseResultIF innerClassParseResult = readInnerClass(tokenStream, contextType);
+	ParseResult doParse(TokenStream tokenStream, TypeInfo contextType, ParseExpectation expectation) {
+		ParseResult innerClassParseResult = readInnerClass(tokenStream, contextType);
 
 		if (ParseUtils.propagateParseResult(innerClassParseResult, ParseExpectation.CLASS)) {
 			return innerClassParseResult;
@@ -41,7 +41,7 @@ public class InnerClassParser extends AbstractEntityParser<TypeInfo>
 		return parserToolbox.getClassTailParser().parse(tokenStream, innerClassType, expectation);
 	}
 
-	private ParseResultIF readInnerClass(TokenStream tokenStream, TypeInfo contextType) {
+	private ParseResult readInnerClass(TokenStream tokenStream, TypeInfo contextType) {
 		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
 
 		Class<?> contextClass = contextType.getRawType();

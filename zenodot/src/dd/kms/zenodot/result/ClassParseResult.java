@@ -5,7 +5,7 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 /**
  * An instance of this class is returned if the subexpression describes a class.
  */
-public class ClassParseResult implements ParseResultIF
+public class ClassParseResult implements ParseResult
 {
 	private final int		position; // exclusive
 	private final TypeInfo type;

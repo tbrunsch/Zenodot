@@ -320,7 +320,7 @@ public class OperatorResultProvider
 	}
 
 	public ObjectInfo getAssignmentInfo(ObjectInfo lhs, ObjectInfo rhs) throws OperatorException {
-		ObjectInfo.ValueSetterIF lhsValueSetter = lhs.getValueSetter();
+		ObjectInfo.ValueSetter lhsValueSetter = lhs.getValueSetter();
 		if (lhsValueSetter == null) {
 			throw new OperatorException("Cannot assign values to non-lvalues or final fields");
 		}
@@ -404,7 +404,7 @@ public class OperatorResultProvider
 	}
 
 	private ObjectInfo applyUnaryOperatorWithAssignment(ObjectInfo objectInfo, UnaryOperator operator) throws OperatorException {
-		ObjectInfo.ValueSetterIF valueSetter = objectInfo.getValueSetter();
+		ObjectInfo.ValueSetter valueSetter = objectInfo.getValueSetter();
 		if (valueSetter == null) {
 			throw new OperatorException("Cannot assign values to non-lvalues or final fields");
 		}

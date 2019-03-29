@@ -4,7 +4,7 @@ import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.result.ParseError;
-import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -29,7 +29,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF parseDot(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult parseDot(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		assert characterToken.getValue().equals(".");
 
@@ -42,7 +42,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF parseOpeningSquareBracket(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		// array access
 		TypeInfo currentContextType = parserToolbox.getObjectInfoProvider().getType(contextInfo);
 		TypeInfo elementType = currentContextType.getComponentType();
@@ -53,7 +53,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 
 		int indexStartPosition = tokenStream.getPosition();
 		ParseExpectation indexExpectation = ParseExpectationBuilder.expectObject().allowedType(TypeInfo.of(int.class)).build();
-		ParseResultIF arrayIndexParseResult = parseArrayIndex(tokenStream, indexExpectation);
+		ParseResult arrayIndexParseResult = parseArrayIndex(tokenStream, indexExpectation);
 
 		if (ParseUtils.propagateParseResult(arrayIndexParseResult, indexExpectation)) {
 			return arrayIndexParseResult;
@@ -76,17 +76,17 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF createParseResult(int position, ObjectInfo objectInfo) {
+	ParseResult createParseResult(int position, ObjectInfo objectInfo) {
 		return new ObjectParseResult(position, objectInfo);
 	}
 
-	private ParseResultIF parseArrayIndex(TokenStream tokenStream, ParseExpectation expectation) {
+	private ParseResult parseArrayIndex(TokenStream tokenStream, ParseExpectation expectation) {
 		log(LogLevel.INFO, "parsing array index");
 
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		assert characterToken.getValue().equals("[");
 
-		ParseResultIF arrayIndexParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
+		ParseResult arrayIndexParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
 
 		if (ParseUtils.propagateParseResult(arrayIndexParseResult, expectation)) {
 			return arrayIndexParseResult;

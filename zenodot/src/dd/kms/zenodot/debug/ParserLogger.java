@@ -8,7 +8,7 @@ package dd.kms.zenodot.debug;
  * If you want to register a logger for the parsing process, then you must specify it in the
  * {@link dd.kms.zenodot.settings.ParserSettings}.
  */
-public interface ParserLoggerIF
+public interface ParserLogger
 {
 	void beginChildScope();
 	void endChildScope();

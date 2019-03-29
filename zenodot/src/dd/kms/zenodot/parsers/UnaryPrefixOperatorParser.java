@@ -6,7 +6,7 @@ import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseError.ErrorType;
-import dd.kms.zenodot.result.ParseResultIF;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 {
-	private static final Map<UnaryOperator, OperatorImplementationIF>	OPERATOR_IMPLEMENTATIONS = ImmutableMap.<UnaryOperator, OperatorImplementationIF>builder()
+	private static final Map<UnaryOperator, OperatorImplementation>	OPERATOR_IMPLEMENTATIONS = ImmutableMap.<UnaryOperator, OperatorImplementation>builder()
 		.put(UnaryOperator.INCREMENT, 	OperatorResultProvider::getIncrementInfo)
 		.put(UnaryOperator.DECREMENT, 	OperatorResultProvider::getDecrementInfo)
 		.put(UnaryOperator.PLUS, 		OperatorResultProvider::getPlusInfo)
@@ -47,7 +47,7 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		Token operatorToken = tokenStream.readUnaryOperatorUnchecked();
 		if (operatorToken == null) {
 			log(LogLevel.ERROR, "expected unary operator");
@@ -58,7 +58,7 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 		}
 		UnaryOperator operator = UnaryOperator.getValue(operatorToken.getValue());
 
-		ParseResultIF parseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
+		ParseResult parseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
 
 		if (ParseUtils.propagateParseResult(parseResult, expectation)) {
 			return parseResult;
@@ -84,7 +84,7 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@FunctionalInterface
-	private interface OperatorImplementationIF
+	private interface OperatorImplementation
 	{
 		ObjectInfo apply(OperatorResultProvider operatorResultProvider, ObjectInfo objectInfo) throws OperatorException;
 	}

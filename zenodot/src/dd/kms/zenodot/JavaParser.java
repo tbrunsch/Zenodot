@@ -36,8 +36,8 @@ public class JavaParser
 	 *
 	 * @throws ParseException
 	 */
-	public List<CompletionSuggestionIF> suggestCodeCompletion(String javaExpression, int caret, ParserSettings settings, Object valueOfThis) throws ParseException {
-		ParseResultIF parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caret, valueOfThis);
+	public List<CompletionSuggestion> suggestCodeCompletion(String javaExpression, int caret, ParserSettings settings, Object valueOfThis) throws ParseException {
+		ParseResult parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caret, valueOfThis);
 
 		switch (parseResult.getResultType()) {
 			case OBJECT_PARSE_RESULT: {
@@ -60,8 +60,8 @@ public class JavaParser
 			}
 			case COMPLETION_SUGGESTIONS: {
 				CompletionSuggestions completionSuggestions = (CompletionSuggestions) parseResult;
-				Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = completionSuggestions.getRatedSuggestions();
-				List<CompletionSuggestionIF> sortedSuggestions = new ArrayList<>(ratedSuggestions.keySet());
+				Map<CompletionSuggestion, MatchRating> ratedSuggestions = completionSuggestions.getRatedSuggestions();
+				List<CompletionSuggestion> sortedSuggestions = new ArrayList<>(ratedSuggestions.keySet());
 				sortedSuggestions.sort(Comparator.comparingInt(JavaParser::getCompletionSuggestionPriorityByClass));
 				sortedSuggestions.sort(Comparator.comparing(ratedSuggestions::get));
 				return sortedSuggestions;
@@ -77,7 +77,7 @@ public class JavaParser
 	 * @throws ParseException
 	 */
 	public Object evaluate(String javaExpression, ParserSettings settings, Object valueOfThis) throws ParseException {
-		ParseResultIF parseResult;
+		ParseResult parseResult;
 
 		if (!settings.isEnableDynamicTyping()) {
 			// First iteration without evaluation to avoid side effects when errors occur
@@ -118,7 +118,7 @@ public class JavaParser
 		}
 	}
 
-	private ParseResultIF parse(String javaExpression, ParserSettings settings, ParseMode parseMode, int caret, Object valueOfThis) {
+	private ParseResult parse(String javaExpression, ParserSettings settings, ParseMode parseMode, int caret, Object valueOfThis) {
 		ObjectInfo thisInfo = new ObjectInfo(valueOfThis, TypeInfo.UNKNOWN);
 		ParserToolbox parserPool  = new ParserToolbox(thisInfo, settings, parseMode);
 		TokenStream tokenStream = new TokenStream(javaExpression, caret);
@@ -149,8 +149,8 @@ public class JavaParser
 	/**
 	 * Prefers variables ({@link CompletionSuggestionVariable}) over fields ({@link CompletionSuggestionField}) over other suggestions.
 	 */
-	private static int getCompletionSuggestionPriorityByClass(CompletionSuggestionIF suggestion) {
-		Class<? extends CompletionSuggestionIF> suggestionClass = suggestion.getClass();
+	private static int getCompletionSuggestionPriorityByClass(CompletionSuggestion suggestion) {
+		Class<? extends CompletionSuggestion> suggestionClass = suggestion.getClass();
 		return	suggestionClass == CompletionSuggestionVariable.class	? 0 :
 				suggestionClass == CompletionSuggestionField.class		? 1
 																		: 2;

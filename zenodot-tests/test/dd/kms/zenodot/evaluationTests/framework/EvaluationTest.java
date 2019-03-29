@@ -5,17 +5,13 @@ import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogEntry;
-import dd.kms.zenodot.debug.ParserLoggerIF;
-import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.settings.ParserSettings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.text.MessageFormat;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -39,7 +35,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 	}
 
 	void testEvaluation(String javaExpression, Object expectedValue) {
-		ParserLoggerIF logger = prepareLogger(false, -1);
+		ParserLogger logger = prepareLogger(false, -1);
 
 		boolean repeatTestAtError = isStopAtError() || isPrintLogEntriesAtError();
 		if (!runTest(javaExpression, !repeatTestAtError, expectedValue) && repeatTestAtError) {
@@ -64,7 +60,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 	private boolean runTest(String javaExpression, boolean executeAssertions, Object expectedValue) {
 		ParserSettings settings = settingsBuilder.build();
-		ParserLoggerIF logger = settings.getLogger();
+		ParserLogger logger = settings.getLogger();
 
 		logger.log(new ParserLogEntry(LogLevel.INFO, "Test", "Testing expression '" + javaExpression + "'...\n"));
 

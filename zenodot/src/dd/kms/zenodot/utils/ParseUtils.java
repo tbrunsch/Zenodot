@@ -24,14 +24,14 @@ public class ParseUtils
 	 * Tries to parse a subexpression with the specified parsers. The result is obtained from merging the result
 	 * of each of the specified parsers.
 	 */
-	public static <C> ParseResultIF parse(TokenStream tokenStream, C context, ParseExpectation expectation, AbstractEntityParser<? super C>... parsers) {
-		List<ParseResultIF> parseResults = Arrays.stream(parsers)
+	public static <C> ParseResult parse(TokenStream tokenStream, C context, ParseExpectation expectation, AbstractEntityParser<? super C>... parsers) {
+		List<ParseResult> parseResults = Arrays.stream(parsers)
 			.map(parser -> parser.parse(tokenStream, context, expectation))
 			.collect(Collectors.toList());
 		return mergeParseResults(parseResults);
 	}
 
-	private static ParseResultIF mergeParseResults(List<ParseResultIF> parseResults) {
+	private static ParseResult mergeParseResults(List<ParseResult> parseResults) {
 		if (parseResults.isEmpty()) {
 			throw new IllegalArgumentException("Internal error: Cannot merge 0 parse results");
 		}
@@ -39,7 +39,7 @@ public class ParseUtils
 		List<AmbiguousParseResult> ambiguousResults = filterParseResults(parseResults, AmbiguousParseResult.class);
 		List<CompletionSuggestions> completionSuggestions = filterParseResults(parseResults, CompletionSuggestions.class);
 		List<ParseError> errors = filterParseResults(parseResults, ParseError.class);
-		List<ParseResultIF> results = new ArrayList<>();
+		List<ParseResult> results = new ArrayList<>();
 		results.addAll(filterParseResults(parseResults, ObjectParseResult.class));
 		results.addAll(filterParseResults(parseResults, ClassParseResult.class));
 
@@ -63,17 +63,17 @@ public class ParseUtils
 		}
 	}
 
-	private static <T> List<T> filterParseResults(List<ParseResultIF> parseResults, Class<T> filterClass) {
+	private static <T> List<T> filterParseResults(List<ParseResult> parseResults, Class<T> filterClass) {
 		return parseResults.stream().filter(filterClass::isInstance).map(filterClass::cast).collect(Collectors.toList());
 	}
 
-	private static ParseResultIF mergeCompletionSuggestions(List<CompletionSuggestions> completionSuggestions) {
-		Map<CompletionSuggestionIF, MatchRating> mergedRatedSuggestions = new LinkedHashMap<>();
+	private static ParseResult mergeCompletionSuggestions(List<CompletionSuggestions> completionSuggestions) {
+		Map<CompletionSuggestion, MatchRating> mergedRatedSuggestions = new LinkedHashMap<>();
 		int position = Integer.MAX_VALUE;
 		for (CompletionSuggestions suggestions : completionSuggestions) {
 			position = Math.min(position, suggestions.getPosition());
-			Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = suggestions.getRatedSuggestions();
-			for (CompletionSuggestionIF suggestion : ratedSuggestions.keySet()) {
+			Map<CompletionSuggestion, MatchRating> ratedSuggestions = suggestions.getRatedSuggestions();
+			for (CompletionSuggestion suggestion : ratedSuggestions.keySet()) {
 				MatchRating rating = mergedRatedSuggestions.containsKey(suggestion)
 										? mergedRatedSuggestions.get(suggestion)
 										: MatchRating.NONE;
@@ -84,13 +84,13 @@ public class ParseUtils
 		return new CompletionSuggestions(position, mergedRatedSuggestions);
 	}
 
-	private static ParseResultIF mergeResults(List<AmbiguousParseResult> ambiguousResults, List<ParseResultIF> results) {
+	private static ParseResult mergeResults(List<AmbiguousParseResult> ambiguousResults, List<ParseResult> results) {
 		int position = ambiguousResults.isEmpty() ? results.get(0).getPosition() : ambiguousResults.get(0).getPosition();
 		StringBuilder builder = new StringBuilder("Ambiguous expression:");
 		for (AmbiguousParseResult ambiguousResult : ambiguousResults) {
 			builder.append("\n").append(ambiguousResult.getMessage());
 		}
-		for (ParseResultIF result : results) {
+		for (ParseResult result : results) {
 			if (result instanceof ObjectParseResult) {
 				builder.append("Expression can be evaluated to object of type ").append(((ObjectParseResult) result).getObjectInfo().getDeclaredType());
 			} else if (result instanceof ClassParseResult) {
@@ -128,10 +128,10 @@ public class ParseUtils
 	/*
 	 * Completion Suggestions
 	 */
-	public static <T> Map<CompletionSuggestionIF, MatchRating> createRatedSuggestions(Iterable<T> objects, Function<T, CompletionSuggestionIF> suggestionBuilder, Function<T, MatchRating> ratingFunc) {
-		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = new LinkedHashMap<>();
+	public static <T> Map<CompletionSuggestion, MatchRating> createRatedSuggestions(Iterable<T> objects, Function<T, CompletionSuggestion> suggestionBuilder, Function<T, MatchRating> ratingFunc) {
+		Map<CompletionSuggestion, MatchRating> ratedSuggestions = new LinkedHashMap<>();
 		for (T object : objects) {
-			CompletionSuggestionIF suggestion = suggestionBuilder.apply(object);
+			CompletionSuggestion suggestion = suggestionBuilder.apply(object);
 			MatchRating rating = ratingFunc.apply(object);
 			ratedSuggestions.put(suggestion, rating);
 		}
@@ -145,7 +145,7 @@ public class ParseUtils
 	 * Returns true if the parse result is not of the expected type. This is the case for completion suggestions,
 	 * errors, and ambiguous parse results.
 	 */
-	public static boolean propagateParseResult(ParseResultIF parseResult, ParseExpectation expectation) {
+	public static boolean propagateParseResult(ParseResult parseResult, ParseExpectation expectation) {
 		ParseResultType parseResultType = parseResult.getResultType();
 		ParseResultType expectedEvaluationType = expectation.getEvaluationType();
 		if (expectedEvaluationType == ParseResultType.OBJECT_PARSE_RESULT && parseResultType == ParseResultType.CLASS_PARSE_RESULT) {

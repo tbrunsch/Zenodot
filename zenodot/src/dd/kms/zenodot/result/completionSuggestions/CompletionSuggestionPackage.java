@@ -1,11 +1,11 @@
 package dd.kms.zenodot.result.completionSuggestions;
 
-import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.IntRange;
 
 import java.util.Objects;
 
-public class CompletionSuggestionPackage implements CompletionSuggestionIF
+public class CompletionSuggestionPackage implements CompletionSuggestion
 {
 	private final String	packageName;
 	private final int 		insertionBegin;

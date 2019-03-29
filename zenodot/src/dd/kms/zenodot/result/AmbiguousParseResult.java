@@ -12,7 +12,7 @@ package dd.kms.zenodot.result;
  *     </li>
  * </ul>
  */
-public class AmbiguousParseResult implements ParseResultIF
+public class AmbiguousParseResult implements ParseResult
 {
 	private final int		position;
 	private final String	message;

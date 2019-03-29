@@ -61,11 +61,11 @@ public class ObjectInfoProvider
 				throw new IllegalStateException("Internal error: Unexpected IllegalAccessException: " + e.getMessage());
 			}
 		}
-		ObjectInfo.ValueSetterIF valueSetter = getFieldValueSetter(contextObject, fieldInfo);
+		ObjectInfo.ValueSetter valueSetter = getFieldValueSetter(contextObject, fieldInfo);
 		return new ObjectInfo(fieldValue, fieldInfo.getType(), valueSetter);
 	}
 
-	private ObjectInfo.ValueSetterIF getFieldValueSetter(Object contextObject, FieldInfo fieldInfo) {
+	private ObjectInfo.ValueSetter getFieldValueSetter(Object contextObject, FieldInfo fieldInfo) {
 		if (fieldInfo.isFinal()) {
 			return null;
 		}
@@ -96,7 +96,7 @@ public class ObjectInfoProvider
 
 	public ObjectInfo getArrayElementInfo(ObjectInfo arrayInfo, ObjectInfo indexInfo) {
 		final Object arrayElementValue;
-		final ObjectInfo.ValueSetterIF valueSetter;
+		final ObjectInfo.ValueSetter valueSetter;
 		if (evaluationMode == EvaluationMode.NONE) {
 			arrayElementValue = ObjectInfo.INDETERMINATE;
 			valueSetter = null;

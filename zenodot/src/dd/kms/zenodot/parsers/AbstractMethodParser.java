@@ -29,7 +29,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 	abstract List<AbstractExecutableInfo> getMethodInfos(C context);
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (contextCausesNullPointerException(context)) {
@@ -80,12 +80,12 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		log(LogLevel.SUCCESS, "detected " + matchingMethodInfos.size() + " method(s) '" + methodName + "'");
 
 		log(LogLevel.INFO, "parsing method arguments");
-		List<ParseResultIF> argumentParseResults = parserToolbox.getExecutableDataProvider().parseExecutableArguments(tokenStream, matchingMethodInfos);
+		List<ParseResult> argumentParseResults = parserToolbox.getExecutableDataProvider().parseExecutableArguments(tokenStream, matchingMethodInfos);
 
 		if (argumentParseResults.isEmpty()) {
 			log(LogLevel.INFO, "no arguments found");
 		} else {
-			ParseResultIF lastArgumentParseResult = argumentParseResults.get(argumentParseResults.size()-1);
+			ParseResult lastArgumentParseResult = argumentParseResults.get(argumentParseResults.size()-1);
 			ParseResultType lastArgumentParseResultType = lastArgumentParseResult.getResultType();
 			log(LogLevel.INFO, "parse result: " + lastArgumentParseResultType);
 

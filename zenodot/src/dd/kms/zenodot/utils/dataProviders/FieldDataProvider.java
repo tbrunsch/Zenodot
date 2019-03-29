@@ -2,13 +2,13 @@ package dd.kms.zenodot.utils.dataProviders;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogEntry;
-import dd.kms.zenodot.debug.ParserLoggerIF;
+import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.result.CompletionSuggestionIF;
+import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionField;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -33,13 +33,13 @@ public class FieldDataProvider
 	}
 
 	public CompletionSuggestions suggestFields(String expectedName, Object contextObject, List<FieldInfo> fieldInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
-		Map<CompletionSuggestionIF, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			fieldInfos,
 			fieldInfo -> new CompletionSuggestionField(fieldInfo, insertionBegin, insertionEnd),
 			rateFieldByNameAndTypesFunc(expectedName, contextObject, expectation)
 		);
-		ParserLoggerIF logger = parserToolbox.getSettings().getLogger();
-		for (CompletionSuggestionIF suggestion : ratedSuggestions.keySet()) {
+		ParserLogger logger = parserToolbox.getSettings().getLogger();
+		for (CompletionSuggestion suggestion : ratedSuggestions.keySet()) {
 			String suggestionText = suggestion.toString();
 			MatchRating rating = ratedSuggestions.get(suggestion);
 			logger.log(new ParserLogEntry(LogLevel.INFO, "FieldDataProvider", suggestionText + ": " + rating));

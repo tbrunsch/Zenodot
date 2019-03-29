@@ -32,7 +32,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		Token operatorToken = tokenStream.readKeyWordUnchecked();
 		if (operatorToken == null) {
@@ -49,7 +49,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
-		ParseResultIF classParseResult = parserToolbox.getClassParser().parse(tokenStream, thisInfo, ParseExpectation.CLASS);
+		ParseResult classParseResult = parserToolbox.getClassParser().parse(tokenStream, thisInfo, ParseExpectation.CLASS);
 		ParseResultType parseResultType = classParseResult.getResultType();
 		log(LogLevel.INFO, "parse result: " + parseResultType);
 
@@ -73,7 +73,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 	}
 
-	private ParseResultIF parseObjectConstructor(TokenStream tokenStream, int startPosition, TypeInfo constructorType, ParseExpectation expectation) {
+	private ParseResult parseObjectConstructor(TokenStream tokenStream, int startPosition, TypeInfo constructorType, ParseExpectation expectation) {
 		Class<?> constructorClass = constructorType.getRawType();
 		if (constructorClass.getEnclosingClass() != null && !Modifier.isStatic(constructorClass.getModifiers())) {
 			log(LogLevel.ERROR, "cannot instantiate non-static inner class");
@@ -82,12 +82,12 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		List<AbstractExecutableInfo> constructorInfos = parserToolbox.getInspectionDataProvider().getConstructorInfos(constructorType);
 
 		log(LogLevel.INFO, "parsing constructor arguments");
-		List<ParseResultIF> argumentParseResults = parserToolbox.getExecutableDataProvider().parseExecutableArguments(tokenStream, constructorInfos);
+		List<ParseResult> argumentParseResults = parserToolbox.getExecutableDataProvider().parseExecutableArguments(tokenStream, constructorInfos);
 
 		if (argumentParseResults.isEmpty()) {
 			log(LogLevel.INFO, "no arguments found");
 		} else {
-			ParseResultIF lastArgumentParseResult = argumentParseResults.get(argumentParseResults.size()-1);
+			ParseResult lastArgumentParseResult = argumentParseResults.get(argumentParseResults.size()-1);
 			ParseResultType lastArgumentParseResultResultType = lastArgumentParseResult.getResultType();
 			log(LogLevel.INFO, "parse result: " + lastArgumentParseResultResultType);
 
@@ -127,18 +127,18 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 	}
 
-	private ParseResultIF parseArrayConstructor(TokenStream tokenStream, int startPosition, TypeInfo componentType, ParseExpectation expectation) {
+	private ParseResult parseArrayConstructor(TokenStream tokenStream, int startPosition, TypeInfo componentType, ParseExpectation expectation) {
 		// TODO: currently, only 1d arrays are supported
-		ParseResultIF arraySizeParseResult = parseArraySize(tokenStream);
+		ParseResult arraySizeParseResult = parseArraySize(tokenStream);
 		if (arraySizeParseResult == null) {
 			// array constructor with initializer list (e.g., "new int[] { 1, 2, 3 }")
 			log(LogLevel.INFO, "parsing array elements at " + tokenStream);
-			List<ParseResultIF> elementParseResults = parseArrayElements(tokenStream, ParseExpectationBuilder.expectObject().allowedType(componentType).build());
+			List<ParseResult> elementParseResults = parseArrayElements(tokenStream, ParseExpectationBuilder.expectObject().allowedType(componentType).build());
 
 			if (elementParseResults.isEmpty()) {
 				log(LogLevel.INFO, "detected empty array");
 			} else {
-				ParseResultIF lastArgumentParseResult = elementParseResults.get(elementParseResults.size()-1);
+				ParseResult lastArgumentParseResult = elementParseResults.get(elementParseResults.size()-1);
 				ParseResultType lastArgumentParseResultType = lastArgumentParseResult.getResultType();
 				log(LogLevel.INFO, "parse result: " + lastArgumentParseResultType);
 
@@ -173,7 +173,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	// returns null if no size is specified (e.g. in "new int[] { 1, 2, 3 }")
-	private ParseResultIF parseArraySize(TokenStream tokenStream) {
+	private ParseResult parseArraySize(TokenStream tokenStream) {
 		log(LogLevel.INFO, "parsing array size");
 
 		Token characterToken = tokenStream.readCharacterUnchecked();
@@ -185,7 +185,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		ParseExpectation expectation = ParseExpectationBuilder.expectObject().allowedType(TypeInfo.of(int.class)).build();
-		ParseResultIF arraySizeParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
+		ParseResult arraySizeParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
 
 		if (ParseUtils.propagateParseResult(arraySizeParseResult, expectation)) {
 			return arraySizeParseResult;
@@ -211,8 +211,8 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		return new ObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
 	}
 
-	private List<ParseResultIF> parseArrayElements(TokenStream tokenStream, ParseExpectation expectation) {
-		List<ParseResultIF> elements = new ArrayList<>();
+	private List<ParseResult> parseArrayElements(TokenStream tokenStream, ParseExpectation expectation) {
+		List<ParseResult> elements = new ArrayList<>();
 
 		int position = tokenStream.getPosition();
 		Token characterToken = tokenStream.readCharacterUnchecked();
@@ -239,7 +239,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			/*
 			 * Parse expression for argument i
 			 */
-			ParseResultIF element = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
+			ParseResult element = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
 			elements.add(element);
 
 			if (ParseUtils.propagateParseResult(element, expectation)) {

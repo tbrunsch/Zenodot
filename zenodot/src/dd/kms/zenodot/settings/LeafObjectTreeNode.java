@@ -4,9 +4,9 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 
 /**
- * Implementation of {@link ObjectTreeNodeIF} that represents a leaf in the custom hierarchy.
+ * Implementation of {@link ObjectTreeNode} that represents a leaf in the custom hierarchy.
  */
-public class LeafObjectTreeNode implements ObjectTreeNodeIF
+public class LeafObjectTreeNode implements ObjectTreeNode
 {
 	static final LeafObjectTreeNode	EMPTY	= new LeafObjectTreeNode(null, null);
 
@@ -24,7 +24,7 @@ public class LeafObjectTreeNode implements ObjectTreeNodeIF
 	}
 
 	@Override
-	public Iterable<ObjectTreeNodeIF> getChildNodes() {
+	public Iterable<ObjectTreeNode> getChildNodes() {
 		return Collections.emptyList();
 	}
 

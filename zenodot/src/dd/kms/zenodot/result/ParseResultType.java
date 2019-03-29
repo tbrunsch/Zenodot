@@ -1,7 +1,7 @@
 package dd.kms.zenodot.result;
 
 /**
- * Describes the type of a concrete {@link ParseResultIF}
+ * Describes the type of a concrete {@link ParseResult}
  */
 public enum ParseResultType
 {

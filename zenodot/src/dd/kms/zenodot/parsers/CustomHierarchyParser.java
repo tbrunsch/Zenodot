@@ -5,8 +5,8 @@ import dd.kms.zenodot.common.RegexUtils;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ParseError;
-import dd.kms.zenodot.result.ParseResultIF;
-import dd.kms.zenodot.settings.ObjectTreeNodeIF;
+import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 /**
  * Parses expressions of the form {@code {<child level 1>#...#<child level n>}} in
  * the (ignored) context of {@code this}. {@code <child level 1>} refers to a child
- * of the root of the custom hierarchy specified by {@link ParserSettingsBuilder#customHierarchyRoot(ObjectTreeNodeIF)}.
+ * of the root of the custom hierarchy specified by {@link ParserSettingsBuilder#customHierarchyRoot(ObjectTreeNode)}.
  * With each separator {@code #}, the expression descends to the next lower level
  * in the hierarchy.
  */
@@ -36,7 +36,7 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResultIF doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		if (tokenStream.isCaretAtPosition()) {
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
@@ -49,11 +49,11 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 			return new ParseError(position, "Expected hierarchy begin character ('" + HIERARCHY_BEGIN + "')", ParseError.ErrorType.WRONG_PARSER);
 		}
 
-		ObjectTreeNodeIF hierarchyNode = parserToolbox.getSettings().getCustomHierarchyRoot();
+		ObjectTreeNode hierarchyNode = parserToolbox.getSettings().getCustomHierarchyRoot();
 		return parseHierarchyNode(tokenStream, hierarchyNode, expectation);
 	}
 
-	private ParseResultIF parseHierarchyNode(TokenStream tokenStream, ObjectTreeNodeIF contextNode, ParseExpectation expectation) {
+	private ParseResult parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		if (tokenStream.isCaretAtPosition()) {
 			log(LogLevel.INFO, "suggesting custom hierarchy nodes for completion...");
@@ -74,8 +74,8 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 			return parserToolbox.getObjectTreeNodeDataProvider().suggestNodes(nodeName, contextNode, startPosition, endPosition);
 		}
 
-		Iterable<ObjectTreeNodeIF> childNodes = contextNode.getChildNodes();
-		ObjectTreeNodeIF firstChildNodeMatch = Iterables.getFirst(Iterables.filter(childNodes, node -> node.getName().equals(nodeName)), null);
+		Iterable<ObjectTreeNode> childNodes = contextNode.getChildNodes();
+		ObjectTreeNode firstChildNodeMatch = Iterables.getFirst(Iterables.filter(childNodes, node -> node.getName().equals(nodeName)), null);
 		if (firstChildNodeMatch == null) {
 			log(LogLevel.ERROR, "unknown hierarchy node '" + nodeName + "'");
 			return new ParseError(startPosition, "Unknown hierarchy node '" + nodeName + "'", ParseError.ErrorType.SEMANTIC_ERROR);
