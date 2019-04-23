@@ -24,7 +24,7 @@ public class NullTest extends CompletionTest
 		Variable nullVariable = new Variable("myNull", null, true);
 		CompletionTestBuilder testBuilder = new CompletionTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> test.addVariable(nullVariable));
+			.configurator(test -> test.variables(nullVariable));
 
 		testBuilder
 			.addTest("f(",				"myNull", "sNull")

@@ -1,5 +1,7 @@
 package dd.kms.zenodot.common;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.debug.ParserConsoleLogger;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserNullLogger;
@@ -7,6 +9,8 @@ import dd.kms.zenodot.settings.AccessLevel;
 import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.settings.Variable;
+
+import java.util.Set;
 
 public class AbstractTestExecutor<T extends AbstractTestExecutor>
 {
@@ -26,23 +30,23 @@ public class AbstractTestExecutor<T extends AbstractTestExecutor>
 		return (T) this;
 	}
 
-	public T addVariable(Variable variable) {
-		settingsBuilder.addVariable(variable);
+	public T variables(Variable... variables) {
+		settingsBuilder.variables(ImmutableList.copyOf(variables));
+		return getBuilder();
+	}
+
+	public T importClasses(String... classNames) {
+		settingsBuilder.importClasses(ImmutableSet.copyOf(classNames));
+		return getBuilder();
+	}
+
+	public T importPackages(String... packageNames) {
+		settingsBuilder.importPackages(ImmutableSet.copyOf(packageNames));
 		return getBuilder();
 	}
 
 	public T minimumAccessLevel(AccessLevel minimumAccessLevel) {
 		settingsBuilder.minimumAccessLevel(minimumAccessLevel);
-		return getBuilder();
-	}
-
-	public T importClass(String className) {
-		settingsBuilder.importClass(className);
-		return getBuilder();
-	}
-
-	public T importPackage(String packageName) {
-		settingsBuilder.importPackage(packageName);
 		return getBuilder();
 	}
 

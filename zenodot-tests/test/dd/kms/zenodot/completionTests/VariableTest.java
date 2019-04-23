@@ -24,10 +24,7 @@ public class VariableTest extends CompletionTest
 		Variable variable2 = new Variable("abc", "Test", true);
 		return new CompletionTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> {
-				test.addVariable(variable1);
-				test.addVariable(variable2);
-			})
+			.configurator(test -> test.variables(variable1, variable2))
 			.addTest("x",			"x", "xyz", "xy", "xyzw", "abc")
 			.addTest("xy",			"xy", "xyz", "xyzw", "x", "abc")
 			.addTest("xyz",			"xyz", "xyzw", "x", "xy", "abc")

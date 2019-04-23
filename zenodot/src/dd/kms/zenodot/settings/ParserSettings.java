@@ -1,7 +1,6 @@
 package dd.kms.zenodot.settings;
 
 import dd.kms.zenodot.debug.ParserLogger;
-import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 
 import java.util.List;
@@ -35,8 +34,8 @@ public class ParserSettings
 		return imports;
 	}
 
-	public VariablePool getVariablePool() {
-		return variablePool;
+	public List<Variable> getVariables() {
+		return variablePool.getVariables();
 	}
 
 	public AccessLevel getMinimumAccessLevel() {

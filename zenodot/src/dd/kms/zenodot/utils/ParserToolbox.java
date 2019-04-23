@@ -56,7 +56,7 @@ public class ParserToolbox
 		inspectionDataProvider 			= new InspectionDataProvider(this);
 		objectTreeNodeDataProvider		= new ObjectTreeNodeDataProvider();
 		operatorResultProvider 			= new OperatorResultProvider(this, evaluationMode);
-		variableDataProvider			= new VariableDataProvider(settings.getVariablePool());
+		variableDataProvider			= new VariableDataProvider(settings.getVariables());
 
 		castParser						= new CastParser(this, thisInfo);
 		classFieldParser				= new ClassFieldParser(this, thisInfo);

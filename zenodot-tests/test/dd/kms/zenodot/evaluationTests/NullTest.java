@@ -24,7 +24,7 @@ public class NullTest extends EvaluationTest
 		Variable myNull = new Variable("myNull", null, true);
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> test.addVariable(myNull));
+			.configurator(test -> test.variables(myNull));
 
 		testBuilder
 			.addTest("f(null)",				0)

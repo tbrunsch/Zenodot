@@ -25,10 +25,7 @@ public class VariableTest extends EvaluationTest
 		Variable variable2 = new Variable("abc", "Test", true);
 		return new EvaluationTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> {
-				test.addVariable(variable1);
-				test.addVariable(variable2);
-			})
+			.configurator(test -> test.variables(variable1, variable2))
 			.addTest("b + xyz",			18.0)
 			.addTest("xyz * i",			-15000.0)
 			.addTest("(int) xyz / f",	6.0f)

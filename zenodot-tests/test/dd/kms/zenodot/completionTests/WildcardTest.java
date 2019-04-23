@@ -26,9 +26,8 @@ public class WildcardTest extends CompletionTest
 		return new CompletionTestBuilder()
 			.testInstance(testInstance)
 			.configurator(test -> {
-				test.importPackage("java.util");
-				test.addVariable(variable1);
-				test.addVariable(variable2);
+				test.importPackages("java.util");
+				test.variables(variable1, variable2);
 				test.customHierarchyRoot(CustomHierarchy.ROOT);
 			})
 			.addTest("xY", 								"xYZ", "xyz", "xxYyZz")

@@ -6,25 +6,28 @@ import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserNullLogger;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * Builder for {@link ParserSettings}
  */
 public class ParserSettingsBuilder
 {
-	private final ImmutableSet.Builder<ClassInfo> 	importClassesBuilder		= ImmutableSet.builder();
-	private final ImmutableSet.Builder<String>	 	importPackageNamesBuilder	= ImmutableSet.builder();
-	private final ImmutableList.Builder<Variable>	variablesBuilder 			= ImmutableList.builder();
-	private AccessLevel								minimumAccessLevel			= AccessLevel.PUBLIC;
-	private boolean									enableDynamicTyping			= false;
-	private ObjectTreeNode customHierarchyRoot			= LeafObjectTreeNode.EMPTY;
-	private ParserLogger logger						= new ParserNullLogger();
+	private Set<ClassInfo>	importClasses			= ImmutableSet.of();
+	private Set<String>		importPackages			= ImmutableSet.of();
+	private List<Variable>	variables				= ImmutableList.of();
+	private AccessLevel		minimumAccessLevel		= AccessLevel.PUBLIC;
+	private boolean			enableDynamicTyping		= false;
+	private ObjectTreeNode	customHierarchyRoot		= LeafObjectTreeNode.EMPTY;
+	private ParserLogger	logger					= new ParserNullLogger();
 
 	public ParserSettingsBuilder() {}
 
 	public ParserSettingsBuilder(ParserSettings settings) {
-		importClassesBuilder.addAll(settings.getImports().getImportedClasses());
-		importPackageNamesBuilder.addAll(settings.getImports().getImportedPackageNames());
-		variablesBuilder.addAll(settings.getVariablePool().getVariables());
+		importClasses = ImmutableSet.copyOf(settings.getImports().getImportedClasses());
+		importPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackageNames());
+		variables = ImmutableList.copyOf(settings.getVariables());
 		minimumAccessLevel = settings.getMinimumAccessLevel();
 		enableDynamicTyping = settings.isEnableDynamicTyping();
 		customHierarchyRoot = settings.getCustomHierarchyRoot();
@@ -34,28 +37,32 @@ public class ParserSettingsBuilder
 	/**
 	 * When you import a class, then you can directly reference that class by its simple name.
 	 */
-	public ParserSettingsBuilder importClass(String qualifiedClassName) {
-		try {
-			importClassesBuilder.add(ClassInfo.forName(qualifiedClassName));
-		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException(e.getMessage());
+	public ParserSettingsBuilder importClasses(Set<String> qualifiedClassNames) {
+		ImmutableSet.Builder<ClassInfo> importClassesBuilder = ImmutableSet.builder();
+		for (String qualifiedClassName : qualifiedClassNames) {
+			try {
+				importClassesBuilder.add(ClassInfo.forName(qualifiedClassName));
+			} catch (ClassNotFoundException e) {
+				throw new IllegalArgumentException(e.getMessage());
+			}
 		}
+		importClasses = importClassesBuilder.build();
 		return this;
 	}
 
 	/**
 	 * When you import a package, then you can directly reference any of its classes by their simple names.
 	 */
-	public ParserSettingsBuilder importPackage(String packageName) {
-		importPackageNamesBuilder.add(packageName);
+	public ParserSettingsBuilder importPackages(Set<String> packageNames) {
+		importPackages = ImmutableSet.copyOf(packageNames);
 		return this;
 	}
 
 	/**
 	 * When you add a variable, then you can reference its value by the variable's name.
 	 */
-	public ParserSettingsBuilder addVariable(Variable variable) {
-		variablesBuilder.add(variable);
+	public ParserSettingsBuilder variables(List<Variable> variables) {
+		this.variables = ImmutableList.copyOf(variables);
 		return this;
 	}
 
@@ -111,6 +118,6 @@ public class ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettings(importClassesBuilder.build(), importPackageNamesBuilder.build(), variablesBuilder.build(), minimumAccessLevel, enableDynamicTyping, customHierarchyRoot, logger);
+		return new ParserSettings(importClasses, importPackages, variables, minimumAccessLevel, enableDynamicTyping, customHierarchyRoot, logger);
 	}
 }

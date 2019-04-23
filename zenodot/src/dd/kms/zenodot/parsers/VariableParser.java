@@ -8,7 +8,6 @@ import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.Comparator;
@@ -66,8 +65,7 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		// no code completion requested => variable name must exist
-		VariablePool variablePool = parserToolbox.getSettings().getVariablePool();
-		List<Variable> variables = variablePool.getVariables().stream().sorted(Comparator.comparing(Variable::getName)).collect(Collectors.toList());
+		List<Variable> variables = parserToolbox.getSettings().getVariables().stream().sorted(Comparator.comparing(Variable::getName)).collect(Collectors.toList());
 		Optional<Variable> firstVariableMatch = variables.stream().filter(variable -> variable.getName().equals(variableName)).findFirst();
 		if (!firstVariableMatch.isPresent()) {
 			log(LogLevel.ERROR, "unknown variable '" + variableName + "'");

@@ -1,5 +1,7 @@
 package dd.kms.zenodot.common;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.debug.ParserConsoleLogger;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserNullLogger;
@@ -22,20 +24,20 @@ public class AbstractTest<T extends AbstractTest>
 		this.testInstance = testInstance;
 	}
 
-	public void addVariable(Variable variable) {
-		settingsBuilder.addVariable(variable);
+	public void variables(Variable... variables) {
+		settingsBuilder.variables(ImmutableList.copyOf(variables));
 	}
 
 	public void minimumAccessLevel(AccessLevel minimumAccessLevel) {
 		settingsBuilder.minimumAccessLevel(minimumAccessLevel);
 	}
 
-	public void importClass(String className) {
-		settingsBuilder.importClass(className);
+	public void importClasses(String... classNames) {
+		settingsBuilder.importClasses(ImmutableSet.copyOf(classNames));
 	}
 
-	public void importPackage(String packageName) {
-		settingsBuilder.importPackage(packageName);
+	public void importPackages(String... packageNames) {
+		settingsBuilder.importPackages(ImmutableSet.copyOf(packageNames));
 	}
 
 	public void customHierarchyRoot(ObjectTreeNode root) {

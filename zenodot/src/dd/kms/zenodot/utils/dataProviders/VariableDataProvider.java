@@ -10,7 +10,6 @@ import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.ParseUtils;
-import dd.kms.zenodot.utils.VariablePool;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Comparator;
@@ -24,16 +23,16 @@ import java.util.stream.Collectors;
  */
 public class VariableDataProvider
 {
-	private final VariablePool variablePool;
+	private final List<Variable> variables;
 
-	public VariableDataProvider(VariablePool variablePool) {
-		this.variablePool = variablePool;
+	public VariableDataProvider(List<Variable> variables) {
+		this.variables = variables;
 	}
 
 	public CompletionSuggestions suggestVariables(String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
-		List<Variable> variables = variablePool.getVariables().stream().sorted(Comparator.comparing(Variable::getName)).collect(Collectors.toList());
+		List<Variable> sortedVariables = variables.stream().sorted(Comparator.comparing(Variable::getName)).collect(Collectors.toList());
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
-			variables,
+			sortedVariables,
 			variable -> new CompletionSuggestionVariable(variable, insertionBegin, insertionEnd),
 			rateVariableByNameAndTypesFunc(expectedName, expectation)
 		);

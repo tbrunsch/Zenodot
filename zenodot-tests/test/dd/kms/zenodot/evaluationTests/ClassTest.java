@@ -36,7 +36,7 @@ public class ClassTest extends EvaluationTest
 		testBuilder
 			.configurator(test -> {
 				test.minimumAccessLevel(AccessLevel.PUBLIC);
-				test.importPackage("java.util");
+				test.importPackages("java.util");
 			})
 			.addTest("Math.pow(1.5, 2.5)",		Math.pow(1.5, 2.5))
 			.addTest("Math.PI", 				Math.PI)
@@ -49,21 +49,21 @@ public class ClassTest extends EvaluationTest
 			.addTest(packageName + ".moreDummies.MyDummy.FIRST_DUMMY", 		true);
 
 		testBuilder
-			.configurator(test -> test.importPackage(packageName))
+			.configurator(test -> test.importPackages(packageName))
 			.addTest("DummyClass.FIRST_CHARACTER",		'D')
 			.addTest("MyDummyClass.FIRST_CHARACTER",	'M');
 
 		testBuilder
-			.configurator(test -> test.importClass(packageName + ".dummies.YetAnotherDummyClass"))
+			.configurator(test -> test.importClasses(packageName + ".dummies.YetAnotherDummyClass"))
 			.addTest("YetAnotherDummyClass.NAME",	"YetAnotherDummyClass");
 
 		testBuilder
-			.configurator(test -> test.importClass(packageName + ".DummyClass.InternalClassStage1"))
+			.configurator(test -> test.importClasses(packageName + ".DummyClass.InternalClassStage1"))
 			.addTest("InternalClassStage1.value",					5.0)
 			.addTest("InternalClassStage1.InternalClassStage2.i",	3);
 
 		testBuilder
-			.configurator(test -> test.importClass(packageName + ".DummyClass.InternalClassStage1.InternalClassStage2"))
+			.configurator(test -> test.importClasses(packageName + ".DummyClass.InternalClassStage1.InternalClassStage2"))
 			.addTest("InternalClassStage2.i",	3);
 
 		testBuilder
@@ -76,12 +76,12 @@ public class ClassTest extends EvaluationTest
 			.addTestWithError(className + ".getFloat()");
 
 		testBuilder
-			.configurator(test -> test.importPackage(packageName + ".dummies"))
+			.configurator(test -> test.importPackages(packageName + ".dummies"))
 			.addTestWithError("DummyClass.FIRST_CHARACTER")
 			.addTestWithError("MyDummy2.FIRST_DUMMY");
 
 		testBuilder
-			.configurator(test -> test.importClass(packageName + ".dummies.MyClass"))
+			.configurator(test -> test.importClasses(packageName + ".dummies.MyClass"))
 			.addTestWithError("MyOtherClass.OTHER_VALUE");
 
 		return testBuilder.build();

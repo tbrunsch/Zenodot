@@ -45,28 +45,28 @@ public class ClassTest extends CompletionTest
 			.addTest(packageName + ".moreDummies.MyDummy2",		"MyDummy2", "MyDummy");
 
 		testBuilder
-			.configurator(test -> test.importPackage(packageName))
+			.configurator(test -> test.importPackages(packageName))
 			.addTest("Du", "DummyClass")
 			.addTest("My", "MyDummyClass");
 
 		testBuilder
-			.configurator(test -> test.importPackage(packageName + ".dummies"))
+			.configurator(test -> test.importPackages(packageName + ".dummies"))
 			.addTest("MyC",	"MyClass")
 			.addTest("Y",	"YetAnotherDummyClass");
 
 		testBuilder
-			.configurator(test -> test.importClass(packageName + ".moreDummies.MyDummy2"))
+			.configurator(test -> test.importClasses(packageName + ".moreDummies.MyDummy2"))
 			.addTest("MyDummy", "MyDummy2");
 
 		testBuilder
-			.configurator(test -> test.importClass(packageName + ".DummyClass.InternalClassStage1"))
+			.configurator(test -> test.importClasses(packageName + ".DummyClass.InternalClassStage1"))
 			.addTest("InternalC",									"InternalClassStage1")
 			.addTest("InternalClassStage1.v",						"value")
 			.addTest("InternalClassStage1.i",						"InternalClassStage2")
 			.addTest("InternalClassStage1.InternalClassStage2.",	"i");
 
 		testBuilder
-			.configurator(test -> test.importClass(packageName + ".DummyClass.InternalClassStage1.InternalClassStage2"))
+			.configurator(test -> test.importClasses(packageName + ".DummyClass.InternalClassStage1.InternalClassStage2"))
 			.addTest("InternalC",				"InternalClassStage2")
 			.addTest("InternalClassStage2.",	"i");
 

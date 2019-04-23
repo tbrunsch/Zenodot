@@ -1,4 +1,4 @@
-package dd.kms.zenodot.utils;
+package dd.kms.zenodot.settings;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -12,11 +12,11 @@ import java.util.List;
  * then the pool will not reference certain variable values by hard references to allow garbage
  * collection.
  */
-public class VariablePool
+class VariablePool
 {
 	private final ImmutableMap<String, ValueData> variables;
 
-	public VariablePool(List<Variable> variables) {
+	VariablePool(List<Variable> variables) {
 		ImmutableMap.Builder<String, ValueData> variablesBuilder = ImmutableMap.builder();
 		for (Variable variable : variables) {
 			variablesBuilder.put(variable.getName(), new ValueData(variable.getValue(), variable.isUseHardReference()));
@@ -24,7 +24,7 @@ public class VariablePool
 		this.variables = variablesBuilder.build();
 	}
 
-	public List<Variable> getVariables() {
+	List<Variable> getVariables() {
 		ImmutableList.Builder<Variable> builder = ImmutableList.builder();
 		for (String name : variables.keySet()) {
 			ValueData valueData = variables.get(name);
