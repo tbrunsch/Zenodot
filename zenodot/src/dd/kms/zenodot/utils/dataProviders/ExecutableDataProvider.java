@@ -75,7 +75,14 @@ public class ExecutableDataProvider
 			List<TypeInfo> expectedArgumentTypes_i = getExpectedArgumentTypes(availableExecutableInfos, i);
 
 			if (expectedArgumentTypes_i.isEmpty()) {
-				arguments.add(new ParseError(tokenStream.getPosition(), "No further arguments expected", ParseError.ErrorType.SEMANTIC_ERROR));
+				position = tokenStream.getPosition();
+				boolean requestCodeCompletion = tokenStream.isCaretAtPosition() || tokenStream.readOptionalSpace().isContainsCaret();
+				if (i == 0 && requestCodeCompletion) {
+					// code completion after opening '(' for executable without arguments
+					arguments.add(CompletionSuggestions.none(position));
+				} else {
+					arguments.add(new ParseError(position, "No further arguments expected", ParseError.ErrorType.SEMANTIC_ERROR));
+				}
 				return arguments;
 			}
 

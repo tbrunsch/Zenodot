@@ -29,7 +29,8 @@ public class MethodArgumentsTest extends CompletionTest
 			.addTest("prefixC",		"prefixC", "prefixC()", "prefixD", "prefixI")
 			.addTest("prefixI(",	"prefixD", "prefixD()", "prefixC", "prefixI", "prefixC()", "prefixI()")
 			.addTest("prefixD(",	"prefixC", "prefixC()", "prefixD", "prefixI", "prefixD()", "prefixI()")
-			.addTest("prefixC(",	"prefixI", "prefixI()", "hashCode()", "prefixC", "prefixC()", "prefixD", "prefixD()");
+			.addTest("prefixC(",	"prefixI", "prefixI()", "hashCode()", "prefixC", "prefixC()", "prefixD", "prefixD()")
+			.addTest("withoutArgs(");
 
 		testBuilder
 			.addTestWithError("prefixI(prefixD)",	-1,	IllegalStateException.class)
@@ -49,5 +50,7 @@ public class MethodArgumentsTest extends CompletionTest
 		private int		prefixI(double arg)	{ return 1; }
 		private double	prefixD(char arg)	{ return 1.0; }
 		private char	prefixC(int arg)	{ return 'A'; }
+
+		private void	withoutArgs() {}
 	}
 }
