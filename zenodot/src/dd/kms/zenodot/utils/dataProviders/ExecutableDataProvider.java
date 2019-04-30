@@ -19,6 +19,7 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Utility class for providing information about executables (methods, constructors)
@@ -187,6 +188,17 @@ public class ExecutableDataProvider
 	}
 
 	public static String getMethodDisplayText(AbstractExecutableInfo methodInfo) {
-		return methodInfo.getName() + " (" + methodInfo.getDeclaringType() + ")";
+		int numArguments = methodInfo.getNumberOfArguments();
+		final String argumentsAsString;
+		if (methodInfo.isVariadic()) {
+			int lastArgumentIndex = numArguments - 1;
+			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getRawType().getSimpleName().toString() + (i == lastArgumentIndex ? "..." : "")).collect(Collectors.joining(", "));
+		} else {
+			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getRawType().getSimpleName().toString()).collect(Collectors.joining(", "));
+		}
+		return methodInfo.getName()
+				+ "("
+				+ argumentsAsString
+				+ ")";
 	}
 }

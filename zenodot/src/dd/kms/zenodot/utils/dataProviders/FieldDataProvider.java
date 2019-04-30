@@ -69,6 +69,6 @@ public class FieldDataProvider
 	}
 
 	public static String getFieldDisplayText(FieldInfo fieldInfo) {
-		return fieldInfo.getName() + " (" + fieldInfo.getDeclaringType() + ")";
+		return fieldInfo.getName();
 	}
 }
