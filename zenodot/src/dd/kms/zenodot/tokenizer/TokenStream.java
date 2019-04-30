@@ -182,6 +182,8 @@ public class TokenStream implements Cloneable
 		return readRegexUnchecked(CHARACTER_PATTERN, 2);
 	}
 
+	public Token readOptionalSpace() { return readRegexUnchecked(OPTIONAL_SPACE, 1); }
+
 	public Token readUnaryOperatorUnchecked() {
 		return readOperatorUnchecked(UNARY_OPERATORS);
 	}
@@ -193,7 +195,7 @@ public class TokenStream implements Cloneable
 	private Token readOperatorUnchecked(List<String> availableOperators) {
 		boolean containsCaret = false;
 
-		containsCaret |= readRegexUnchecked(OPTIONAL_SPACE, 1).isContainsCaret();
+		containsCaret |= readOptionalSpace().isContainsCaret();
 
 		int expressionLength = javaExpression.length();
 		String detectedOperator = null;
