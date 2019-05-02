@@ -36,7 +36,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 		if (contextCausesNullPointerException(context)) {
 			log(LogLevel.ERROR, "null pointer exception");
-			return new ParseError(startPosition, "Null pointer exception", ErrorPriority.WRONG_PARSER);
+			return new ParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
 		}
 
 		if (tokenStream.isCaretAtPosition()) {

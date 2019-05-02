@@ -26,7 +26,7 @@ public class ObjectInfoProvider
 	}
 
 	public TypeInfo getType(Object object, TypeInfo declaredType) {
-		if (object == null) {
+		if (object == null || object == ObjectInfo.INDETERMINATE) {
 			return declaredType == TypeInfo.UNKNOWN ? TypeInfo.NONE : declaredType;
 		}
 
