@@ -4,6 +4,7 @@ import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.result.ParseError;
+import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -11,6 +12,8 @@ import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
+
+import java.util.Optional;
 
 /**
  * Parses subexpressions
@@ -48,15 +51,16 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 		TypeInfo elementType = currentContextType.getComponentType();
 		if (elementType == TypeInfo.NONE) {
 			log(LogLevel.ERROR, "cannot apply operator [] for non-array types");
-			return new ParseError(tokenStream.getPosition(), "Cannot apply [] to non-array types", ParseError.ErrorType.SEMANTIC_ERROR);
+			return new ParseError(tokenStream.getPosition(), "Cannot apply [] to non-array types", ErrorPriority.RIGHT_PARSER);
 		}
 
 		int indexStartPosition = tokenStream.getPosition();
 		ParseExpectation indexExpectation = ParseExpectationBuilder.expectObject().allowedType(TypeInfo.of(int.class)).build();
 		ParseResult arrayIndexParseResult = parseArrayIndex(tokenStream, indexExpectation);
 
-		if (ParseUtils.propagateParseResult(arrayIndexParseResult, indexExpectation)) {
-			return arrayIndexParseResult;
+		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(arrayIndexParseResult, indexExpectation, ErrorPriority.RIGHT_PARSER);
+		if (parseResultForPropagation.isPresent()) {
+			return parseResultForPropagation.get();
 		}
 
 		ObjectParseResult parseResult = (ObjectParseResult) arrayIndexParseResult;
@@ -68,7 +72,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 			log(LogLevel.SUCCESS, "detected valid array access");
 		} catch (ClassCastException | ArrayIndexOutOfBoundsException e) {
 			log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-			return new ParseError(indexStartPosition, e.getClass().getSimpleName() + " during array index evaluation", ParseError.ErrorType.EVALUATION_EXCEPTION, e);
+			return new ParseError(indexStartPosition, e.getClass().getSimpleName() + " during array index evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 		}
 		tokenStream.moveTo(parsedToPosition);
 		return parserToolbox.getObjectTailParser().parse(tokenStream, elementInfo, expectation);
@@ -88,8 +92,9 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 
 		ParseResult arrayIndexParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
 
-		if (ParseUtils.propagateParseResult(arrayIndexParseResult, expectation)) {
-			return arrayIndexParseResult;
+		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(arrayIndexParseResult, expectation, ErrorPriority.RIGHT_PARSER);
+		if (parseResultForPropagation.isPresent()) {
+			return parseResultForPropagation.get();
 		}
 
 		ObjectParseResult parseResult = ((ObjectParseResult) arrayIndexParseResult);
@@ -100,7 +105,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 
 		if (characterToken == null || characterToken.getValue().charAt(0) != ']') {
 			log(LogLevel.ERROR, "missing ']' at " + tokenStream);
-			return new ParseError(parsedToPosition, "Expected closing bracket ']'", ParseError.ErrorType.SYNTAX_ERROR);
+			return new ParseError(parsedToPosition, "Expected closing bracket ']'", ErrorPriority.RIGHT_PARSER);
 		}
 
 		if (characterToken.isContainsCaret()) {

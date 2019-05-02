@@ -7,9 +7,10 @@ package dd.kms.zenodot.result;
 public class ParseError implements ParseResult
 {
 	/**
-	 * The type of error. The lower the ordinal, the higher the priority.
+	 * The priority of error. The lower the ordinal, the higher the priority. The error priority is used to
+	 * decide which error(s) to propagate if all parsers return an error.
 	 */
-	public enum ErrorType implements Comparable<ErrorType>
+	public enum ErrorPriority implements Comparable<ErrorPriority>
 	{
 		/**
 		 * The expression can be parsed with the current parser, but due to an unexpected internal state
@@ -24,21 +25,14 @@ public class ParseError implements ParseResult
 		EVALUATION_EXCEPTION,
 
 		/**
-		 * The expression can be parsed syntactically by the current parser, but this parser detected
-		 * that the expression is semantically incorrect. Examples are:
-		 * <ul>
-		 *     <li>Access of a non-static field or method via a class,</li>
-		 *     <li>Array access of a non-array type</li>
-		 *     <li>Calling a method with arguments with wrong types</li>
-		 * </ul>
+		 * The parser is the right one, but a syntax or a semantic error has been encountered.
 		 */
-		SEMANTIC_ERROR,
+		RIGHT_PARSER,
 
 		/**
-		 * The current parser might be the correct parser for the expression, but due to a syntax error
-		 * it cannot parse the expression.
+		 * The current parser might be the right parser for the expression.
 		 */
-		SYNTAX_ERROR,
+		POTENTIALLY_RIGHT_PARSER,
 
 		/**
 		 * The current parser is (probably) the wrong parser for parsing the expression.
@@ -48,14 +42,14 @@ public class ParseError implements ParseResult
 
 	private final int		position;
 	private final String	message;
-	private final ErrorType	errorType;
+	private final ErrorPriority errorType;
 	private final Throwable	throwable;
 
-	public ParseError(int position, String message, ErrorType errorType) {
+	public ParseError(int position, String message, ErrorPriority errorType) {
 		this(position, message, errorType, null);
 	}
 
-	public ParseError(int position, String message, ErrorType errorType, Throwable throwable) {
+	public ParseError(int position, String message, ErrorPriority errorType, Throwable throwable) {
 		this.position = position;
 		this.message = message;
 		this.errorType = errorType;
@@ -76,7 +70,7 @@ public class ParseError implements ParseResult
 		return message;
 	}
 
-	public ErrorType getErrorType() {
+	public ErrorPriority getErrorType() {
 		return errorType;
 	}
 

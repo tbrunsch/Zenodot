@@ -5,7 +5,7 @@ import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.result.ParseError;
-import dd.kms.zenodot.result.ParseError.ErrorType;
+import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -17,6 +17,7 @@ import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider.OperatorExcepti
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Parses prefix unary operators applied to an expression in the context of {@code this}. The following
@@ -51,7 +52,7 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 		Token operatorToken = tokenStream.readUnaryOperatorUnchecked();
 		if (operatorToken == null) {
 			log(LogLevel.ERROR, "expected unary operator");
-			return new ParseError(tokenStream.getPosition(), "Expression does not start with an unary operator", ErrorType.WRONG_PARSER);
+			return new ParseError(tokenStream.getPosition(), "Expression does not start with an unary operator", ErrorPriority.WRONG_PARSER);
 		} else if (operatorToken.isContainsCaret()) {
 			log(LogLevel.INFO, "no completion suggestions available");
 			return CompletionSuggestions.none(tokenStream.getPosition());
@@ -60,8 +61,9 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 
 		ParseResult parseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
 
-		if (ParseUtils.propagateParseResult(parseResult, expectation)) {
-			return parseResult;
+		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(parseResult, expectation, ErrorPriority.RIGHT_PARSER);
+		if (parseResultForPropagation.isPresent()) {
+			return parseResultForPropagation.get();
 		}
 
 		ObjectParseResult expressionParseResult = (ObjectParseResult) parseResult;
@@ -74,7 +76,7 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 			log(LogLevel.SUCCESS, "applied operator successfully");
 		} catch (OperatorException e) {
 			log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
-			return new ParseError(parsedToPosition, e.getMessage(), ErrorType.SEMANTIC_ERROR);
+			return new ParseError(parsedToPosition, e.getMessage(), ErrorPriority.RIGHT_PARSER);
 		}
 		return new ObjectParseResult(parsedToPosition, operatorResult);
 	}

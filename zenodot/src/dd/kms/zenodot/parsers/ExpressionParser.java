@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.ParseError.ErrorType;
+import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -17,6 +17,7 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static dd.kms.zenodot.utils.dataProviders.OperatorResultProvider.OperatorException;
@@ -62,8 +63,9 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 		log(LogLevel.INFO, "parsing first expression");
 		ParseResult parseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
 
-		if (ParseUtils.propagateParseResult(parseResult, expectation)) {
-			return parseResult;
+		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(parseResult, expectation, ErrorPriority.WRONG_PARSER);
+		if (parseResultForPropagation.isPresent()) {
+			return parseResultForPropagation.get();
 		}
 		ObjectParseResult lhsParseResult = (ObjectParseResult) parseResult;
 		ObjectInfo lhsInfo = lhsParseResult.getObjectInfo();
@@ -102,8 +104,9 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 					}
 					parseResult = parserToolbox.createExpressionParser(operator.getPrecedenceLevel() - 1).parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
 
-					if (ParseUtils.propagateParseResult(parseResult, ParseExpectation.OBJECT)) {
-						return parseResult;
+					parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(parseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+					if (parseResultForPropagation.isPresent()) {
+						return parseResultForPropagation.get();
 					}
 					ObjectParseResult rhsParseResult = (ObjectParseResult) parseResult;
 					ObjectInfo rhsInfo = rhsParseResult.getObjectInfo();
@@ -119,15 +122,16 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 						log(LogLevel.SUCCESS, "applied operator successfully");
 					} catch (OperatorException e) {
 						log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
-						return new ParseError(parsedToPosition, e.getMessage(), ErrorType.SEMANTIC_ERROR);
+						return new ParseError(parsedToPosition, e.getMessage(), ErrorPriority.RIGHT_PARSER);
 					}
 					break;
 				}
 				case RIGHT_TO_LEFT: {
 					parseResult = parserToolbox.createExpressionParser(operator.getPrecedenceLevel()).parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
 
-					if (ParseUtils.propagateParseResult(parseResult, ParseExpectation.OBJECT)) {
-						return parseResult;
+					parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(parseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+					if (parseResultForPropagation.isPresent()) {
+						return parseResultForPropagation.get();
 					}
 					ObjectParseResult rhsParseResult = (ObjectParseResult) parseResult;
 					ObjectInfo rhsInfo = rhsParseResult.getObjectInfo();
@@ -138,12 +142,12 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 						log(LogLevel.SUCCESS, "applied operator successfully");
 					} catch (OperatorException e) {
 						log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
-						return new ParseError(rhsParseResult.getPosition(), e.getMessage(), ErrorType.SEMANTIC_ERROR);
+						return new ParseError(rhsParseResult.getPosition(), e.getMessage(), ErrorPriority.RIGHT_PARSER);
 					}
 					return new ObjectParseResult(rhsParseResult.getPosition(), operatorResultInfo);
 				}
 				default:
-					return new ParseError(tokenStream.getPosition(), "Internal error: Unknown operator associativity: " + operator.getAssociativity(), ErrorType.INTERNAL_ERROR);
+					return new ParseError(tokenStream.getPosition(), "Internal error: Unknown operator associativity: " + operator.getAssociativity(), ErrorPriority.INTERNAL_ERROR);
 			}
 		}
 	}
@@ -168,7 +172,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 			String messageSuffix = "'" + allowedTypes.stream().map(Object::toString).collect(Collectors.joining("', '")) + "'";
 			String message = messagePrefix + messageMiddle + messageSuffix;
 			log(LogLevel.ERROR, message);
-			return new ParseError(parseResult.getPosition(), message, ParseError.ErrorType.SEMANTIC_ERROR);
+			return new ParseError(parseResult.getPosition(), message, ErrorPriority.RIGHT_PARSER);
 		}
 
 		return objectParseResult;

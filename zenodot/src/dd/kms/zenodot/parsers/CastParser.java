@@ -2,13 +2,15 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.ParseError.ErrorType;
+import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
+
+import java.util.Optional;
 
 /**
  * Parses expressions of the form {@code (<class>) <expression>} in the context of {@code this}.
@@ -25,7 +27,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != '(') {
 			log(LogLevel.ERROR, "expected '('");
-			return new ParseError(position, "Expected opening parenthesis '('", ErrorType.WRONG_PARSER);
+			return new ParseError(position, "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 		if (characterToken.isContainsCaret()) {
 			log(LogLevel.INFO, "potential cast operator; no completion suggestions available");
@@ -37,8 +39,9 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		ParseResultType parseResultType = classParseResult.getResultType();
 		log(LogLevel.INFO, "parse result: " + parseResultType);
 
-		if (ParseUtils.propagateParseResult(classParseResult, ParseExpectation.CLASS)) {
-			return classParseResult;
+		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(classParseResult, ParseExpectation.CLASS, ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+		if (parseResultForPropagation.isPresent()) {
+			return parseResultForPropagation.get();
 		}
 		ClassParseResult parseResult = (ClassParseResult) classParseResult;
 		int parsedToPosition = parseResult.getPosition();
@@ -50,7 +53,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != ')') {
 			log(LogLevel.ERROR, "missing ')' at " + tokenStream);
-			return new ParseError(position, "Expected closing parenthesis ')'", ErrorType.SYNTAX_ERROR);
+			return new ParseError(position, "Expected closing parenthesis ')'", ErrorPriority.RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected cast operator at " + tokenStream);
 
@@ -67,8 +70,9 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		log(LogLevel.INFO, "parsing object to cast at " + tokenStream);
 		ParseResult objectParseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
 
-		if (ParseUtils.propagateParseResult(objectParseResult, ParseExpectation.OBJECT)) {
-			return objectParseResult;
+		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(objectParseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+		if (parseResultForPropagation.isPresent()) {
+			return parseResultForPropagation.get();
 		}
 		ObjectParseResult parseResult = (ObjectParseResult) objectParseResult;
 		int parsedToPosition = parseResult.getPosition();
@@ -81,7 +85,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 			return new ObjectParseResult(parsedToPosition, castInfo);
 		} catch (ClassCastException e) {
 			log(LogLevel.ERROR, "class cast exception: " + e.getMessage());
-			return new ParseError(tokenStream.getPosition(), "Cannot cast expression to '" + targetType + "'", ErrorType.SEMANTIC_ERROR, e);
+			return new ParseError(tokenStream.getPosition(), "Cannot cast expression to '" + targetType + "'", ErrorPriority.RIGHT_PARSER, e);
 		}
 	}
 }

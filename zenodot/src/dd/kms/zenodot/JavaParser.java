@@ -5,8 +5,6 @@ import dd.kms.zenodot.debug.ParserLogEntry;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionField;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
@@ -16,7 +14,7 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.*;
 
-import static dd.kms.zenodot.result.ParseError.ErrorType;
+import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
 /**
  * API entry point of Zenodot<br/>
@@ -146,7 +144,7 @@ public class JavaParser
 			if (exceptionMessage != null) {
 				message += ("\n" + exceptionMessage);
 			}
-			return new ParseError(-1, message, ErrorType.EVALUATION_EXCEPTION, e);
+			return new ParseError(-1, message, ErrorPriority.EVALUATION_EXCEPTION, e);
 		}
 	}
 }

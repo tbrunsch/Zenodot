@@ -2,6 +2,7 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.result.ClassParseResult;
 import dd.kms.zenodot.result.ParseError;
+import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -28,8 +29,9 @@ public class InnerClassParser extends AbstractEntityParser<TypeInfo>
 	ParseResult doParse(TokenStream tokenStream, TypeInfo contextType, ParseExpectation expectation) {
 		ParseResult innerClassParseResult = readInnerClass(tokenStream, contextType);
 
-		if (ParseUtils.propagateParseResult(innerClassParseResult, ParseExpectation.CLASS)) {
-			return innerClassParseResult;
+		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(innerClassParseResult, ParseExpectation.CLASS, ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+		if (parseResultForPropagation.isPresent()) {
+			return parseResultForPropagation.get();
 		}
 
 		ClassParseResult parseResult = (ClassParseResult) innerClassParseResult;
@@ -55,7 +57,7 @@ public class InnerClassParser extends AbstractEntityParser<TypeInfo>
 		try {
 			identifierToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
-			return new ParseError(startPosition, "Expected inner class name", ParseError.ErrorType.WRONG_PARSER);
+			return new ParseError(startPosition, "Expected inner class name", ErrorPriority.WRONG_PARSER);
 		}
 
 		String innerClassName = identifierToken.getValue();
@@ -68,7 +70,7 @@ public class InnerClassParser extends AbstractEntityParser<TypeInfo>
 			.filter(clazz -> clazz.getSimpleName().equals(innerClassName))
 			.findFirst();
 		if (!firstClassMatch.isPresent()) {
-			return new ParseError(startPosition, "Unknown inner class '" + innerClassName + "'", ParseError.ErrorType.WRONG_PARSER);
+			return new ParseError(startPosition, "Unknown inner class '" + innerClassName + "'", ErrorPriority.WRONG_PARSER);
 		}
 
 		Class<?> innerClass = firstClassMatch.get();

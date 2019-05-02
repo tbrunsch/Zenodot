@@ -5,6 +5,7 @@ import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.parsers.AbstractEntityParser;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.TokenStream;
 
 import java.util.*;
@@ -107,7 +108,7 @@ public class ParseUtils
 	}
 
 	private static ParseError mergeParseErrors(List<ParseError> errors) {
-		for (ParseError.ErrorType errorType : ParseError.ErrorType.values()) {
+		for (ErrorPriority errorType : ErrorPriority.values()) {
 			List<ParseError> errorsOfCurrentType = errors.stream().filter(error -> error.getErrorType() == errorType).collect(Collectors.toList());
 			if (errorsOfCurrentType.isEmpty()) {
 				continue;
@@ -120,13 +121,18 @@ public class ParseUtils
 			 *            errors of parsers that are most likely supposed to match.
 			 */
 			int maxPosition = errorsOfCurrentType.stream().mapToInt(ParseError::getPosition).max().getAsInt();
-			String message = errorsOfCurrentType.stream()
-								.filter(error -> error.getPosition() == maxPosition)
-								.map(ParseError::getMessage)
-								.collect(Collectors.joining("\n"));
+			final String message;
+			if (errorType == ErrorPriority.WRONG_PARSER) {
+				message = "Invalid expression";
+			} else {
+				message = errorsOfCurrentType.stream()
+					.filter(error -> error.getPosition() == maxPosition)
+					.map(ParseError::getMessage)
+					.collect(Collectors.joining("\n"));
+			}
 			return new ParseError(maxPosition, message, errorType);
 		}
-		return new ParseError(-1, "Internal error: Failed merging parse errors", ParseError.ErrorType.INTERNAL_ERROR);
+		return new ParseError(-1, "Internal error: Failed merging parse errors", ErrorPriority.INTERNAL_ERROR);
 	}
 
 	/*
@@ -146,10 +152,17 @@ public class ParseUtils
 	 * Throws an IllegalArgumentException if the parse result is an object parse result when a class parse
 	 * result is expected or vice versa.
 	 *
-	 * Returns true if the parse result is not of the expected type. This is the case for completion suggestions,
-	 * errors, and ambiguous parse results.
+	 * Returns a non-empty {@link ParseResult} if the parse result is not of the expected type. This is the
+	 * case for completion suggestions, errors, and ambiguous parse results. In this case, the parse result
+	 * shall be propagated immediately.
+	 *
+	 * In case of an error, the {@link ErrorPriority} is increased (i.e., given a higher priority) to
+	 * the specified level if its current error type has lower priority.
+	 *
+	 * If the parse result matches the expectations, then it shall not be propagated and the parser has to
+	 * continue parsing the expression. In that case, the returned {@link Optional} is empty.
 	 */
-	public static boolean propagateParseResult(ParseResult parseResult, ParseExpectation expectation) {
+	public static Optional<ParseResult> prepareParseResultForPropagation(ParseResult parseResult, ParseExpectation expectation, ErrorPriority minimumErrorType) {
 		ParseResultType parseResultType = parseResult.getResultType();
 		ParseResultType expectedEvaluationType = expectation.getEvaluationType();
 		if (expectedEvaluationType == ParseResultType.OBJECT_PARSE_RESULT && parseResultType == ParseResultType.CLASS_PARSE_RESULT) {
@@ -158,6 +171,17 @@ public class ParseUtils
 		if (expectedEvaluationType == ParseResultType.CLASS_PARSE_RESULT && parseResultType == ParseResultType.OBJECT_PARSE_RESULT) {
 			throw new IllegalStateException("Internal error: Expected a class as parse result, but obtained an object");
 		}
-		return parseResultType != expectedEvaluationType;
+		if (parseResultType == expectedEvaluationType) {
+			return Optional.empty();
+		}
+		if (parseResultType != ParseResultType.PARSE_ERROR) {
+			return Optional.of(parseResult);
+		}
+		ParseError parseError = (ParseError) parseResult;
+		if (parseError.getErrorType().compareTo(minimumErrorType) <= 0) {
+			// error has already sufficient priority
+			return Optional.of(parseError);
+		}
+		return Optional.of(new ParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
 	}
 }

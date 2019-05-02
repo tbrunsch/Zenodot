@@ -13,7 +13,7 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import java.util.List;
 import java.util.Optional;
 
-import static dd.kms.zenodot.result.ParseError.ErrorType;
+import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
 /**
  * Base class for {@link ClassFieldParser} and {@link ObjectFieldParser}
@@ -34,7 +34,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 
 		if (contextCausesNullPointerException(context)) {
 			log(LogLevel.ERROR, "null pointer exception");
-			return new ParseError(startPosition, "Null pointer exception", ErrorType.WRONG_PARSER);
+			return new ParseError(startPosition, "Null pointer exception", ErrorPriority.WRONG_PARSER);
 		}
 
 		if (tokenStream.isCaretAtPosition()) {
@@ -54,7 +54,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 			fieldNameToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "missing field name at " + tokenStream);
-			return new ParseError(startPosition, "Expected an identifier", ErrorType.WRONG_PARSER);
+			return new ParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
 		}
 		String fieldName = fieldNameToken.getValue();
 		int endPosition = tokenStream.getPosition();
@@ -67,7 +67,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 
 		if (tokenStream.hasMore() && tokenStream.peekCharacter() == '(') {
 			log(LogLevel.ERROR, "unexpected '(' at " + tokenStream);
-			return new ParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorType.WRONG_PARSER);
+			return new ParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		// no code completion requested => field name must exist
@@ -75,7 +75,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 		Optional<FieldInfo> firstFieldInfoMatch = fieldInfos.stream().filter(fieldInfo -> fieldInfo.getName().equals(fieldName)).findFirst();
 		if (!firstFieldInfoMatch.isPresent()) {
 			log(LogLevel.ERROR, "unknown field '" + fieldName + "'");
-			return new ParseError(startPosition, "Unknown field '" + fieldName + "'", ErrorType.SEMANTIC_ERROR);
+			return new ParseError(startPosition, "Unknown field '" + fieldName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected field '" + fieldName + "'");
 

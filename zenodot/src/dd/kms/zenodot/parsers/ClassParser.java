@@ -13,7 +13,10 @@ import dd.kms.zenodot.utils.dataProviders.ClassDataProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
+import java.util.Optional;
 import java.util.Set;
+
+import static dd.kms.zenodot.result.ParseError.*;
 
 /**
  * Parses subexpressions of the form {@code <package>.<class name>} or {@code <class name>} in
@@ -33,8 +36,9 @@ public class ClassParser extends AbstractEntityParser<ObjectInfo>
 		ParseResult classParseResult = readClass(tokenStream);
 		log(LogLevel.INFO, "parse result: " + classParseResult.getResultType());
 
-		if (ParseUtils.propagateParseResult(classParseResult, ParseExpectation.CLASS)) {
-			return classParseResult;
+		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(classParseResult, ParseExpectation.CLASS, ErrorPriority.WRONG_PARSER);
+		if (parseResultForPropagation.isPresent()) {
+			return parseResultForPropagation.get();
 		}
 
 		ClassParseResult parseResult = (ClassParseResult) classParseResult;
@@ -57,7 +61,7 @@ public class ClassParser extends AbstractEntityParser<ObjectInfo>
 			try {
 				packageOrClassToken = tokenStream.readPackageOrClass();
 			} catch (TokenStream.JavaTokenParseException e) {
-				return new ParseError(identifierStartPosition, "Expected sub-package or class name", ParseError.ErrorType.SYNTAX_ERROR);
+				return new ParseError(identifierStartPosition, "Expected sub-package or class name", ErrorPriority.WRONG_PARSER);
 			}
 			packageOrClassName += packageOrClassToken.getValue();
 			if (packageOrClassToken.isContainsCaret()) {
@@ -71,11 +75,11 @@ public class ClassParser extends AbstractEntityParser<ObjectInfo>
 
 			Token characterToken = tokenStream.readCharacterUnchecked();
 			if (characterToken == null ||  characterToken.getValue().charAt(0) != '.') {
-				return new ParseError(identifierStartPosition, "Unknown class name '" + packageOrClassName + "'", ParseError.ErrorType.SEMANTIC_ERROR);
+				return new ParseError(identifierStartPosition, "Unknown class name '" + packageOrClassName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 			}
 
 			if (!classDataProvider.packageExists(packageOrClassName)) {
-				return new ParseError(tokenStream.getPosition(), "Unknown class or package '" + packageOrClassName + "'", ParseError.ErrorType.SEMANTIC_ERROR);
+				return new ParseError(tokenStream.getPosition(), "Unknown class or package '" + packageOrClassName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 			}
 
 			packageOrClassName += ".";

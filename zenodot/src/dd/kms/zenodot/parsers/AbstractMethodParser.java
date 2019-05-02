@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static dd.kms.zenodot.result.ParseError.ErrorType;
+import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
 /**
  * Base class for {@link ClassMethodParser} and {@link ObjectMethodParser}
@@ -36,7 +36,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 		if (contextCausesNullPointerException(context)) {
 			log(LogLevel.ERROR, "null pointer exception");
-			return new ParseError(startPosition, "Null pointer exception", ErrorType.WRONG_PARSER);
+			return new ParseError(startPosition, "Null pointer exception", ErrorPriority.WRONG_PARSER);
 		}
 
 		if (tokenStream.isCaretAtPosition()) {
@@ -56,7 +56,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 			methodNameToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "missing method name at " + tokenStream);
-			return new ParseError(startPosition, "Expected an identifier", ErrorType.WRONG_PARSER);
+			return new ParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
 		}
 		String methodName = methodNameToken.getValue();
 		final int endPosition = tokenStream.getPosition();
@@ -69,7 +69,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 		if (!tokenStream.hasMore() || tokenStream.peekCharacter() != '(') {
 			log(LogLevel.ERROR, "missing '(' at " + tokenStream);
-			return new ParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorType.WRONG_PARSER);
+			return new ParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		// no code completion requested => method name must exist
@@ -77,7 +77,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		List<AbstractExecutableInfo> matchingMethodInfos = methodInfos.stream().filter(methodInfo -> methodInfo.getName().equals(methodName)).collect(Collectors.toList());
 		if (matchingMethodInfos.isEmpty()) {
 			log(LogLevel.ERROR, "unknown method '" + methodName + "'");
-			return new ParseError(startPosition, "Unknown method '" + methodName + "'", ErrorType.SEMANTIC_ERROR);
+			return new ParseError(startPosition, "Unknown method '" + methodName + "'", ErrorPriority.RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected " + matchingMethodInfos.size() + " method(s) '" + methodName + "'");
 
@@ -108,8 +108,9 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 				return new CompletionSuggestions(argumentSuggestions.getPosition(), argumentSuggestions.getRatedSuggestions(), Optional.of(executableArgumentInfo));
 			}
 
-			if (ParseUtils.propagateParseResult(lastArgumentParseResult, ParseExpectation.OBJECT)) {
-				return lastArgumentParseResult;
+			Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(lastArgumentParseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+			if (parseResultForPropagation.isPresent()) {
+				return parseResultForPropagation.get();
 			}
 		}
 
@@ -122,7 +123,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		switch (bestMatchingMethodInfos.size()) {
 			case 0:
 				log(LogLevel.ERROR, "no matching method found");
-				return new ParseError(tokenStream.getPosition(), "No method matches the given arguments", ErrorType.SEMANTIC_ERROR);
+				return new ParseError(tokenStream.getPosition(), "No method matches the given arguments", ErrorPriority.RIGHT_PARSER);
 			case 1: {
 				AbstractExecutableInfo bestMatchingExecutableInfo = bestMatchingMethodInfos.get(0);
 				ObjectInfo methodReturnInfo;
@@ -137,10 +138,10 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 						messageBuilder.append(": ").append(causeMessage);
 					}
 					log(LogLevel.ERROR, messageBuilder.toString());
-					return new ParseError(startPosition, "Exception during method evaluation", ErrorType.EVALUATION_EXCEPTION, cause);
+					return new ParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, cause);
 				} catch (Exception e) {
 					log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-					return new ParseError(startPosition, "Exception during method evaluation", ErrorType.EVALUATION_EXCEPTION, e);
+					return new ParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 				}
 				return parserToolbox.getObjectTailParser().parse(tokenStream, methodReturnInfo, expectation);
 			}

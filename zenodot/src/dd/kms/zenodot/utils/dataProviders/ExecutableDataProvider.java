@@ -7,6 +7,7 @@ import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.parsers.ParseExpectationBuilder;
 import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionMethod;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -57,7 +58,7 @@ public class ExecutableDataProvider
 
 		if (!characterToken.isContainsCaret()) {
 			if (!tokenStream.hasMore()) {
-				arguments.add(new ParseError(tokenStream.getPosition(), "Expected argument or closing parenthesis ')'", ParseError.ErrorType.SYNTAX_ERROR));
+				arguments.add(new ParseError(tokenStream.getPosition(), "Expected argument or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 
@@ -81,7 +82,7 @@ public class ExecutableDataProvider
 					// code completion after opening '(' for executable without arguments
 					arguments.add(CompletionSuggestions.none(position));
 				} else {
-					arguments.add(new ParseError(position, "No further arguments expected", ParseError.ErrorType.SEMANTIC_ERROR));
+					arguments.add(new ParseError(position, "No further arguments expected", ErrorPriority.RIGHT_PARSER));
 				}
 				return arguments;
 			}
@@ -91,11 +92,13 @@ public class ExecutableDataProvider
 			 */
 			ParseExpectation argumentExpectation = ParseExpectationBuilder.expectObject().allowedTypes(expectedArgumentTypes_i).build();
 			ParseResult argumentParseResult_i = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argumentExpectation);
-			arguments.add(argumentParseResult_i);
 
-			if (ParseUtils.propagateParseResult(argumentParseResult_i, argumentExpectation)) {
+			Optional<ParseResult> argumentForPropagation = ParseUtils.prepareParseResultForPropagation(argumentParseResult_i, argumentExpectation, ErrorPriority.RIGHT_PARSER);
+			if (argumentForPropagation.isPresent()) {
+				arguments.add(argumentForPropagation.get());
 				return arguments;
 			}
+			arguments.add(argumentParseResult_i);
 
 			ObjectParseResult parseResult = ((ObjectParseResult) argumentParseResult_i);
 			int parsedToPosition = parseResult.getPosition();
@@ -107,7 +110,7 @@ public class ExecutableDataProvider
 			characterToken = tokenStream.readCharacterUnchecked();
 
 			if (characterToken == null) {
-				arguments.add(new ParseError(position, "Expected comma ',' or closing parenthesis ')'", ParseError.ErrorType.SYNTAX_ERROR));
+				arguments.add(new ParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 
@@ -120,7 +123,7 @@ public class ExecutableDataProvider
 			}
 
 			if (characterToken.getValue().charAt(0) != ',') {
-				arguments.add(new ParseError(position, "Expected comma ',' or closing parenthesis ')'", ParseError.ErrorType.SYNTAX_ERROR));
+				arguments.add(new ParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 		}
