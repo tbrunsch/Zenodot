@@ -24,6 +24,14 @@ public class MatchRating implements Comparable<MatchRating>
 				: typeMatch.compareTo(that.typeMatch);
 	}
 
+	public StringMatch getNameMatch() {
+		return nameMatch;
+	}
+
+	public TypeMatch getTypeMatch() {
+		return typeMatch;
+	}
+
 	@Override
 	public String toString() {
 		return "name match: " + nameMatch + ", type match: " + typeMatch;

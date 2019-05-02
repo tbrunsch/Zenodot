@@ -135,7 +135,12 @@ public class ExecutableDataProvider
 	}
 
 	private boolean acceptsArgumentInfo(AbstractExecutableInfo executableInfo, int argIndex, ObjectInfo argInfo) {
-		TypeInfo expectedArgumentType = executableInfo.getExpectedArgumentType(argIndex);
+		TypeInfo expectedArgumentType;
+		try {
+			expectedArgumentType = executableInfo.getExpectedArgumentType(argIndex);
+		} catch (IndexOutOfBoundsException e) {
+			return false;
+		}
 		TypeInfo argumentType = parserToolbox.getObjectInfoProvider().getType(argInfo);
 		return MatchRatings.isConvertibleTo(argumentType, expectedArgumentType);
 	}
@@ -169,6 +174,17 @@ public class ExecutableDataProvider
 			}
 		}
 		return filteredExecutableInfos;
+	}
+
+	public ExecutableArgumentInfo createExecutableArgumentInfo(List<AbstractExecutableInfo> executableInfos, List<ObjectInfo> argumentInfos) {
+		int currentArgumentIndex = argumentInfos.size();
+		Map<AbstractExecutableInfo, Boolean> applicableExecutableOverloads = new LinkedHashMap<>(executableInfos.size());
+		for (AbstractExecutableInfo executableInfo : executableInfos) {
+			boolean applicable = IntStream.range(0, argumentInfos.size()).allMatch(i -> acceptsArgumentInfo(executableInfo, i, argumentInfos.get(i)));
+			applicableExecutableOverloads.put(executableInfo, applicable);
+		}
+
+		return new ExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
 	}
 
 	/*

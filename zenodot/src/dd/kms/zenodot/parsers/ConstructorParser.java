@@ -7,6 +7,7 @@ import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
+import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
 import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -14,6 +15,7 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -82,14 +84,31 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		List<AbstractExecutableInfo> constructorInfos = parserToolbox.getInspectionDataProvider().getConstructorInfos(constructorType);
 
 		log(LogLevel.INFO, "parsing constructor arguments");
-		List<ParseResult> argumentParseResults = parserToolbox.getExecutableDataProvider().parseExecutableArguments(tokenStream, constructorInfos);
+		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
+		List<ParseResult> argumentParseResults = executableDataProvider.parseExecutableArguments(tokenStream, constructorInfos);
 
 		if (argumentParseResults.isEmpty()) {
 			log(LogLevel.INFO, "no arguments found");
 		} else {
-			ParseResult lastArgumentParseResult = argumentParseResults.get(argumentParseResults.size()-1);
-			ParseResultType lastArgumentParseResultResultType = lastArgumentParseResult.getResultType();
-			log(LogLevel.INFO, "parse result: " + lastArgumentParseResultResultType);
+			int lastArgumentIndex = argumentParseResults.size() - 1;
+			ParseResult lastArgumentParseResult = argumentParseResults.get(lastArgumentIndex);
+			ParseResultType lastArgumentParseResultType = lastArgumentParseResult.getResultType();
+			log(LogLevel.INFO, "parse result: " + lastArgumentParseResultType);
+
+			if (lastArgumentParseResult.getResultType() == ParseResultType.COMPLETION_SUGGESTIONS) {
+				CompletionSuggestions argumentSuggestions = (CompletionSuggestions) lastArgumentParseResult;
+				// add argument information
+				if (argumentSuggestions.getExecutableArgumentInfo().isPresent()) {
+					// information has already been added for an executable used in a subexpression, which is more relevant
+					return argumentSuggestions;
+				}
+				List<ObjectInfo> previousArgumentInfos = argumentParseResults.subList(0, lastArgumentIndex).stream()
+					.map(ObjectParseResult.class::cast)
+					.map(ObjectParseResult::getObjectInfo)
+					.collect(Collectors.toList());
+				ExecutableArgumentInfo executableArgumentInfo = executableDataProvider.createExecutableArgumentInfo(constructorInfos, previousArgumentInfos);
+				return new CompletionSuggestions(argumentSuggestions.getPosition(), argumentSuggestions.getRatedSuggestions(), Optional.of(executableArgumentInfo));
+			}
 
 			if (ParseUtils.propagateParseResult(lastArgumentParseResult, ParseExpectation.OBJECT)) {
 				return lastArgumentParseResult;

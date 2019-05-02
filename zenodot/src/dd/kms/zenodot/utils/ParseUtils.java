@@ -70,6 +70,7 @@ public class ParseUtils
 	private static ParseResult mergeCompletionSuggestions(List<CompletionSuggestions> completionSuggestions) {
 		Map<CompletionSuggestion, MatchRating> mergedRatedSuggestions = new LinkedHashMap<>();
 		int position = Integer.MAX_VALUE;
+		Optional<ExecutableArgumentInfo> methodArgumentInfo	= Optional.empty();
 		for (CompletionSuggestions suggestions : completionSuggestions) {
 			position = Math.min(position, suggestions.getPosition());
 			Map<CompletionSuggestion, MatchRating> ratedSuggestions = suggestions.getRatedSuggestions();
@@ -80,8 +81,11 @@ public class ParseUtils
 				MatchRating newRating = ratedSuggestions.get(suggestion);
 				mergedRatedSuggestions.put(suggestion, MatchRatings.bestOf(rating, newRating));
 			}
+			if (!methodArgumentInfo.isPresent()) {
+				methodArgumentInfo = suggestions.getExecutableArgumentInfo();
+			}
 		}
-		return new CompletionSuggestions(position, mergedRatedSuggestions);
+		return new CompletionSuggestions(position, mergedRatedSuggestions, methodArgumentInfo);
 	}
 
 	private static ParseResult mergeResults(List<AmbiguousParseResult> ambiguousResults, List<ParseResult> results) {

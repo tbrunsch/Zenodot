@@ -6,11 +6,13 @@ import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
+import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
 import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static dd.kms.zenodot.result.ParseError.ErrorType;
@@ -80,14 +82,31 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		log(LogLevel.SUCCESS, "detected " + matchingMethodInfos.size() + " method(s) '" + methodName + "'");
 
 		log(LogLevel.INFO, "parsing method arguments");
-		List<ParseResult> argumentParseResults = parserToolbox.getExecutableDataProvider().parseExecutableArguments(tokenStream, matchingMethodInfos);
+		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
+		List<ParseResult> argumentParseResults = executableDataProvider.parseExecutableArguments(tokenStream, matchingMethodInfos);
 
 		if (argumentParseResults.isEmpty()) {
 			log(LogLevel.INFO, "no arguments found");
 		} else {
-			ParseResult lastArgumentParseResult = argumentParseResults.get(argumentParseResults.size()-1);
+			int lastArgumentIndex = argumentParseResults.size() - 1;
+			ParseResult lastArgumentParseResult = argumentParseResults.get(lastArgumentIndex);
 			ParseResultType lastArgumentParseResultType = lastArgumentParseResult.getResultType();
 			log(LogLevel.INFO, "parse result: " + lastArgumentParseResultType);
+
+			if (lastArgumentParseResult.getResultType() == ParseResultType.COMPLETION_SUGGESTIONS) {
+				CompletionSuggestions argumentSuggestions = (CompletionSuggestions) lastArgumentParseResult;
+				// add argument information
+				if (argumentSuggestions.getExecutableArgumentInfo().isPresent()) {
+					// information has already been added for an executable used in a subexpression, which is more relevant
+					return argumentSuggestions;
+				}
+				List<ObjectInfo> previousArgumentInfos = argumentParseResults.subList(0, lastArgumentIndex).stream()
+					.map(ObjectParseResult.class::cast)
+					.map(ObjectParseResult::getObjectInfo)
+					.collect(Collectors.toList());
+				ExecutableArgumentInfo executableArgumentInfo = executableDataProvider.createExecutableArgumentInfo(matchingMethodInfos, previousArgumentInfos);
+				return new CompletionSuggestions(argumentSuggestions.getPosition(), argumentSuggestions.getRatedSuggestions(), Optional.of(executableArgumentInfo));
+			}
 
 			if (ParseUtils.propagateParseResult(lastArgumentParseResult, ParseExpectation.OBJECT)) {
 				return lastArgumentParseResult;
@@ -98,7 +117,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 			.map(ObjectParseResult.class::cast)
 			.map(ObjectParseResult::getObjectInfo)
 			.collect(Collectors.toList());
-		List<AbstractExecutableInfo> bestMatchingMethodInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutableInfos(matchingMethodInfos, argumentInfos);
+		List<AbstractExecutableInfo> bestMatchingMethodInfos = executableDataProvider.getBestMatchingExecutableInfos(matchingMethodInfos, argumentInfos);
 
 		switch (bestMatchingMethodInfos.size()) {
 			case 0:
