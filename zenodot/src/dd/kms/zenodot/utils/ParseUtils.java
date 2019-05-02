@@ -128,9 +128,16 @@ public class ParseUtils
 				message = errorsOfCurrentType.stream()
 					.filter(error -> error.getPosition() == maxPosition)
 					.map(ParseError::getMessage)
+					.distinct()
 					.collect(Collectors.joining("\n"));
 			}
-			return new ParseError(maxPosition, message, errorType);
+
+			Optional<Throwable> firstException = errorsOfCurrentType.stream()
+				.map(ParseError::getThrowable)
+				.filter(Objects::nonNull)
+				.findFirst();
+
+			return new ParseError(maxPosition, message, errorType, firstException.orElse(null));
 		}
 		return new ParseError(-1, "Internal error: Failed merging parse errors", ErrorPriority.INTERNAL_ERROR);
 	}
