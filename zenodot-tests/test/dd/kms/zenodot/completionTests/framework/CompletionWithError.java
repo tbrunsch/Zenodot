@@ -3,18 +3,18 @@ package dd.kms.zenodot.completionTests.framework;
 class CompletionWithError implements TestExecutor
 {
 	private final String						javaExpression;
-	private final int							caret;
+	private final int							caretPosition;
 	private final Class<? extends Exception>	expectedExceptionClass;
 
-	CompletionWithError(String javaExpression, int caret, Class<? extends Exception> expectedExceptionClass) {
+	CompletionWithError(String javaExpression, int caretPosition, Class<? extends Exception> expectedExceptionClass) {
 		this.javaExpression = javaExpression;
-		this.caret = caret;
+		this.caretPosition = caretPosition;
 		this.expectedExceptionClass = expectedExceptionClass;
 	}
 
 	@Override
 	public void executeTest(CompletionTest test) {
-		test.testCompletionWithError(javaExpression, caret, expectedExceptionClass);
+		test.testCompletionWithError(javaExpression, caretPosition, expectedExceptionClass);
 	}
 
 	@Override

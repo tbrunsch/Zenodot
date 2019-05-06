@@ -50,12 +50,12 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		}
 	}
 
-	void testCompletionWithError(String javaExpression, int caret, Class<? extends Exception> expectedExceptionClass) {
+	void testCompletionWithError(String javaExpression, int caretPosition, Class<? extends Exception> expectedExceptionClass) {
 		ParserSettings settings = settingsBuilder.build();
 
 		JavaParser parser = new JavaParser();
 		try {
-			parser.suggestCodeCompletion(javaExpression, caret, settings, testInstance);
+			parser.suggestCodeCompletion(javaExpression, caretPosition, settings, testInstance);
 			fail("Expression: " + javaExpression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			assertEquals(expectedExceptionClass, e.getClass());
@@ -67,10 +67,10 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		ParserLogger logger = settings.getLogger();
 
 		JavaParser parser = new JavaParser();
-		int caret = javaExpression.length();
+		int caretPosition = javaExpression.length();
 		List<String> suggestions = null;
 		try {
-			suggestions = extractSuggestions(parser.suggestCodeCompletion(javaExpression, caret, settings, testInstance));
+			suggestions = extractSuggestions(parser.suggestCodeCompletion(javaExpression, caretPosition, settings, testInstance));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				fail("Exception during code completion: " + e.getMessage());

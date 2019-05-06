@@ -38,8 +38,8 @@ public class CompletionTestBuilder
 		return addTestWithError(javaExpression, javaExpression.length(), expectedExceptionClass);
 	}
 
-	public CompletionTestBuilder addTestWithError(String javaExpression, int caret, Class<? extends Exception> expectedExceptionClass) {
-		return addTest(new CompletionWithError(javaExpression, caret, expectedExceptionClass));
+	public CompletionTestBuilder addTestWithError(String javaExpression, int caretPosition, Class<? extends Exception> expectedExceptionClass) {
+		return addTest(new CompletionWithError(javaExpression, caretPosition, expectedExceptionClass));
 	}
 
 	private CompletionTestBuilder addTest(TestExecutor testExecutor) {

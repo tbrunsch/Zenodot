@@ -74,17 +74,17 @@ public class TokenStream implements Cloneable
 	}
 
 	private final String	javaExpression;
-	private final int		caret;
+	private final int		caretPosition;
 
 	private int				position;
 
-	public TokenStream(String javaExpression, int caret) {
-		this(javaExpression, caret, 0);
+	public TokenStream(String javaExpression, int caretPosition) {
+		this(javaExpression, caretPosition, 0);
 	}
 
-	private TokenStream(String javaExpression, int caret, int position) {
+	private TokenStream(String javaExpression, int caretPosition, int position) {
 		this.javaExpression = javaExpression;
-		this.caret = caret;
+		this.caretPosition = caretPosition;
 		this.position = position;
 	}
 
@@ -97,7 +97,7 @@ public class TokenStream implements Cloneable
 	}
 
 	public boolean isCaretAtPosition() {
-		return position == caret;
+		return position == caretPosition;
 	}
 
 	public Token readIdentifier() throws JavaTokenParseException {
@@ -223,7 +223,7 @@ public class TokenStream implements Cloneable
 	 */
 	private boolean moveForward(int numCharacters) {
 		int newPosition = position + numCharacters;
-		boolean containsCaret = position < caret && caret <= newPosition;
+		boolean containsCaret = position < caretPosition && caretPosition <= newPosition;
 		moveTo(newPosition);
 		return containsCaret;
 	}
@@ -234,7 +234,7 @@ public class TokenStream implements Cloneable
 
 	@Override
 	public TokenStream clone() {
-		return new TokenStream(javaExpression, caret, position);
+		return new TokenStream(javaExpression, caretPosition, position);
 	}
 
 	@Override

@@ -13,10 +13,10 @@ public class MethodTestSideEffect
 	public void testMethodSideEffect() {
 		TestClass testInstance = new TestClass();
 		String expression = "f(g(), s)";
-		int caret = expression.length();
+		int caretPosition = expression.length();
 		ParserSettings parserSettings = new ParserSettingsBuilder().enableDynamicTyping(false).build();
 		try {
-			new JavaParser().suggestCodeCompletion(expression, caret, parserSettings, testInstance);
+			new JavaParser().suggestCodeCompletion(expression, caretPosition, parserSettings, testInstance);
 			Assert.fail("Expected ParseException");
 		} catch (ParseException ignored) {
 			/* expected */

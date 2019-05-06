@@ -26,21 +26,21 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 public class JavaParser
 {
 	/**
-	 * Returns rated code completions for a given java expression at a given caret in the context provided
+	 * Returns rated code completions for a given java expression at a given caret position in the context provided
 	 * by {@code valueOfThis}.
 	 *
 	 * @throws ParseException
 	 */
-	public Map<CompletionSuggestion, MatchRating> suggestCodeCompletion(String javaExpression, int caret, ParserSettings settings, Object valueOfThis) throws ParseException {
-		return getCompletionSuggestions(javaExpression, caret, settings, valueOfThis).getRatedSuggestions();
+	public Map<CompletionSuggestion, MatchRating> suggestCodeCompletion(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
+		return getCompletionSuggestions(javaExpression, caretPosition, settings, valueOfThis).getRatedSuggestions();
 	}
 
 	/**
 	 * Returns optional information about the arguments of the current method or constructor {@link ExecutableArgumentInfo}.
 	 * The value will be present if the caret is inside of a method argument list.
 	 */
-	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String javaExpression, int caret, ParserSettings settings, Object valueOfThis) throws ParseException {
-		return getCompletionSuggestions(javaExpression, caret, settings, valueOfThis).getExecutableArgumentInfo();
+	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
+		return getCompletionSuggestions(javaExpression, caretPosition, settings, valueOfThis).getExecutableArgumentInfo();
 	}
 
 	/**
@@ -90,8 +90,8 @@ public class JavaParser
 		}
 	}
 
-	private CompletionSuggestions getCompletionSuggestions(String javaExpression, int caret, ParserSettings settings, Object valueOfThis) throws ParseException {
-		ParseResult parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caret, valueOfThis);
+	private CompletionSuggestions getCompletionSuggestions(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
+		ParseResult parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caretPosition, valueOfThis);
 
 		switch (parseResult.getResultType()) {
 			case OBJECT_PARSE_RESULT: {
@@ -120,10 +120,10 @@ public class JavaParser
 		}
 	}
 
-	private ParseResult parse(String javaExpression, ParserSettings settings, ParseMode parseMode, int caret, Object valueOfThis) {
+	private ParseResult parse(String javaExpression, ParserSettings settings, ParseMode parseMode, int caretPosition, Object valueOfThis) {
 		ObjectInfo thisInfo = new ObjectInfo(valueOfThis, TypeInfo.UNKNOWN);
 		ParserToolbox parserPool  = new ParserToolbox(thisInfo, settings, parseMode);
-		TokenStream tokenStream = new TokenStream(javaExpression, caret);
+		TokenStream tokenStream = new TokenStream(javaExpression, caretPosition);
 		try {
 			return parserPool.getExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
 		} catch (Exception e) {
