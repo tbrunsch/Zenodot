@@ -1,9 +1,6 @@
 package dd.kms.zenodot.utils.dataProviders;
 
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.matching.MatchRatings;
-import dd.kms.zenodot.matching.StringMatch;
-import dd.kms.zenodot.matching.TypeMatch;
+import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.parsers.ParseExpectationBuilder;
 import dd.kms.zenodot.result.*;
@@ -40,11 +37,11 @@ public class ExecutableDataProvider
 		this.parserToolbox = parserToolbox;
 	}
 
-	public CompletionSuggestions suggestMethods(String expectedName, List<AbstractExecutableInfo> methodInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+	public CompletionSuggestions suggestMethods(List<AbstractExecutableInfo> methodInfos, boolean contextIsStatic, String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			methodInfos,
 			methodInfo -> new CompletionSuggestionMethod(methodInfo, insertionBegin, insertionEnd),
-			rateMethodByNameAndTypesFunc(expectedName, expectation)
+			rateMethodFunc(expectedName, contextIsStatic, expectation)
 		);
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
@@ -209,8 +206,12 @@ public class ExecutableDataProvider
 					: allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(methodInfo.getReturnType(), allowedType)).min(TypeMatch::compareTo).orElse(TypeMatch.NONE);
 	}
 
-	private Function<AbstractExecutableInfo, MatchRating> rateMethodByNameAndTypesFunc(String methodName, ParseExpectation expectation) {
-		return methodInfo -> new MatchRating(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation));
+	private AccessMatch rateMethodByAccess(AbstractExecutableInfo methodInfo, boolean contextIsStatic) {
+		return methodInfo.isStatic() && !contextIsStatic ? AccessMatch.STATIC_ACCESS_VIA_INSTANCE : AccessMatch.FULL;
+	}
+
+	private Function<AbstractExecutableInfo, MatchRating> rateMethodFunc(String methodName, boolean contextIsStatic, ParseExpectation expectation) {
+		return methodInfo -> new MatchRating(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), rateMethodByAccess(methodInfo, contextIsStatic));
 	}
 
 	public static String getMethodDisplayText(AbstractExecutableInfo methodInfo) {

@@ -1,9 +1,6 @@
 package dd.kms.zenodot.utils.dataProviders;
 
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.matching.MatchRatings;
-import dd.kms.zenodot.matching.StringMatch;
-import dd.kms.zenodot.matching.TypeMatch;
+import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
@@ -34,7 +31,7 @@ public class VariableDataProvider
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			sortedVariables,
 			variable -> new CompletionSuggestionVariable(variable, insertionBegin, insertionEnd),
-			rateVariableByNameAndTypesFunc(expectedName, expectation)
+			rateVariableFunc(expectedName, expectation)
 		);
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
@@ -52,8 +49,8 @@ public class VariableDataProvider
 					: allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(valueType, allowedType)).min(TypeMatch::compareTo).orElse(TypeMatch.NONE);
 	}
 
-	private Function<Variable, MatchRating> rateVariableByNameAndTypesFunc(String variableName, ParseExpectation expectation) {
-		return variable -> new MatchRating(rateVariableByName(variable, variableName), rateVariableByTypes(variable, expectation));
+	private Function<Variable, MatchRating> rateVariableFunc(String variableName, ParseExpectation expectation) {
+		return variable -> new MatchRating(rateVariableByName(variable, variableName), rateVariableByTypes(variable, expectation), AccessMatch.IGNORED);
 	}
 
 	public static String getVariableDisplayText(Variable variable) {

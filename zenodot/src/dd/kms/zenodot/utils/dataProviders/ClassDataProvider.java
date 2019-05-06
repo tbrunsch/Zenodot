@@ -6,10 +6,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
 import com.google.common.reflect.ClassPath;
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.matching.MatchRatings;
-import dd.kms.zenodot.matching.StringMatch;
-import dd.kms.zenodot.matching.TypeMatch;
+import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionClass;
@@ -249,8 +246,8 @@ public class ClassDataProvider
 		return MatchRatings.rateStringMatch(classInfo.getUnqualifiedName(), expectedSimpleClassName);
 	}
 
-	private static Function<ClassInfo, MatchRating> rateClassFunc(final String simpleClassName) {
-		return classInfo -> new MatchRating(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE);
+	private static Function<ClassInfo, MatchRating> rateClassFunc(String simpleClassName) {
+		return classInfo -> new MatchRating(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE, AccessMatch.IGNORED);
 	}
 
 	public static String getClassDisplayText(ClassInfo classInfo) {
@@ -267,6 +264,6 @@ public class ClassDataProvider
 	}
 
 	private static Function<String, MatchRating> ratePackageFunc(String expectedName) {
-		return packageName -> new MatchRating(ratePackageByName(packageName, expectedName), TypeMatch.NONE);
+		return packageName -> new MatchRating(ratePackageByName(packageName, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
 	}
 }

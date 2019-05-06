@@ -3,10 +3,7 @@ package dd.kms.zenodot.utils.dataProviders;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogEntry;
 import dd.kms.zenodot.debug.ParserLogger;
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.matching.MatchRatings;
-import dd.kms.zenodot.matching.StringMatch;
-import dd.kms.zenodot.matching.TypeMatch;
+import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
@@ -32,11 +29,11 @@ public class FieldDataProvider
 		this.parserToolbox = parserToolbox;
 	}
 
-	public CompletionSuggestions suggestFields(String expectedName, Object contextObject, List<FieldInfo> fieldInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+	public CompletionSuggestions suggestFields(String expectedName, Object contextObject, boolean contextIsStatic, List<FieldInfo> fieldInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			fieldInfos,
 			fieldInfo -> new CompletionSuggestionField(fieldInfo, insertionBegin, insertionEnd),
-			rateFieldByNameAndTypesFunc(expectedName, contextObject, expectation)
+			rateFieldFunc(contextObject, contextIsStatic, expectedName, expectation)
 		);
 		ParserLogger logger = parserToolbox.getSettings().getLogger();
 		for (CompletionSuggestion suggestion : ratedSuggestions.keySet()) {
@@ -64,8 +61,12 @@ public class FieldDataProvider
 		return allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(type, allowedType)).min(TypeMatch::compareTo).get();
 	}
 
-	private Function<FieldInfo, MatchRating> rateFieldByNameAndTypesFunc(String expectedName, Object contextObject, ParseExpectation expectation) {
-		return fieldInfo -> new MatchRating(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation));
+	private AccessMatch rateFieldByAccess(FieldInfo fieldInfo, boolean contextIsStatic) {
+		return fieldInfo.isStatic() && !contextIsStatic ? AccessMatch.STATIC_ACCESS_VIA_INSTANCE : AccessMatch.FULL;
+	}
+
+	private Function<FieldInfo, MatchRating> rateFieldFunc(Object contextObject, boolean contextIsStatic, String expectedName, ParseExpectation expectation) {
+		return fieldInfo -> new MatchRating(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), rateFieldByAccess(fieldInfo, contextIsStatic));
 	}
 
 	public static String getFieldDisplayText(FieldInfo fieldInfo) {

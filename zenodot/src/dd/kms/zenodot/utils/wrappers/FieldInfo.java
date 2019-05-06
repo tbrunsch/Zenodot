@@ -27,6 +27,10 @@ public class FieldInfo
 		return declaringType.resolveType(field.getGenericType());
 	}
 
+	public boolean isStatic() {
+		return Modifier.isStatic(field.getModifiers());
+	}
+
 	public boolean isFinal() {
 		return Modifier.isFinal(field.getModifiers());
 	}

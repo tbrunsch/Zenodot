@@ -1,9 +1,6 @@
 package dd.kms.zenodot.utils.dataProviders;
 
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.matching.MatchRatings;
-import dd.kms.zenodot.matching.StringMatch;
-import dd.kms.zenodot.matching.TypeMatch;
+import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionObjectTreeNode;
@@ -33,6 +30,6 @@ public class ObjectTreeNodeDataProvider
 	}
 
 	private Function<ObjectTreeNode, MatchRating> rateNodeFunc(String expectedName) {
-		return node -> new MatchRating(rateNodeByName(node, expectedName), TypeMatch.NONE);
+		return node -> new MatchRating(rateNodeByName(node, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
 	}
 }

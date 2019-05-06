@@ -28,6 +28,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 	abstract boolean contextCausesNullPointerException(C context);
 	abstract Object getContextObject(C context);
+	abstract boolean isContextStatic();
 	abstract List<AbstractExecutableInfo> getMethodInfos(C context);
 
 	@Override
@@ -155,6 +156,9 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 	}
 
 	private CompletionSuggestions suggestMethods(String expectedName, C context, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
-		return parserToolbox.getExecutableDataProvider().suggestMethods(expectedName, getMethodInfos(context), expectation, insertionBegin, insertionEnd);
+		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
+		List<AbstractExecutableInfo> methodInfos = getMethodInfos(context);
+		boolean contextIsStatic = isContextStatic();
+		return executableDataProvider.suggestMethods(methodInfos, contextIsStatic, expectedName, expectation, insertionBegin, insertionEnd);
 	}
 }

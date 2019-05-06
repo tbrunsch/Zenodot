@@ -6,22 +6,30 @@ package dd.kms.zenodot.matching;
  */
 public class MatchRating implements Comparable<MatchRating>
 {
-	public static final MatchRating	NONE	= new MatchRating(StringMatch.NONE, TypeMatch.NONE);
+	public static final MatchRating	NONE	= new MatchRating(StringMatch.NONE, TypeMatch.NONE, AccessMatch.IGNORED);
 
 	private final StringMatch	nameMatch;
 	private final TypeMatch		typeMatch;
+	private final AccessMatch	accessMatch;
 
-	public MatchRating(StringMatch nameMatch, TypeMatch typeMatch) {
+	public MatchRating(StringMatch nameMatch, TypeMatch typeMatch, AccessMatch accessMatch) {
 		this.nameMatch = nameMatch;
 		this.typeMatch = typeMatch;
+		this.accessMatch = accessMatch;
 	}
 
 	@Override
 	public int compareTo(MatchRating that) {
 		int nameMatchComparisonResult = nameMatch.compareTo(that.nameMatch);
-		return nameMatchComparisonResult != 0
-				? nameMatchComparisonResult
-				: typeMatch.compareTo(that.typeMatch);
+		if (nameMatchComparisonResult != 0) {
+			return nameMatchComparisonResult;
+		}
+		int typeMatchComparisonResult = typeMatch.compareTo(that.typeMatch);
+		if (typeMatchComparisonResult != 0) {
+			return typeMatchComparisonResult;
+		}
+		int accessMatchComparisonResult = accessMatch.compareTo(that.accessMatch);
+		return accessMatchComparisonResult;
 	}
 
 	public StringMatch getNameMatch() {
@@ -32,8 +40,12 @@ public class MatchRating implements Comparable<MatchRating>
 		return typeMatch;
 	}
 
+	public AccessMatch getAccessMatch() {
+		return accessMatch;
+	}
+
 	@Override
 	public String toString() {
-		return "name match: " + nameMatch + ", type match: " + typeMatch;
+		return "name match: " + nameMatch + ", type match: " + typeMatch + ", access match: " + accessMatch;
 	}
 }

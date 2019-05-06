@@ -7,6 +7,7 @@ import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
+import dd.kms.zenodot.utils.dataProviders.FieldDataProvider;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
@@ -26,6 +27,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 
 	abstract boolean contextCausesNullPointerException(C context);
 	abstract Object getContextObject(C context);
+	abstract boolean isContextStatic();
 	abstract List<FieldInfo> getFieldInfos(C context);
 
 	@Override
@@ -87,7 +89,10 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 	}
 
 	private CompletionSuggestions suggestFields(String expectedName, C context, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+		FieldDataProvider fieldDataProvider = parserToolbox.getFieldDataProvider();
 		Object contextObject = getContextObject(context);
-		return parserToolbox.getFieldDataProvider().suggestFields(expectedName, contextObject, getFieldInfos(context), expectation, insertionBegin, insertionEnd);
+		List<FieldInfo> fieldInfos = getFieldInfos(context);
+		boolean contextIsStatic = isContextStatic();
+		return fieldDataProvider.suggestFields(expectedName, contextObject, contextIsStatic, fieldInfos, expectation, insertionBegin, insertionEnd);
 	}
 }

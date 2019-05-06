@@ -28,6 +28,11 @@ public class ClassMethodParser extends AbstractMethodParser<TypeInfo>
 	}
 
 	@Override
+	boolean isContextStatic() {
+		return true;
+	}
+
+	@Override
 	List<AbstractExecutableInfo> getMethodInfos(TypeInfo contextType) {
 		return parserToolbox.getInspectionDataProvider().getMethodInfos(contextType, true);
 	}
