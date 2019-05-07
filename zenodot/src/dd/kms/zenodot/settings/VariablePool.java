@@ -2,7 +2,6 @@ package dd.kms.zenodot.settings;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import dd.kms.zenodot.settings.Variable;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -30,7 +29,7 @@ class VariablePool
 			ValueData valueData = variables.get(name);
 			Object value = valueData.getValue();
 			if (!valueData.isGarbageCollected()) {
-				builder.add(new Variable(name, value, valueData.isUseHardReference()));
+				builder.add(ParserSettingsUtils.createVariable(name, value, valueData.isUseHardReference()));
 			}
 		}
 		return builder.build();

@@ -1,8 +1,8 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.result.ClassParseResult;
 import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.result.ParseResultType;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -52,11 +52,11 @@ public class ClassTailParser extends AbstractTailParser<TypeInfo>
 		 * know, in which circumstances this method is called, the caller must handle this
 		 * operator. Hence, we stop parsing here.
 		 */
-		return new ClassParseResult(tokenStream.getPosition(), context);
+		return ParseResults.createClassParseResult(tokenStream.getPosition(), context);
 	}
 
 	@Override
 	ParseResult createParseResult(int position, TypeInfo type) {
-		return new ClassParseResult(position, type);
+		return ParseResults.createClassParseResult(position, type);
 	}
 }

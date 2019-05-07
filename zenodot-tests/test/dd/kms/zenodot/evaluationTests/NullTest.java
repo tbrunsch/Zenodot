@@ -3,8 +3,8 @@ package dd.kms.zenodot.evaluationTests;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;
+import dd.kms.zenodot.settings.ParserSettingsUtils;
 import dd.kms.zenodot.settings.Variable;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -21,7 +21,7 @@ public class NullTest extends EvaluationTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		Variable myNull = new Variable("myNull", null, true);
+		Variable myNull = ParserSettingsUtils.createVariable("myNull", null, true);
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder()
 			.testInstance(testInstance)
 			.configurator(test -> test.variables(myNull));

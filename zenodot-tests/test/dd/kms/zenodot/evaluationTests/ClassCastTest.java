@@ -3,8 +3,7 @@ package dd.kms.zenodot.evaluationTests;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;
-import dd.kms.zenodot.utils.wrappers.ClassInfo;
-import org.junit.Test;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -21,7 +20,7 @@ public class ClassCastTest extends EvaluationTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass(5, -2.0, "abc");
-		String className = ClassInfo.forNameUnchecked(TestClass.class.getName()).getUnqualifiedName();
+		String className = InfoProvider.createClassInfoUnchecked(TestClass.class.getName()).getUnqualifiedName();
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
 		testBuilder

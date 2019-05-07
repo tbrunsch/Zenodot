@@ -2,12 +2,13 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.result.ParseResultType;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -30,9 +31,9 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  */
 public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 {
-	private static final ObjectInfo	TRUE_INFO	= new ObjectInfo(true, TypeInfo.of(boolean.class));
-	private static final ObjectInfo	FALSE_INFO	= new ObjectInfo(false, TypeInfo.of(boolean.class));
-	private static final ObjectInfo	NULL_INFO	= new ObjectInfo(null, TypeInfo.NONE);
+	private static final ObjectInfo	TRUE_INFO	= InfoProvider.createObjectInfo(true, InfoProvider.createTypeInfo(boolean.class));
+	private static final ObjectInfo	FALSE_INFO	= InfoProvider.createObjectInfo(false, InfoProvider.createTypeInfo(boolean.class));
+	private static final ObjectInfo	NULL_INFO	= InfoProvider.createObjectInfo(null, InfoProvider.NO_TYPE);
 
 	private final AbstractEntityParser<ObjectInfo> intParser;
 	private final AbstractEntityParser<ObjectInfo> longParser;
@@ -41,16 +42,16 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 
 	public LiteralParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
-		intParser 		= new NumericLiteralParser<>(parserToolbox, thisInfo, TypeInfo.of(int.class),		TokenStream::readIntegerLiteral,	Integer::parseInt,		"Invalid int literal");
-		longParser 		= new NumericLiteralParser<>(parserToolbox, thisInfo, TypeInfo.of(long.class),		TokenStream::readLongLiteral, 		Long::parseLong,		"Invalid long literal");
-		floatParser 	= new NumericLiteralParser<>(parserToolbox, thisInfo, TypeInfo.of(float.class),		TokenStream::readFloatLiteral,		Float::parseFloat,		"Invalid float literal");
-		doubleParser 	= new NumericLiteralParser<>(parserToolbox, thisInfo, TypeInfo.of(double.class),	TokenStream::readDoubleLiteral,		Double::parseDouble,	"Invalid double literal");
+		intParser 		= new NumericLiteralParser<>(parserToolbox, thisInfo, InfoProvider.createTypeInfo(int.class),		TokenStream::readIntegerLiteral,	Integer::parseInt,		"Invalid int literal");
+		longParser 		= new NumericLiteralParser<>(parserToolbox, thisInfo, InfoProvider.createTypeInfo(long.class),		TokenStream::readLongLiteral, 		Long::parseLong,		"Invalid long literal");
+		floatParser 	= new NumericLiteralParser<>(parserToolbox, thisInfo, InfoProvider.createTypeInfo(float.class),		TokenStream::readFloatLiteral,		Float::parseFloat,		"Invalid float literal");
+		doubleParser 	= new NumericLiteralParser<>(parserToolbox, thisInfo, InfoProvider.createTypeInfo(double.class),	TokenStream::readDoubleLiteral,		Double::parseDouble,	"Invalid double literal");
 	}
 
 	@Override
 	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		if (!tokenStream.hasMore()) {
-			return new ParseError(tokenStream.getPosition(), "Expected a literal", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(tokenStream.getPosition(), "Expected a literal", ErrorPriority.WRONG_PARSER);
 		}
 		String characters = tokenStream.peekCharacters();
 		if (characters.startsWith("\"")) {
@@ -77,7 +78,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 			stringLiteralToken = tokenStream.readStringLiteral();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "expected a string literal at " + tokenStream);
-			return new ParseError(startPosition, "Expected a string literal", ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected a string literal", ErrorPriority.RIGHT_PARSER);
 		}
 		if (stringLiteralToken.isContainsCaret()) {
 			log(LogLevel.INFO, "no completion suggestions available for string literals");
@@ -86,7 +87,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		String stringLiteralValue = stringLiteralToken.getValue();
 		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteralValue + "'");
 
-		ObjectInfo stringLiteralInfo = new ObjectInfo(stringLiteralValue, TypeInfo.of(String.class));
+		ObjectInfo stringLiteralInfo = InfoProvider.createObjectInfo(stringLiteralValue, InfoProvider.createTypeInfo(String.class));
 		return parserToolbox.getObjectTailParser().parse(tokenStream, stringLiteralInfo, expectation);
 	}
 
@@ -97,7 +98,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 			characterLiteralToken = tokenStream.readCharacterLiteral();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "expected a character literal at " + tokenStream);
-			return new ParseError(startPosition, "Expected a character literal", ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected a character literal", ErrorPriority.RIGHT_PARSER);
 		}
 		if (characterLiteralToken.isContainsCaret()) {
 			log(LogLevel.INFO, "no completion suggestions available for character literals");
@@ -109,7 +110,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		}
 		log(LogLevel.SUCCESS, "detected character literal '" + characterLiteralValue + "'");
 
-		ObjectInfo stringLiteralInfo = new ObjectInfo(characterLiteralValue.charAt(0), TypeInfo.of(char.class));
+		ObjectInfo stringLiteralInfo = InfoProvider.createObjectInfo(characterLiteralValue.charAt(0), InfoProvider.createTypeInfo(char.class));
 		return parserToolbox.getObjectTailParser().parse(tokenStream, stringLiteralInfo, expectation);
 	}
 
@@ -118,7 +119,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		Token literalToken = tokenStream.readKeyWordUnchecked();
 		if (literalToken == null) {
 			log(LogLevel.ERROR, "expected literal '" + literalName + "'");
-			return new ParseError(startPosition, "Expected '" + literalName + "'", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected '" + literalName + "'", ErrorPriority.WRONG_PARSER);
 		}
 		if (literalToken.isContainsCaret()) {
 			log(LogLevel.INFO, "no completion suggestions available");
@@ -126,7 +127,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		}
 		if (!literalToken.getValue().equals(literalName)) {
 			log(LogLevel.ERROR, "expected literal '" + literalName + "'");
-			return new ParseError(startPosition, "Expected '" + literalName + "'", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected '" + literalName + "'", ErrorPriority.WRONG_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected literal '" + literalName + "'");
 		return parserToolbox.getObjectTailParser().parse(tokenStream, literalInfo, expectation);
@@ -137,7 +138,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		char c = tokenStream.peekCharacter();
 		if (!"+-.0123456789".contains(String.valueOf(c))) {
 			log(LogLevel.ERROR, "expected a numeric literal");
-			return new ParseError(startPosition, "Expected a literal", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected a literal", ErrorPriority.WRONG_PARSER);
 		}
 
 		AbstractEntityParser[] parsers = { longParser, intParser, floatParser, doubleParser };
@@ -149,7 +150,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 			}
 		}
 		log(LogLevel.ERROR, "expected a numeric literal");
-		return new ParseError(startPosition, "Expected a numeric literal", ErrorPriority.WRONG_PARSER);
+		return ParseResults.createParseError(startPosition, "Expected a numeric literal", ErrorPriority.WRONG_PARSER);
 	}
 
 	private static class NumericLiteralParser<T> extends AbstractEntityParser<ObjectInfo>
@@ -174,7 +175,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 			try {
 				token = tokenReader.read(tokenStream);
 			} catch (TokenStream.JavaTokenParseException e) {
-				return new ParseError(startPosition, wrongTypeError, ErrorPriority.WRONG_PARSER);
+				return ParseResults.createParseError(startPosition, wrongTypeError, ErrorPriority.WRONG_PARSER);
 			}
 			if (token.isContainsCaret()) {
 				log(LogLevel.INFO, "no completion suggestions available");
@@ -187,10 +188,10 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 				log(LogLevel.SUCCESS, "detected numeric literal '" + token.getValue() + "'");
 			} catch (NumberFormatException e) {
 				log(LogLevel.ERROR, "number format exception: " + e.getMessage());
-				return new ParseError(startPosition, wrongTypeError, ErrorPriority.WRONG_PARSER);
+				return ParseResults.createParseError(startPosition, wrongTypeError, ErrorPriority.WRONG_PARSER);
 			}
 
-			ObjectInfo literalInfo = new ObjectInfo(literalValue, numericType);
+			ObjectInfo literalInfo = InfoProvider.createObjectInfo(literalValue, numericType);
 			return parserToolbox.getObjectTailParser().parse(tokenStream, literalInfo, expectation);
 		}
 	}

@@ -1,8 +1,8 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.tokenizer.Token;
@@ -48,7 +48,7 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 			variableToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "missing variable name at " + tokenStream);
-			return new ParseError(startPosition, "Expected a variable name", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected a variable name", ErrorPriority.WRONG_PARSER);
 		}
 		String variableName = variableToken.getValue();
 		int endPosition = tokenStream.getPosition();
@@ -61,7 +61,7 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 
 		if (tokenStream.hasMore() && tokenStream.peekCharacter() == '(') {
 			log(LogLevel.ERROR, "unexpected '(' at " + tokenStream);
-			return new ParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		// no code completion requested => variable name must exist
@@ -69,7 +69,7 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 		Optional<Variable> firstVariableMatch = variables.stream().filter(variable -> variable.getName().equals(variableName)).findFirst();
 		if (!firstVariableMatch.isPresent()) {
 			log(LogLevel.ERROR, "unknown variable '" + variableName + "'");
-			return new ParseError(startPosition, "Unknown variable '" + variableName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+			return ParseResults.createParseError(startPosition, "Unknown variable '" + variableName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected variable '" + variableName + "'");
 

@@ -4,20 +4,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.debug.ParserConsoleLogger;
 import dd.kms.zenodot.debug.ParserLogger;
-import dd.kms.zenodot.debug.ParserNullLogger;
-import dd.kms.zenodot.settings.AccessLevel;
-import dd.kms.zenodot.settings.ObjectTreeNode;
-import dd.kms.zenodot.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.settings.Variable;
-
-import java.util.Set;
+import dd.kms.zenodot.debug.ParserLoggers;
+import dd.kms.zenodot.settings.*;
 
 public class AbstractTestExecutor<T extends AbstractTestExecutor>
 {
 	protected static final boolean	SKIP_UNSTABLE_TESTS	= "true".equalsIgnoreCase(System.getProperty("skipUnstableTests"));
 
 	protected final Object					testInstance;
-	protected final ParserSettingsBuilder	settingsBuilder			= new ParserSettingsBuilder().minimumAccessLevel(AccessLevel.PRIVATE);
+	protected final ParserSettingsBuilder	settingsBuilder			= ParserSettingsUtils.createBuilder().minimumAccessLevel(AccessLevel.PRIVATE);
 
 	private boolean							stopAtError				= false;
 	private boolean							printLogEntriesAtError	= false;
@@ -73,7 +68,7 @@ public class AbstractTestExecutor<T extends AbstractTestExecutor>
 	protected ParserLogger prepareLogger(boolean printToConsole, int numLoggedEntriesToStopAfter) {
 		ParserLogger logger = printToConsole
 									? new ParserConsoleLogger().printNumberOfLoggedEntries(true)
-									: new ParserNullLogger();
+									: ParserLoggers.createNullLogger();
 		logger.stopAfter(numLoggedEntriesToStopAfter);
 		settingsBuilder.logger(logger);
 		return logger;

@@ -3,9 +3,9 @@ package dd.kms.zenodot.parsers;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ObjectParseResult;
-import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -29,7 +29,7 @@ public class ParenthesizedExpressionParser extends AbstractEntityParser<ObjectIn
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != '(') {
 			log(LogLevel.ERROR, "missing '('");
-			return new ParseError(position, "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(position, "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		ParseResult expressionParseResult = parserToolbox.getExpressionParser().parse(tokenStream, contextInfo, expectation);
@@ -47,7 +47,7 @@ public class ParenthesizedExpressionParser extends AbstractEntityParser<ObjectIn
 		characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != ')') {
 			log(LogLevel.ERROR, "missing ')'");
-			return new ParseError(position, "Expected closing parenthesis ')'", ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(position, "Expected closing parenthesis ')'", ErrorPriority.RIGHT_PARSER);
 		}
 		if (characterToken.isContainsCaret()) {
 			log(LogLevel.INFO, "no completion suggestions available at " + tokenStream);

@@ -4,6 +4,7 @@ import dd.kms.zenodot.common.CustomHierarchy;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
+import dd.kms.zenodot.settings.ParserSettingsUtils;
 import dd.kms.zenodot.settings.Variable;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -21,8 +22,8 @@ public class WildcardTest extends CompletionTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		Variable variable1 = new Variable("tempFloatVariable", 13.5f, true);
-		Variable variable2 = new Variable("tempCharVariable", 'c', true);
+		Variable variable1 = ParserSettingsUtils.createVariable("tempFloatVariable", 13.5f, true);
+		Variable variable2 = ParserSettingsUtils.createVariable("tempCharVariable", 'c', true);
 		return new CompletionTestBuilder()
 			.testInstance(testInstance)
 			.configurator(test -> {

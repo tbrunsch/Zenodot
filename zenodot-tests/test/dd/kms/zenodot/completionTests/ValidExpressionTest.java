@@ -3,8 +3,8 @@ package dd.kms.zenodot.completionTests;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
-import dd.kms.zenodot.settings.LeafObjectTreeNode;
 import dd.kms.zenodot.settings.ObjectTreeNode;
+import dd.kms.zenodot.settings.ParserSettingsUtils;
 import dd.kms.zenodot.settings.Variable;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -49,9 +49,9 @@ public class ValidExpressionTest extends CompletionTest
 	}
 
 	private static void configureTest(CompletionTest test) {
-		Variable variable = new Variable("variable", 13.0, true);
+		Variable variable = ParserSettingsUtils.createVariable("variable", 13.0, true);
 
-		ObjectTreeNode node = new LeafObjectTreeNode("node", 123);
+		ObjectTreeNode node = ParserSettingsUtils.createLeafNode("node", 123);
 		ObjectTreeNode root = new ObjectTreeNode() {
 			@Override
 			public String getName() {

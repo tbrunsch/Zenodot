@@ -1,7 +1,7 @@
 package dd.kms.zenodot.result;
 
 /**
- * An instance of this class is returned when an ambiguity has been encountered during
+ * An instance of this interface is returned when an ambiguity has been encountered during
  * the parsing process. This can be the case when
  * <ul>
  *     <li>
@@ -12,27 +12,7 @@ package dd.kms.zenodot.result;
  *     </li>
  * </ul>
  */
-public class AmbiguousParseResult implements ParseResult
+public interface AmbiguousParseResult extends ParseResult
 {
-	private final int		position;
-	private final String	message;
-
-	public AmbiguousParseResult(int position, String message) {
-		this.position = position;
-		this.message = message;
-	}
-
-	@Override
-	public ParseResultType getResultType() {
-		return ParseResultType.AMBIGUOUS_PARSE_RESULT;
-	}
-
-	@Override
-	public int getPosition() {
-		return position;
-	}
-
-	public String getMessage() {
-		return message;
-	}
+	String getMessage();
 }

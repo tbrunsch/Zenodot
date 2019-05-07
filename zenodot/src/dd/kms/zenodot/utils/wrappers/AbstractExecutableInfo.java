@@ -5,24 +5,11 @@ import dd.kms.zenodot.matching.TypeMatch;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Wrapper class for executables (methods and constructors). Extended by {@link RegularExecutableInfo}
- * and {@link VariadicExecutableInfo}.<br/>
- * <br/>
- * Handles parameterized types (Generics) to some extend and keeps track of substituted parameters.
- */
-public abstract class AbstractExecutableInfo
+abstract class AbstractExecutableInfo implements ExecutableInfo
 {
-	public static List<AbstractExecutableInfo> getAvailableExecutableInfos(Executable executable, TypeInfo declaringType) {
-		return executable.isVarArgs()
-				? Arrays.asList(new RegularExecutableInfo(executable, declaringType), new VariadicExecutableInfo(executable, declaringType))
-				: Arrays.asList(new RegularExecutableInfo(executable, declaringType));
-	}
-
 	protected final Executable	executable;
 	private final TypeInfo		declaringType;
 
@@ -36,48 +23,59 @@ public abstract class AbstractExecutableInfo
 	abstract TypeMatch doRateArgumentMatch(List<TypeInfo> argumentTypes);
 	abstract Object[] doCreateArgumentArray(List<ObjectInfo> argumentInfos);
 
+	@Override
 	public String getName() {
 		return executable.getName();
 	}
 
+	@Override
 	public int getNumberOfArguments() {
 		return executable.getParameterCount();
 	}
 
+	@Override
 	public boolean isVariadic() {
 		return executable.isVarArgs();
 	}
 
+	@Override
 	public TypeInfo getDeclaringType() {
 		return declaringType;
 	}
 
+	@Override
 	public boolean isStatic() {
 		return Modifier.isStatic(executable.getModifiers());
 	}
 
+	@Override
 	public TypeInfo getReturnType() {
 		return	executable instanceof Method	? declaringType.resolveType(((Method) executable).getGenericReturnType()) :
 		executable instanceof Constructor<?> 	? declaringType
-												: TypeInfo.NONE;
+												: InfoProvider.NO_TYPE;
 	}
 
+	@Override
 	public final boolean isArgumentIndexValid(int argIndex) {
 		return doIsArgumentIndexValid(argIndex);
 	}
 
+	@Override
 	public final TypeInfo getExpectedArgumentType(int argIndex) {
 		return declaringType.resolveType(doGetExpectedArgumentType(argIndex));
 	}
 
+	@Override
 	public final TypeMatch rateArgumentMatch(List<TypeInfo> argumentTypes) {
 		return doRateArgumentMatch(argumentTypes);
 	}
 
+	@Override
 	public final Object[] createArgumentArray(List<ObjectInfo> argumentInfos) {
 		return doCreateArgumentArray(argumentInfos);
 	}
 
+	@Override
 	public Object invoke(Object instance, Object[] arguments) throws InvocationTargetException, IllegalAccessException, InstantiationException {
 		executable.setAccessible(true);
 		return	executable instanceof Method			? ((Method) executable).invoke(instance, arguments) :
@@ -85,6 +83,7 @@ public abstract class AbstractExecutableInfo
 														: null;
 	}
 
+	@Override
 	public String formatArguments() {
 		int numArguments = getNumberOfArguments();
 		List<String> argumentTypeNames = new ArrayList<>(numArguments);

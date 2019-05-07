@@ -8,7 +8,8 @@ import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
-import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -39,7 +40,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		Token operatorToken = tokenStream.readKeyWordUnchecked();
 		if (operatorToken == null) {
 			log(LogLevel.ERROR, "'new' operator expected");
-			return new ParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
 		}
 		if (operatorToken.isContainsCaret()) {
 			log(LogLevel.INFO, "no completion suggestions available");
@@ -47,7 +48,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 		if (!operatorToken.getValue().equals("new")) {
 			log(LogLevel.ERROR, "'new' operator expected");
-			return new ParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
 		}
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
@@ -72,7 +73,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			return parseArrayConstructor(tokenStream, startPosition, type, expectation);
 		} else {
 			log(LogLevel.ERROR, "missing '(' at " + tokenStream);
-			return new ParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 	}
 
@@ -80,9 +81,9 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		Class<?> constructorClass = constructorType.getRawType();
 		if (constructorClass.getEnclosingClass() != null && !Modifier.isStatic(constructorClass.getModifiers())) {
 			log(LogLevel.ERROR, "cannot instantiate non-static inner class");
-			return new ParseError(tokenStream.getPosition(), "Cannot instantiate inner class '" + constructorClass.getName() + "'", ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(tokenStream.getPosition(), "Cannot instantiate inner class '" + constructorClass.getName() + "'", ErrorPriority.RIGHT_PARSER);
 		}
-		List<AbstractExecutableInfo> constructorInfos = parserToolbox.getInspectionDataProvider().getConstructorInfos(constructorType);
+		List<ExecutableInfo> constructorInfos = parserToolbox.getInspectionDataProvider().getConstructorInfos(constructorType);
 
 		log(LogLevel.INFO, "parsing constructor arguments");
 		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
@@ -121,21 +122,21 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			.map(ObjectParseResult.class::cast)
 			.map(ObjectParseResult::getObjectInfo)
 			.collect(Collectors.toList());
-		List<AbstractExecutableInfo> bestMatchingConstructorInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutableInfos(constructorInfos, argumentInfos);
+		List<ExecutableInfo> bestMatchingConstructorInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutableInfos(constructorInfos, argumentInfos);
 
 		switch (bestMatchingConstructorInfos.size()) {
 			case 0:
 				log(LogLevel.ERROR, "no matching constructor found");
-				return new ParseError(tokenStream.getPosition(), "No constructor matches the given arguments", ErrorPriority.RIGHT_PARSER);
+				return ParseResults.createParseError(tokenStream.getPosition(), "No constructor matches the given arguments", ErrorPriority.RIGHT_PARSER);
 			case 1: {
-				AbstractExecutableInfo bestMatchingConstructorInfo = bestMatchingConstructorInfos.get(0);
+				ExecutableInfo bestMatchingConstructorInfo = bestMatchingConstructorInfos.get(0);
 				ObjectInfo constructorReturnInfo;
 				try {
 					constructorReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(null, bestMatchingConstructorInfo, argumentInfos);
 					log(LogLevel.SUCCESS, "found unique matching constructor");
 				} catch (Exception e) {
 					log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-					return new ParseError(startPosition, "Exception during constructor evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
+					return ParseResults.createParseError(startPosition, "Exception during constructor evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 				}
 				return parserToolbox.getObjectTailParser().parse(tokenStream, constructorReturnInfo, expectation);
 			}
@@ -143,7 +144,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 				String error = "Ambiguous constructor call. Possible candidates are:\n"
 								+ bestMatchingConstructorInfos.stream().map(ConstructorParser::formatConstructorInfo).collect(Collectors.joining("\n"));
 				log(LogLevel.ERROR, error);
-				return new AmbiguousParseResult(tokenStream.getPosition(), error);
+				return ParseResults.createAmbiguousParseResult(tokenStream.getPosition(), error);
 			}
 		}
 	}
@@ -188,7 +189,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 				log(LogLevel.SUCCESS, "detected valid array construction with null initialization");
 			} catch (ClassCastException | NegativeArraySizeException e) {
 				log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-				return new ParseError(startPosition, e.getClass().getSimpleName() + " during array construction", ErrorPriority.EVALUATION_EXCEPTION, e);
+				return ParseResults.createParseError(startPosition, e.getClass().getSimpleName() + " during array construction", ErrorPriority.EVALUATION_EXCEPTION, e);
 			}
 			tokenStream.moveTo(parsedToPosition);
 			return parserToolbox.getObjectTailParser().parse(tokenStream, arrayInfo, expectation);
@@ -207,7 +208,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			return null;
 		}
 
-		ParseExpectation expectation = ParseExpectationBuilder.expectObject().allowedType(TypeInfo.of(int.class)).build();
+		ParseExpectation expectation = ParseExpectationBuilder.expectObject().allowedType(InfoProvider.createTypeInfo(int.class)).build();
 		ParseResult arraySizeParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
 
 		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(arraySizeParseResult, expectation, ErrorPriority.RIGHT_PARSER);
@@ -223,7 +224,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 
 		if (characterToken == null || characterToken.getValue().charAt(0) != ']') {
 			log(LogLevel.ERROR, "missing ']' at " + tokenStream);
-			return new ParseError(parsedToPosition, "Expected closing bracket ']'", ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(parsedToPosition, "Expected closing bracket ']'", ErrorPriority.RIGHT_PARSER);
 		}
 
 		if (characterToken.isContainsCaret()) {
@@ -232,7 +233,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		// propagate parse result with corrected position (includes ']')
-		return new ObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
+		return ParseResults.createObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
 	}
 
 	private List<ParseResult> parseArrayElements(TokenStream tokenStream, ParseExpectation expectation) {
@@ -242,13 +243,13 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != '{') {
 			log(LogLevel.ERROR, "missing '{'");
-			elements.add(new ParseError(position, "Expected opening curly bracket '{'", ErrorPriority.RIGHT_PARSER));
+			elements.add(ParseResults.createParseError(position, "Expected opening curly bracket '{'", ErrorPriority.RIGHT_PARSER));
 			return elements;
 		}
 
 		if (!characterToken.isContainsCaret()) {
 			if (!tokenStream.hasMore()) {
-				elements.add(new ParseError(tokenStream.getPosition(), "Expected element or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
+				elements.add(ParseResults.createParseError(tokenStream.getPosition(), "Expected element or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
 				return elements;
 			}
 
@@ -280,7 +281,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			characterToken = tokenStream.readCharacterUnchecked();
 
 			if (characterToken == null) {
-				elements.add(new ParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
+				elements.add(ParseResults.createParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
 				return elements;
 			}
 
@@ -293,13 +294,13 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			}
 
 			if (characterToken.getValue().charAt(0) != ',') {
-				elements.add(new ParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
+				elements.add(ParseResults.createParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
 				return elements;
 			}
 		}
 	}
 
-	private static String formatConstructorInfo(AbstractExecutableInfo constructorInfo) {
+	private static String formatConstructorInfo(ExecutableInfo constructorInfo) {
 		return constructorInfo.getName()
 				+ "("
 				+ constructorInfo.formatArguments()

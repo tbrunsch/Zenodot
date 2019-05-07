@@ -1,7 +1,7 @@
 package dd.kms.zenodot;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.debug.ParserLogEntry;
+import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
@@ -9,10 +9,11 @@ import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.utils.ParserToolbox;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
-import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
 
 import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
@@ -31,7 +32,7 @@ public class JavaParser
 	 *
 	 * @throws ParseException
 	 */
-	public Map<CompletionSuggestion, MatchRating> suggestCodeCompletion(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
+	public static Map<CompletionSuggestion, MatchRating> suggestCodeCompletion(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
 		return getCompletionSuggestions(javaExpression, caretPosition, settings, valueOfThis).getRatedSuggestions();
 	}
 
@@ -39,7 +40,7 @@ public class JavaParser
 	 * Returns optional information about the arguments of the current method or constructor {@link ExecutableArgumentInfo}.
 	 * The value will be present if the caret is inside of a method argument list.
 	 */
-	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
+	public static Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
 		return getCompletionSuggestions(javaExpression, caretPosition, settings, valueOfThis).getExecutableArgumentInfo();
 	}
 
@@ -48,7 +49,7 @@ public class JavaParser
 	 *
 	 * @throws ParseException
 	 */
-	public Object evaluate(String javaExpression, ParserSettings settings, Object valueOfThis) throws ParseException {
+	public static  Object evaluate(String javaExpression, ParserSettings settings, Object valueOfThis) throws ParseException {
 		ParseResult parseResult;
 
 		if (!settings.isEnableDynamicTyping()) {
@@ -90,7 +91,7 @@ public class JavaParser
 		}
 	}
 
-	private CompletionSuggestions getCompletionSuggestions(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
+	private static CompletionSuggestions getCompletionSuggestions(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
 		ParseResult parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caretPosition, valueOfThis);
 
 		switch (parseResult.getResultType()) {
@@ -120,8 +121,8 @@ public class JavaParser
 		}
 	}
 
-	private ParseResult parse(String javaExpression, ParserSettings settings, ParseMode parseMode, int caretPosition, Object valueOfThis) {
-		ObjectInfo thisInfo = new ObjectInfo(valueOfThis, TypeInfo.UNKNOWN);
+	private static ParseResult parse(String javaExpression, ParserSettings settings, ParseMode parseMode, int caretPosition, Object valueOfThis) {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(valueOfThis, InfoProvider.UNKNOWN_TYPE);
 		ParserToolbox parserPool  = new ParserToolbox(thisInfo, settings, parseMode);
 		TokenStream tokenStream = new TokenStream(javaExpression, caretPosition);
 		try {
@@ -138,13 +139,13 @@ public class JavaParser
 			for (StackTraceElement element : e.getStackTrace()) {
 				logMessageBuilder.append("\n").append(element);
 			}
-			settings.getLogger().log(new ParserLogEntry(LogLevel.ERROR, getClass().getSimpleName(), logMessageBuilder.toString()));
+			settings.getLogger().log(ParserLoggers.createLogEntry(LogLevel.ERROR, JavaParser.class.getSimpleName(), logMessageBuilder.toString()));
 
 			String message = exceptionClassName;
 			if (exceptionMessage != null) {
 				message += ("\n" + exceptionMessage);
 			}
-			return new ParseError(-1, message, ErrorPriority.EVALUATION_EXCEPTION, e);
+			return ParseResults.createParseError(-1, message, ErrorPriority.EVALUATION_EXCEPTION, e);
 		}
 	}
 }

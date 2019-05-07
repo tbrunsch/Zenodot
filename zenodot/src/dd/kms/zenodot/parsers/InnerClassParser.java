@@ -1,9 +1,9 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.result.ClassParseResult;
-import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -57,7 +57,7 @@ public class InnerClassParser extends AbstractEntityParser<TypeInfo>
 		try {
 			identifierToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
-			return new ParseError(startPosition, "Expected inner class name", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected inner class name", ErrorPriority.WRONG_PARSER);
 		}
 
 		String innerClassName = identifierToken.getValue();
@@ -70,11 +70,11 @@ public class InnerClassParser extends AbstractEntityParser<TypeInfo>
 			.filter(clazz -> clazz.getSimpleName().equals(innerClassName))
 			.findFirst();
 		if (!firstClassMatch.isPresent()) {
-			return new ParseError(startPosition, "Unknown inner class '" + innerClassName + "'", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Unknown inner class '" + innerClassName + "'", ErrorPriority.WRONG_PARSER);
 		}
 
 		Class<?> innerClass = firstClassMatch.get();
 		TypeInfo innerClassType = contextType.resolveType(innerClass);
-		return new ClassParseResult(tokenStream.getPosition(), innerClassType);
+		return ParseResults.createClassParseResult(tokenStream.getPosition(), innerClassType);
 	}
 }

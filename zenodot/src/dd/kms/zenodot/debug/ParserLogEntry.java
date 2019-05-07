@@ -1,31 +1,8 @@
 package dd.kms.zenodot.debug;
 
-public class ParserLogEntry
+public interface ParserLogEntry
 {
-	private final LogLevel	logLevel;
-	private final String	context;
-	private final String	message;
-
-	public ParserLogEntry(LogLevel logLevel, String context, String message) {
-		this.logLevel = logLevel;
-		this.context = context;
-		this.message = message;
-	}
-
-	public LogLevel getLogLevel() {
-		return logLevel;
-	}
-
-	public String getContext() {
-		return context;
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	@Override
-	public String toString() {
-		return logLevel + ": " + context + ": " + message;
-	}
+	LogLevel getLogLevel();
+	String getContext();
+	String getMessage();
 }

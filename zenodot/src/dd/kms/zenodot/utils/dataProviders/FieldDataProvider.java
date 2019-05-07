@@ -1,8 +1,8 @@
 package dd.kms.zenodot.utils.dataProviders;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.debug.ParserLogEntry;
 import dd.kms.zenodot.debug.ParserLogger;
+import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CompletionSuggestion;
@@ -39,7 +39,7 @@ public class FieldDataProvider
 		for (CompletionSuggestion suggestion : ratedSuggestions.keySet()) {
 			String suggestionText = suggestion.toString();
 			MatchRating rating = ratedSuggestions.get(suggestion);
-			logger.log(new ParserLogEntry(LogLevel.INFO, "FieldDataProvider", suggestionText + ": " + rating));
+			logger.log(ParserLoggers.createLogEntry(LogLevel.INFO, "FieldDataProvider", suggestionText + ": " + rating));
 		}
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
@@ -66,7 +66,7 @@ public class FieldDataProvider
 	}
 
 	private Function<FieldInfo, MatchRating> rateFieldFunc(Object contextObject, boolean contextIsStatic, String expectedName, ParseExpectation expectation) {
-		return fieldInfo -> new MatchRating(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), rateFieldByAccess(fieldInfo, contextIsStatic));
+		return fieldInfo -> MatchRatings.create(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), rateFieldByAccess(fieldInfo, contextIsStatic));
 	}
 
 	public static String getFieldDisplayText(FieldInfo fieldInfo) {

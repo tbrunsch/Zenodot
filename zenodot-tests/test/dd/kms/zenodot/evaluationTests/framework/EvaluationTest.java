@@ -4,8 +4,8 @@ import dd.kms.zenodot.JavaParser;
 import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.debug.ParserLogEntry;
 import dd.kms.zenodot.debug.ParserLogger;
+import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.settings.ParserSettings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,9 +49,8 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		ParserSettings settings = settingsBuilder.build();
 
 		Class<? extends Exception> expectedExceptionClass = ParseException.class;
-		JavaParser parser = new JavaParser();
 		try {
-			parser.evaluate(javaExpression, settings, testInstance);
+			JavaParser.evaluate(javaExpression, settings, testInstance);
 			fail("Expression: " + javaExpression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			assertTrue("Expression: " + javaExpression + " - Expected exception of class '" + expectedExceptionClass.getSimpleName() + "', but caught an exception of class '" + e.getClass().getSimpleName() + "'", expectedExceptionClass.isInstance(e));
@@ -62,11 +61,10 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		ParserSettings settings = settingsBuilder.build();
 		ParserLogger logger = settings.getLogger();
 
-		logger.log(new ParserLogEntry(LogLevel.INFO, "Test", "Testing expression '" + javaExpression + "'...\n"));
+		logger.log(ParserLoggers.createLogEntry(LogLevel.INFO, "Test", "Testing expression '" + javaExpression + "'...\n"));
 
-		JavaParser parser = new JavaParser();
 		try {
-			Object actualValue = parser.evaluate(javaExpression, settings, testInstance);
+			Object actualValue = JavaParser.evaluate(javaExpression, settings, testInstance);
 			if (executeAssertions) {
 				assertEquals("Expression: " + javaExpression, expectedValue, actualValue);
 			}

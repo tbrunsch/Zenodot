@@ -14,7 +14,7 @@ import java.util.List;
  * underlying executable is non-variadic, treating the variadic part as a single array.
  * The other view on variadic methods is {@link VariadicExecutableInfo}.
  */
-public class RegularExecutableInfo extends AbstractExecutableInfo
+class RegularExecutableInfo extends AbstractExecutableInfo
 {
 	RegularExecutableInfo(Executable executable, TypeInfo declaringType) {
 		super(executable, declaringType);

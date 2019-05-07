@@ -6,7 +6,6 @@ import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.result.CompletionSuggestion;
-import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionField;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.settings.ParserSettings;
@@ -53,9 +52,8 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 	void testCompletionWithError(String javaExpression, int caretPosition, Class<? extends Exception> expectedExceptionClass) {
 		ParserSettings settings = settingsBuilder.build();
 
-		JavaParser parser = new JavaParser();
 		try {
-			parser.suggestCodeCompletion(javaExpression, caretPosition, settings, testInstance);
+			JavaParser.suggestCodeCompletion(javaExpression, caretPosition, settings, testInstance);
 			fail("Expression: " + javaExpression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			assertEquals(expectedExceptionClass, e.getClass());
@@ -66,11 +64,10 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		ParserSettings settings = settingsBuilder.build();
 		ParserLogger logger = settings.getLogger();
 
-		JavaParser parser = new JavaParser();
 		int caretPosition = javaExpression.length();
 		List<String> suggestions = null;
 		try {
-			suggestions = extractSuggestions(parser.suggestCodeCompletion(javaExpression, caretPosition, settings, testInstance));
+			suggestions = extractSuggestions(JavaParser.suggestCodeCompletion(javaExpression, caretPosition, settings, testInstance));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				fail("Exception during code completion: " + e.getMessage());

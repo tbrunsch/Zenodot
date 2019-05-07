@@ -3,8 +3,9 @@ package dd.kms.zenodot.utils.dataProviders;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.settings.AccessLevel;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.lang.reflect.Constructor;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Abstraction layer of class {@link ReflectionUtils} that takes the access level configured in
  * {@link ParserSettings} into account and wraps plain fields and executables in wrapper classes
- * {@link FieldInfo} and {@link AbstractExecutableInfo}.
+ * {@link FieldInfo} and {@link ExecutableInfo}.
  */
 public class InspectionDataProvider
 {
@@ -49,25 +50,25 @@ public class InspectionDataProvider
 		IntPredicate modifierFilter = staticOnly ? accessLevelFilter.and(Modifier::isStatic) : accessLevelFilter;
 		List<Field> fields = ReflectionUtils.getFields(contextType.getRawType(), true, modifierFilter);
 		return fields.stream()
-				.map(field -> new FieldInfo(field, contextType))
+				.map(field -> InfoProvider.createFieldInfo(field, contextType))
 				.collect(Collectors.toList());
 	}
 
-	public List<AbstractExecutableInfo> getMethodInfos(TypeInfo contextType, boolean staticOnly) {
+	public List<ExecutableInfo> getMethodInfos(TypeInfo contextType, boolean staticOnly) {
 		IntPredicate modifierFilter = staticOnly ? accessLevelFilter.and(Modifier::isStatic) : accessLevelFilter;
 		List<Method> methods = ReflectionUtils.getMethods(contextType.getRawType(), modifierFilter);
-		List<AbstractExecutableInfo> executableInfos = new ArrayList<>(methods.size());
+		List<ExecutableInfo> executableInfos = new ArrayList<>(methods.size());
 		for (Method method : methods) {
-			executableInfos.addAll(AbstractExecutableInfo.getAvailableExecutableInfos(method, contextType));
+			executableInfos.addAll(InfoProvider.getAvailableExecutableInfos(method, contextType));
 		}
 		return executableInfos;
 	}
 
-	public List<AbstractExecutableInfo> getConstructorInfos(TypeInfo contextType) {
+	public List<ExecutableInfo> getConstructorInfos(TypeInfo contextType) {
 		List<Constructor<?>> constructors = ReflectionUtils.getConstructors(contextType.getRawType(), accessLevelFilter);
-		List<AbstractExecutableInfo> executableInfos = new ArrayList<>(constructors.size());
+		List<ExecutableInfo> executableInfos = new ArrayList<>(constructors.size());
 		for (Constructor<?> constructor : constructors) {
-			executableInfos.addAll(AbstractExecutableInfo.getAvailableExecutableInfos(constructor, contextType));
+			executableInfos.addAll(InfoProvider.getAvailableExecutableInfos(constructor, contextType));
 		}
 		return executableInfos;
 	}

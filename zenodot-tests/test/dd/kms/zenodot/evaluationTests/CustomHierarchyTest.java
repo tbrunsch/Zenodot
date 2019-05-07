@@ -4,7 +4,6 @@ import dd.kms.zenodot.common.CustomHierarchy;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;

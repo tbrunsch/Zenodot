@@ -1,7 +1,7 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -41,7 +41,7 @@ public class ObjectMethodParser extends AbstractMethodParser<ObjectInfo>
 	}
 
 	@Override
-	List<AbstractExecutableInfo> getMethodInfos(ObjectInfo contextInfo) {
+	List<ExecutableInfo> getMethodInfos(ObjectInfo contextInfo) {
 		TypeInfo contextType = parserToolbox.getObjectInfoProvider().getType(contextInfo);
 		return parserToolbox.getInspectionDataProvider().getMethodInfos(contextType, false);
 	}

@@ -5,7 +5,6 @@ import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;
 import dd.kms.zenodot.settings.AccessLevel;
 import dd.kms.zenodot.utils.ClassUtils;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;

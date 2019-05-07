@@ -30,6 +30,6 @@ public class ObjectTreeNodeDataProvider
 	}
 
 	private Function<ObjectTreeNode, MatchRating> rateNodeFunc(String expectedName) {
-		return node -> new MatchRating(rateNodeByName(node, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
+		return node -> MatchRatings.create(rateNodeByName(node, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
 	}
 }

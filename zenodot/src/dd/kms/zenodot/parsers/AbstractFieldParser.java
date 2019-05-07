@@ -2,8 +2,8 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -36,7 +36,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 
 		if (contextCausesNullPointerException(context)) {
 			log(LogLevel.ERROR, "null pointer exception");
-			return new ParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
+			return ParseResults.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
 		}
 
 		if (tokenStream.isCaretAtPosition()) {
@@ -56,7 +56,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 			fieldNameToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "missing field name at " + tokenStream);
-			return new ParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
 		}
 		String fieldName = fieldNameToken.getValue();
 		int endPosition = tokenStream.getPosition();
@@ -69,7 +69,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 
 		if (tokenStream.hasMore() && tokenStream.peekCharacter() == '(') {
 			log(LogLevel.ERROR, "unexpected '(' at " + tokenStream);
-			return new ParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		// no code completion requested => field name must exist
@@ -77,7 +77,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 		Optional<FieldInfo> firstFieldInfoMatch = fieldInfos.stream().filter(fieldInfo -> fieldInfo.getName().equals(fieldName)).findFirst();
 		if (!firstFieldInfoMatch.isPresent()) {
 			log(LogLevel.ERROR, "unknown field '" + fieldName + "'");
-			return new ParseError(startPosition, "Unknown field '" + fieldName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+			return ParseResults.createParseError(startPosition, "Unknown field '" + fieldName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected field '" + fieldName + "'");
 

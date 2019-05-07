@@ -10,6 +10,7 @@ import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
 import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -200,9 +201,9 @@ public class OperatorResultProvider
 		if (primitiveClass != boolean.class) {
 			throw new OperatorException("Operator cannot be applied to '" + clazz + "'");
 		}
-		Object result = evaluationMode == EvaluationMode.NONE ? ObjectInfo.INDETERMINATE : !((boolean) objectInfo.getObject());
-		TypeInfo resultType = TypeInfo.of(boolean.class);
-		return new ObjectInfo(result, resultType);
+		Object result = evaluationMode == EvaluationMode.NONE ? InfoProvider.INDETERMINATE_VALUE : !((boolean) objectInfo.getObject());
+		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
+		return InfoProvider.createObjectInfo(result, resultType);
 	}
 
 	public ObjectInfo getBitwiseNotInfo(ObjectInfo objectInfo) throws OperatorException {
@@ -211,8 +212,8 @@ public class OperatorResultProvider
 		if (!isIntegral(primitiveClass)) {
 			throw new OperatorException("Operator cannot be applied to '" + clazz + "'");
 		}
-		TypeInfo resultType = primitiveClass == long.class ? TypeInfo.of(long.class) : TypeInfo.of(int.class);
-		Object result = ObjectInfo.INDETERMINATE;
+		TypeInfo resultType = primitiveClass == long.class ? InfoProvider.createTypeInfo(long.class) : InfoProvider.createTypeInfo(int.class);
+		Object result = InfoProvider.INDETERMINATE_VALUE;
 		if (evaluationMode != EvaluationMode.NONE) {
 			Object object = objectInfo.getObject();
 			if (primitiveClass == long.class) {
@@ -221,7 +222,7 @@ public class OperatorResultProvider
 				result = ~ReflectionUtils.convertTo(object, int.class, false).intValue();
 			}
 		}
-		return new ObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, resultType);
 	}
 
 	/*
@@ -283,9 +284,9 @@ public class OperatorResultProvider
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
 			return applyNumericComparisonOperator(lhs, rhs, BinaryOperator.EQUAL_TO);
 		}
-		Object result = evaluationMode == EvaluationMode.NONE ? ObjectInfo.INDETERMINATE : lhs.getObject() == rhs.getObject();
-		TypeInfo resultType = TypeInfo.of(boolean.class);
-		return new ObjectInfo(result, resultType);
+		Object result = evaluationMode == EvaluationMode.NONE ? InfoProvider.INDETERMINATE_VALUE : lhs.getObject() == rhs.getObject();
+		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
+		return InfoProvider.createObjectInfo(result, resultType);
 	}
 
 	public ObjectInfo getNotEqualToInfo(ObjectInfo lhs, ObjectInfo rhs) throws OperatorException {
@@ -294,9 +295,9 @@ public class OperatorResultProvider
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
 			return applyNumericComparisonOperator(lhs, rhs, BinaryOperator.NOT_EQUAL_TO);
 		}
-		Object result = evaluationMode == EvaluationMode.NONE ? ObjectInfo.INDETERMINATE : lhs.getObject() != rhs.getObject();
-		TypeInfo resultType = TypeInfo.of(boolean.class);
-		return new ObjectInfo(result, resultType);
+		Object result = evaluationMode == EvaluationMode.NONE ? InfoProvider.INDETERMINATE_VALUE : lhs.getObject() != rhs.getObject();
+		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
+		return InfoProvider.createObjectInfo(result, resultType);
 	}
 
 	public ObjectInfo getBitwiseAndInfo(ObjectInfo lhs, ObjectInfo rhs) throws OperatorException {
@@ -328,11 +329,11 @@ public class OperatorResultProvider
 		TypeInfo rhsType = parserToolbox.getObjectInfoProvider().getType(rhs);
 
 		// declared type of variables is unknown and we want be able to assign them a value
-		if (declaredLhsType != TypeInfo.UNKNOWN && !MatchRatings.isConvertibleTo(rhsType, declaredLhsType)) {
+		if (declaredLhsType != InfoProvider.UNKNOWN_TYPE && !MatchRatings.isConvertibleTo(rhsType, declaredLhsType)) {
 			throw new OperatorException("Cannot assign value of type '" + rhsType + "' to left-hand side. Expected an instance of class '" + declaredLhsType + "'");
 		}
 		TypeInfo declaredResultType = declaredLhsType;
-		Object resultObject = ObjectInfo.INDETERMINATE;
+		Object resultObject = InfoProvider.INDETERMINATE_VALUE;
 		if (evaluationMode != EvaluationMode.NONE) {
 			try {
 				resultObject = rhs.getObject();
@@ -341,7 +342,7 @@ public class OperatorResultProvider
 				throw new OperatorException("Could assign value of type '" + rhsType + "' to left-hand side.");
 			}
 		}
-		return new ObjectInfo(resultObject, declaredResultType);
+		return InfoProvider.createObjectInfo(resultObject, declaredResultType);
 	}
 
 	/*
@@ -394,13 +395,13 @@ public class OperatorResultProvider
 		if (operatorInfo == null) {
 			throw new OperatorException("Operator not defined on '" + getClass(objectInfo) + "'");
 		}
-		TypeInfo resultType = TypeInfo.of(operatorInfo.getResultClass());
-		Object result = ObjectInfo.INDETERMINATE;
+		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
+		Object result = InfoProvider.INDETERMINATE_VALUE;
 		if (evaluationMode != EvaluationMode.NONE) {
 			Function<Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(objectInfo.getObject());
 		}
-		return new ObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, resultType);
 	}
 
 	private ObjectInfo applyUnaryOperatorWithAssignment(ObjectInfo objectInfo, UnaryOperator operator) throws OperatorException {
@@ -468,13 +469,13 @@ public class OperatorResultProvider
 		if (operatorInfo == null) {
 			throw new OperatorException("Operator not defined on '" + getClass(lhs) + "' and '" + getClass(rhs) + "'");
 		}
-		TypeInfo resultType = TypeInfo.of(operatorInfo.getResultClass());
-		Object result = ObjectInfo.INDETERMINATE;
+		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
+		Object result = InfoProvider.INDETERMINATE_VALUE;
 		if (evaluationMode != EvaluationMode.NONE) {
 			BiFunction<Object, Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(lhs.getObject(), rhs.getObject());
 		}
-		return new ObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, resultType);
 	}
 
 	private ObjectInfo applyNumericOperator(ObjectInfo lhs, ObjectInfo rhs, BinaryOperator numericOperator) throws OperatorException {
@@ -484,14 +485,14 @@ public class OperatorResultProvider
 	}
 
 	private ObjectInfo concat(ObjectInfo lhs, ObjectInfo rhs) {
-		TypeInfo resultType = TypeInfo.of(String.class);
-		Object result = ObjectInfo.INDETERMINATE;
+		TypeInfo resultType = InfoProvider.createTypeInfo(String.class);
+		Object result = InfoProvider.INDETERMINATE_VALUE;
 		if (evaluationMode != EvaluationMode.NONE) {
 			String lhsAsString = getStringRepresentation(lhs.getObject());
 			String rhsAsString = getStringRepresentation(rhs.getObject());
 			result = lhsAsString + rhsAsString;
 		}
-		return new ObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, resultType);
 	}
 
 	private ObjectInfo applyShiftOperator(ObjectInfo lhs, ObjectInfo rhs, BinaryOperator shiftOperator) throws OperatorException {

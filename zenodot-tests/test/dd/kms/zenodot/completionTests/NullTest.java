@@ -4,6 +4,7 @@ import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
+import dd.kms.zenodot.settings.ParserSettingsUtils;
 import dd.kms.zenodot.settings.Variable;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -21,7 +22,7 @@ public class NullTest extends CompletionTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		Variable nullVariable = new Variable("myNull", null, true);
+		Variable nullVariable = ParserSettingsUtils.createVariable("myNull", null, true);
 		CompletionTestBuilder testBuilder = new CompletionTestBuilder()
 			.testInstance(testInstance)
 			.configurator(test -> test.variables(nullVariable));

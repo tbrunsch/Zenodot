@@ -7,6 +7,7 @@ import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Comparator;
@@ -43,14 +44,14 @@ public class VariableDataProvider
 	private TypeMatch rateVariableByTypes(Variable variable, ParseExpectation expectation) {
 		List<TypeInfo> allowedTypes = expectation.getAllowedTypes();
 		Object value = variable.getValue();
-		TypeInfo valueType = value == null ? TypeInfo.NONE : TypeInfo.of(value.getClass());
+		TypeInfo valueType = value == null ? InfoProvider.NO_TYPE : InfoProvider.createTypeInfo(value.getClass());
 		return	allowedTypes == null
 					? TypeMatch.FULL
 					: allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(valueType, allowedType)).min(TypeMatch::compareTo).orElse(TypeMatch.NONE);
 	}
 
 	private Function<Variable, MatchRating> rateVariableFunc(String variableName, ParseExpectation expectation) {
-		return variable -> new MatchRating(rateVariableByName(variable, variableName), rateVariableByTypes(variable, expectation), AccessMatch.IGNORED);
+		return variable -> MatchRatings.create(rateVariableByName(variable, variableName), rateVariableByTypes(variable, expectation), AccessMatch.IGNORED);
 	}
 
 	public static String getVariableDisplayText(Variable variable) {

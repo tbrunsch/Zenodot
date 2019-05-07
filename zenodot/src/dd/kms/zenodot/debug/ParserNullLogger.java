@@ -3,7 +3,7 @@ package dd.kms.zenodot.debug;
 /**
  * Logger that ignores all log entries
  */
-public class ParserNullLogger extends AbstractParserLogger
+class ParserNullLogger extends AbstractParserLogger
 {
 	@Override
 	void doLog(ParserLogEntry entry, int indent) {

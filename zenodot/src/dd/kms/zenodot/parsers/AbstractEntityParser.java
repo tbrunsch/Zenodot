@@ -1,8 +1,8 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.debug.ParserLogEntry;
 import dd.kms.zenodot.debug.ParserLogger;
+import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -119,12 +119,12 @@ public abstract class AbstractEntityParser<C>
 		if (expectation.getEvaluationType() == ParseResultType.OBJECT_PARSE_RESULT && parseResultType == ParseResultType.CLASS_PARSE_RESULT) {
 			String message = "Expected an object, but found class " + ((ClassParseResult) parseResult).getType();
 			log(LogLevel.ERROR, message);
-			return new ParseError(parseResult.getPosition(), message, ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(parseResult.getPosition(), message, ErrorPriority.RIGHT_PARSER);
 		}
 		if (expectation.getEvaluationType() == ParseResultType.CLASS_PARSE_RESULT && parseResultType == ParseResultType.OBJECT_PARSE_RESULT) {
 			String message = "Expected a class, but found object " + ((ObjectParseResult) parseResult).getObjectInfo().getObject();
 			log(LogLevel.ERROR, message);
-			return new ParseError(parseResult.getPosition(), message, ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(parseResult.getPosition(), message, ErrorPriority.RIGHT_PARSER);
 		}
 
 		return parseResult;
@@ -142,6 +142,6 @@ public abstract class AbstractEntityParser<C>
 		} else {
 			suffix = "";
 		}
-		logger.log(new ParserLogEntry(logLevel, getClass().getSimpleName(), message + suffix));
+		logger.log(ParserLoggers.createLogEntry(logLevel, getClass().getSimpleName(), message + suffix));
 	}
 }

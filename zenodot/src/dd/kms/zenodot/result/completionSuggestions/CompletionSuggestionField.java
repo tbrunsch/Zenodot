@@ -2,6 +2,7 @@ package dd.kms.zenodot.result.completionSuggestions;
 
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.IntRange;
+import dd.kms.zenodot.result.IntRanges;
 import dd.kms.zenodot.utils.dataProviders.FieldDataProvider;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
 
@@ -21,7 +22,7 @@ public class CompletionSuggestionField implements CompletionSuggestion
 
 	@Override
 	public IntRange getInsertionRange() {
-		return new IntRange(insertionBegin, insertionEnd);
+		return IntRanges.create(insertionBegin, insertionEnd);
 	}
 
 	@Override

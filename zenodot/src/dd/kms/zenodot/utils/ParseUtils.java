@@ -78,7 +78,7 @@ public class ParseUtils
 			for (CompletionSuggestion suggestion : ratedSuggestions.keySet()) {
 				MatchRating rating = mergedRatedSuggestions.containsKey(suggestion)
 										? mergedRatedSuggestions.get(suggestion)
-										: MatchRating.NONE;
+										: MatchRatings.NONE;
 				MatchRating newRating = ratedSuggestions.get(suggestion);
 				mergedRatedSuggestions.put(suggestion, MatchRatings.bestOf(rating, newRating));
 			}
@@ -104,7 +104,7 @@ public class ParseUtils
 				throw new IllegalArgumentException("Internal error: Expected an object or a class as parse result, but found " + result.getClass().getSimpleName());
 			}
 		}
-		return new AmbiguousParseResult(position, builder.toString());
+		return ParseResults.createAmbiguousParseResult(position, builder.toString());
 	}
 
 	private static ParseError mergeParseErrors(List<ParseError> errors) {
@@ -137,9 +137,9 @@ public class ParseUtils
 				.filter(Objects::nonNull)
 				.findFirst();
 
-			return new ParseError(maxPosition, message, errorType, firstException.orElse(null));
+			return ParseResults.createParseError(maxPosition, message, errorType, firstException.orElse(null));
 		}
-		return new ParseError(-1, "Internal error: Failed merging parse errors", ErrorPriority.INTERNAL_ERROR);
+		return ParseResults.createParseError(-1, "Internal error: Failed merging parse errors", ErrorPriority.INTERNAL_ERROR);
 	}
 
 	/*
@@ -189,6 +189,6 @@ public class ParseUtils
 			// error has already sufficient priority
 			return Optional.of(parseError);
 		}
-		return Optional.of(new ParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
+		return Optional.of(ParseResults.createParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
 	}
 }

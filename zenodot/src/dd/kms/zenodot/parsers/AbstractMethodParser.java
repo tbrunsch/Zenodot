@@ -7,7 +7,7 @@ import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
-import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.lang.reflect.InvocationTargetException;
@@ -29,7 +29,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 	abstract boolean contextCausesNullPointerException(C context);
 	abstract Object getContextObject(C context);
 	abstract boolean isContextStatic();
-	abstract List<AbstractExecutableInfo> getMethodInfos(C context);
+	abstract List<ExecutableInfo> getMethodInfos(C context);
 
 	@Override
 	ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
@@ -37,7 +37,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 		if (contextCausesNullPointerException(context)) {
 			log(LogLevel.ERROR, "null pointer exception");
-			return new ParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
+			return ParseResults.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
 		}
 
 		if (tokenStream.isCaretAtPosition()) {
@@ -57,7 +57,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 			methodNameToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "missing method name at " + tokenStream);
-			return new ParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
 		}
 		String methodName = methodNameToken.getValue();
 		final int endPosition = tokenStream.getPosition();
@@ -70,15 +70,15 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 		if (!tokenStream.hasMore() || tokenStream.peekCharacter() != '(') {
 			log(LogLevel.ERROR, "missing '(' at " + tokenStream);
-			return new ParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		// no code completion requested => method name must exist
-		List<AbstractExecutableInfo> methodInfos = getMethodInfos(context);
-		List<AbstractExecutableInfo> matchingMethodInfos = methodInfos.stream().filter(methodInfo -> methodInfo.getName().equals(methodName)).collect(Collectors.toList());
+		List<ExecutableInfo> methodInfos = getMethodInfos(context);
+		List<ExecutableInfo> matchingMethodInfos = methodInfos.stream().filter(methodInfo -> methodInfo.getName().equals(methodName)).collect(Collectors.toList());
 		if (matchingMethodInfos.isEmpty()) {
 			log(LogLevel.ERROR, "unknown method '" + methodName + "'");
-			return new ParseError(startPosition, "Unknown method '" + methodName + "'", ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(startPosition, "Unknown method '" + methodName + "'", ErrorPriority.RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected " + matchingMethodInfos.size() + " method(s) '" + methodName + "'");
 
@@ -119,14 +119,14 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 			.map(ObjectParseResult.class::cast)
 			.map(ObjectParseResult::getObjectInfo)
 			.collect(Collectors.toList());
-		List<AbstractExecutableInfo> bestMatchingMethodInfos = executableDataProvider.getBestMatchingExecutableInfos(matchingMethodInfos, argumentInfos);
+		List<ExecutableInfo> bestMatchingMethodInfos = executableDataProvider.getBestMatchingExecutableInfos(matchingMethodInfos, argumentInfos);
 
 		switch (bestMatchingMethodInfos.size()) {
 			case 0:
 				log(LogLevel.ERROR, "no matching method found");
-				return new ParseError(tokenStream.getPosition(), "No method matches the given arguments", ErrorPriority.RIGHT_PARSER);
+				return ParseResults.createParseError(tokenStream.getPosition(), "No method matches the given arguments", ErrorPriority.RIGHT_PARSER);
 			case 1: {
-				AbstractExecutableInfo bestMatchingExecutableInfo = bestMatchingMethodInfos.get(0);
+				ExecutableInfo bestMatchingExecutableInfo = bestMatchingMethodInfos.get(0);
 				ObjectInfo methodReturnInfo;
 				try {
 					methodReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(getContextObject(context), bestMatchingExecutableInfo, argumentInfos);
@@ -139,10 +139,10 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 						messageBuilder.append(": ").append(causeMessage);
 					}
 					log(LogLevel.ERROR, messageBuilder.toString());
-					return new ParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, cause);
+					return ParseResults.createParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, cause);
 				} catch (Exception e) {
 					log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-					return new ParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
+					return ParseResults.createParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 				}
 				return parserToolbox.getObjectTailParser().parse(tokenStream, methodReturnInfo, expectation);
 			}
@@ -150,14 +150,14 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 				String error = "Ambiguous method call. Possible candidates are:\n"
 								+ bestMatchingMethodInfos.stream().map(Object::toString).collect(Collectors.joining("\n"));
 				log(LogLevel.ERROR, error);
-				return new AmbiguousParseResult(tokenStream.getPosition(), error);
+				return ParseResults.createAmbiguousParseResult(tokenStream.getPosition(), error);
 			}
 		}
 	}
 
 	private CompletionSuggestions suggestMethods(String expectedName, C context, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
-		List<AbstractExecutableInfo> methodInfos = getMethodInfos(context);
+		List<ExecutableInfo> methodInfos = getMethodInfos(context);
 		boolean contextIsStatic = isContextStatic();
 		return executableDataProvider.suggestMethods(methodInfos, contextIsStatic, expectedName, expectation, insertionBegin, insertionEnd);
 	}

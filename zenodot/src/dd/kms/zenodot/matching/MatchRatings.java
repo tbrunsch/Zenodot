@@ -3,6 +3,7 @@ package dd.kms.zenodot.matching;
 import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.common.RegexUtils;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Objects;
@@ -13,6 +14,12 @@ import java.util.regex.Pattern;
  */
 public class MatchRatings
 {
+	public static final MatchRating NONE	= create(StringMatch.NONE, TypeMatch.NONE, AccessMatch.IGNORED);
+
+	public static MatchRating create(StringMatch stringMatch, TypeMatch typeMatch, AccessMatch accessMatch) {
+		return new MatchRatingImpl(stringMatch, typeMatch, accessMatch);
+	}
+
 	/*
 	 * String Comparison
 	 */
@@ -54,19 +61,19 @@ public class MatchRatings
 	}
 
 	public static TypeMatch rateTypeMatch(TypeInfo actual, TypeInfo expected) {
-		if (actual == TypeInfo.UNKNOWN) {
+		if (actual == InfoProvider.UNKNOWN_TYPE) {
 			throw new IllegalArgumentException("Internal error: Cannot rate type match for unknown type");
 		}
-		if (expected == TypeInfo.UNKNOWN) {
+		if (expected == InfoProvider.UNKNOWN_TYPE) {
 			throw new IllegalArgumentException("Internal error: Cannot expect unknown type");
 		}
 
-		if (expected == TypeInfo.NONE) {
+		if (expected == InfoProvider.NO_TYPE) {
 			// no expectations
 			return TypeMatch.FULL;
 		}
 
-		if (actual == TypeInfo.NONE) {
+		if (actual == InfoProvider.NO_TYPE) {
 			// null object (only object without class) is convertible to any non-primitive class
 			return expected.isPrimitive() ? TypeMatch.NONE : TypeMatch.FULL;
 		}

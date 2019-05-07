@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ObjectParseResult;
-import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
@@ -52,7 +52,7 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 		Token operatorToken = tokenStream.readUnaryOperatorUnchecked();
 		if (operatorToken == null) {
 			log(LogLevel.ERROR, "expected unary operator");
-			return new ParseError(tokenStream.getPosition(), "Expression does not start with an unary operator", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(tokenStream.getPosition(), "Expression does not start with an unary operator", ErrorPriority.WRONG_PARSER);
 		} else if (operatorToken.isContainsCaret()) {
 			log(LogLevel.INFO, "no completion suggestions available");
 			return CompletionSuggestions.none(tokenStream.getPosition());
@@ -76,9 +76,9 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 			log(LogLevel.SUCCESS, "applied operator successfully");
 		} catch (OperatorException e) {
 			log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
-			return new ParseError(parsedToPosition, e.getMessage(), ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(parsedToPosition, e.getMessage(), ErrorPriority.RIGHT_PARSER);
 		}
-		return new ObjectParseResult(parsedToPosition, operatorResult);
+		return ParseResults.createObjectParseResult(parsedToPosition, operatorResult);
 	}
 
 	private ObjectInfo applyOperator(ObjectInfo objectInfo, UnaryOperator operator) throws OperatorException {

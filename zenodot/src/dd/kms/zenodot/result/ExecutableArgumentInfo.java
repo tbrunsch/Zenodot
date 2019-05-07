@@ -1,29 +1,22 @@
 package dd.kms.zenodot.result;
 
-import com.google.common.collect.ImmutableMap;
-import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 
 import java.util.Map;
 
-public class ExecutableArgumentInfo
+/**
+ * Contains information about the executable the caret is currently in.
+ */
+public interface ExecutableArgumentInfo
 {
-	private final int									currentArgumentIndex;
-	private final Map<AbstractExecutableInfo, Boolean>	applicableExecutableOverloads;
-
-	public ExecutableArgumentInfo(int currentArgumentIndex, Map<AbstractExecutableInfo, Boolean> applicableExecutableOverloads) {
-		this.currentArgumentIndex = currentArgumentIndex;
-		this.applicableExecutableOverloads = ImmutableMap.copyOf(applicableExecutableOverloads);
-	}
-
-	public int getCurrentArgumentIndex() {
-		return currentArgumentIndex;
-	}
+	/**
+	 * Returns the index of the executable's argument the caret is currently on.
+	 */
+	int getCurrentArgumentIndex();
 
 	/**
 	 * Returns a map from all executable overloads to Boolean. An executable overload is mapped to true
-	 * if and only if it might be applicable for the arguments that have already been parsed.
+	 * if and only if it might be applicable for the arguments that have already been parsed (until the caret).
 	 */
-	public Map<AbstractExecutableInfo, Boolean> getApplicableExecutableOverloads() {
-		return applicableExecutableOverloads;
-	}
+	Map<ExecutableInfo, Boolean> getApplicableExecutableOverloads();
 }

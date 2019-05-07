@@ -20,7 +20,7 @@ import java.util.List;
  * we pretend that there are two available: a regular executable and a purely variadic executable.
  * Since overloaded methods had to be handled anyway, no extra code had to be written.
  */
-public class VariadicExecutableInfo extends AbstractExecutableInfo
+class VariadicExecutableInfo extends AbstractExecutableInfo
 {
 	VariadicExecutableInfo(Executable executable, TypeInfo declaringType) {
 		super(executable, declaringType);
@@ -38,7 +38,7 @@ public class VariadicExecutableInfo extends AbstractExecutableInfo
 		int lastIndex = getNumberOfArguments() - 1;
 		return argIndex < lastIndex
 				? executable.getGenericParameterTypes()[argIndex]
-				: TypeInfo.of(executable.getGenericParameterTypes()[lastIndex]).getComponentType().getType();
+				: InfoProvider.createTypeInfo(executable.getGenericParameterTypes()[lastIndex]).getComponentType().getType();
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class VariadicExecutableInfo extends AbstractExecutableInfo
 
 	private TypeMatch rateArgumentTypeMatch(int argIndex, TypeInfo argumentType) {
 		int lastArgIndex = getNumberOfArguments() - 1;
-		if (argIndex == lastArgIndex && argumentType == TypeInfo.NONE) {
+		if (argIndex == lastArgIndex && argumentType == InfoProvider.NO_TYPE) {
 			/*
 			 * If the last argument in a variadic method is null, then the regular array type
 			 * (the one returned in RegularExecutableInfo) is assumed and not its component type.

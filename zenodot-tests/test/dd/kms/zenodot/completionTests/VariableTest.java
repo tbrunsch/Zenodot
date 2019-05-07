@@ -3,6 +3,7 @@ package dd.kms.zenodot.completionTests;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
+import dd.kms.zenodot.settings.ParserSettingsUtils;
 import dd.kms.zenodot.settings.Variable;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -20,8 +21,8 @@ public class VariableTest extends CompletionTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		Variable variable1 = new Variable("xyz", 13.0, true);
-		Variable variable2 = new Variable("abc", "Test", true);
+		Variable variable1 = ParserSettingsUtils.createVariable("xyz", 13.0, true);
+		Variable variable2 = ParserSettingsUtils.createVariable("abc", "Test", true);
 		return new CompletionTestBuilder()
 			.testInstance(testInstance)
 			.configurator(test -> test.variables(variable1, variable2))

@@ -16,6 +16,7 @@ import dd.kms.zenodot.utils.ClassUtils;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -36,7 +37,7 @@ public class ClassDataProvider
 					clazz -> clazz
 				)
 		);
-	private static final List<ClassInfo>		PRIMITIVE_CLASS_INFOS		= PRIMITIVE_CLASSES_BY_NAME.keySet().stream().map(ClassInfo::forNameUnchecked).collect(Collectors.toList());
+	private static final List<ClassInfo>		PRIMITIVE_CLASS_INFOS		= PRIMITIVE_CLASSES_BY_NAME.keySet().stream().map(InfoProvider::createClassInfoUnchecked).collect(Collectors.toList());
 
 	private static final ClassPath				CLASS_PATH;
 	private static final Set<String>			TOP_LEVEL_CLASS_NAMES;
@@ -112,7 +113,7 @@ public class ClassDataProvider
 
 	public CompletionSuggestions suggestInnerClasses(String expectedName, Class<?> contextClass, int insertionBegin, int insertionEnd) {
 		List<ClassInfo> classesToConsider = Arrays.stream(contextClass.getDeclaredClasses())
-			.map(clazz -> ClassInfo.forNameUnchecked(clazz.getName()))
+			.map(clazz -> InfoProvider.createClassInfoUnchecked(clazz.getName()))
 			.collect(Collectors.toList());
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			classesToConsider,
@@ -147,7 +148,7 @@ public class ClassDataProvider
 		Set<ClassInfo> importedClasses = new LinkedHashSet<>();
 		importedClasses.addAll(PRIMITIVE_CLASS_INFOS);
 		if (thisClass != null) {
-			importedClasses.add(ClassInfo.forNameUnchecked(thisClass.getName()));
+			importedClasses.add(InfoProvider.createClassInfoUnchecked(thisClass.getName()));
 		}
 		importedClasses.addAll(imports.getImportedClasses());
 		return importedClasses;
@@ -167,7 +168,7 @@ public class ClassDataProvider
 		Set<ClassInfo> classes = new HashSet<>();
 		for (String packageName : Iterables.filter(packageNames, Objects::nonNull)) {
 			for (ClassPath.ClassInfo classInfo : CLASS_PATH.getTopLevelClasses(packageName)) {
-				classes.add(ClassInfo.forNameUnchecked(classInfo.getName()));
+				classes.add(InfoProvider.createClassInfoUnchecked(classInfo.getName()));
 			}
 		}
 		return classes;
@@ -203,7 +204,7 @@ public class ClassDataProvider
 			if (!className.startsWith(prefix)) {
 				continue;
 			}
-			ClassInfo clazz = ClassInfo.forNameUnchecked(className);
+			ClassInfo clazz = InfoProvider.createClassInfoUnchecked(className);
 			if (suggestedClasses.contains(clazz)) {
 				continue;
 			}
@@ -247,7 +248,7 @@ public class ClassDataProvider
 	}
 
 	private static Function<ClassInfo, MatchRating> rateClassFunc(String simpleClassName) {
-		return classInfo -> new MatchRating(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE, AccessMatch.IGNORED);
+		return classInfo -> MatchRatings.create(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE, AccessMatch.IGNORED);
 	}
 
 	public static String getClassDisplayText(ClassInfo classInfo) {
@@ -264,6 +265,6 @@ public class ClassDataProvider
 	}
 
 	private static Function<String, MatchRating> ratePackageFunc(String expectedName) {
-		return packageName -> new MatchRating(ratePackageByName(packageName, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
+		return packageName -> MatchRatings.create(ratePackageByName(packageName, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
 	}
 }

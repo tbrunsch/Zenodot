@@ -10,7 +10,7 @@ import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -37,7 +37,7 @@ public class ExecutableDataProvider
 		this.parserToolbox = parserToolbox;
 	}
 
-	public CompletionSuggestions suggestMethods(List<AbstractExecutableInfo> methodInfos, boolean contextIsStatic, String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+	public CompletionSuggestions suggestMethods(List<ExecutableInfo> methodInfos, boolean contextIsStatic, String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			methodInfos,
 			methodInfo -> new CompletionSuggestionMethod(methodInfo, insertionBegin, insertionEnd),
@@ -46,7 +46,7 @@ public class ExecutableDataProvider
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
 
-	public List<ParseResult> parseExecutableArguments(TokenStream tokenStream, List<AbstractExecutableInfo> availableExecutableInfos) {
+	public List<ParseResult> parseExecutableArguments(TokenStream tokenStream, List<ExecutableInfo> availableExecutableInfos) {
 		List<ParseResult> arguments = new ArrayList<>();
 
 		int position;
@@ -55,7 +55,7 @@ public class ExecutableDataProvider
 
 		if (!characterToken.isContainsCaret()) {
 			if (!tokenStream.hasMore()) {
-				arguments.add(new ParseError(tokenStream.getPosition(), "Expected argument or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
+				arguments.add(ParseResults.createParseError(tokenStream.getPosition(), "Expected argument or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 
@@ -79,7 +79,7 @@ public class ExecutableDataProvider
 					// code completion after opening '(' for executable without arguments
 					arguments.add(CompletionSuggestions.none(position));
 				} else {
-					arguments.add(new ParseError(position, "No further arguments expected", ErrorPriority.RIGHT_PARSER));
+					arguments.add(ParseResults.createParseError(position, "No further arguments expected", ErrorPriority.RIGHT_PARSER));
 				}
 				return arguments;
 			}
@@ -107,7 +107,7 @@ public class ExecutableDataProvider
 			characterToken = tokenStream.readCharacterUnchecked();
 
 			if (characterToken == null) {
-				arguments.add(new ParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
+				arguments.add(ParseResults.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 
@@ -120,21 +120,21 @@ public class ExecutableDataProvider
 			}
 
 			if (characterToken.getValue().charAt(0) != ',') {
-				arguments.add(new ParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
+				arguments.add(ParseResults.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 		}
 	}
 
 	// assumes that each of the executableInfos accepts an argument for index argIndex
-	private List<TypeInfo> getExpectedArgumentTypes(List<AbstractExecutableInfo> executableInfos, int argIndex) {
+	private List<TypeInfo> getExpectedArgumentTypes(List<ExecutableInfo> executableInfos, int argIndex) {
 		return executableInfos.stream()
 				.map(executableInfo -> executableInfo.getExpectedArgumentType(argIndex))
 				.distinct()
 				.collect(Collectors.toList());
 	}
 
-	private boolean acceptsArgumentInfo(AbstractExecutableInfo executableInfo, int argIndex, ObjectInfo argInfo) {
+	private boolean acceptsArgumentInfo(ExecutableInfo executableInfo, int argIndex, ObjectInfo argInfo) {
 		TypeInfo expectedArgumentType;
 		try {
 			expectedArgumentType = executableInfo.getExpectedArgumentType(argIndex);
@@ -145,10 +145,10 @@ public class ExecutableDataProvider
 		return MatchRatings.isConvertibleTo(argumentType, expectedArgumentType);
 	}
 
-	public List<AbstractExecutableInfo> getBestMatchingExecutableInfos(List<AbstractExecutableInfo> availableExecutableInfos, List<ObjectInfo> argumentInfos) {
+	public List<ExecutableInfo> getBestMatchingExecutableInfos(List<ExecutableInfo> availableExecutableInfos, List<ObjectInfo> argumentInfos) {
 		ObjectInfoProvider objectInfoProvider = parserToolbox.getObjectInfoProvider();
 		List<TypeInfo> argumentTypes = argumentInfos.stream().map(objectInfoProvider::getType).collect(Collectors.toList());
-		Map<AbstractExecutableInfo, TypeMatch> ratedExecutableInfos = availableExecutableInfos.stream()
+		Map<ExecutableInfo, TypeMatch> ratedExecutableInfos = availableExecutableInfos.stream()
 			.collect(Collectors.toMap(
 				executableInfo -> executableInfo,
 				executableInfo -> executableInfo.rateArgumentMatch(argumentTypes)
@@ -156,7 +156,7 @@ public class ExecutableDataProvider
 
 		for (boolean allowVariadicExecutables : Arrays.asList(false, true)) {
 			for (List<TypeMatch> allowedRatings : ALLOWED_EXECUTABLE_RATINGS_BY_PHASE) {
-				List<AbstractExecutableInfo> executableInfos = filterExecutableInfos(ratedExecutableInfos, allowedRatings, allowVariadicExecutables);
+				List<ExecutableInfo> executableInfos = filterExecutableInfos(ratedExecutableInfos, allowedRatings, allowVariadicExecutables);
 				if (!executableInfos.isEmpty()) {
 					return executableInfos;
 				}
@@ -165,9 +165,9 @@ public class ExecutableDataProvider
 		return Collections.emptyList();
 	}
 
-	private static List<AbstractExecutableInfo> filterExecutableInfos(Map<AbstractExecutableInfo, TypeMatch> ratedExecutableInfos, List<TypeMatch> allowedRatings, boolean allowVariadicExecutables) {
-		List<AbstractExecutableInfo> filteredExecutableInfos = new ArrayList<>();
-		for (AbstractExecutableInfo executableInfo : ratedExecutableInfos.keySet()) {
+	private static List<ExecutableInfo> filterExecutableInfos(Map<ExecutableInfo, TypeMatch> ratedExecutableInfos, List<TypeMatch> allowedRatings, boolean allowVariadicExecutables) {
+		List<ExecutableInfo> filteredExecutableInfos = new ArrayList<>();
+		for (ExecutableInfo executableInfo : ratedExecutableInfos.keySet()) {
 			TypeMatch rating = ratedExecutableInfos.get(executableInfo);
 			if (allowedRatings.contains(rating) && (allowVariadicExecutables || !executableInfo.isVariadic())) {
 				filteredExecutableInfos.add(executableInfo);
@@ -176,25 +176,24 @@ public class ExecutableDataProvider
 		return filteredExecutableInfos;
 	}
 
-	public ExecutableArgumentInfo createExecutableArgumentInfo(List<AbstractExecutableInfo> executableInfos, List<ObjectInfo> argumentInfos) {
+	public ExecutableArgumentInfo createExecutableArgumentInfo(List<ExecutableInfo> executableInfos, List<ObjectInfo> argumentInfos) {
 		int currentArgumentIndex = argumentInfos.size();
-		Map<AbstractExecutableInfo, Boolean> applicableExecutableOverloads = new LinkedHashMap<>(executableInfos.size());
-		for (AbstractExecutableInfo executableInfo : executableInfos) {
+		Map<ExecutableInfo, Boolean> applicableExecutableOverloads = new LinkedHashMap<>(executableInfos.size());
+		for (ExecutableInfo executableInfo : executableInfos) {
 			boolean applicable = IntStream.range(0, argumentInfos.size()).allMatch(i -> acceptsArgumentInfo(executableInfo, i, argumentInfos.get(i)));
 			applicableExecutableOverloads.put(executableInfo, applicable);
 		}
-
-		return new ExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
+		return ParseResults.createExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
 	}
 
 	/*
 	 * Suggestions
 	 */
-	private StringMatch rateMethodByName(AbstractExecutableInfo methodInfo, String expectedName) {
+	private StringMatch rateMethodByName(ExecutableInfo methodInfo, String expectedName) {
 		return MatchRatings.rateStringMatch(methodInfo.getName(), expectedName);
 	}
 
-	private TypeMatch rateMethodByTypes(AbstractExecutableInfo methodInfo, ParseExpectation expectation) {
+	private TypeMatch rateMethodByTypes(ExecutableInfo methodInfo, ParseExpectation expectation) {
 		/*
 		 * Even for EvaluationMode.DYNAMICALLY_TYPED we only consider the declared return type of the method instead
 		 * of the runtime type of the returned object. Otherwise, we would have to invoke the method for code
@@ -206,15 +205,15 @@ public class ExecutableDataProvider
 					: allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(methodInfo.getReturnType(), allowedType)).min(TypeMatch::compareTo).orElse(TypeMatch.NONE);
 	}
 
-	private AccessMatch rateMethodByAccess(AbstractExecutableInfo methodInfo, boolean contextIsStatic) {
+	private AccessMatch rateMethodByAccess(ExecutableInfo methodInfo, boolean contextIsStatic) {
 		return methodInfo.isStatic() && !contextIsStatic ? AccessMatch.STATIC_ACCESS_VIA_INSTANCE : AccessMatch.FULL;
 	}
 
-	private Function<AbstractExecutableInfo, MatchRating> rateMethodFunc(String methodName, boolean contextIsStatic, ParseExpectation expectation) {
-		return methodInfo -> new MatchRating(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), rateMethodByAccess(methodInfo, contextIsStatic));
+	private Function<ExecutableInfo, MatchRating> rateMethodFunc(String methodName, boolean contextIsStatic, ParseExpectation expectation) {
+		return methodInfo -> MatchRatings.create(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), rateMethodByAccess(methodInfo, contextIsStatic));
 	}
 
-	public static String getMethodDisplayText(AbstractExecutableInfo methodInfo) {
+	public static String getMethodDisplayText(ExecutableInfo methodInfo) {
 		int numArguments = methodInfo.getNumberOfArguments();
 		final String argumentsAsString;
 		if (methodInfo.isVariadic()) {

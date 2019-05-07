@@ -5,34 +5,13 @@ package dd.kms.zenodot.settings;
  * <br/>
  * You can specify whether the value should be referenced with a hard or a weak reference
  * by the {@link ParserSettings}. If you decide for a weak reference, then the framework
- * does not prolong the life time of the variable's value to allow for garbage collection.
+ * does not prolong the life time of the variable's value to allow for garbage collection.<br/>
+ * <br/>
+ * A new instance can be created via {@link ParserSettingsUtils#createVariable(String, Object, boolean)}.
  */
-public class Variable
+public interface Variable
 {
-	private final String	name;
-	private final Object	value;
-	private final boolean	useHardReference;
-
-	public Variable(String name, Object value, boolean useHardReference) {
-		this.name = name;
-		this.value = value;
-		this.useHardReference = useHardReference;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Object getValue() {
-		return value;
-	}
-
-	public boolean isUseHardReference() {
-		return useHardReference;
-	}
-
-	@Override
-	public String toString() {
-		return name + ": " + (value == null ? "NULL" : value.toString());
-	}
+	String getName();
+	Object getValue();
+	boolean isUseHardReference();
 }

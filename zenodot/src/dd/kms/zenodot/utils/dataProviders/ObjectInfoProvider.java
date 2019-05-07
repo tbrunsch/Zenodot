@@ -4,10 +4,7 @@ import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.EvaluationMode;
-import dd.kms.zenodot.utils.wrappers.AbstractExecutableInfo;
-import dd.kms.zenodot.utils.wrappers.FieldInfo;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
-import dd.kms.zenodot.utils.wrappers.TypeInfo;
+import dd.kms.zenodot.utils.wrappers.*;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -26,13 +23,13 @@ public class ObjectInfoProvider
 	}
 
 	public TypeInfo getType(Object object, TypeInfo declaredType) {
-		if (object == null || object == ObjectInfo.INDETERMINATE) {
-			return declaredType == TypeInfo.UNKNOWN ? TypeInfo.NONE : declaredType;
+		if (object == null || object == InfoProvider.INDETERMINATE_VALUE) {
+			return declaredType == InfoProvider.UNKNOWN_TYPE ? InfoProvider.NO_TYPE : declaredType;
 		}
 
 		Class<?> runtimeClass = object.getClass();
-		if (declaredType == TypeInfo.UNKNOWN) {
-			return TypeInfo.of(runtimeClass);
+		if (declaredType == InfoProvider.UNKNOWN_TYPE) {
+			return InfoProvider.createTypeInfo(runtimeClass);
 		}
 
 		if (evaluationMode == EvaluationMode.DYNAMICALLY_TYPED) {
@@ -41,7 +38,7 @@ public class ObjectInfoProvider
 			}
 			TypeInfo runtimeType = declaredType.getSubtype(runtimeClass);
 			return declaredType.isPrimitive()
-					? TypeInfo.of(Primitives.unwrap(runtimeType.getRawType()))
+					? InfoProvider.createTypeInfo(Primitives.unwrap(runtimeType.getRawType()))
 					: runtimeType;
 		} else {
 			return declaredType;
@@ -53,7 +50,7 @@ public class ObjectInfoProvider
 	}
 
 	public ObjectInfo getFieldValueInfo(Object contextObject, FieldInfo fieldInfo) {
-		Object fieldValue = ObjectInfo.INDETERMINATE;
+		Object fieldValue = InfoProvider.INDETERMINATE_VALUE;
 		if (evaluationMode != EvaluationMode.NONE) {
 			try {
 				fieldValue = fieldInfo.get(contextObject);
@@ -62,7 +59,7 @@ public class ObjectInfoProvider
 			}
 		}
 		ObjectInfo.ValueSetter valueSetter = getFieldValueSetter(contextObject, fieldInfo);
-		return new ObjectInfo(fieldValue, fieldInfo.getType(), valueSetter);
+		return InfoProvider.createObjectInfo(fieldValue, fieldInfo.getType(), valueSetter);
 	}
 
 	private ObjectInfo.ValueSetter getFieldValueSetter(Object contextObject, FieldInfo fieldInfo) {
@@ -78,10 +75,10 @@ public class ObjectInfoProvider
 		};
 	}
 
-	public ObjectInfo getExecutableReturnInfo(Object contextObject, AbstractExecutableInfo executableInfo, List<ObjectInfo> argumentInfos) throws InvocationTargetException, InstantiationException {
+	public ObjectInfo getExecutableReturnInfo(Object contextObject, ExecutableInfo executableInfo, List<ObjectInfo> argumentInfos) throws InvocationTargetException, InstantiationException {
 		final Object methodReturnValue;
 		if (evaluationMode == EvaluationMode.NONE) {
-			methodReturnValue = ObjectInfo.INDETERMINATE;
+			methodReturnValue = InfoProvider.INDETERMINATE_VALUE;
 		} else {
 			Object[] arguments = executableInfo.createArgumentArray(argumentInfos);
 			try {
@@ -91,14 +88,14 @@ public class ObjectInfoProvider
 			}
 		}
 		TypeInfo methodReturnType = getType(methodReturnValue, executableInfo.getReturnType());
-		return new ObjectInfo(methodReturnValue, methodReturnType);
+		return InfoProvider.createObjectInfo(methodReturnValue, methodReturnType);
 	}
 
 	public ObjectInfo getArrayElementInfo(ObjectInfo arrayInfo, ObjectInfo indexInfo) {
 		final Object arrayElementValue;
 		final ObjectInfo.ValueSetter valueSetter;
 		if (evaluationMode == EvaluationMode.NONE) {
-			arrayElementValue = ObjectInfo.INDETERMINATE;
+			arrayElementValue = InfoProvider.INDETERMINATE_VALUE;
 			valueSetter = null;
 		} else {
 			Object arrayObject = arrayInfo.getObject();
@@ -108,7 +105,7 @@ public class ObjectInfoProvider
 			valueSetter = value -> Array.set(arrayObject, index, value);
 		}
 		TypeInfo arrayElementType = getType(arrayElementValue, getType(arrayInfo).getComponentType());
-		return new ObjectInfo(arrayElementValue, arrayElementType, valueSetter);
+		return InfoProvider.createObjectInfo(arrayElementValue, arrayElementType, valueSetter);
 	}
 
 	public ObjectInfo getArrayInfo(TypeInfo componentType, ObjectInfo sizeInfo) {
@@ -140,20 +137,20 @@ public class ObjectInfoProvider
 		Class<?> componentClass = componentType.getRawType();
 		Object array = Array.newInstance(componentClass, size);
 		Class<?> arrayClass = array.getClass();
-		TypeInfo arrayType = TypeInfo.of(arrayClass);
-		Object arrayObject = evaluationMode == EvaluationMode.NONE ? ObjectInfo.INDETERMINATE : array;
-		return new ObjectInfo(arrayObject, arrayType);
+		TypeInfo arrayType = InfoProvider.createTypeInfo(arrayClass);
+		Object arrayObject = evaluationMode == EvaluationMode.NONE ? InfoProvider.INDETERMINATE_VALUE : array;
+		return InfoProvider.createObjectInfo(arrayObject, arrayType);
 	}
 
 	public ObjectInfo getCastInfo(ObjectInfo objectInfo, TypeInfo targetType) throws ClassCastException {
 		Object castedValue = evaluationMode == EvaluationMode.NONE
-								? ObjectInfo.INDETERMINATE
+								? InfoProvider.INDETERMINATE_VALUE
 								: ReflectionUtils.convertTo(objectInfo.getObject(), targetType.getRawType(), true);
-		return new ObjectInfo(castedValue, targetType);
+		return InfoProvider.createObjectInfo(castedValue, targetType);
 	}
 
 	public ObjectInfo getVariableInfo(Variable variable) {
 		Object value = variable.getValue();
-		return new ObjectInfo(value, TypeInfo.UNKNOWN);
+		return InfoProvider.createObjectInfo(value, InfoProvider.UNKNOWN_TYPE);
 	}
 }

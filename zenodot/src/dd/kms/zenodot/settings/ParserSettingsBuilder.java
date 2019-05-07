@@ -1,80 +1,39 @@
 package dd.kms.zenodot.settings;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.debug.ParserLogger;
-import dd.kms.zenodot.debug.ParserNullLogger;
-import dd.kms.zenodot.utils.wrappers.ClassInfo;
 
 import java.util.List;
 import java.util.Set;
 
 /**
- * Builder for {@link ParserSettings}
+ * Builder for {@link ParserSettings}<br/>
+ * <br/>
+ * You can either create a new builder via {@link ParserSettingsUtils#createBuilder()} or derive
+ * one from existing settings via {@link ParserSettings#builder()}.
  */
-public class ParserSettingsBuilder
+public interface ParserSettingsBuilder
 {
-	private Set<ClassInfo>	importClasses			= ImmutableSet.of();
-	private Set<String>		importPackages			= ImmutableSet.of();
-	private List<Variable>	variables				= ImmutableList.of();
-	private AccessLevel		minimumAccessLevel		= AccessLevel.PUBLIC;
-	private boolean			enableDynamicTyping		= false;
-	private ObjectTreeNode	customHierarchyRoot		= LeafObjectTreeNode.EMPTY;
-	private ParserLogger	logger					= new ParserNullLogger();
-
-	public ParserSettingsBuilder() {}
-
-	public ParserSettingsBuilder(ParserSettings settings) {
-		importClasses = ImmutableSet.copyOf(settings.getImports().getImportedClasses());
-		importPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackageNames());
-		variables = ImmutableList.copyOf(settings.getVariables());
-		minimumAccessLevel = settings.getMinimumAccessLevel();
-		enableDynamicTyping = settings.isEnableDynamicTyping();
-		customHierarchyRoot = settings.getCustomHierarchyRoot();
-		logger = settings.getLogger();
-	}
-
 	/**
 	 * When you import a class, then you can directly reference that class by its simple name.
 	 */
-	public ParserSettingsBuilder importClasses(Set<String> qualifiedClassNames) {
-		ImmutableSet.Builder<ClassInfo> importClassesBuilder = ImmutableSet.builder();
-		for (String qualifiedClassName : qualifiedClassNames) {
-			try {
-				importClassesBuilder.add(ClassInfo.forName(qualifiedClassName));
-			} catch (ClassNotFoundException e) {
-				throw new IllegalArgumentException(e.getMessage());
-			}
-		}
-		importClasses = importClassesBuilder.build();
-		return this;
-	}
+	ParserSettingsBuilder importClasses(Set<String> qualifiedClassNames);
 
 	/**
 	 * When you import a package, then you can directly reference any of its classes by their simple names.
 	 */
-	public ParserSettingsBuilder importPackages(Set<String> packageNames) {
-		importPackages = ImmutableSet.copyOf(packageNames);
-		return this;
-	}
+	ParserSettingsBuilder importPackages(Set<String> packageNames);
 
 	/**
 	 * When you add a variable, then you can reference its value by the variable's name.
 	 */
-	public ParserSettingsBuilder variables(List<Variable> variables) {
-		this.variables = ImmutableList.copyOf(variables);
-		return this;
-	}
+	ParserSettingsBuilder variables(List<Variable> variables);
 
 	/**
 	 * The minimum access level affects which fields and methods are suggested for code completion and
 	 * are accepted when evaluating expressions. When setting this to {@link AccessLevel#PRIVATE}, then
 	 * all fields and methods will be considered.
 	 */
-	public ParserSettingsBuilder minimumAccessLevel(AccessLevel minimumAccessLevel) {
-		this.minimumAccessLevel = minimumAccessLevel;
-		return this;
-	}
+	ParserSettingsBuilder minimumAccessLevel(AccessLevel minimumAccessLevel);
 
 	/**
 	 * Enable dynamic typing to consider runtime types instead of declared types during code completion
@@ -83,10 +42,7 @@ public class ParserSettingsBuilder
 	 * This can save cumbersome type casts at the risk of unintended side effects or method overload resolutions
 	 * deviating from those based on declared type.
 	 */
-	public ParserSettingsBuilder enableDynamicTyping(boolean enableDynamicTyping) {
-		this.enableDynamicTyping = enableDynamicTyping;
-		return this;
-	}
+	ParserSettingsBuilder enableDynamicTyping(boolean enableDynamicTyping);
 
 	/**
 	 * Call this method if you want to inject a custom hierarchy into the parser that is not represented
@@ -103,21 +59,13 @@ public class ParserSettingsBuilder
 	 *          {@code {File#Open Recent#README.md}} in the expression.
 	 *
 	 */
-	public ParserSettingsBuilder customHierarchyRoot(ObjectTreeNode customHierarchyRoot) {
-		this.customHierarchyRoot = customHierarchyRoot;
-		return this;
-	}
+	ParserSettingsBuilder customHierarchyRoot(ObjectTreeNode customHierarchyRoot);
 
 	/**
 	 * Specify a logger that receives messages during the parsing process. This is primarily meant for
 	 * debugging purposes.
 	 */
-	public ParserSettingsBuilder logger(ParserLogger logger) {
-		this.logger = logger;
-		return this;
-	}
+	ParserSettingsBuilder logger(ParserLogger logger);
 
-	public ParserSettings build() {
-		return new ParserSettings(importClasses, importPackages, variables, minimumAccessLevel, enableDynamicTyping, customHierarchyRoot, logger);
-	}
+	ParserSettings build();
 }

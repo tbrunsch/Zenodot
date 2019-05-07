@@ -27,7 +27,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != '(') {
 			log(LogLevel.ERROR, "expected '('");
-			return new ParseError(position, "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseResults.createParseError(position, "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 		if (characterToken.isContainsCaret()) {
 			log(LogLevel.INFO, "potential cast operator; no completion suggestions available");
@@ -53,7 +53,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != ')') {
 			log(LogLevel.ERROR, "missing ')' at " + tokenStream);
-			return new ParseError(position, "Expected closing parenthesis ')'", ErrorPriority.RIGHT_PARSER);
+			return ParseResults.createParseError(position, "Expected closing parenthesis ')'", ErrorPriority.RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected cast operator at " + tokenStream);
 
@@ -82,10 +82,10 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		try {
 			ObjectInfo castInfo = parserToolbox.getObjectInfoProvider().getCastInfo(objectInfo, targetType);
 			log(LogLevel.SUCCESS, "successfully casted object");
-			return new ObjectParseResult(parsedToPosition, castInfo);
+			return ParseResults.createObjectParseResult(parsedToPosition, castInfo);
 		} catch (ClassCastException e) {
 			log(LogLevel.ERROR, "class cast exception: " + e.getMessage());
-			return new ParseError(tokenStream.getPosition(), "Cannot cast expression to '" + targetType + "'", ErrorPriority.RIGHT_PARSER, e);
+			return ParseResults.createParseError(tokenStream.getPosition(), "Cannot cast expression to '" + targetType + "'", ErrorPriority.RIGHT_PARSER, e);
 		}
 	}
 }
