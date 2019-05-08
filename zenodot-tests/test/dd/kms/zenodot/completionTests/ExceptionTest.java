@@ -4,7 +4,7 @@ import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
-import dd.kms.zenodot.settings.AccessLevel;
+import dd.kms.zenodot.common.AccessModifier;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -32,7 +32,7 @@ public class ExceptionTest extends CompletionTest
 			.addTestWithError("String.valueOf(x = 2.0).l", ParseException.class);
 
 		testBuilder
-			.configurator(test -> test.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumAccessLevel(AccessModifier.PACKAGE_PRIVATE))
 			.addTestWithError("x = 2.0", ParseException.class);
 
 		testBuilder

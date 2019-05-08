@@ -3,7 +3,7 @@ package dd.kms.zenodot.evaluationTests;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;
-import dd.kms.zenodot.settings.AccessLevel;
+import dd.kms.zenodot.common.AccessModifier;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -23,7 +23,7 @@ public class ObjectConstructorTest extends EvaluationTest
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
 		testBuilder
-			.configurator(test -> test.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumAccessLevel(AccessModifier.PACKAGE_PRIVATE))
 			.addTest("new TestClass(5, 6.0f).i",										5)
 			.addTest("new TestClass(5, 6.0f).l",										1L)
 			.addTest("new TestClass(5, 6.0f).f",										6.0f)
@@ -43,7 +43,7 @@ public class ObjectConstructorTest extends EvaluationTest
 			.addTest("new StringBuilder(\"Test\").append('X').append(13).toString()",	"TestX13");
 
 		testBuilder
-			.configurator(test -> test.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumAccessLevel(AccessModifier.PACKAGE_PRIVATE))
 			.addTestWithError("new TestClass(0)")
 			.addTestWithError("new TestClass(0, 0)")
 			.addTestWithError("new TestClass(0, 0, 0)")

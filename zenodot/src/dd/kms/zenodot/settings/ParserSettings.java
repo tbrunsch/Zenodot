@@ -1,5 +1,6 @@
 package dd.kms.zenodot.settings;
 
+import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.debug.ParserLogger;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface ParserSettings
 {
 	Imports getImports();
 	List<Variable> getVariables();
-	AccessLevel getMinimumAccessLevel();
+	AccessModifier getMinimumAccessLevel();
 	boolean isEnableDynamicTyping();
 	ObjectTreeNode getCustomHierarchyRoot();
 	ParserLogger getLogger();

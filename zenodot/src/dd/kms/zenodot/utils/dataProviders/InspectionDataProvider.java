@@ -1,7 +1,8 @@
 package dd.kms.zenodot.utils.dataProviders;
 
 import dd.kms.zenodot.common.ReflectionUtils;
-import dd.kms.zenodot.settings.AccessLevel;
+import dd.kms.zenodot.common.AccessModifier;
+import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
@@ -27,11 +28,11 @@ public class InspectionDataProvider
 	private final IntPredicate	accessLevelFilter;
 
 	public InspectionDataProvider(ParserToolbox parserToolbox) {
-		AccessLevel accessLevel = parserToolbox.getSettings().getMinimumAccessLevel();
-		this.accessLevelFilter = createAccessLevelFilter(accessLevel);
+		AccessModifier minimumAccessLevel = parserToolbox.getSettings().getMinimumAccessLevel();
+		this.accessLevelFilter = createMinimumAccessLevelFilter(minimumAccessLevel);
 	}
 
-	private static IntPredicate createAccessLevelFilter(AccessLevel minimumAccessLevel) {
+	private static IntPredicate createMinimumAccessLevelFilter(AccessModifier minimumAccessLevel) {
 		switch (minimumAccessLevel) {
 			case PUBLIC:
 				return modifiers -> Modifier.isPublic(modifiers);

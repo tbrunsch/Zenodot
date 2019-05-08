@@ -1,5 +1,6 @@
 package dd.kms.zenodot.settings;
 
+import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.debug.ParserLogger;
 
 import java.util.List;
@@ -33,7 +34,7 @@ public interface ParserSettingsBuilder
 	 * are accepted when evaluating expressions. When setting this to {@link AccessLevel#PRIVATE}, then
 	 * all fields and methods will be considered.
 	 */
-	ParserSettingsBuilder minimumAccessLevel(AccessLevel minimumAccessLevel);
+	ParserSettingsBuilder minimumAccessLevel(AccessModifier minimumAccessLevel);
 
 	/**
 	 * Enable dynamic typing to consider runtime types instead of declared types during code completion

@@ -2,6 +2,7 @@ package dd.kms.zenodot.settings;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
@@ -15,7 +16,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	private Set<ClassInfo>	importClasses;
 	private Set<String>		importPackages;
 	private List<Variable>	variables;
-	private AccessLevel		minimumAccessLevel;
+	private AccessModifier minimumAccessLevel;
 	private boolean			enableDynamicTyping;
 	private ObjectTreeNode	customHierarchyRoot;
 	private ParserLogger	logger;
@@ -24,7 +25,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		importClasses = ImmutableSet.of();
 		importPackages = ImmutableSet.of();
 		variables = ImmutableList.of();
-		minimumAccessLevel = AccessLevel.PUBLIC;
+		minimumAccessLevel = AccessModifier.PUBLIC;
 		enableDynamicTyping = false;
 		customHierarchyRoot = ParserSettingsUtils.createEmptyLeafNode();
 		logger = ParserLoggers.createNullLogger();
@@ -63,7 +64,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		return this;
 	}
 
-	public ParserSettingsBuilderImpl minimumAccessLevel(AccessLevel minimumAccessLevel) {
+	public ParserSettingsBuilderImpl minimumAccessLevel(AccessModifier minimumAccessLevel) {
 		this.minimumAccessLevel = minimumAccessLevel;
 		return this;
 	}

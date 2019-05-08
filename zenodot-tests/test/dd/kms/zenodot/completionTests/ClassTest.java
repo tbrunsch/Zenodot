@@ -3,7 +3,7 @@ package dd.kms.zenodot.completionTests;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
-import dd.kms.zenodot.settings.AccessLevel;
+import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.utils.ClassUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -25,7 +25,7 @@ public class ClassTest extends CompletionTest
 
 		String className = ClassUtils.getRegularClassName(TestClass.class.getName());
 		testBuilder
-			.configurator(test -> test.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumAccessLevel(AccessModifier.PACKAGE_PRIVATE))
 			.addTest(className + ".",				"f", "l", "getDouble()", "getInt()", "InnerClass")
 			.addTest(className + ".I",				"InnerClass")
 			.addTest(className + ".InnerClass.",	"test")
@@ -71,7 +71,7 @@ public class ClassTest extends CompletionTest
 			.addTest("InternalClassStage2.",	"i");
 
 		testBuilder
-			.configurator(test -> test.minimumAccessLevel(AccessLevel.PUBLIC))
+			.configurator(test -> test.minimumAccessLevel(AccessModifier.PUBLIC))
 			.addUnstableTest("Ma",		"Math")
 			.addUnstableTest("Math.p",	"pow(, )", "PI")
 			.addUnstableTest("Math.P",	"PI", "pow(, )");

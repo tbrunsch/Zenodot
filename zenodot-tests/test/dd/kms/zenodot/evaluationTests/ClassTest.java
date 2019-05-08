@@ -3,7 +3,7 @@ package dd.kms.zenodot.evaluationTests;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;
-import dd.kms.zenodot.settings.AccessLevel;
+import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.utils.ClassUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -26,7 +26,7 @@ public class ClassTest extends EvaluationTest
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder();
 
 		testBuilder
-			.configurator(test -> test.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumAccessLevel(AccessModifier.PACKAGE_PRIVATE))
 			.addTest(className + ".l",				-17L)
 			.addTest(className + ".f",				27.5f)
 			.addTest(className + ".getInt()",		0)
@@ -34,7 +34,7 @@ public class ClassTest extends EvaluationTest
 
 		testBuilder
 			.configurator(test -> {
-				test.minimumAccessLevel(AccessLevel.PUBLIC);
+				test.minimumAccessLevel(AccessModifier.PUBLIC);
 				test.importPackages("java.util");
 			})
 			.addTest("Math.pow(1.5, 2.5)",		Math.pow(1.5, 2.5))
@@ -66,7 +66,7 @@ public class ClassTest extends EvaluationTest
 			.addTest("InternalClassStage2.i",	3);
 
 		testBuilder
-			.configurator(test -> test.minimumAccessLevel(AccessLevel.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumAccessLevel(AccessModifier.PACKAGE_PRIVATE))
 			.addTestWithError(className + ".i")
 			.addTestWithError(className + ".b")
 			.addTestWithError(className + ".d")
