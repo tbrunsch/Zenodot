@@ -10,6 +10,6 @@ import javax.annotation.Nullable;
 public interface ObjectTreeNode
 {
 	String getName();
-	Iterable<ObjectTreeNode> getChildNodes();
+	Iterable<? extends ObjectTreeNode> getChildNodes();
 	@Nullable Object getUserObject();
 }

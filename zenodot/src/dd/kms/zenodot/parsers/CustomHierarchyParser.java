@@ -75,7 +75,7 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 			return parserToolbox.getObjectTreeNodeDataProvider().suggestNodes(nodeName, contextNode, startPosition, endPosition);
 		}
 
-		Iterable<ObjectTreeNode> childNodes = contextNode.getChildNodes();
+		Iterable<? extends ObjectTreeNode> childNodes = contextNode.getChildNodes();
 		ObjectTreeNode firstChildNodeMatch = Iterables.getFirst(Iterables.filter(childNodes, node -> node.getName().equals(nodeName)), null);
 		if (firstChildNodeMatch == null) {
 			log(LogLevel.ERROR, "unknown hierarchy node '" + nodeName + "'");

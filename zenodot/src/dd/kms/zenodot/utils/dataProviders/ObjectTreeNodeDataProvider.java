@@ -16,7 +16,7 @@ import java.util.function.Function;
 public class ObjectTreeNodeDataProvider
 {
 	public CompletionSuggestions suggestNodes(String expectedName, ObjectTreeNode contextNode, int insertionBegin, int insertionEnd) {
-		Iterable<ObjectTreeNode> nodes = contextNode.getChildNodes();
+		Iterable<? extends ObjectTreeNode> nodes = contextNode.getChildNodes();
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			nodes,
 			node -> new CompletionSuggestionObjectTreeNode(node, insertionBegin, insertionEnd),
