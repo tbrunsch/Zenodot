@@ -104,7 +104,7 @@ public class ClassDataProvider
 		Set<ClassInfo> suggestedClasses = new HashSet<>();
 
 		suggestionBuilder.putAll(suggestUnqualifiedClasses(classOrPackagePrefix, insertionBegin, insertionEnd, importedClasses, suggestedClasses));
-		suggestionBuilder.putAll(suggestUnqualifiedClasses(classOrPackagePrefix, insertionBegin, insertionBegin, topLevelClassesInPackages, suggestedClasses));
+		suggestionBuilder.putAll(suggestUnqualifiedClasses(classOrPackagePrefix, insertionBegin, insertionEnd, topLevelClassesInPackages, suggestedClasses));
 		suggestionBuilder.putAll(suggestQualifiedClasses(classOrPackagePrefix, insertionBegin, insertionEnd, suggestedClasses));
 		suggestionBuilder.putAll(suggestPackages(classOrPackagePrefix, insertionBegin, insertionEnd));
 
@@ -179,8 +179,8 @@ public class ClassDataProvider
 			// class is fully qualified, so no match
 			return ImmutableMap.of();
 		}
-		Sets.SetView<ClassInfo> newSuggestedClasses = Sets.difference(classes, suggestedClasses);
-		classes.addAll(newSuggestedClasses);
+		Set<ClassInfo> newSuggestedClasses = Sets.newHashSet(Sets.difference(classes, suggestedClasses));
+		suggestedClasses.addAll(newSuggestedClasses);
 		return ParseUtils.createRatedSuggestions(
 				newSuggestedClasses,
 				classInfo -> new CompletionSuggestionClass(classInfo, insertionBegin, insertionEnd),
@@ -252,7 +252,7 @@ public class ClassDataProvider
 	}
 
 	public static String getClassDisplayText(ClassInfo classInfo) {
-		return classInfo.getNormalizedName();
+		return classInfo.getUnqualifiedName();
 	}
 
 	/*
