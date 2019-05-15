@@ -1,5 +1,6 @@
 package dd.kms.zenodot.result;
 
+import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.matching.MatchRating;
 
 import java.util.Collections;
@@ -11,8 +12,14 @@ import java.util.Optional;
  */
 public class CompletionSuggestions implements ParseResult
 {
-	public static final CompletionSuggestions none(int position) {
+	public static CompletionSuggestions none(int position) {
 		return new CompletionSuggestions(position, Collections.emptyMap());
+	}
+
+	public static CompletionSuggestions of(CompletionSuggestion suggestion, MatchRating rating) {
+		ImmutableMap.Builder<CompletionSuggestion, MatchRating> ratingBuilder = ImmutableMap.builder();
+		ratingBuilder.put(suggestion, rating);
+		return new CompletionSuggestions(suggestion.getInsertionRange().getEnd(), ratingBuilder.build());
 	}
 
 	private final int										position;

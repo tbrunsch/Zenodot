@@ -27,6 +27,7 @@ public class ParserToolbox
 	private final AbstractEntityParser<ObjectInfo>	castParser;
 	private final AbstractEntityParser<TypeInfo>	classFieldParser;
 	private final AbstractEntityParser<TypeInfo>	classMethodParser;
+	private final AbstractEntityParser<TypeInfo>	classObjectParser;
 	private final AbstractEntityParser<ObjectInfo>	classParser;
 	private final AbstractEntityParser<TypeInfo>	classTailParser;
 	private final AbstractEntityParser<ObjectInfo>	constructorParser;
@@ -61,6 +62,7 @@ public class ParserToolbox
 		castParser						= new CastParser(this, thisInfo);
 		classFieldParser				= new ClassFieldParser(this, thisInfo);
 		classMethodParser				= new ClassMethodParser(this, thisInfo);
+		classObjectParser				= new ClassObjectParser(this, thisInfo);
 		classParser						= new ClassParser(this, thisInfo);
 		classTailParser					= new ClassTailParser(this, thisInfo);
 		constructorParser				= new ConstructorParser(this, thisInfo);
@@ -132,6 +134,8 @@ public class ParserToolbox
 	public AbstractEntityParser<TypeInfo> getClassMethodParser() {
 		return classMethodParser;
 	}
+
+	public AbstractEntityParser<TypeInfo> getClassObjectParser() { return classObjectParser; }
 
 	public AbstractEntityParser<ObjectInfo> getClassParser() { return classParser; }
 

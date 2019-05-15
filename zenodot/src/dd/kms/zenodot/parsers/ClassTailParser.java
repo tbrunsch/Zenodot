@@ -34,13 +34,15 @@ public class ClassTailParser extends AbstractTailParser<TypeInfo>
 		AbstractEntityParser<TypeInfo> fieldParser = parserToolbox.getClassFieldParser();
 		AbstractEntityParser<TypeInfo> methodParser = parserToolbox.getClassMethodParser();
 		AbstractEntityParser<TypeInfo> innerClassParser = parserToolbox.getInnerClassParser();
+		AbstractEntityParser<TypeInfo> classObjectParser = parserToolbox.getClassObjectParser();
 		if (expectation.getEvaluationType() == ParseResultType.CLASS_PARSE_RESULT) {
 			return innerClassParser.parse(tokenStream, classType, expectation);
 		} else {
 			return ParseUtils.parse(tokenStream, classType, expectation,
 				fieldParser,
 				methodParser,
-				innerClassParser
+				innerClassParser,
+				classObjectParser
 			);
 		}
 	}
