@@ -1,10 +1,9 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ParseResult;
-import dd.kms.zenodot.result.ParseResultType;
-import dd.kms.zenodot.result.ParseResults;
+import dd.kms.zenodot.matching.*;
+import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionKeyword;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -58,13 +57,13 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 			return parseStringLiteral(tokenStream, expectation);
 		} else if (characters.startsWith("'")) {
 			return parseCharacterLiteral(tokenStream, expectation);
-		} else if (characters.startsWith("true")) {
+		} else if (characters.startsWith("tr")) {
 			return parseNamedLiteral(tokenStream, "true", TRUE_INFO, expectation);
-		} else if (characters.startsWith("false")) {
+		} else if (characters.startsWith("f")) {
 			return parseNamedLiteral(tokenStream, "false", FALSE_INFO, expectation);
-		} else if (characters.startsWith("null")) {
+		} else if (characters.startsWith("n")) {
 			return parseNamedLiteral(tokenStream, "null", NULL_INFO, expectation);
-		} else if (characters.startsWith("this")) {
+		} else if (characters.startsWith("th")) {
 			return parseNamedLiteral(tokenStream, "this", thisInfo, expectation);
 		} else {
 			return parseNumericLiteral(tokenStream, contextInfo, expectation);
@@ -122,8 +121,16 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 			return ParseResults.createParseError(startPosition, "Expected '" + literalName + "'", ErrorPriority.WRONG_PARSER);
 		}
 		if (literalToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no completion suggestions available");
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			if (literalName.startsWith(literalToken.getValue())) {
+				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, AccessMatch.IGNORED);
+				CompletionSuggestion suggestion = new CompletionSuggestionKeyword(literalName, startPosition, tokenStream.getPosition());
+				log(LogLevel.INFO, "suggesting literal '" + literalName + "'...");
+				return CompletionSuggestions.of(suggestion, rating);
+
+			} else {
+				log(LogLevel.INFO, "no completion suggestions available");
+				return CompletionSuggestions.none(tokenStream.getPosition());
+			}
 		}
 		if (!literalToken.getValue().equals(literalName)) {
 			log(LogLevel.ERROR, "expected literal '" + literalName + "'");
