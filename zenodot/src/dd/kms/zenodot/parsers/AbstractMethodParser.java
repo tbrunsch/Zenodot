@@ -1,5 +1,7 @@
 package dd.kms.zenodot.parsers;
 
+import dd.kms.zenodot.common.AccessModifier;
+import dd.kms.zenodot.common.MethodScanner;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.tokenizer.Token;
@@ -8,7 +10,9 @@ import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
 import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -28,8 +32,8 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 	abstract boolean contextCausesNullPointerException(C context);
 	abstract Object getContextObject(C context);
+	abstract TypeInfo getContextType(C context);
 	abstract boolean isContextStatic();
-	abstract List<ExecutableInfo> getMethodInfos(C context);
 
 	@Override
 	ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
@@ -74,17 +78,21 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		}
 
 		// no code completion requested => method name must exist
-		List<ExecutableInfo> methodInfos = getMethodInfos(context);
-		List<ExecutableInfo> matchingMethodInfos = methodInfos.stream().filter(methodInfo -> methodInfo.getName().equals(methodName)).collect(Collectors.toList());
-		if (matchingMethodInfos.isEmpty()) {
-			log(LogLevel.ERROR, "unknown method '" + methodName + "'");
-			return ParseResults.createParseError(startPosition, "Unknown method '" + methodName + "'", ErrorPriority.RIGHT_PARSER);
+		List<ExecutableInfo> methodInfos = getMethodInfos(context, getMethodScanner(methodName, true));
+		if (methodInfos.isEmpty()) {
+			if (getMethodInfos(context, getMethodScanner(methodName, false)).isEmpty()) {
+				log(LogLevel.ERROR, "unknown method '" + methodName + "'");
+				return ParseResults.createParseError(startPosition, "Unknown method '" + methodName + "'", ErrorPriority.RIGHT_PARSER);
+			} else {
+				log(LogLevel.ERROR, "method '" + methodName + "' is not visible");
+				return ParseResults.createParseError(startPosition, "Method '" + methodName + "' is not visible", ErrorPriority.RIGHT_PARSER);
+			}
 		}
-		log(LogLevel.SUCCESS, "detected " + matchingMethodInfos.size() + " method(s) '" + methodName + "'");
+		log(LogLevel.SUCCESS, "detected " + methodInfos.size() + " method(s) '" + methodName + "'");
 
 		log(LogLevel.INFO, "parsing method arguments");
 		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
-		List<ParseResult> argumentParseResults = executableDataProvider.parseExecutableArguments(tokenStream, matchingMethodInfos);
+		List<ParseResult> argumentParseResults = executableDataProvider.parseExecutableArguments(tokenStream, methodInfos);
 
 		if (argumentParseResults.isEmpty()) {
 			log(LogLevel.INFO, "no arguments found");
@@ -105,7 +113,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 					.map(ObjectParseResult.class::cast)
 					.map(ObjectParseResult::getObjectInfo)
 					.collect(Collectors.toList());
-				ExecutableArgumentInfo executableArgumentInfo = executableDataProvider.createExecutableArgumentInfo(matchingMethodInfos, previousArgumentInfos);
+				ExecutableArgumentInfo executableArgumentInfo = executableDataProvider.createExecutableArgumentInfo(methodInfos, previousArgumentInfos);
 				return new CompletionSuggestions(argumentSuggestions.getPosition(), argumentSuggestions.getRatedSuggestions(), Optional.of(executableArgumentInfo));
 			}
 
@@ -119,7 +127,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 			.map(ObjectParseResult.class::cast)
 			.map(ObjectParseResult::getObjectInfo)
 			.collect(Collectors.toList());
-		List<ExecutableInfo> bestMatchingMethodInfos = executableDataProvider.getBestMatchingExecutableInfos(matchingMethodInfos, argumentInfos);
+		List<ExecutableInfo> bestMatchingMethodInfos = executableDataProvider.getBestMatchingExecutableInfos(methodInfos, argumentInfos);
 
 		switch (bestMatchingMethodInfos.size()) {
 			case 0:
@@ -157,8 +165,25 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 	private CompletionSuggestions suggestMethods(String expectedName, C context, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
-		List<ExecutableInfo> methodInfos = getMethodInfos(context);
+		List<ExecutableInfo> methodInfos = getMethodInfos(context, getMethodScanner());
 		boolean contextIsStatic = isContextStatic();
 		return executableDataProvider.suggestMethods(methodInfos, contextIsStatic, expectedName, expectation, insertionBegin, insertionEnd);
+	}
+
+	private MethodScanner getMethodScanner() {
+		AccessModifier minimumAccessLevel = parserToolbox.getSettings().getMinimumAccessLevel();
+		return new MethodScanner().staticOnly(isContextStatic()).minimumAccessLevel(minimumAccessLevel);
+	}
+
+	private MethodScanner getMethodScanner(String name, boolean considerMinimumAccessLevel) {
+		MethodScanner methodScanner = getMethodScanner().name(name);
+		if (!considerMinimumAccessLevel) {
+			methodScanner.minimumAccessLevel(AccessModifier.PRIVATE);
+		}
+		return methodScanner;
+	}
+
+	private List<ExecutableInfo> getMethodInfos(C context, MethodScanner methodScanner) {
+		return InfoProvider.getMethodInfos(getContextType(context), methodScanner);
 	}
 }

@@ -1,13 +1,16 @@
 package dd.kms.zenodot.utils.wrappers;
 
 import com.google.common.reflect.TypeToken;
+import dd.kms.zenodot.common.ConstructorScanner;
+import dd.kms.zenodot.common.FieldScanner;
+import dd.kms.zenodot.common.MethodScanner;
 import dd.kms.zenodot.utils.ClassUtils;
 
-import java.lang.reflect.Executable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InfoProvider
 {
@@ -47,5 +50,28 @@ public class InfoProvider
 		return type == null ? NO_TYPE : new TypeInfoImpl(TypeToken.of(type));
 	}
 
+	public static List<FieldInfo> getFieldInfos(TypeInfo contextType, FieldScanner fieldScanner) {
+		List<Field> fields = fieldScanner.getFields(contextType.getRawType(), true);
+		return fields.stream()
+			.map(field -> createFieldInfo(field, contextType))
+			.collect(Collectors.toList());
+	}
 
+	public static List<ExecutableInfo> getMethodInfos(TypeInfo contextType, MethodScanner methodScanner) {
+		List<Method> methods = methodScanner.getMethods(contextType.getRawType());
+		List<ExecutableInfo> executableInfos = new ArrayList<>(methods.size());
+		for (Method method : methods) {
+			executableInfos.addAll(getAvailableExecutableInfos(method, contextType));
+		}
+		return executableInfos;
+	}
+
+	public static List<ExecutableInfo> getConstructorInfos(TypeInfo contextType, ConstructorScanner constructorScanner) {
+		List<Constructor<?>> constructors = constructorScanner.getConstructors(contextType.getRawType());
+		List<ExecutableInfo> executableInfos = new ArrayList<>(constructors.size());
+		for (Constructor<?> constructor : constructors) {
+			executableInfos.addAll(getAvailableExecutableInfos(constructor, contextType));
+		}
+		return executableInfos;
+	}
 }

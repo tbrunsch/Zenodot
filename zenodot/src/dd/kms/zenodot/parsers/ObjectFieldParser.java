@@ -36,13 +36,12 @@ public class ObjectFieldParser extends AbstractFieldParser<ObjectInfo>
 	}
 
 	@Override
-	boolean isContextStatic() {
-		return false;
+	TypeInfo getContextType(ObjectInfo context) {
+		return parserToolbox.getObjectInfoProvider().getType(context);
 	}
 
 	@Override
-	List<FieldInfo> getFieldInfos(ObjectInfo contextInfo) {
-		TypeInfo contextType = parserToolbox.getObjectInfoProvider().getType(contextInfo);
-		return parserToolbox.getInspectionDataProvider().getFieldInfos(contextType, false);
+	boolean isContextStatic() {
+		return false;
 	}
 }

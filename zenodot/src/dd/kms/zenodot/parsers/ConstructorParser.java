@@ -1,5 +1,7 @@
 package dd.kms.zenodot.parsers;
 
+import dd.kms.zenodot.common.AccessModifier;
+import dd.kms.zenodot.common.ConstructorScanner;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
@@ -83,7 +85,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			log(LogLevel.ERROR, "cannot instantiate non-static inner class");
 			return ParseResults.createParseError(tokenStream.getPosition(), "Cannot instantiate inner class '" + constructorClass.getName() + "'", ErrorPriority.RIGHT_PARSER);
 		}
-		List<ExecutableInfo> constructorInfos = parserToolbox.getInspectionDataProvider().getConstructorInfos(constructorType);
+		List<ExecutableInfo> constructorInfos = getConstructorInfos(constructorType);
 
 		log(LogLevel.INFO, "parsing constructor arguments");
 		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
@@ -298,6 +300,12 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 				return elements;
 			}
 		}
+	}
+
+	private List<ExecutableInfo> getConstructorInfos(TypeInfo constructorType) {
+		AccessModifier minimumAccessLevel = parserToolbox.getSettings().getMinimumAccessLevel();
+		ConstructorScanner constructorScanner = new ConstructorScanner().minimumAccessLevel(minimumAccessLevel);
+		return InfoProvider.getConstructorInfos(constructorType, constructorScanner);
 	}
 
 	private static String formatConstructorInfo(ExecutableInfo constructorInfo) {

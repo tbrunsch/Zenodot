@@ -18,7 +18,6 @@ public class ParserToolbox
 	private final ClassDataProvider					classDataProvider;
 	private final ExecutableDataProvider			executableDataProvider;
 	private final FieldDataProvider					fieldDataProvider;
-	private final InspectionDataProvider			inspectionDataProvider;
 	private final ObjectInfoProvider				objectInfoProvider;
 	private final ObjectTreeNodeDataProvider		objectTreeNodeDataProvider;
 	private final OperatorResultProvider 			operatorResultProvider;
@@ -54,7 +53,6 @@ public class ParserToolbox
 		classDataProvider				= new ClassDataProvider(this);
 		executableDataProvider			= new ExecutableDataProvider(this);
 		fieldDataProvider				= new FieldDataProvider(this);
-		inspectionDataProvider 			= new InspectionDataProvider(this);
 		objectTreeNodeDataProvider		= new ObjectTreeNodeDataProvider();
 		operatorResultProvider 			= new OperatorResultProvider(this, evaluationMode);
 		variableDataProvider			= new VariableDataProvider(settings.getVariables());
@@ -100,10 +98,6 @@ public class ParserToolbox
 
 	public FieldDataProvider getFieldDataProvider() {
 		return fieldDataProvider;
-	}
-
-	public InspectionDataProvider getInspectionDataProvider() {
-		return inspectionDataProvider;
 	}
 
 	public ObjectInfoProvider getObjectInfoProvider() {

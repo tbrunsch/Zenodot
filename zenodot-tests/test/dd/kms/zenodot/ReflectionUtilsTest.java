@@ -1,5 +1,7 @@
 package dd.kms.zenodot;
 
+import dd.kms.zenodot.common.FieldScanner;
+import dd.kms.zenodot.common.MethodScanner;
 import dd.kms.zenodot.common.ReflectionUtils;
 import org.junit.Test;
 
@@ -48,7 +50,7 @@ public class ReflectionUtilsTest
 		}
 
 		for (boolean filterShadowedFields : Arrays.asList(true, false)) {
-			List<Field> actualFields = ReflectionUtils.getFields(DerivedClass.class, filterShadowedFields);
+			List<Field> actualFields = new FieldScanner().getFields(DerivedClass.class, filterShadowedFields);
 			String[] expectedFieldNamesDerived = { "e", "h", "y" };
 			String[] expectedFieldNamesBase = filterShadowedFields ? new String[]{ "w", "x", "z" } : new String[] { "w", "x", "y", "z" };
 			List<Field> expectedFields = Stream.concat(
@@ -102,7 +104,7 @@ public class ReflectionUtilsTest
 
 		// We do not want to consider the methods MyBaseClass inherits from Object. This may differ
 		// between different Java versions and makes the test less understandable.
-		List<Method> actualMethods = ReflectionUtils.getMethods(MyDerivedClass.class).stream()
+		List<Method> actualMethods = new MethodScanner().getMethods(MyDerivedClass.class).stream()
 										.filter(method -> method.getDeclaringClass().getSimpleName().startsWith("My"))
 										.collect(Collectors.toList());
 		List<Method> expectedMethods = Stream.concat(
