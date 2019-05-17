@@ -45,11 +45,11 @@ public class AbstractTest<T extends AbstractTest>
 		settingsBuilder.enableDynamicTyping(true);
 	}
 
-	protected void stopAtError() {
+	public void stopAtError() {
 		stopAtError = true;
 	}
 
-	protected void printLogEntriesAtError() {
+	public void printLogEntriesAtError() {
 		printLogEntriesAtError = true;
 	}
 
