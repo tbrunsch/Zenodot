@@ -49,7 +49,7 @@ public class InnerClassParser extends AbstractEntityParser<TypeInfo>
 		Class<?> contextClass = contextType.getRawType();
 		int startPosition = tokenStream.getPosition();
 
-		if (tokenStream.isCaretAtPosition()) {
+		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			return classDataProvider.suggestInnerClasses("", contextClass, startPosition, startPosition);
 		}
 

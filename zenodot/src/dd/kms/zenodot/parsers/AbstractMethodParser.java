@@ -44,7 +44,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 			return ParseResults.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
 		}
 
-		if (tokenStream.isCaretAtPosition()) {
+		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			int insertionEnd;
 			try {
 				tokenStream.readIdentifier();

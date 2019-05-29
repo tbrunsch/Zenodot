@@ -96,8 +96,13 @@ public class TokenStream implements Cloneable
 		return position;
 	}
 
-	public boolean isCaretAtPosition() {
-		return position == caretPosition;
+	public boolean isCaretWithinNextWhiteSpaces() {
+		int curPosition = position;
+		try {
+			return position == caretPosition || readOptionalSpace().isContainsCaret();
+		} finally {
+			position = curPosition;
+		}
 	}
 
 	public Token readIdentifier() throws JavaTokenParseException {

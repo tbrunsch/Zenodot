@@ -38,7 +38,7 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 
 	@Override
 	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
-		if (tokenStream.isCaretAtPosition()) {
+		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
 
@@ -56,7 +56,7 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 
 	private ParseResult parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
-		if (tokenStream.isCaretAtPosition()) {
+		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			log(LogLevel.INFO, "suggesting custom hierarchy nodes for completion...");
 			return parserToolbox.getObjectTreeNodeDataProvider().suggestNodes("", contextNode, startPosition, startPosition);
 		}

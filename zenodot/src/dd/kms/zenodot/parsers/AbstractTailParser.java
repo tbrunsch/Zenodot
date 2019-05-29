@@ -34,7 +34,7 @@ abstract class AbstractTailParser<C> extends AbstractEntityParser<C>
 		}
 
 		int position = tokenStream.getPosition();
-		boolean returnCompletions = tokenStream.isCaretAtPosition() || tokenStream.readOptionalSpace().isContainsCaret();
+		boolean returnCompletions = tokenStream.isCaretWithinNextWhiteSpaces();
 		return returnCompletions ? CompletionSuggestions.none(position) : createParseResult(position, context);
 	}
 }

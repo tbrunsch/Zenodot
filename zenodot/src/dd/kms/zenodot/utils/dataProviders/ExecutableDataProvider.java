@@ -74,7 +74,7 @@ public class ExecutableDataProvider
 
 			if (expectedArgumentTypes_i.isEmpty()) {
 				position = tokenStream.getPosition();
-				boolean requestCodeCompletion = tokenStream.isCaretAtPosition() || tokenStream.readOptionalSpace().isContainsCaret();
+				boolean requestCodeCompletion = tokenStream.isCaretWithinNextWhiteSpaces();
 				if (i == 0 && requestCodeCompletion) {
 					// code completion after opening '(' for executable without arguments
 					arguments.add(CompletionSuggestions.none(position));

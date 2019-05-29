@@ -31,7 +31,7 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
-		if (tokenStream.isCaretAtPosition()) {
+		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			int insertionEnd;
 			try {
 				tokenStream.readIdentifier();

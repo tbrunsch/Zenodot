@@ -23,13 +23,14 @@ public class SpacesTest extends EvaluationTest
 			.testInstance(testInstance)
 			.addTest(" s ", "abc")
 			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ) . sValue ",	(short) 13)
-			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ) .s",			"abc" + "_xyz")
+			.addTest("  getTestClass (  \"xyz\" , sValue,  c ,i  ,  f , l,b,d  ) .s",	"xyz" + "_xyz")
 			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ). c",			'X')
 			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ).i ",			123456789 + 1)
 			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d) .f",			-13e02f / 2.f)
 			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d ). l",			1L * 3)
 			.addTest("  getTestClass (s,sValue,  c,i  ,  f,l,b,d ).b",					!false)
 			.addTest("  getTestClass( s, sValue, c, i, f, l, b, d  ) . d",				3 - 2.34e-56)
+			.addTest("  \"abc\"",														"abc")
 			.build();
 	}
 
