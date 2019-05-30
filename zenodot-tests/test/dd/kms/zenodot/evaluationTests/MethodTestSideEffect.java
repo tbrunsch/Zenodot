@@ -15,7 +15,7 @@ public class MethodTestSideEffect
 		String expression = "f(g(), s)";
 		ParserSettings parserSettings = ParserSettingsUtils.createBuilder().enableDynamicTyping(false).build();
 		try {
-			JavaParser.evaluate(expression, parserSettings, testInstance);
+			new JavaParser(expression, testInstance, parserSettings).evaluate();
 			Assert.fail("Expected ParseException");
 		} catch (ParseException ignored) {
 			/* expected */

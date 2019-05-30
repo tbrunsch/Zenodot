@@ -50,7 +50,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 		Class<? extends Exception> expectedExceptionClass = ParseException.class;
 		try {
-			JavaParser.evaluate(javaExpression, settings, testInstance);
+			new JavaParser(javaExpression, testInstance, settings).evaluate();
 			fail("Expression: " + javaExpression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			assertTrue("Expression: " + javaExpression + " - Expected exception of class '" + expectedExceptionClass.getSimpleName() + "', but caught an exception of class '" + e.getClass().getSimpleName() + "'", expectedExceptionClass.isInstance(e));
@@ -64,7 +64,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		logger.log(ParserLoggers.createLogEntry(LogLevel.INFO, "Test", "Testing expression '" + javaExpression + "'...\n"));
 
 		try {
-			Object actualValue = JavaParser.evaluate(javaExpression, settings, testInstance);
+			Object actualValue = new JavaParser(javaExpression, testInstance, settings).evaluate();
 			if (executeAssertions) {
 				assertEquals("Expression: " + javaExpression, expectedValue, actualValue);
 			}

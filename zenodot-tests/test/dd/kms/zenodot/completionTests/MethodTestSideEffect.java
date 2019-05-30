@@ -16,7 +16,7 @@ public class MethodTestSideEffect
 		int caretPosition = expression.length();
 		ParserSettings parserSettings = ParserSettingsUtils.createBuilder().enableDynamicTyping(false).build();
 		try {
-			JavaParser.suggestCodeCompletion(expression, caretPosition, parserSettings, testInstance);
+			new JavaParser(expression, testInstance, parserSettings).suggestCodeCompletion(caretPosition);
 			Assert.fail("Expected ParseException");
 		} catch (ParseException ignored) {
 			/* expected */

@@ -53,7 +53,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		ParserSettings settings = settingsBuilder.build();
 
 		try {
-			JavaParser.suggestCodeCompletion(javaExpression, caretPosition, settings, testInstance);
+			new JavaParser(javaExpression, testInstance, settings).suggestCodeCompletion(caretPosition);
 			fail("Expression: " + javaExpression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			assertEquals(expectedExceptionClass, e.getClass());
@@ -62,12 +62,11 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 
 	private boolean runTest(String javaExpression, boolean executeAssertions, String... expectedSuggestions) {
 		ParserSettings settings = settingsBuilder.build();
-		ParserLogger logger = settings.getLogger();
 
 		int caretPosition = javaExpression.length();
-		List<String> suggestions = null;
+		List<String> suggestions;
 		try {
-			suggestions = extractSuggestions(JavaParser.suggestCodeCompletion(javaExpression, caretPosition, settings, testInstance));
+			suggestions = extractSuggestions(new JavaParser(javaExpression, testInstance, settings).suggestCodeCompletion(caretPosition));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				fail("Exception during code completion: " + e.getMessage());
