@@ -28,39 +28,39 @@ public class JavaParser
 {
 	/**
 	 * Returns rated code completions for a given java expression at a given caret position in the context provided
-	 * by {@code valueOfThis}.
+	 * by {@code thisValue}.
 	 *
 	 * @throws ParseException
 	 */
-	public static Map<CompletionSuggestion, MatchRating> suggestCodeCompletion(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
-		return getCompletionSuggestions(javaExpression, caretPosition, settings, valueOfThis).getRatedSuggestions();
+	public static Map<CompletionSuggestion, MatchRating> suggestCodeCompletion(String javaExpression, int caretPosition, ParserSettings settings, Object thisValue) throws ParseException {
+		return getCompletionSuggestions(javaExpression, caretPosition, settings, thisValue).getRatedSuggestions();
 	}
 
 	/**
 	 * Returns optional information about the arguments of the current method or constructor {@link ExecutableArgumentInfo}.
 	 * The value will be present if the caret is inside of a method argument list.
 	 */
-	public static Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
-		return getCompletionSuggestions(javaExpression, caretPosition, settings, valueOfThis).getExecutableArgumentInfo();
+	public static Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String javaExpression, int caretPosition, ParserSettings settings, Object thisValue) throws ParseException {
+		return getCompletionSuggestions(javaExpression, caretPosition, settings, thisValue).getExecutableArgumentInfo();
 	}
 
 	/**
-	 * Evaluates a given java expression in the context provided by {@code valueOfThis}.
+	 * Evaluates a given java expression in the context provided by {@code thisValue}.
 	 *
 	 * @throws ParseException
 	 */
-	public static  Object evaluate(String javaExpression, ParserSettings settings, Object valueOfThis) throws ParseException {
+	public static  Object evaluate(String javaExpression, ParserSettings settings, Object thisValue) throws ParseException {
 		ParseResult parseResult;
 
 		if (!settings.isEnableDynamicTyping()) {
 			// First iteration without evaluation to avoid side effects when errors occur
-			parseResult = parse(javaExpression, settings, ParseMode.WITHOUT_EVALUATION,-1, valueOfThis);
+			parseResult = parse(javaExpression, settings, ParseMode.WITHOUT_EVALUATION,-1, thisValue);
 			if (parseResult.getResultType() == ParseResultType.OBJECT_PARSE_RESULT) {
 				// Second iteration with evaluation (side effects cannot be avoided)
-				parseResult = parse(javaExpression, settings, ParseMode.EVALUATION,-1, valueOfThis);
+				parseResult = parse(javaExpression, settings, ParseMode.EVALUATION,-1, thisValue);
 			}
 		} else {
-			parseResult = parse(javaExpression, settings, ParseMode.EVALUATION,-1, valueOfThis);
+			parseResult = parse(javaExpression, settings, ParseMode.EVALUATION,-1, thisValue);
 		}
 
 		switch (parseResult.getResultType()) {
@@ -91,8 +91,8 @@ public class JavaParser
 		}
 	}
 
-	private static CompletionSuggestions getCompletionSuggestions(String javaExpression, int caretPosition, ParserSettings settings, Object valueOfThis) throws ParseException {
-		ParseResult parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caretPosition, valueOfThis);
+	private static CompletionSuggestions getCompletionSuggestions(String javaExpression, int caretPosition, ParserSettings settings, Object thisValue) throws ParseException {
+		ParseResult parseResult = parse(javaExpression, settings, ParseMode.CODE_COMPLETION, caretPosition, thisValue);
 
 		switch (parseResult.getResultType()) {
 			case OBJECT_PARSE_RESULT: {
@@ -121,8 +121,8 @@ public class JavaParser
 		}
 	}
 
-	private static ParseResult parse(String javaExpression, ParserSettings settings, ParseMode parseMode, int caretPosition, Object valueOfThis) {
-		ObjectInfo thisInfo = InfoProvider.createObjectInfo(valueOfThis, InfoProvider.UNKNOWN_TYPE);
+	private static ParseResult parse(String javaExpression, ParserSettings settings, ParseMode parseMode, int caretPosition, Object thisValue) {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue, InfoProvider.UNKNOWN_TYPE);
 		ParserToolbox parserPool  = new ParserToolbox(thisInfo, settings, parseMode);
 		TokenStream tokenStream = new TokenStream(javaExpression, caretPosition);
 		try {
