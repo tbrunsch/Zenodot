@@ -22,6 +22,10 @@ class MatchRatingImpl implements MatchRating
 		if (typeMatchComparisonResult != 0) {
 			return typeMatchComparisonResult;
 		}
+		if (accessMatch == AccessMatch.IGNORED || that.getAccessMatch() == AccessMatch.IGNORED) {
+			// do not compare access match if it is not relevant
+			return 0;
+		}
 		int accessMatchComparisonResult = accessMatch.compareTo(that.getAccessMatch());
 		return accessMatchComparisonResult;
 	}
