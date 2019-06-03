@@ -19,6 +19,10 @@ public class ParseExpectationBuilder
 		return new ParseExpectationBuilder(ParseResultType.CLASS_PARSE_RESULT);
 	}
 
+	public static ParseExpectationBuilder expectPackage() {
+		return new ParseExpectationBuilder(ParseResultType.PACKAGE_PARSE_RESULT);
+	}
+
 	private final ParseResultType	evaluationType;
 	private List<TypeInfo>			allowedTypes;
 

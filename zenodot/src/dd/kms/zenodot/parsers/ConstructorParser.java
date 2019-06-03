@@ -54,7 +54,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
-		ParseResult classParseResult = parserToolbox.getClassParser().parse(tokenStream, thisInfo, ParseExpectation.CLASS);
+		ParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
 		ParseResultType parseResultType = classParseResult.getResultType();
 		log(LogLevel.INFO, "parse result: " + parseResultType);
 

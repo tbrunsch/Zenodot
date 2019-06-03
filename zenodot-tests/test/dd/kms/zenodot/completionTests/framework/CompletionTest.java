@@ -1,7 +1,7 @@
 package dd.kms.zenodot.completionTests.framework;
 
-import dd.kms.zenodot.JavaParser;
 import dd.kms.zenodot.ParseException;
+import dd.kms.zenodot.Parsers;
 import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.matching.MatchRating;
@@ -38,35 +38,35 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		testExecutor.executeTest(this);
 	}
 
-	void testCompletion(String javaExpression, String[] expectedSuggestions) {
+	void testCompletion(String expression, String[] expectedSuggestions) {
 		ParserLogger logger = prepareLogger(false, -1);
 
 		boolean repeatTestAtError = isStopAtError() || isPrintLogEntriesAtError();
-		if (!runTest(javaExpression, !repeatTestAtError, expectedSuggestions) && repeatTestAtError) {
+		if (!runTest(expression, !repeatTestAtError, expectedSuggestions) && repeatTestAtError) {
 			int numLoggedEntries = logger.getNumberOfLoggedEntries();
 			prepareLogger(isPrintLogEntriesAtError(), isStopAtError() ? numLoggedEntries : -1);
-			runTest(javaExpression, true, expectedSuggestions);
+			runTest(expression, true, expectedSuggestions);
 		}
 	}
 
-	void testCompletionWithError(String javaExpression, int caretPosition, Class<? extends Exception> expectedExceptionClass) {
+	void testCompletionWithError(String expression, int caretPosition, Class<? extends Exception> expectedExceptionClass) {
 		ParserSettings settings = settingsBuilder.build();
 
 		try {
-			new JavaParser(javaExpression, testInstance, settings).suggestCodeCompletion(caretPosition);
-			fail("Expression: " + javaExpression + " - Expected an exception");
+			Parsers.createExpressionParser(expression, settings, testInstance).suggestCodeCompletion(caretPosition);
+			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			assertEquals(expectedExceptionClass, e.getClass());
 		}
 	}
 
-	private boolean runTest(String javaExpression, boolean executeAssertions, String... expectedSuggestions) {
+	private boolean runTest(String expression, boolean executeAssertions, String... expectedSuggestions) {
 		ParserSettings settings = settingsBuilder.build();
 
-		int caretPosition = javaExpression.length();
+		int caretPosition = expression.length();
 		List<String> suggestions;
 		try {
-			suggestions = extractSuggestions(new JavaParser(javaExpression, testInstance, settings).suggestCodeCompletion(caretPosition));
+			suggestions = extractSuggestions(Parsers.createExpressionParser(expression, settings, testInstance).suggestCodeCompletion(caretPosition));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				fail("Exception during code completion: " + e.getMessage());
@@ -75,7 +75,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		}
 		if (executeAssertions) {
 			assertTrue(MessageFormat.format("expected completions: {1}, actual completions: {2}",
-					javaExpression,
+					expression,
 					expectedSuggestions,
 					suggestions),
 					suggestions.size() >= expectedSuggestions.length);
@@ -110,7 +110,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 	private static int getCompletionSuggestionPriorityByClass(CompletionSuggestion suggestion) {
 		Class<? extends CompletionSuggestion> suggestionClass = suggestion.getClass();
 		return	suggestionClass == CompletionSuggestionVariable.class	? 0 :
-			suggestionClass == CompletionSuggestionField.class		? 1
-				: 2;
+				suggestionClass == CompletionSuggestionField.class		? 1
+																		: 2;
 	}
 }

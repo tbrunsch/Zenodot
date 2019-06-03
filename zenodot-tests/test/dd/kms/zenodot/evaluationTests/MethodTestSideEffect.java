@@ -1,7 +1,7 @@
 package dd.kms.zenodot.evaluationTests;
 
-import dd.kms.zenodot.JavaParser;
 import dd.kms.zenodot.ParseException;
+import dd.kms.zenodot.Parsers;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.settings.ParserSettingsUtils;
 import org.junit.Assert;
@@ -15,7 +15,7 @@ public class MethodTestSideEffect
 		String expression = "f(g(), s)";
 		ParserSettings parserSettings = ParserSettingsUtils.createBuilder().enableDynamicTyping(false).build();
 		try {
-			new JavaParser(expression, testInstance, parserSettings).evaluate();
+			Parsers.createExpressionParser(expression, parserSettings, testInstance).evaluate();
 			Assert.fail("Expected ParseException");
 		} catch (ParseException ignored) {
 			/* expected */

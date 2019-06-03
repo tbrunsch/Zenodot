@@ -26,7 +26,7 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  */
 abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 {
-	public AbstractMethodParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
+	AbstractMethodParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
 	}
 
@@ -45,15 +45,18 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		}
 
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
+			String methodName;
 			int insertionEnd;
 			try {
-				tokenStream.readIdentifier();
+				Token methodNameToken = tokenStream.readIdentifier();
+				methodName = methodNameToken.getValue();
 				insertionEnd = tokenStream.getPosition();
 			} catch (TokenStream.JavaTokenParseException e) {
+				methodName = "";
 				insertionEnd = startPosition;
 			}
 			log(LogLevel.INFO, "suggesting methods for completion...");
-			return suggestMethods("", context, expectation, startPosition, insertionEnd);
+			return suggestMethods(methodName, context, expectation, startPosition, insertionEnd);
 		}
 
 		Token methodNameToken;

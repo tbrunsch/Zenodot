@@ -1,5 +1,7 @@
 package dd.kms.zenodot.utils;
 
+import com.google.common.collect.Iterables;
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.parsers.AbstractEntityParser;
@@ -7,6 +9,7 @@ import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.*;
 import java.util.function.Function;
@@ -20,6 +23,14 @@ public class ParseUtils
 	/*
 	 * Parsing
 	 */
+	public static ParseResult parseClass(TokenStream tokenStream, ParserToolbox parserToolbox) {
+		ParseResult classParseResult = parse(tokenStream, null, ParseExpectation.CLASS,
+			parserToolbox.getImportedClassParser(),
+			parserToolbox.getRootpackageParser()
+		);
+		checkExpectedParseResultType(classParseResult.getResultType(), ParseExpectation.CLASS);
+		return classParseResult;
+	}
 
 	/**
 	 * Tries to parse a subexpression with the specified parsers. The result is obtained from merging the result
@@ -29,7 +40,7 @@ public class ParseUtils
 		List<ParseResult> parseResults = Arrays.stream(parsers)
 			.map(parser -> parser.parse(tokenStream, context, expectation))
 			.collect(Collectors.toList());
-		return mergeParseResults(parseResults);
+		return parseResults.size() == 1 ? Iterables.getOnlyElement(parseResults) : mergeParseResults(parseResults);
 	}
 
 	private static ParseResult mergeParseResults(List<ParseResult> parseResults) {
@@ -172,12 +183,7 @@ public class ParseUtils
 	public static Optional<ParseResult> prepareParseResultForPropagation(ParseResult parseResult, ParseExpectation expectation, ErrorPriority minimumErrorType) {
 		ParseResultType parseResultType = parseResult.getResultType();
 		ParseResultType expectedEvaluationType = expectation.getEvaluationType();
-		if (expectedEvaluationType == ParseResultType.OBJECT_PARSE_RESULT && parseResultType == ParseResultType.CLASS_PARSE_RESULT) {
-			throw new IllegalStateException("Internal error: Expected an object as parse result, but obtained a class");
-		}
-		if (expectedEvaluationType == ParseResultType.CLASS_PARSE_RESULT && parseResultType == ParseResultType.OBJECT_PARSE_RESULT) {
-			throw new IllegalStateException("Internal error: Expected a class as parse result, but obtained an object");
-		}
+		checkExpectedParseResultType(parseResultType, expectation);
 		if (parseResultType == expectedEvaluationType) {
 			return Optional.empty();
 		}
@@ -190,5 +196,16 @@ public class ParseUtils
 			return Optional.of(parseError);
 		}
 		return Optional.of(ParseResults.createParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
+	}
+
+	private static void checkExpectedParseResultType(ParseResultType resultType, ParseExpectation expectation) {
+		if (!ParseExpectation.SUPPORTED_RESULT_TYPES.contains(resultType)) {
+			// Only "real" result types will be checked. Completion suggestions and errors can always occur.
+			return;
+		}
+		ParseResultType expectedType = expectation.getEvaluationType();
+		if (resultType != expectedType) {
+			throw new IllegalStateException("Internal error: Expected a parse result of type '" + expectedType + "', but obtained a parse result of type '" + resultType + "'");
+		}
 	}
 }

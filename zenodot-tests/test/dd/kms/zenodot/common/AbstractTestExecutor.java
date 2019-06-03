@@ -6,6 +6,9 @@ import dd.kms.zenodot.debug.ParserConsoleLogger;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.settings.*;
+import org.junit.Assert;
+
+import java.util.Arrays;
 
 public class AbstractTestExecutor<T extends AbstractTestExecutor>
 {
@@ -31,12 +34,16 @@ public class AbstractTestExecutor<T extends AbstractTestExecutor>
 	}
 
 	public T importClasses(String... classNames) {
-		settingsBuilder.importClasses(ImmutableSet.copyOf(classNames));
+		try {
+			settingsBuilder.importClassesByName(Arrays.asList(classNames));
+		} catch (ClassNotFoundException e) {
+			Assert.fail("ClassNotFoundException: " + e.getMessage());
+		}
 		return getBuilder();
 	}
 
 	public T importPackages(String... packageNames) {
-		settingsBuilder.importPackages(ImmutableSet.copyOf(packageNames));
+		settingsBuilder.importPackagesByName(Arrays.asList(packageNames));
 		return getBuilder();
 	}
 

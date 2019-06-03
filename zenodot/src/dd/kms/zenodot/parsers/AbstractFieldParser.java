@@ -44,15 +44,18 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 		}
 
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
+			String fieldName;
 			int insertionEnd;
 			try {
-				tokenStream.readIdentifier();
+				Token fieldNameToken = tokenStream.readIdentifier();
+				fieldName = fieldNameToken.getValue();
 				insertionEnd = tokenStream.getPosition();
 			} catch (TokenStream.JavaTokenParseException e) {
+				fieldName = "";
 				insertionEnd = startPosition;
 			}
 			log(LogLevel.INFO, "suggesting fields for completion...");
-			return suggestFields("", context, expectation, startPosition, insertionEnd);
+			return suggestFields(fieldName, context, expectation, startPosition, insertionEnd);
 		}
 
 		Token fieldNameToken;

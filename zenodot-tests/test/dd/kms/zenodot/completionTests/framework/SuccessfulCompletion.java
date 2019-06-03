@@ -2,21 +2,21 @@ package dd.kms.zenodot.completionTests.framework;
 
 class SuccessfulCompletion implements TestExecutor
 {
-	private final String	javaExpression;
+	private final String	expression;
 	private final String[]	expectedSuggestions;
 
-	SuccessfulCompletion(String javaExpression, String[] expectedSuggestions) {
-		this.javaExpression = javaExpression;
+	SuccessfulCompletion(String expression, String[] expectedSuggestions) {
+		this.expression = expression;
 		this.expectedSuggestions = expectedSuggestions;
 	}
 
 	@Override
 	public void executeTest(CompletionTest test) {
-		test.testCompletion(javaExpression, expectedSuggestions);
+		test.testCompletion(expression, expectedSuggestions);
 	}
 
 	@Override
 	public String toString() {
-		return javaExpression;
+		return expression;
 	}
 }

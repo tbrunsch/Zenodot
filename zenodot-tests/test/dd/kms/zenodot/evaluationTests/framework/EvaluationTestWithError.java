@@ -2,19 +2,19 @@ package dd.kms.zenodot.evaluationTests.framework;
 
 class EvaluationTestWithError implements TestExecutor
 {
-	private final String						javaExpression;
+	private final String						expression;
 
-	EvaluationTestWithError(String javaExpression) {
-		this.javaExpression = javaExpression;
+	EvaluationTestWithError(String expression) {
+		this.expression = expression;
 	}
 
 	@Override
 	public void executeTest(EvaluationTest test) {
-		test.testEvaluationWithError(javaExpression);
+		test.testEvaluationWithError(expression);
 	}
 
 	@Override
 	public String toString() {
-		return javaExpression;
+		return expression;
 	}
 }

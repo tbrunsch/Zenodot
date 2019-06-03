@@ -23,19 +23,19 @@ public class EvaluationTestBuilder
 		return this;
 	}
 
-	public EvaluationTestBuilder addTest(String javaExpression, Object expectedValue) {
-		return addTest(new SuccessfulEvaluation(javaExpression, expectedValue));
+	public EvaluationTestBuilder addTest(String expression, Object expectedValue) {
+		return addTest(new SuccessfulEvaluation(expression, expectedValue));
 	}
 
-	public EvaluationTestBuilder addUnstableTest(String javaExpression, Object expectedValue) {
+	public EvaluationTestBuilder addUnstableTest(String expression, Object expectedValue) {
 		if (!AbstractTest.SKIP_UNSTABLE_TESTS) {
-			addTest(javaExpression, expectedValue);
+			addTest(expression, expectedValue);
 		}
 		return this;
 	}
 
-	public EvaluationTestBuilder addTestWithError(String javaExpression) {
-		return addTest(new EvaluationTestWithError(javaExpression));
+	public EvaluationTestBuilder addTestWithError(String expression) {
+		return addTest(new EvaluationTestWithError(expression));
 	}
 
 	private EvaluationTestBuilder addTest(TestExecutor testExecutor) {

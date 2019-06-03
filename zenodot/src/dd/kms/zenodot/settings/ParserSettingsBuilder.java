@@ -2,6 +2,8 @@ package dd.kms.zenodot.settings;
 
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.debug.ParserLogger;
+import dd.kms.zenodot.utils.wrappers.ClassInfo;
+import dd.kms.zenodot.utils.wrappers.PackageInfo;
 
 import java.util.List;
 import java.util.Set;
@@ -17,12 +19,22 @@ public interface ParserSettingsBuilder
 	/**
 	 * When you import a class, then you can directly reference that class by its simple name.
 	 */
-	ParserSettingsBuilder importClasses(Set<String> qualifiedClassNames);
+	ParserSettingsBuilder importClasses(Iterable<ClassInfo> classes);
+
+	/**
+	 * see {@link #importClasses(Iterable)}
+	 */
+	ParserSettingsBuilder importClassesByName(Iterable<String> classNames) throws ClassNotFoundException;
 
 	/**
 	 * When you import a package, then you can directly reference any of its classes by their simple names.
 	 */
-	ParserSettingsBuilder importPackages(Set<String> packageNames);
+	ParserSettingsBuilder importPackages(Iterable<PackageInfo> packages);
+
+	/**
+	 * see {@link #importPackages(Iterable)}
+	 */
+	ParserSettingsBuilder importPackagesByName(Iterable<String> packageNames);
 
 	/**
 	 * When you add a variable, then you can reference its value by the variable's name.
@@ -31,7 +43,7 @@ public interface ParserSettingsBuilder
 
 	/**
 	 * The minimum access level affects which fields and methods are suggested for code completion and
-	 * are accepted when evaluating expressions. When setting this to {@link AccessLevel#PRIVATE}, then
+	 * are accepted when evaluating expressions. When setting this to {@link AccessModifier#PRIVATE}, then
 	 * all fields and methods will be considered.
 	 */
 	ParserSettingsBuilder minimumAccessLevel(AccessModifier minimumAccessLevel);

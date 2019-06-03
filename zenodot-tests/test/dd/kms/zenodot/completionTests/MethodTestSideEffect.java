@@ -1,7 +1,7 @@
 package dd.kms.zenodot.completionTests;
 
-import dd.kms.zenodot.JavaParser;
 import dd.kms.zenodot.ParseException;
+import dd.kms.zenodot.Parsers;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.settings.ParserSettingsUtils;
 import org.junit.Assert;
@@ -14,9 +14,9 @@ public class MethodTestSideEffect
 		TestClass testInstance = new TestClass();
 		String expression = "f(g(), s)";
 		int caretPosition = expression.length();
-		ParserSettings parserSettings = ParserSettingsUtils.createBuilder().enableDynamicTyping(false).build();
+		ParserSettings settings = ParserSettingsUtils.createBuilder().enableDynamicTyping(false).build();
 		try {
-			new JavaParser(expression, testInstance, parserSettings).suggestCodeCompletion(caretPosition);
+			Parsers.createExpressionParser(expression, settings, testInstance).suggestCodeCompletion(caretPosition);
 			Assert.fail("Expected ParseException");
 		} catch (ParseException ignored) {
 			/* expected */

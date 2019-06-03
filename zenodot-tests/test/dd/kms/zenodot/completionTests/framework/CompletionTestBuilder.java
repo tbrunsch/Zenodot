@@ -23,23 +23,23 @@ public class CompletionTestBuilder
 		return this;
 	}
 
-	public CompletionTestBuilder addTest(String javaExpression, String... expectedSuggestions) {
-		return addTest(new SuccessfulCompletion(javaExpression, expectedSuggestions));
+	public CompletionTestBuilder addTest(String expression, String... expectedSuggestions) {
+		return addTest(new SuccessfulCompletion(expression, expectedSuggestions));
 	}
 
-	public CompletionTestBuilder addUnstableTest(String javaExpression, String... expectedSuggestions) {
+	public CompletionTestBuilder addUnstableTest(String expression, String... expectedSuggestions) {
 		if (!AbstractTest.SKIP_UNSTABLE_TESTS) {
-			addTest(javaExpression, expectedSuggestions);
+			addTest(expression, expectedSuggestions);
 		}
 		return this;
 	}
 
-	public CompletionTestBuilder addTestWithError(String javaExpression, Class<? extends Exception> expectedExceptionClass) {
-		return addTestWithError(javaExpression, javaExpression.length(), expectedExceptionClass);
+	public CompletionTestBuilder addTestWithError(String expression, Class<? extends Exception> expectedExceptionClass) {
+		return addTestWithError(expression, expression.length(), expectedExceptionClass);
 	}
 
-	public CompletionTestBuilder addTestWithError(String javaExpression, int caretPosition, Class<? extends Exception> expectedExceptionClass) {
-		return addTest(new CompletionWithError(javaExpression, caretPosition, expectedExceptionClass));
+	public CompletionTestBuilder addTestWithError(String expression, int caretPosition, Class<? extends Exception> expectedExceptionClass) {
+		return addTest(new CompletionWithError(expression, caretPosition, expectedExceptionClass));
 	}
 
 	private CompletionTestBuilder addTest(TestExecutor testExecutor) {

@@ -16,9 +16,14 @@ public enum ParseResultType
 	OBJECT_PARSE_RESULT,
 
 	/**
-	 * Result type of {@link ClassParseResult}. The result contains a class. This type is only internally relevant.
+	 * Result type of {@link ClassParseResult}. The result contains a class.
 	 */
 	CLASS_PARSE_RESULT,
+
+	/**
+	 * Result type of {@link PackageParseResult}. The result contains a package.
+	 */
+	PACKAGE_PARSE_RESULT,
 
 	/**
 	 * Result type of {@link ParseError}. The result describes an error message.

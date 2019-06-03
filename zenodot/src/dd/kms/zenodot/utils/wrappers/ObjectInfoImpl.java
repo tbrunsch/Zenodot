@@ -4,9 +4,9 @@ import com.google.common.base.Preconditions;
 
 class ObjectInfoImpl implements ObjectInfo
 {
-	private final Object			object;
-	private final TypeInfo			declaredType;
-	private final ValueSetter valueSetter;
+	private final Object		object;
+	private final TypeInfo		declaredType;
+	private final ValueSetter	valueSetter;
 
 	ObjectInfoImpl(Object object, TypeInfo declaredType, ValueSetter valueSetter) {
 		this.object = object;

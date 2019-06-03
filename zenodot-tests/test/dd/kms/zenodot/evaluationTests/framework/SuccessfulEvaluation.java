@@ -2,21 +2,21 @@ package dd.kms.zenodot.evaluationTests.framework;
 
 class SuccessfulEvaluation implements TestExecutor
 {
-	private final String	javaExpression;
+	private final String	expression;
 	private final Object	expectedValue;
 
-	SuccessfulEvaluation(String javaExpression, Object expectedValue) {
-		this.javaExpression = javaExpression;
+	SuccessfulEvaluation(String expression, Object expectedValue) {
+		this.expression = expression;
 		this.expectedValue = expectedValue;
 	}
 
 	@Override
 	public void executeTest(EvaluationTest test) {
-		test.testEvaluation(javaExpression, expectedValue);
+		test.testEvaluation(expression, expectedValue);
 	}
 
 	@Override
 	public String toString() {
-		return javaExpression;
+		return expression;
 	}
 }

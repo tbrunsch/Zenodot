@@ -1,7 +1,7 @@
 package dd.kms.zenodot.evaluationTests.framework;
 
-import dd.kms.zenodot.JavaParser;
 import dd.kms.zenodot.ParseException;
+import dd.kms.zenodot.Parsers;
 import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogger;
@@ -34,39 +34,39 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		testExecutor.executeTest(this);
 	}
 
-	void testEvaluation(String javaExpression, Object expectedValue) {
+	void testEvaluation(String expression, Object expectedValue) {
 		ParserLogger logger = prepareLogger(false, -1);
 
 		boolean repeatTestAtError = isStopAtError() || isPrintLogEntriesAtError();
-		if (!runTest(javaExpression, !repeatTestAtError, expectedValue) && repeatTestAtError) {
+		if (!runTest(expression, !repeatTestAtError, expectedValue) && repeatTestAtError) {
 			int numLoggedEntries = logger.getNumberOfLoggedEntries();
 			prepareLogger(isPrintLogEntriesAtError(), isStopAtError() ? numLoggedEntries : -1);
-			runTest(javaExpression, true, expectedValue);
+			runTest(expression, true, expectedValue);
 		}
 	}
 
-	void testEvaluationWithError(String javaExpression) {
+	void testEvaluationWithError(String expression) {
 		ParserSettings settings = settingsBuilder.build();
 
 		Class<? extends Exception> expectedExceptionClass = ParseException.class;
 		try {
-			new JavaParser(javaExpression, testInstance, settings).evaluate();
-			fail("Expression: " + javaExpression + " - Expected an exception");
+			Parsers.createExpressionParser(expression, settings, testInstance).evaluate();
+			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
-			assertTrue("Expression: " + javaExpression + " - Expected exception of class '" + expectedExceptionClass.getSimpleName() + "', but caught an exception of class '" + e.getClass().getSimpleName() + "'", expectedExceptionClass.isInstance(e));
+			assertTrue("Expression: " + expression + " - Expected exception of class '" + expectedExceptionClass.getSimpleName() + "', but caught an exception of class '" + e.getClass().getSimpleName() + "'", expectedExceptionClass.isInstance(e));
 		}
 	}
 
-	private boolean runTest(String javaExpression, boolean executeAssertions, Object expectedValue) {
+	private boolean runTest(String expression, boolean executeAssertions, Object expectedValue) {
 		ParserSettings settings = settingsBuilder.build();
 		ParserLogger logger = settings.getLogger();
 
-		logger.log(ParserLoggers.createLogEntry(LogLevel.INFO, "Test", "Testing expression '" + javaExpression + "'...\n"));
+		logger.log(ParserLoggers.createLogEntry(LogLevel.INFO, "Test", "Testing expression '" + expression + "'...\n"));
 
 		try {
-			Object actualValue = new JavaParser(javaExpression, testInstance, settings).evaluate();
+			Object actualValue = Parsers.createExpressionParser(expression, settings, testInstance).evaluate();
 			if (executeAssertions) {
-				assertEquals("Expression: " + javaExpression, expectedValue, actualValue);
+				assertEquals("Expression: " + expression, expectedValue, actualValue);
 			}
 			return Objects.equals(expectedValue, actualValue);
 		} catch (ParseException e) {

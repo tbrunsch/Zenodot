@@ -4,6 +4,7 @@ import dd.kms.zenodot.parsers.*;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.utils.dataProviders.*;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.wrappers.PackageInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 /**
@@ -27,18 +28,21 @@ public class ParserToolbox
 	private final AbstractEntityParser<TypeInfo>	classFieldParser;
 	private final AbstractEntityParser<TypeInfo>	classMethodParser;
 	private final AbstractEntityParser<TypeInfo>	classObjectParser;
-	private final AbstractEntityParser<ObjectInfo>	classParser;
 	private final AbstractEntityParser<TypeInfo>	classTailParser;
 	private final AbstractEntityParser<ObjectInfo>	constructorParser;
 	private final AbstractEntityParser<ObjectInfo>	customHierarchyParser;
 	private final AbstractEntityParser<ObjectInfo>	expressionParser;
+	private final AbstractEntityParser<ObjectInfo>	importedClassParser;
 	private final AbstractEntityParser<TypeInfo>	innerClassParser;
 	private final AbstractEntityParser<ObjectInfo>	literalParser;
 	private final AbstractEntityParser<ObjectInfo>	objectFieldParser;
 	private final AbstractEntityParser<ObjectInfo>	objectMethodParser;
 	private final AbstractEntityParser<ObjectInfo>	objectTailParser;
 	private final AbstractEntityParser<ObjectInfo>	parenthesizedExpressionParser;
+	private final AbstractEntityParser<PackageInfo>	qualifiedClassParser;
+	private final AbstractEntityParser<ObjectInfo>	rootpackageParser;
 	private final AbstractEntityParser<ObjectInfo>	simpleExpressionParser;
+	private final AbstractEntityParser<PackageInfo>	subpackageParser;
 	private final AbstractEntityParser<ObjectInfo>	unaryPrefixOperatorParser;
 	private final AbstractEntityParser<ObjectInfo>	variableParser;
 
@@ -61,18 +65,21 @@ public class ParserToolbox
 		classFieldParser				= new ClassFieldParser(this, thisInfo);
 		classMethodParser				= new ClassMethodParser(this, thisInfo);
 		classObjectParser				= new ClassObjectParser(this, thisInfo);
-		classParser						= new ClassParser(this, thisInfo);
 		classTailParser					= new ClassTailParser(this, thisInfo);
 		constructorParser				= new ConstructorParser(this, thisInfo);
 		customHierarchyParser			= new CustomHierarchyParser(this, thisInfo);
 		expressionParser				= createExpressionParser(OperatorResultProvider.MAX_BINARY_OPERATOR_PRECEDENCE_LEVEL);
+		importedClassParser				= new ImportedClassParser(this, thisInfo);
 		innerClassParser				= new InnerClassParser(this, thisInfo);
 		literalParser					= new LiteralParser(this, thisInfo);
 		objectFieldParser				= new ObjectFieldParser(this, thisInfo);
 		objectMethodParser				= new ObjectMethodParser(this, thisInfo);
 		objectTailParser				= new ObjectTailParser(this, thisInfo);
 		parenthesizedExpressionParser	= new ParenthesizedExpressionParser(this, thisInfo);
+		qualifiedClassParser			= new QualifiedClassParser(this, thisInfo);
+		rootpackageParser				= new RootpackageParser(this, thisInfo);
 		simpleExpressionParser			= new SimpleExpressionParser(this, thisInfo);
+		subpackageParser				= new SubpackageParser(this, thisInfo);
 		unaryPrefixOperatorParser		= new UnaryPrefixOperatorParser(this, thisInfo);
 		variableParser					= new VariableParser(this, thisInfo);
 	}
@@ -131,18 +138,12 @@ public class ParserToolbox
 
 	public AbstractEntityParser<TypeInfo> getClassObjectParser() { return classObjectParser; }
 
-	public AbstractEntityParser<ObjectInfo> getClassParser() { return classParser; }
-
 	public AbstractEntityParser<TypeInfo> getClassTailParser() {
 		return classTailParser;
 	}
 
 	public AbstractEntityParser<ObjectInfo> createExpressionParser(int maxOperatorPrecedenceLevelToConsider) {
 		return new ExpressionParser(this, thisInfo, maxOperatorPrecedenceLevelToConsider);
-	}
-
-	public AbstractEntityParser<ObjectInfo> getExpressionParser() {
-		return expressionParser;
 	}
 
 	public AbstractEntityParser<ObjectInfo> getConstructorParser() {
@@ -153,9 +154,11 @@ public class ParserToolbox
 		return customHierarchyParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getSimpleExpressionParser() {
-		return simpleExpressionParser;
+	public AbstractEntityParser<ObjectInfo> getExpressionParser() {
+		return expressionParser;
 	}
+
+	public AbstractEntityParser<ObjectInfo> getImportedClassParser() { return importedClassParser; }
 
 	public AbstractEntityParser<TypeInfo> getInnerClassParser() {
 		return innerClassParser;
@@ -180,6 +183,18 @@ public class ParserToolbox
 	public AbstractEntityParser<ObjectInfo> getParenthesizedExpressionParser() {
 		return parenthesizedExpressionParser;
 	}
+
+	public AbstractEntityParser<PackageInfo> getQualifiedClassParser() {
+		return qualifiedClassParser;
+	}
+
+	public AbstractEntityParser<ObjectInfo> getRootpackageParser() { return rootpackageParser; }
+
+	public AbstractEntityParser<ObjectInfo> getSimpleExpressionParser() {
+		return simpleExpressionParser;
+	}
+
+	public AbstractEntityParser<PackageInfo> getSubpackageParser() { return subpackageParser; }
 
 	public AbstractEntityParser<ObjectInfo> getUnaryPrefixOperatorParser() {
 		return unaryPrefixOperatorParser;

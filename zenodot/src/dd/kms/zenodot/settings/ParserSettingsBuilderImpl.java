@@ -7,23 +7,24 @@ import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.utils.wrappers.PackageInfo;
 
 import java.util.List;
 import java.util.Set;
 
 class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
-	private Set<ClassInfo>	importClasses;
-	private Set<String>		importPackages;
-	private List<Variable>	variables;
-	private AccessModifier minimumAccessLevel;
-	private boolean			enableDynamicTyping;
-	private ObjectTreeNode	customHierarchyRoot;
-	private ParserLogger	logger;
+	private Set<ClassInfo>		importedClasses;
+	private Set<PackageInfo>	importedPackages;
+	private List<Variable>		variables;
+	private AccessModifier		minimumAccessLevel;
+	private boolean				enableDynamicTyping;
+	private ObjectTreeNode		customHierarchyRoot;
+	private ParserLogger		logger;
 
 	ParserSettingsBuilderImpl() {
-		importClasses = ImmutableSet.of();
-		importPackages = ImmutableSet.of();
+		importedClasses = ImmutableSet.of();
+		importedPackages = ImmutableSet.of();
 		variables = ImmutableList.of();
 		minimumAccessLevel = AccessModifier.PUBLIC;
 		enableDynamicTyping = false;
@@ -32,8 +33,8 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	ParserSettingsBuilderImpl(ParserSettings settings) {
-		importClasses = ImmutableSet.copyOf(settings.getImports().getImportedClasses());
-		importPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackageNames());
+		importedClasses = ImmutableSet.copyOf(settings.getImports().getImportedClasses());
+		importedPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackages());
 		variables = ImmutableList.copyOf(settings.getVariables());
 		minimumAccessLevel = settings.getMinimumAccessLevel();
 		enableDynamicTyping = settings.isEnableDynamicTyping();
@@ -41,50 +42,69 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		logger = settings.getLogger();
 	}
 
-	public ParserSettingsBuilderImpl importClasses(Set<String> qualifiedClassNames) {
-		ImmutableSet.Builder<ClassInfo> importClassesBuilder = ImmutableSet.builder();
-		for (String qualifiedClassName : qualifiedClassNames) {
-			try {
-				importClassesBuilder.add(InfoProvider.createClassInfo(qualifiedClassName));
-			} catch (ClassNotFoundException e) {
-				throw new IllegalArgumentException(e.getMessage());
-			}
+	@Override
+	public ParserSettingsBuilderImpl importClasses(Iterable<ClassInfo> classes) {
+		importedClasses = ImmutableSet.copyOf(classes);
+		return this;
+	}
+
+	@Override
+	public ParserSettingsBuilder importClassesByName(Iterable<String> classNames) throws ClassNotFoundException {
+		ImmutableSet.Builder<ClassInfo> builder = ImmutableSet.builder();
+		for (String className : classNames) {
+			ClassInfo classInfo = InfoProvider.createClassInfo(className);
+			builder.add(classInfo);
 		}
-		importClasses = importClassesBuilder.build();
+		return importClasses(builder.build());
+	}
+
+	@Override
+	public ParserSettingsBuilderImpl importPackages(Iterable<PackageInfo> packages) {
+		importedPackages = ImmutableSet.copyOf(packages);
 		return this;
 	}
 
-	public ParserSettingsBuilderImpl importPackages(Set<String> packageNames) {
-		importPackages = ImmutableSet.copyOf(packageNames);
-		return this;
+	@Override
+	public ParserSettingsBuilder importPackagesByName(Iterable<String> packageNames) {
+		ImmutableSet.Builder<PackageInfo> builder = ImmutableSet.builder();
+		for (String packageName : packageNames) {
+			PackageInfo packageInfo = InfoProvider.createPackageInfo(packageName);
+			builder.add(packageInfo);
+		}
+		return importPackages(builder.build());
 	}
 
+	@Override
 	public ParserSettingsBuilderImpl variables(List<Variable> variables) {
 		this.variables = ImmutableList.copyOf(variables);
 		return this;
 	}
 
+	@Override
 	public ParserSettingsBuilderImpl minimumAccessLevel(AccessModifier minimumAccessLevel) {
 		this.minimumAccessLevel = minimumAccessLevel;
 		return this;
 	}
 
+	@Override
 	public ParserSettingsBuilderImpl enableDynamicTyping(boolean enableDynamicTyping) {
 		this.enableDynamicTyping = enableDynamicTyping;
 		return this;
 	}
 
+	@Override
 	public ParserSettingsBuilderImpl customHierarchyRoot(ObjectTreeNode customHierarchyRoot) {
 		this.customHierarchyRoot = customHierarchyRoot;
 		return this;
 	}
 
+	@Override
 	public ParserSettingsBuilderImpl logger(ParserLogger logger) {
 		this.logger = logger;
 		return this;
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(importClasses, importPackages, variables, minimumAccessLevel, enableDynamicTyping, customHierarchyRoot, logger);
+		return new ParserSettingsImpl(importedClasses, importedPackages, variables, minimumAccessLevel, enableDynamicTyping, customHierarchyRoot, logger);
 	}
 }

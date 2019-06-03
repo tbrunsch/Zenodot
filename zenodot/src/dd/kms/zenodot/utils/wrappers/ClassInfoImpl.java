@@ -37,6 +37,6 @@ class ClassInfoImpl implements ClassInfo
 
 	@Override
 	public String toString() {
-		return normalizedClassName;
+		return ClassUtils.getRegularClassName(normalizedClassName);
 	}
 }

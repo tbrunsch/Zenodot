@@ -30,7 +30,8 @@ public class TokenStream implements Cloneable
 	private static final Pattern		LONG_LITERAL_PATTERN			= Pattern.compile("^(\\s*(0|[1-9][0-9]*)[lL]\\s*).*");
 	private static final Pattern		FLOAT_LITERAL_PATTERN 			= Pattern.compile("^(\\s*(([0-9]+([eE][+-]?[0-9]+)?|\\.[0-9]+([eE][+-]?[0-9]+)?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?)[fF])\\s*).*");
 	private static final Pattern		DOUBLE_LITERAL_PATTERN 			= Pattern.compile("^(\\s*(([0-9]+(([eE][+-]?[0-9]+)?[dD]|[eE][+-]?[0-9]+[dD]?)|\\.[0-9]+([eE][+-]?[0-9]+)?[dD]?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?[dD]?))\\s*).*");
-	private static final Pattern		PACKAGE_OR_CLASS_NAME_PATTERN	= Pattern.compile("^(\\s*(\\d*[A-Za-z][_A-Za-z0-9]*)\\s*).*");
+	private static final Pattern		PACKAGE_NAME_PATTERN			= Pattern.compile("^(\\s*(\\d*[A-Za-z][_A-Za-z0-9]*)\\s*).*");	// although uncommon, there exist packages starting with an upper-case letter
+	private static final Pattern		CLASS_NAME_PATTERN				= PACKAGE_NAME_PATTERN;											// although uncommon, there exist class names starting with a lower-case letter
 
 	// Unary prefix operators, sorted from longest to shortest to ensure that, e.g., "++" is tested before "+"
 	private static final List<String> 	UNARY_OPERATORS 			= Arrays.stream(UnaryOperator.values()).map(UnaryOperator::getOperator).sorted(Comparator.comparingInt(String::length).reversed()).collect(Collectors.toList());
@@ -73,23 +74,23 @@ public class TokenStream implements Cloneable
 		return unescapedString.toString();
 	}
 
-	private final String	javaExpression;
+	private final String	expression;
 	private final int		caretPosition;
 
 	private int				position;
 
-	public TokenStream(String javaExpression, int caretPosition) {
-		this(javaExpression, caretPosition, 0);
+	public TokenStream(String expression, int caretPosition) {
+		this(expression, caretPosition, 0);
 	}
 
-	private TokenStream(String javaExpression, int caretPosition, int position) {
-		this.javaExpression = javaExpression;
+	private TokenStream(String expression, int caretPosition, int position) {
+		this.expression = expression;
 		this.caretPosition = caretPosition;
 		this.position = position;
 	}
 
 	public boolean hasMore() {
-		return position < javaExpression.length() && CHARACTER_PATTERN.matcher(javaExpression.substring(position)).matches();
+		return position < expression.length() && CHARACTER_PATTERN.matcher(expression.substring(position)).matches();
 	}
 
 	public int getPosition() {
@@ -139,8 +140,12 @@ public class TokenStream implements Cloneable
 		return readRegex(DOUBLE_LITERAL_PATTERN, 2, "No double literal found");
 	}
 
-	public Token readPackageOrClass() throws JavaTokenParseException {
-		return readRegex(PACKAGE_OR_CLASS_NAME_PATTERN, 2, "No package or class name found");
+	public Token readPackage() throws JavaTokenParseException {
+		return readRegex(PACKAGE_NAME_PATTERN, 2, "No package name found");
+	}
+
+	public Token readClass() throws JavaTokenParseException {
+		return readRegex(CLASS_NAME_PATTERN, 2, "No class name found");
 	}
 
 	private Token unescapeStringToken(Token stringToken) throws JavaTokenParseException {
@@ -154,7 +159,7 @@ public class TokenStream implements Cloneable
 	}
 
 	private Token readRegex(Pattern regex, int groupIndexToExtract, String errorMessage) throws JavaTokenParseException {
-		Matcher matcher = regex.matcher(javaExpression.substring(position));
+		Matcher matcher = regex.matcher(expression.substring(position));
 		if (!matcher.matches()) {
 			throw new JavaTokenParseException(errorMessage);
 		}
@@ -179,7 +184,7 @@ public class TokenStream implements Cloneable
 	}
 
 	public String peekCharacters() {
-		Matcher matcher = CHARACTERS_PATTERN.matcher(javaExpression.substring(position));
+		Matcher matcher = CHARACTERS_PATTERN.matcher(expression.substring(position));
 		return matcher.matches() ? matcher.group(2) : null;
 	}
 
@@ -202,11 +207,11 @@ public class TokenStream implements Cloneable
 
 		containsCaret |= readOptionalSpace().isContainsCaret();
 
-		int expressionLength = javaExpression.length();
+		int expressionLength = expression.length();
 		String detectedOperator = null;
 		for (String operator : availableOperators) {
 			int endIndex = position + operator.length();
-			if (endIndex <= expressionLength && operator.equals(javaExpression.substring(position, endIndex))) {
+			if (endIndex <= expressionLength && operator.equals(expression.substring(position, endIndex))) {
 				detectedOperator = operator;
 				break;
 			}
@@ -239,14 +244,14 @@ public class TokenStream implements Cloneable
 
 	@Override
 	public TokenStream clone() {
-		return new TokenStream(javaExpression, caretPosition, position);
+		return new TokenStream(expression, caretPosition, position);
 	}
 
 	@Override
 	public String toString() {
-		return javaExpression.substring(0, position)
+		return expression.substring(0, position)
 				+ "^"
-				+ javaExpression.substring(position);
+				+ expression.substring(position);
 	}
 
 	public static class JavaTokenParseException extends Exception

@@ -6,6 +6,13 @@ import dd.kms.zenodot.debug.ParserConsoleLogger;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.settings.*;
+import dd.kms.zenodot.utils.ClassUtils;
+import dd.kms.zenodot.utils.wrappers.ClassInfo;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.utils.wrappers.PackageInfo;
+import org.junit.Assert;
+
+import java.util.Arrays;
 
 public class AbstractTest<T extends AbstractTest>
 {
@@ -30,11 +37,15 @@ public class AbstractTest<T extends AbstractTest>
 	}
 
 	public void importClasses(String... classNames) {
-		settingsBuilder.importClasses(ImmutableSet.copyOf(classNames));
+		try {
+			settingsBuilder.importClassesByName(Arrays.asList(classNames));
+		} catch (ClassNotFoundException e) {
+			Assert.fail("ClassNotFoundException: " + e.getMessage());
+		}
 	}
 
 	public void importPackages(String... packageNames) {
-		settingsBuilder.importPackages(ImmutableSet.copyOf(packageNames));
+		settingsBuilder.importPackagesByName(Arrays.asList(packageNames));
 	}
 
 	public void customHierarchyRoot(ObjectTreeNode root) {

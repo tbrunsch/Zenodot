@@ -36,7 +36,7 @@ public class CompletionSuggestionPackage implements CompletionSuggestion
 
 	@Override
 	public String toString() {
-		return packageName;
+		return getTextToInsert();
 	}
 
 	@Override

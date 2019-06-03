@@ -34,6 +34,10 @@ public class InfoProvider
 		return new ClassInfoImpl(qualifiedClassName);
 	}
 
+	public static PackageInfo createPackageInfo(String packageName) {
+		return new PackageInfoImpl(packageName);
+	}
+
 	public static FieldInfo createFieldInfo(Field field, TypeInfo declaringType) {
 		return new FieldInfoImpl(field, declaringType);
 	}
