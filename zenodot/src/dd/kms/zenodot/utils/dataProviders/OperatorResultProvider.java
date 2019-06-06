@@ -151,8 +151,8 @@ public class OperatorResultProvider
 
 		addNumericComparisonImplementations(BinaryOperator.LESS_THAN, 					(a, b) -> a < b,	(a, b) -> a < b,	(a, b) -> a < b,	(a, b) -> a < b,	(a, b) -> a < b,	(a, b) -> a < b,	(a, b) -> a < b);
 		addNumericComparisonImplementations(BinaryOperator.LESS_THAN_OR_EQUAL_TO, 		(a, b) -> a <= b,	(a, b) -> a <= b,	(a, b) -> a <= b,	(a, b) -> a <= b,	(a, b) -> a <= b,	(a, b) -> a <= b,	(a, b) -> a <= b);
-		addNumericComparisonImplementations(BinaryOperator.GREATER_THAN, 				(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a < b);
-		addNumericComparisonImplementations(BinaryOperator.GREATER_THAN_OR_EQUAL_TO,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a <= b);
+		addNumericComparisonImplementations(BinaryOperator.GREATER_THAN, 				(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a > b,	(a, b) -> a > b);
+		addNumericComparisonImplementations(BinaryOperator.GREATER_THAN_OR_EQUAL_TO,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b);
 
 		// For "==" and "!=" we must explicitly unbox to avoid comparison of references
 		addNumericComparisonImplementations(BinaryOperator.EQUAL_TO,		(a, b) -> a.charValue() == b.charValue(), (a, b) -> a.byteValue() == b.byteValue(), (a, b) -> a.shortValue() == b.shortValue(), (a, b) -> a.intValue() == b.intValue(), (a, b) -> a.longValue() == b.longValue(), (a, b) -> a.floatValue() == b.floatValue(), (a, b) -> a.doubleValue() == b.doubleValue());
@@ -168,7 +168,7 @@ public class OperatorResultProvider
 		addLogicalOperator(BinaryOperator.LOGICAL_OR,	(a, b) -> a || b);
 	}
 
-	private final ParserToolbox parserToolbox;
+	private final ParserToolbox 	parserToolbox;
 	private final EvaluationMode	evaluationMode;
 
 	public OperatorResultProvider(ParserToolbox parserToolbox, EvaluationMode evaluationMode) {
