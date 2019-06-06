@@ -6,6 +6,11 @@ package dd.kms.zenodot.debug;
 class ParserNullLogger extends AbstractParserLogger
 {
 	@Override
+	public boolean ignoresLogMessages() {
+		return true;
+	}
+
+	@Override
 	void doLog(ParserLogEntry entry, int indent) {
 		/* do nothing */
 	}

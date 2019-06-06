@@ -198,7 +198,7 @@ public class ParseUtils
 		return Optional.of(ParseResults.createParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
 	}
 
-	private static void checkExpectedParseResultType(ParseResultType resultType, ParseExpectation expectation) {
+	public static void checkExpectedParseResultType(ParseResultType resultType, ParseExpectation expectation) {
 		if (!ParseExpectation.SUPPORTED_RESULT_TYPES.contains(resultType)) {
 			// Only "real" result types will be checked. Completion suggestions and errors can always occur.
 			return;

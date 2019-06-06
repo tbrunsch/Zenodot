@@ -13,6 +13,7 @@ public interface ParserLogger
 	void beginChildScope();
 	void endChildScope();
 	void log(ParserLogEntry entry);
+	boolean ignoresLogMessages();
 
 	/**
 	 * Can be used in unit tests to debug failed tests to track down the position where the parser

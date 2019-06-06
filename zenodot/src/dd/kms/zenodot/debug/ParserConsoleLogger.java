@@ -12,6 +12,11 @@ public class ParserConsoleLogger extends AbstractParserLogger
 	private boolean	printNumLoggedEntries	= false;
 
 	@Override
+	public boolean ignoresLogMessages() {
+		return false;
+	}
+
+	@Override
 	void doLog(ParserLogEntry entry, int indent) {
 		StringBuilder builder = new StringBuilder();
 		if (printNumLoggedEntries) {

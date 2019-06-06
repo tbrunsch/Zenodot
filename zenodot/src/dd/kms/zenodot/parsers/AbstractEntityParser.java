@@ -6,6 +6,7 @@ import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -67,9 +68,9 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
  */
 public abstract class AbstractEntityParser<C>
 {
-	final ParserToolbox				parserToolbox;
-	final ObjectInfo				thisInfo;
-	private final ParserLogger logger;
+	final ParserToolbox			parserToolbox;
+	final ObjectInfo			thisInfo;
+	private final ParserLogger 	logger;
 
 	AbstractEntityParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		this.parserToolbox = parserToolbox;
@@ -115,18 +116,13 @@ public abstract class AbstractEntityParser<C>
 	 *          due to this expectation.
 	 */
 	ParseResult checkExpectations(ParseResult parseResult, ParseExpectation expectation) {
-		ParseResultType parseResultType = parseResult.getResultType();
-		if (expectation.getEvaluationType() == ParseResultType.OBJECT_PARSE_RESULT && parseResultType == ParseResultType.CLASS_PARSE_RESULT) {
-			String message = "Expected an object, but found class " + ((ClassParseResult) parseResult).getType();
+		try {
+			ParseUtils.checkExpectedParseResultType(parseResult.getResultType(), expectation);
+		} catch (IllegalStateException e) {
+			String message = e.getMessage();
 			log(LogLevel.ERROR, message);
 			return ParseResults.createParseError(parseResult.getPosition(), message, ErrorPriority.RIGHT_PARSER);
 		}
-		if (expectation.getEvaluationType() == ParseResultType.CLASS_PARSE_RESULT && parseResultType == ParseResultType.OBJECT_PARSE_RESULT) {
-			String message = "Expected a class, but found object " + ((ObjectParseResult) parseResult).getObjectInfo().getObject();
-			log(LogLevel.ERROR, message);
-			return ParseResults.createParseError(parseResult.getPosition(), message, ErrorPriority.RIGHT_PARSER);
-		}
-
 		return parseResult;
 	}
 
@@ -134,13 +130,17 @@ public abstract class AbstractEntityParser<C>
 	 * This method is intended to be called from any parser to inform the logger about the current parsing progress.
 	 */
 	void log(LogLevel logLevel, String message) {
-		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
 		final String suffix;
-		if (stackTraceElements.length > 2) {
-			StackTraceElement element = stackTraceElements[2];
-			suffix = " (" + element.getClassName() + "." + element.getMethodName() + ":" + element.getLineNumber() + ")";
-		} else {
+		if (logger.ignoresLogMessages()) {
 			suffix = "";
+		} else {
+			StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+			if (stackTraceElements.length > 2) {
+				StackTraceElement element = stackTraceElements[2];
+				suffix = " (" + element.getClassName() + "." + element.getMethodName() + ":" + element.getLineNumber() + ")";
+			} else {
+				suffix = "";
+			}
 		}
 		logger.log(ParserLoggers.createLogEntry(logLevel, getClass().getSimpleName(), message + suffix));
 	}
