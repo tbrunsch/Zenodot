@@ -85,22 +85,22 @@ public abstract class AbstractEntityParser<C>
 	 * The implementations are given a dedicated copy of the token stream, so they can do with it
 	 * whatever they like.
 	 */
-	abstract ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation);
+	abstract ParseOutcome doParse(TokenStream tokenStream, C context, ParseExpectation expectation);
 
-	public final ParseResult parse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	public final ParseOutcome parse(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		logger.beginChildScope();
 		log(LogLevel.INFO, "parsing at " + tokenStream);
 		try {
-			ParseResult parseResult = doParse(tokenStream.clone(), context, expectation);
-			log(LogLevel.INFO, "parse result: " + parseResult.getResultType());
-			return checkExpectations(parseResult, expectation);
+			ParseOutcome parseOutcome = doParse(tokenStream.clone(), context, expectation);
+			log(LogLevel.INFO, "parse outcome: " + parseOutcome.getOutcomeType());
+			return checkExpectations(parseOutcome, expectation);
 		} finally {
 			logger.endChildScope();
 		}
 	}
 
 	/**
-	 * Checks whether the parse result matches its expectations. In the basic version, only the
+	 * Checks whether the parse outcome matches its expectations. In the basic version, only the
 	 * expected evaluation type (class or object) is checked. Only the {@link ExpressionParser}
 	 * overrides this method to check the allowed types additionally.<br/>
 	 * <br/>
@@ -115,15 +115,15 @@ public abstract class AbstractEntityParser<C>
 	 *          this parser is told to expect a String expression. However, parsing {@code 0} must not fail
 	 *          due to this expectation.
 	 */
-	ParseResult checkExpectations(ParseResult parseResult, ParseExpectation expectation) {
+	ParseOutcome checkExpectations(ParseOutcome parseOutcome, ParseExpectation expectation) {
 		try {
-			ParseUtils.checkExpectedParseResultType(parseResult.getResultType(), expectation);
+			ParseUtils.checkExpectedParseResultType(parseOutcome.getOutcomeType(), expectation);
 		} catch (IllegalStateException e) {
 			String message = e.getMessage();
 			log(LogLevel.ERROR, message);
-			return ParseResults.createParseError(parseResult.getPosition(), message, ErrorPriority.RIGHT_PARSER);
+			return ParseOutcomes.createParseError(parseOutcome.getPosition(), message, ErrorPriority.RIGHT_PARSER);
 		}
-		return parseResult;
+		return parseOutcome;
 	}
 
 	/**

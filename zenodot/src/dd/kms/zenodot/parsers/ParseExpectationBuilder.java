@@ -1,7 +1,7 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.ImmutableList;
-import dd.kms.zenodot.result.ParseResultType;
+import dd.kms.zenodot.result.ParseOutcomeType;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.List;
@@ -12,21 +12,21 @@ import java.util.List;
 public class ParseExpectationBuilder
 {
 	public static ParseExpectationBuilder expectObject() {
-		return new ParseExpectationBuilder(ParseResultType.OBJECT_PARSE_RESULT);
+		return new ParseExpectationBuilder(ParseOutcomeType.OBJECT_PARSE_RESULT);
 	}
 
 	public static ParseExpectationBuilder expectClass() {
-		return new ParseExpectationBuilder(ParseResultType.CLASS_PARSE_RESULT);
+		return new ParseExpectationBuilder(ParseOutcomeType.CLASS_PARSE_RESULT);
 	}
 
 	public static ParseExpectationBuilder expectPackage() {
-		return new ParseExpectationBuilder(ParseResultType.PACKAGE_PARSE_RESULT);
+		return new ParseExpectationBuilder(ParseOutcomeType.PACKAGE_PARSE_RESULT);
 	}
 
-	private final ParseResultType	evaluationType;
+	private final ParseOutcomeType evaluationType;
 	private List<TypeInfo>			allowedTypes;
 
-	ParseExpectationBuilder(ParseResultType evaluationType) {
+	ParseExpectationBuilder(ParseOutcomeType evaluationType) {
 		this.evaluationType = evaluationType;
 	}
 

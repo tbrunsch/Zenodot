@@ -5,8 +5,8 @@ import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.FieldScanner;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ParseResult;
-import dd.kms.zenodot.result.ParseResults;
+import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -35,12 +35,12 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (contextCausesNullPointerException(context)) {
 			log(LogLevel.ERROR, "null pointer exception");
-			return ParseResults.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
+			return ParseOutcomes.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
 		}
 
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
@@ -63,7 +63,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 			fieldNameToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "missing field name at " + tokenStream);
-			return ParseResults.createParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
 		}
 		String fieldName = fieldNameToken.getValue();
 		int endPosition = tokenStream.getPosition();
@@ -76,7 +76,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 
 		if (tokenStream.hasMore() && tokenStream.peekCharacter() == '(') {
 			log(LogLevel.ERROR, "unexpected '(' at " + tokenStream);
-			return ParseResults.createParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		// no code completion requested => field name must exist
@@ -84,10 +84,10 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 		if (fieldInfos.isEmpty()) {
 			if (getFieldInfos(context, getFieldScanner(fieldName, false)).isEmpty()) {
 				log(LogLevel.ERROR, "unknown field '" + fieldName + "'");
-				return ParseResults.createParseError(startPosition, "Unknown field '" + fieldName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+				return ParseOutcomes.createParseError(startPosition, "Unknown field '" + fieldName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 			} else {
 				log(LogLevel.ERROR, "field '" + fieldName + "' is not visible");
-				return ParseResults.createParseError(startPosition, "Field '" + fieldName + "' is not visible", ErrorPriority.RIGHT_PARSER);
+				return ParseOutcomes.createParseError(startPosition, "Field '" + fieldName + "' is not visible", ErrorPriority.RIGHT_PARSER);
 			}
 		}
 		log(LogLevel.SUCCESS, "detected field '" + fieldName + "'");

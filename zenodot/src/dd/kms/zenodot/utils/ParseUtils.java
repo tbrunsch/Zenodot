@@ -1,7 +1,6 @@
 package dd.kms.zenodot.utils;
 
 import com.google.common.collect.Iterables;
-import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.parsers.AbstractEntityParser;
@@ -9,7 +8,6 @@ import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.*;
 import java.util.function.Function;
@@ -23,37 +21,37 @@ public class ParseUtils
 	/*
 	 * Parsing
 	 */
-	public static ParseResult parseClass(TokenStream tokenStream, ParserToolbox parserToolbox) {
-		ParseResult classParseResult = parse(tokenStream, null, ParseExpectation.CLASS,
+	public static ParseOutcome parseClass(TokenStream tokenStream, ParserToolbox parserToolbox) {
+		ParseOutcome classParseOutcome = parse(tokenStream, null, ParseExpectation.CLASS,
 			parserToolbox.getImportedClassParser(),
 			parserToolbox.getRootpackageParser()
 		);
-		checkExpectedParseResultType(classParseResult.getResultType(), ParseExpectation.CLASS);
-		return classParseResult;
+		checkExpectedParseResultType(classParseOutcome.getOutcomeType(), ParseExpectation.CLASS);
+		return classParseOutcome;
 	}
 
 	/**
 	 * Tries to parse a subexpression with the specified parsers. The result is obtained from merging the result
 	 * of each of the specified parsers.
 	 */
-	public static <C> ParseResult parse(TokenStream tokenStream, C context, ParseExpectation expectation, AbstractEntityParser<? super C>... parsers) {
-		List<ParseResult> parseResults = Arrays.stream(parsers)
+	public static <C> ParseOutcome parse(TokenStream tokenStream, C context, ParseExpectation expectation, AbstractEntityParser<? super C>... parsers) {
+		List<ParseOutcome> parseOutcomes = Arrays.stream(parsers)
 			.map(parser -> parser.parse(tokenStream, context, expectation))
 			.collect(Collectors.toList());
-		return parseResults.size() == 1 ? Iterables.getOnlyElement(parseResults) : mergeParseResults(parseResults);
+		return parseOutcomes.size() == 1 ? Iterables.getOnlyElement(parseOutcomes) : mergeParseOutcomes(parseOutcomes);
 	}
 
-	private static ParseResult mergeParseResults(List<ParseResult> parseResults) {
-		if (parseResults.isEmpty()) {
-			throw new IllegalArgumentException("Internal error: Cannot merge 0 parse results");
+	private static ParseOutcome mergeParseOutcomes(List<ParseOutcome> parseOutcomes) {
+		if (parseOutcomes.isEmpty()) {
+			throw new IllegalArgumentException("Internal error: Cannot merge 0 parse outcomes");
 		}
 
-		List<AmbiguousParseResult> ambiguousResults = filterParseResults(parseResults, AmbiguousParseResult.class);
-		List<CompletionSuggestions> completionSuggestions = filterParseResults(parseResults, CompletionSuggestions.class);
-		List<ParseError> errors = filterParseResults(parseResults, ParseError.class);
-		List<ParseResult> results = new ArrayList<>();
-		results.addAll(filterParseResults(parseResults, ObjectParseResult.class));
-		results.addAll(filterParseResults(parseResults, ClassParseResult.class));
+		List<AmbiguousParseResult> ambiguousResults = filterParseOutcomes(parseOutcomes, AmbiguousParseResult.class);
+		List<CompletionSuggestions> completionSuggestions = filterParseOutcomes(parseOutcomes, CompletionSuggestions.class);
+		List<ParseError> errors = filterParseOutcomes(parseOutcomes, ParseError.class);
+		List<ParseOutcome> results = new ArrayList<>();
+		results.addAll(filterParseOutcomes(parseOutcomes, ObjectParseResult.class));
+		results.addAll(filterParseOutcomes(parseOutcomes, ClassParseResult.class));
 
 		if (!completionSuggestions.isEmpty()) {
 			return mergeCompletionSuggestions(completionSuggestions);
@@ -75,11 +73,11 @@ public class ParseUtils
 		}
 	}
 
-	private static <T> List<T> filterParseResults(List<ParseResult> parseResults, Class<T> filterClass) {
+	private static <T> List<T> filterParseOutcomes(List<ParseOutcome> parseResults, Class<T> filterClass) {
 		return parseResults.stream().filter(filterClass::isInstance).map(filterClass::cast).collect(Collectors.toList());
 	}
 
-	private static ParseResult mergeCompletionSuggestions(List<CompletionSuggestions> completionSuggestions) {
+	private static ParseOutcome mergeCompletionSuggestions(List<CompletionSuggestions> completionSuggestions) {
 		Map<CompletionSuggestion, MatchRating> mergedRatedSuggestions = new LinkedHashMap<>();
 		int position = Integer.MAX_VALUE;
 		Optional<ExecutableArgumentInfo> methodArgumentInfo	= Optional.empty();
@@ -100,22 +98,24 @@ public class ParseUtils
 		return new CompletionSuggestions(position, mergedRatedSuggestions, methodArgumentInfo);
 	}
 
-	private static ParseResult mergeResults(List<AmbiguousParseResult> ambiguousResults, List<ParseResult> results) {
+	private static ParseOutcome mergeResults(List<AmbiguousParseResult> ambiguousResults, List<ParseOutcome> results) {
 		int position = ambiguousResults.isEmpty() ? results.get(0).getPosition() : ambiguousResults.get(0).getPosition();
 		StringBuilder builder = new StringBuilder("Ambiguous expression:");
 		for (AmbiguousParseResult ambiguousResult : ambiguousResults) {
 			builder.append("\n").append(ambiguousResult.getMessage());
 		}
-		for (ParseResult result : results) {
+		for (ParseOutcome result : results) {
 			if (result instanceof ObjectParseResult) {
 				builder.append("Expression can be evaluated to object of type ").append(((ObjectParseResult) result).getObjectInfo().getDeclaredType());
 			} else if (result instanceof ClassParseResult) {
 				builder.append("Expression can be evaluated to type ").append(((ClassParseResult) result).getType());
+			} else if (result instanceof PackageParseResult) {
+				builder.append("Expression can be evaluated to package ").append(((PackageParseResult) result).getPackage());
 			} else {
 				throw new IllegalArgumentException("Internal error: Expected an object or a class as parse result, but found " + result.getClass().getSimpleName());
 			}
 		}
-		return ParseResults.createAmbiguousParseResult(position, builder.toString());
+		return ParseOutcomes.createAmbiguousParseResult(position, builder.toString());
 	}
 
 	private static ParseError mergeParseErrors(List<ParseError> errors) {
@@ -148,9 +148,9 @@ public class ParseUtils
 				.filter(Objects::nonNull)
 				.findFirst();
 
-			return ParseResults.createParseError(maxPosition, message, errorType, firstException.orElse(null));
+			return ParseOutcomes.createParseError(maxPosition, message, errorType, firstException.orElse(null));
 		}
-		return ParseResults.createParseError(-1, "Internal error: Failed merging parse errors", ErrorPriority.INTERNAL_ERROR);
+		return ParseOutcomes.createParseError(-1, "Internal error: Failed merging parse errors", ErrorPriority.INTERNAL_ERROR);
 	}
 
 	/*
@@ -167,10 +167,10 @@ public class ParseUtils
 	}
 
 	/**
-	 * Throws an IllegalArgumentException if the parse result is an object parse result when a class parse
+	 * Throws an IllegalArgumentException if the parse outcome is an object parse result when a class parse
 	 * result is expected or vice versa.
 	 *
-	 * Returns a non-empty {@link ParseResult} if the parse result is not of the expected type. This is the
+	 * Returns a non-empty {@link ParseOutcome} if the parse result is not of the expected type. This is the
 	 * case for completion suggestions, errors, and ambiguous parse results. In this case, the parse result
 	 * shall be propagated immediately.
 	 *
@@ -180,30 +180,30 @@ public class ParseUtils
 	 * If the parse result matches the expectations, then it shall not be propagated and the parser has to
 	 * continue parsing the expression. In that case, the returned {@link Optional} is empty.
 	 */
-	public static Optional<ParseResult> prepareParseResultForPropagation(ParseResult parseResult, ParseExpectation expectation, ErrorPriority minimumErrorType) {
-		ParseResultType parseResultType = parseResult.getResultType();
-		ParseResultType expectedEvaluationType = expectation.getEvaluationType();
-		checkExpectedParseResultType(parseResultType, expectation);
-		if (parseResultType == expectedEvaluationType) {
+	public static Optional<ParseOutcome> prepareParseOutcomeForPropagation(ParseOutcome parseOutcome, ParseExpectation expectation, ErrorPriority minimumErrorType) {
+		ParseOutcomeType parseOutcomeType = parseOutcome.getOutcomeType();
+		ParseOutcomeType expectedEvaluationType = expectation.getEvaluationType();
+		checkExpectedParseResultType(parseOutcomeType, expectation);
+		if (parseOutcomeType == expectedEvaluationType) {
 			return Optional.empty();
 		}
-		if (parseResultType != ParseResultType.PARSE_ERROR) {
-			return Optional.of(parseResult);
+		if (parseOutcomeType != ParseOutcomeType.PARSE_ERROR) {
+			return Optional.of(parseOutcome);
 		}
-		ParseError parseError = (ParseError) parseResult;
+		ParseError parseError = (ParseError) parseOutcome;
 		if (parseError.getErrorType().compareTo(minimumErrorType) <= 0) {
 			// error has already sufficient priority
 			return Optional.of(parseError);
 		}
-		return Optional.of(ParseResults.createParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
+		return Optional.of(ParseOutcomes.createParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
 	}
 
-	public static void checkExpectedParseResultType(ParseResultType resultType, ParseExpectation expectation) {
+	public static void checkExpectedParseResultType(ParseOutcomeType resultType, ParseExpectation expectation) {
 		if (!ParseExpectation.SUPPORTED_RESULT_TYPES.contains(resultType)) {
-			// Only "real" result types will be checked. Completion suggestions and errors can always occur.
+			// Only "real" outcome types will be checked. Completion suggestions and errors can always occur.
 			return;
 		}
-		ParseResultType expectedType = expectation.getEvaluationType();
+		ParseOutcomeType expectedType = expectation.getEvaluationType();
 		if (resultType != expectedType) {
 			throw new IllegalStateException("Internal error: Expected a parse result of type '" + expectedType + "', but obtained a parse result of type '" + resultType + "'");
 		}

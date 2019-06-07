@@ -59,15 +59,15 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		log(LogLevel.INFO, "parsing first expression");
-		ParseResult parseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
+		ParseOutcome parseOutcome = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
 
-		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(parseResult, expectation, ErrorPriority.WRONG_PARSER);
-		if (parseResultForPropagation.isPresent()) {
-			return parseResultForPropagation.get();
+		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(parseOutcome, expectation, ErrorPriority.WRONG_PARSER);
+		if (parseOutcomeForPropagation.isPresent()) {
+			return parseOutcomeForPropagation.get();
 		}
-		ObjectParseResult lhsParseResult = (ObjectParseResult) parseResult;
+		ObjectParseResult lhsParseResult = (ObjectParseResult) parseOutcome;
 		ObjectInfo lhsInfo = lhsParseResult.getObjectInfo();
 		int parsedToPosition = lhsParseResult.getPosition();
 		tokenStream.moveTo(parsedToPosition);
@@ -82,7 +82,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 		while (true) {
 			Token operatorToken = tokenStream.readBinaryOperatorUnchecked();
 			if (operatorToken == null) {
-				return ParseResults.createObjectParseResult(parsedToPosition, lhsInfo);
+				return ParseOutcomes.createObjectParseResult(parsedToPosition, lhsInfo);
 			}
 			log(LogLevel.SUCCESS, "detected binary operator '" + operatorToken.getValue() + "' at " + tokenStream);
 
@@ -93,7 +93,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 
 			BinaryOperator operator = BinaryOperator.getValue(operatorToken.getValue());
 			if (operator.getPrecedenceLevel() > maxOperatorPrecedenceLevelToConsider) {
-				return ParseResults.createObjectParseResult(parsedToPosition, lhsInfo);
+				return ParseOutcomes.createObjectParseResult(parsedToPosition, lhsInfo);
 			}
 
 			switch (operator.getAssociativity()) {
@@ -102,13 +102,13 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 						parserToolbox = createToolboxWithoutEvaluation();
 						considerOperatorResult = false;
 					}
-					parseResult = parserToolbox.createExpressionParser(operator.getPrecedenceLevel() - 1).parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
+					parseOutcome = parserToolbox.createExpressionParser(operator.getPrecedenceLevel() - 1).parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
 
-					parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(parseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-					if (parseResultForPropagation.isPresent()) {
-						return parseResultForPropagation.get();
+					parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(parseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+					if (parseOutcomeForPropagation.isPresent()) {
+						return parseOutcomeForPropagation.get();
 					}
-					ObjectParseResult rhsParseResult = (ObjectParseResult) parseResult;
+					ObjectParseResult rhsParseResult = (ObjectParseResult) parseOutcome;
 					ObjectInfo rhsInfo = rhsParseResult.getObjectInfo();
 					parsedToPosition = rhsParseResult.getPosition();
 					tokenStream.moveTo(parsedToPosition);
@@ -122,18 +122,18 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 						log(LogLevel.SUCCESS, "applied operator successfully");
 					} catch (OperatorException e) {
 						log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
-						return ParseResults.createParseError(parsedToPosition, e.getMessage(), ErrorPriority.RIGHT_PARSER);
+						return ParseOutcomes.createParseError(parsedToPosition, e.getMessage(), ErrorPriority.RIGHT_PARSER);
 					}
 					break;
 				}
 				case RIGHT_TO_LEFT: {
-					parseResult = parserToolbox.createExpressionParser(operator.getPrecedenceLevel()).parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
+					parseOutcome = parserToolbox.createExpressionParser(operator.getPrecedenceLevel()).parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
 
-					parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(parseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-					if (parseResultForPropagation.isPresent()) {
-						return parseResultForPropagation.get();
+					parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(parseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+					if (parseOutcomeForPropagation.isPresent()) {
+						return parseOutcomeForPropagation.get();
 					}
-					ObjectParseResult rhsParseResult = (ObjectParseResult) parseResult;
+					ObjectParseResult rhsParseResult = (ObjectParseResult) parseOutcome;
 					ObjectInfo rhsInfo = rhsParseResult.getObjectInfo();
 
 					ObjectInfo operatorResultInfo;
@@ -142,26 +142,26 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 						log(LogLevel.SUCCESS, "applied operator successfully");
 					} catch (OperatorException e) {
 						log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
-						return ParseResults.createParseError(rhsParseResult.getPosition(), e.getMessage(), ErrorPriority.RIGHT_PARSER);
+						return ParseOutcomes.createParseError(rhsParseResult.getPosition(), e.getMessage(), ErrorPriority.RIGHT_PARSER);
 					}
-					return ParseResults.createObjectParseResult(rhsParseResult.getPosition(), operatorResultInfo);
+					return ParseOutcomes.createObjectParseResult(rhsParseResult.getPosition(), operatorResultInfo);
 				}
 				default:
-					return ParseResults.createParseError(tokenStream.getPosition(), "Internal error: Unknown operator associativity: " + operator.getAssociativity(), ErrorPriority.INTERNAL_ERROR);
+					return ParseOutcomes.createParseError(tokenStream.getPosition(), "Internal error: Unknown operator associativity: " + operator.getAssociativity(), ErrorPriority.INTERNAL_ERROR);
 			}
 		}
 	}
 
 	@Override
-	ParseResult checkExpectations(ParseResult parseResult, ParseExpectation expectation) {
-		parseResult = super.checkExpectations(parseResult, expectation);
+	ParseOutcome checkExpectations(ParseOutcome parseOutcome, ParseExpectation expectation) {
+		parseOutcome = super.checkExpectations(parseOutcome, expectation);
 
-		if (parseResult.getResultType() != ParseResultType.OBJECT_PARSE_RESULT) {
+		if (parseOutcome.getOutcomeType() != ParseOutcomeType.OBJECT_PARSE_RESULT) {
 			// no further checks required
-			return parseResult;
+			return parseOutcome;
 		}
 
-		ObjectParseResult objectParseResult = (ObjectParseResult) parseResult;
+		ObjectParseResult objectParseResult = (ObjectParseResult) parseOutcome;
 		List<TypeInfo> allowedTypes = expectation.getAllowedTypes();
 		TypeInfo resultType = parserToolbox.getObjectInfoProvider().getType(objectParseResult.getObjectInfo());
 		if (allowedTypes != null && allowedTypes.stream().noneMatch(expectedResultType -> MatchRatings.isConvertibleTo(resultType, expectedResultType))) {
@@ -172,7 +172,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 			String messageSuffix = "'" + allowedTypes.stream().map(Object::toString).collect(Collectors.joining("', '")) + "'";
 			String message = messagePrefix + messageMiddle + messageSuffix;
 			log(LogLevel.ERROR, message);
-			return ParseResults.createParseError(parseResult.getPosition(), message, ErrorPriority.RIGHT_PARSER);
+			return ParseOutcomes.createParseError(parseOutcome.getPosition(), message, ErrorPriority.RIGHT_PARSER);
 		}
 
 		return objectParseResult;

@@ -5,7 +5,7 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 /**
  * An instance of this interface is returned if the subexpression describes an object.
  */
-public interface ObjectParseResult extends ParseResult
+public interface ObjectParseResult extends ParseOutcome
 {
 	ObjectInfo getObjectInfo();
 }

@@ -13,8 +13,8 @@ class ObjectParseResultImpl implements ObjectParseResult
 	}
 
 	@Override
-	public ParseResultType getResultType() {
-		return ParseResultType.OBJECT_PARSE_RESULT;
+	public ParseOutcomeType getOutcomeType() {
+		return ParseOutcomeType.OBJECT_PARSE_RESULT;
 	}
 
 	@Override

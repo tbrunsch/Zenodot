@@ -37,12 +37,12 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		Token operatorToken = tokenStream.readKeyWordUnchecked();
 		if (operatorToken == null) {
 			log(LogLevel.ERROR, "'new' operator expected");
-			return ParseResults.createParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
 		}
 		if (operatorToken.isContainsCaret()) {
 			log(LogLevel.INFO, "no completion suggestions available");
@@ -50,19 +50,19 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 		if (!operatorToken.getValue().equals("new")) {
 			log(LogLevel.ERROR, "'new' operator expected");
-			return ParseResults.createParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
 		}
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
-		ParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
-		ParseResultType parseResultType = classParseResult.getResultType();
-		log(LogLevel.INFO, "parse result: " + parseResultType);
+		ParseOutcome classParseOutcome = ParseUtils.parseClass(tokenStream, parserToolbox);
+		ParseOutcomeType parseOutcomeType = classParseOutcome.getOutcomeType();
+		log(LogLevel.INFO, "parse outcome: " + parseOutcomeType);
 
-		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(classParseResult, ParseExpectation.CLASS, ErrorPriority.RIGHT_PARSER);
-		if (parseResultForPropagation.isPresent()) {
-			return parseResultForPropagation.get();
+		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(classParseOutcome, ParseExpectation.CLASS, ErrorPriority.RIGHT_PARSER);
+		if (parseOutcomeForPropagation.isPresent()) {
+			return parseOutcomeForPropagation.get();
 		}
-		ClassParseResult parseResult = (ClassParseResult) classParseResult;
+		ClassParseResult parseResult = (ClassParseResult) classParseOutcome;
 		int parsedToPosition = parseResult.getPosition();
 		TypeInfo type = parseResult.getType();
 
@@ -75,38 +75,38 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			return parseArrayConstructor(tokenStream, startPosition, type, expectation);
 		} else {
 			log(LogLevel.ERROR, "missing '(' at " + tokenStream);
-			return ParseResults.createParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 	}
 
-	private ParseResult parseObjectConstructor(TokenStream tokenStream, int startPosition, TypeInfo constructorType, ParseExpectation expectation) {
+	private ParseOutcome parseObjectConstructor(TokenStream tokenStream, int startPosition, TypeInfo constructorType, ParseExpectation expectation) {
 		Class<?> constructorClass = constructorType.getRawType();
 		if (constructorClass.getEnclosingClass() != null && !Modifier.isStatic(constructorClass.getModifiers())) {
 			log(LogLevel.ERROR, "cannot instantiate non-static inner class");
-			return ParseResults.createParseError(tokenStream.getPosition(), "Cannot instantiate inner class '" + constructorClass.getName() + "'", ErrorPriority.RIGHT_PARSER);
+			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Cannot instantiate inner class '" + constructorClass.getName() + "'", ErrorPriority.RIGHT_PARSER);
 		}
 		List<ExecutableInfo> constructorInfos = getConstructorInfos(constructorType);
 
 		log(LogLevel.INFO, "parsing constructor arguments");
 		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
-		List<ParseResult> argumentParseResults = executableDataProvider.parseExecutableArguments(tokenStream, constructorInfos);
+		List<ParseOutcome> argumentParseOutcomes = executableDataProvider.parseExecutableArguments(tokenStream, constructorInfos);
 
-		if (argumentParseResults.isEmpty()) {
+		if (argumentParseOutcomes.isEmpty()) {
 			log(LogLevel.INFO, "no arguments found");
 		} else {
-			int lastArgumentIndex = argumentParseResults.size() - 1;
-			ParseResult lastArgumentParseResult = argumentParseResults.get(lastArgumentIndex);
-			ParseResultType lastArgumentParseResultType = lastArgumentParseResult.getResultType();
-			log(LogLevel.INFO, "parse result: " + lastArgumentParseResultType);
+			int lastArgumentIndex = argumentParseOutcomes.size() - 1;
+			ParseOutcome lastArgumentParseOutcome = argumentParseOutcomes.get(lastArgumentIndex);
+			ParseOutcomeType lastArgumentParseOutcomeType = lastArgumentParseOutcome.getOutcomeType();
+			log(LogLevel.INFO, "parse outcome: " + lastArgumentParseOutcomeType);
 
-			if (lastArgumentParseResult.getResultType() == ParseResultType.COMPLETION_SUGGESTIONS) {
-				CompletionSuggestions argumentSuggestions = (CompletionSuggestions) lastArgumentParseResult;
+			if (lastArgumentParseOutcome.getOutcomeType() == ParseOutcomeType.COMPLETION_SUGGESTIONS) {
+				CompletionSuggestions argumentSuggestions = (CompletionSuggestions) lastArgumentParseOutcome;
 				// add argument information
 				if (argumentSuggestions.getExecutableArgumentInfo().isPresent()) {
 					// information has already been added for an executable used in a subexpression, which is more relevant
 					return argumentSuggestions;
 				}
-				List<ObjectInfo> previousArgumentInfos = argumentParseResults.subList(0, lastArgumentIndex).stream()
+				List<ObjectInfo> previousArgumentInfos = argumentParseOutcomes.subList(0, lastArgumentIndex).stream()
 					.map(ObjectParseResult.class::cast)
 					.map(ObjectParseResult::getObjectInfo)
 					.collect(Collectors.toList());
@@ -114,13 +114,13 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 				return new CompletionSuggestions(argumentSuggestions.getPosition(), argumentSuggestions.getRatedSuggestions(), Optional.of(executableArgumentInfo));
 			}
 
-			Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(lastArgumentParseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-			if (parseResultForPropagation.isPresent()) {
-				return parseResultForPropagation.get();
+			Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(lastArgumentParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+			if (parseOutcomeForPropagation.isPresent()) {
+				return parseOutcomeForPropagation.get();
 			}
 		}
 
-		List<ObjectInfo> argumentInfos = argumentParseResults.stream()
+		List<ObjectInfo> argumentInfos = argumentParseOutcomes.stream()
 			.map(ObjectParseResult.class::cast)
 			.map(ObjectParseResult::getObjectInfo)
 			.collect(Collectors.toList());
@@ -129,7 +129,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		switch (bestMatchingConstructorInfos.size()) {
 			case 0:
 				log(LogLevel.ERROR, "no matching constructor found");
-				return ParseResults.createParseError(tokenStream.getPosition(), "No constructor matches the given arguments", ErrorPriority.RIGHT_PARSER);
+				return ParseOutcomes.createParseError(tokenStream.getPosition(), "No constructor matches the given arguments", ErrorPriority.RIGHT_PARSER);
 			case 1: {
 				ExecutableInfo bestMatchingConstructorInfo = bestMatchingConstructorInfos.get(0);
 				ObjectInfo constructorReturnInfo;
@@ -138,7 +138,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 					log(LogLevel.SUCCESS, "found unique matching constructor");
 				} catch (Exception e) {
 					log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-					return ParseResults.createParseError(startPosition, "Exception during constructor evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
+					return ParseOutcomes.createParseError(startPosition, "Exception during constructor evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 				}
 				return parserToolbox.getObjectTailParser().parse(tokenStream, constructorReturnInfo, expectation);
 			}
@@ -146,43 +146,43 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 				String error = "Ambiguous constructor call. Possible candidates are:\n"
 								+ bestMatchingConstructorInfos.stream().map(ConstructorParser::formatConstructorInfo).collect(Collectors.joining("\n"));
 				log(LogLevel.ERROR, error);
-				return ParseResults.createAmbiguousParseResult(tokenStream.getPosition(), error);
+				return ParseOutcomes.createAmbiguousParseResult(tokenStream.getPosition(), error);
 			}
 		}
 	}
 
-	private ParseResult parseArrayConstructor(TokenStream tokenStream, int startPosition, TypeInfo componentType, ParseExpectation expectation) {
+	private ParseOutcome parseArrayConstructor(TokenStream tokenStream, int startPosition, TypeInfo componentType, ParseExpectation expectation) {
 		// TODO: currently, only 1d arrays are supported
-		ParseResult arraySizeParseResult = parseArraySize(tokenStream);
-		if (arraySizeParseResult == null) {
+		ParseOutcome arraySizeParseOutcome = parseArraySize(tokenStream);
+		if (arraySizeParseOutcome == null) {
 			// array constructor with initializer list (e.g., "new int[] { 1, 2, 3 }")
 			log(LogLevel.INFO, "parsing array elements at " + tokenStream);
-			List<ParseResult> elementParseResults = parseArrayElements(tokenStream, ParseExpectationBuilder.expectObject().allowedType(componentType).build());
+			List<ParseOutcome> elementParseOutcomes = parseArrayElements(tokenStream, ParseExpectationBuilder.expectObject().allowedType(componentType).build());
 
-			if (elementParseResults.isEmpty()) {
+			if (elementParseOutcomes.isEmpty()) {
 				log(LogLevel.INFO, "detected empty array");
 			} else {
-				ParseResult lastArgumentParseResult = elementParseResults.get(elementParseResults.size()-1);
-				ParseResultType lastArgumentParseResultType = lastArgumentParseResult.getResultType();
-				log(LogLevel.INFO, "parse result: " + lastArgumentParseResultType);
+				ParseOutcome lastArgumentParseOutcome = elementParseOutcomes.get(elementParseOutcomes.size()-1);
+				ParseOutcomeType lastArgumentParseOutcomeType = lastArgumentParseOutcome.getOutcomeType();
+				log(LogLevel.INFO, "parse outcome: " + lastArgumentParseOutcomeType);
 
-				Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(lastArgumentParseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-				if (parseResultForPropagation.isPresent()) {
-					return parseResultForPropagation.get();
+				Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(lastArgumentParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+				if (parseOutcomeForPropagation.isPresent()) {
+					return parseOutcomeForPropagation.get();
 				}
 			}
 
-			List<ObjectInfo> elementInfos = elementParseResults.stream().map(ObjectParseResult.class::cast).map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
+			List<ObjectInfo> elementInfos = elementParseOutcomes.stream().map(ObjectParseResult.class::cast).map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
 			ObjectInfo arrayInfo = parserToolbox.getObjectInfoProvider().getArrayInfo(componentType, elementInfos);
 			log (LogLevel.SUCCESS, "detected valid array construction with initializer list");
 			return parserToolbox.getObjectTailParser().parse(tokenStream, arrayInfo, expectation);
 		} else {
 			// array constructor with default initialization (e.g., "new int[3]")
-			Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(arraySizeParseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-			if (parseResultForPropagation.isPresent()) {
-				return parseResultForPropagation.get();
+			Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(arraySizeParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+			if (parseOutcomeForPropagation.isPresent()) {
+				return parseOutcomeForPropagation.get();
 			}
-			ObjectParseResult parseResult = (ObjectParseResult) arraySizeParseResult;
+			ObjectParseResult parseResult = (ObjectParseResult) arraySizeParseOutcome;
 			int parsedToPosition = parseResult.getPosition();
 			ObjectInfo sizeInfo = parseResult.getObjectInfo();
 			ObjectInfo arrayInfo;
@@ -191,7 +191,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 				log(LogLevel.SUCCESS, "detected valid array construction with null initialization");
 			} catch (ClassCastException | NegativeArraySizeException e) {
 				log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-				return ParseResults.createParseError(startPosition, e.getClass().getSimpleName() + " during array construction", ErrorPriority.EVALUATION_EXCEPTION, e);
+				return ParseOutcomes.createParseError(startPosition, e.getClass().getSimpleName() + " during array construction", ErrorPriority.EVALUATION_EXCEPTION, e);
 			}
 			tokenStream.moveTo(parsedToPosition);
 			return parserToolbox.getObjectTailParser().parse(tokenStream, arrayInfo, expectation);
@@ -199,7 +199,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	// returns null if no size is specified (e.g. in "new int[] { 1, 2, 3 }")
-	private ParseResult parseArraySize(TokenStream tokenStream) {
+	private ParseOutcome parseArraySize(TokenStream tokenStream) {
 		log(LogLevel.INFO, "parsing array size");
 
 		Token characterToken = tokenStream.readCharacterUnchecked();
@@ -211,14 +211,14 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		ParseExpectation expectation = ParseExpectationBuilder.expectObject().allowedType(InfoProvider.createTypeInfo(int.class)).build();
-		ParseResult arraySizeParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
+		ParseOutcome arraySizeParseOutcome = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
 
-		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(arraySizeParseResult, expectation, ErrorPriority.RIGHT_PARSER);
-		if (parseResultForPropagation.isPresent()) {
-			return parseResultForPropagation.get();
+		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(arraySizeParseOutcome, expectation, ErrorPriority.RIGHT_PARSER);
+		if (parseOutcomeForPropagation.isPresent()) {
+			return parseOutcomeForPropagation.get();
 		}
 
-		ObjectParseResult parseResult = ((ObjectParseResult) arraySizeParseResult);
+		ObjectParseResult parseResult = ((ObjectParseResult) arraySizeParseOutcome);
 		int parsedToPosition = parseResult.getPosition();
 
 		tokenStream.moveTo(parsedToPosition);
@@ -226,7 +226,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 
 		if (characterToken == null || characterToken.getValue().charAt(0) != ']') {
 			log(LogLevel.ERROR, "missing ']' at " + tokenStream);
-			return ParseResults.createParseError(parsedToPosition, "Expected closing bracket ']'", ErrorPriority.RIGHT_PARSER);
+			return ParseOutcomes.createParseError(parsedToPosition, "Expected closing bracket ']'", ErrorPriority.RIGHT_PARSER);
 		}
 
 		if (characterToken.isContainsCaret()) {
@@ -234,24 +234,24 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
 
-		// propagate parse result with corrected position (includes ']')
-		return ParseResults.createObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
+		// propagate parse outcome with corrected position (includes ']')
+		return ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
 	}
 
-	private List<ParseResult> parseArrayElements(TokenStream tokenStream, ParseExpectation expectation) {
-		List<ParseResult> elements = new ArrayList<>();
+	private List<ParseOutcome> parseArrayElements(TokenStream tokenStream, ParseExpectation expectation) {
+		List<ParseOutcome> elements = new ArrayList<>();
 
 		int position = tokenStream.getPosition();
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != '{') {
 			log(LogLevel.ERROR, "missing '{'");
-			elements.add(ParseResults.createParseError(position, "Expected opening curly bracket '{'", ErrorPriority.RIGHT_PARSER));
+			elements.add(ParseOutcomes.createParseError(position, "Expected opening curly bracket '{'", ErrorPriority.RIGHT_PARSER));
 			return elements;
 		}
 
 		if (!characterToken.isContainsCaret()) {
 			if (!tokenStream.hasMore()) {
-				elements.add(ParseResults.createParseError(tokenStream.getPosition(), "Expected element or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
+				elements.add(ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected element or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
 				return elements;
 			}
 
@@ -266,9 +266,9 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			/*
 			 * Parse expression for argument i
 			 */
-			ParseResult element = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
+			ParseOutcome element = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
 
-			Optional<ParseResult> elementForPropagation = ParseUtils.prepareParseResultForPropagation(element, expectation, ErrorPriority.RIGHT_PARSER);
+			Optional<ParseOutcome> elementForPropagation = ParseUtils.prepareParseOutcomeForPropagation(element, expectation, ErrorPriority.RIGHT_PARSER);
 			if (elementForPropagation.isPresent()) {
 				elements.add(elementForPropagation.get());
 				return elements;
@@ -283,7 +283,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			characterToken = tokenStream.readCharacterUnchecked();
 
 			if (characterToken == null) {
-				elements.add(ParseResults.createParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
+				elements.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
 				return elements;
 			}
 
@@ -296,7 +296,7 @@ public class ConstructorParser extends AbstractEntityParser<ObjectInfo>
 			}
 
 			if (characterToken.getValue().charAt(0) != ',') {
-				elements.add(ParseResults.createParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
+				elements.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
 				return elements;
 			}
 		}

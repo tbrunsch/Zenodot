@@ -46,8 +46,8 @@ public class ExecutableDataProvider
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
 
-	public List<ParseResult> parseExecutableArguments(TokenStream tokenStream, List<ExecutableInfo> availableExecutableInfos) {
-		List<ParseResult> arguments = new ArrayList<>();
+	public List<ParseOutcome> parseExecutableArguments(TokenStream tokenStream, List<ExecutableInfo> availableExecutableInfos) {
+		List<ParseOutcome> arguments = new ArrayList<>();
 
 		int position;
 		Token characterToken = tokenStream.readCharacterUnchecked();
@@ -55,7 +55,7 @@ public class ExecutableDataProvider
 
 		if (!characterToken.isContainsCaret()) {
 			if (!tokenStream.hasMore()) {
-				arguments.add(ParseResults.createParseError(tokenStream.getPosition(), "Expected argument or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
+				arguments.add(ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected argument or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 
@@ -79,7 +79,7 @@ public class ExecutableDataProvider
 					// code completion after opening '(' for executable without arguments
 					arguments.add(CompletionSuggestions.none(position));
 				} else {
-					arguments.add(ParseResults.createParseError(position, "No further arguments expected", ErrorPriority.RIGHT_PARSER));
+					arguments.add(ParseOutcomes.createParseError(position, "No further arguments expected", ErrorPriority.RIGHT_PARSER));
 				}
 				return arguments;
 			}
@@ -88,16 +88,16 @@ public class ExecutableDataProvider
 			 * Parse expression for argument i
 			 */
 			ParseExpectation argumentExpectation = ParseExpectationBuilder.expectObject().allowedTypes(expectedArgumentTypes_i).build();
-			ParseResult argumentParseResult_i = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argumentExpectation);
+			ParseOutcome argumentParseOutcome_i = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argumentExpectation);
 
-			Optional<ParseResult> argumentForPropagation = ParseUtils.prepareParseResultForPropagation(argumentParseResult_i, argumentExpectation, ErrorPriority.RIGHT_PARSER);
+			Optional<ParseOutcome> argumentForPropagation = ParseUtils.prepareParseOutcomeForPropagation(argumentParseOutcome_i, argumentExpectation, ErrorPriority.RIGHT_PARSER);
 			if (argumentForPropagation.isPresent()) {
 				arguments.add(argumentForPropagation.get());
 				return arguments;
 			}
-			arguments.add(argumentParseResult_i);
+			arguments.add(argumentParseOutcome_i);
 
-			ObjectParseResult parseResult = ((ObjectParseResult) argumentParseResult_i);
+			ObjectParseResult parseResult = ((ObjectParseResult) argumentParseOutcome_i);
 			int parsedToPosition = parseResult.getPosition();
 			tokenStream.moveTo(parsedToPosition);
 			ObjectInfo argumentInfo = parseResult.getObjectInfo();
@@ -107,7 +107,7 @@ public class ExecutableDataProvider
 			characterToken = tokenStream.readCharacterUnchecked();
 
 			if (characterToken == null) {
-				arguments.add(ParseResults.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
+				arguments.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 
@@ -120,7 +120,7 @@ public class ExecutableDataProvider
 			}
 
 			if (characterToken.getValue().charAt(0) != ',') {
-				arguments.add(ParseResults.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
+				arguments.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 		}
@@ -183,7 +183,7 @@ public class ExecutableDataProvider
 			boolean applicable = IntStream.range(0, argumentInfos.size()).allMatch(i -> acceptsArgumentInfo(executableInfo, i, argumentInfos.get(i)));
 			applicableExecutableOverloads.put(executableInfo, applicable);
 		}
-		return ParseResults.createExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
+		return ParseOutcomes.createExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
 	}
 
 	/*

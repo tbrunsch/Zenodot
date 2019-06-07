@@ -11,8 +11,8 @@ class AmbiguousParseResultImpl implements AmbiguousParseResult
 	}
 
 	@Override
-	public ParseResultType getResultType() {
-		return ParseResultType.AMBIGUOUS_PARSE_RESULT;
+	public ParseOutcomeType getOutcomeType() {
+		return ParseOutcomeType.AMBIGUOUS_PARSE_RESULT;
 	}
 
 	@Override

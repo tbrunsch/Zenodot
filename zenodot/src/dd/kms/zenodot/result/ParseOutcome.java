@@ -3,8 +3,8 @@ package dd.kms.zenodot.result;
 /**
  * Common interface of all potential results when parsing an expression
  */
-public interface ParseResult
+public interface ParseOutcome
 {
-	ParseResultType getResultType();
+	ParseOutcomeType getOutcomeType();
 	int getPosition();
 }

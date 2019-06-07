@@ -34,31 +34,31 @@ class ExpressionParserImpl extends AbstractParser implements ExpressionParser
 
 	@Override
 	public Object evaluate() throws ParseException {
-		ParseResult parseResult;
+		ParseOutcome parseOutcome;
 
 		if (!settings.isEnableDynamicTyping()) {
 			// First iteration without evaluation to avoid side effects when errors occur
-			parseResult = parse(ParseMode.WITHOUT_EVALUATION, -1);
-			if (parseResult.getResultType() == ParseResultType.OBJECT_PARSE_RESULT) {
+			parseOutcome = parse(ParseMode.WITHOUT_EVALUATION, -1);
+			if (parseOutcome.getOutcomeType() == ParseOutcomeType.OBJECT_PARSE_RESULT) {
 				// Second iteration with evaluation (side effects cannot be avoided)
-				parseResult = parse(ParseMode.EVALUATION, -1);
+				parseOutcome = parse(ParseMode.EVALUATION, -1);
 			}
 		} else {
-			parseResult = parse(ParseMode.EVALUATION, -1);
+			parseOutcome = parse(ParseMode.EVALUATION, -1);
 		}
 
-		ParseResultType resultType = parseResult.getResultType();
-		if (resultType == ParseResultType.OBJECT_PARSE_RESULT) {
-			ObjectParseResult result = (ObjectParseResult) parseResult;
+		ParseOutcomeType resultType = parseOutcome.getOutcomeType();
+		if (resultType == ParseOutcomeType.OBJECT_PARSE_RESULT) {
+			ObjectParseResult result = (ObjectParseResult) parseOutcome;
 			checkParsedWholeText(result);
 			return result.getObjectInfo().getObject();
 		}
-		handleInvalidResultType(parseResult);
+		handleInvalidResultType(parseOutcome);
 		return null;
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ParseMode parseMode) {
+	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
 		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue, InfoProvider.UNKNOWN_TYPE);
 		ParserToolbox parserToolbox  = new ParserToolbox(thisInfo, settings, parseMode);
 		return parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);

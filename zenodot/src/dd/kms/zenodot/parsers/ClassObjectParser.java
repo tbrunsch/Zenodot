@@ -7,16 +7,10 @@ import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionKeyword;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.ClassDataProvider;
-import dd.kms.zenodot.utils.dataProviders.ObjectInfoProvider;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
-
-import java.util.Arrays;
-import java.util.Optional;
 
 /**
  * Parses subexpressions {@code class} of expressions of the form {@code <class>.class}.
@@ -31,12 +25,12 @@ public class ClassObjectParser extends AbstractEntityParser<TypeInfo>
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, TypeInfo contextType, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, TypeInfo contextType, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		Token keywordToken = tokenStream.readKeyWordUnchecked();
 		if (keywordToken == null) {
 			log(LogLevel.ERROR, "expected keyword '" + CLASS_KEYWORD + "'");
-			return ParseResults.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
 		}
 
 		if (keywordToken.isContainsCaret()) {
@@ -53,7 +47,7 @@ public class ClassObjectParser extends AbstractEntityParser<TypeInfo>
 
 		if (!keywordToken.getValue().equals(CLASS_KEYWORD)) {
 			log(LogLevel.ERROR, "expected keyword '" + CLASS_KEYWORD + "'");
-			return ParseResults.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
 		}
 
 		Class<?> classObject = contextType.getRawType();

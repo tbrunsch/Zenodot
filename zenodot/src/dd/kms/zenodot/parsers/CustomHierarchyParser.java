@@ -5,8 +5,8 @@ import dd.kms.zenodot.common.RegexUtils;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.ParseResult;
-import dd.kms.zenodot.result.ParseResults;
+import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.tokenizer.Token;
@@ -37,7 +37,7 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
@@ -47,14 +47,14 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 		if (characterToken == null || characterToken.getValue().charAt(0) != HIERARCHY_BEGIN) {
 			tokenStream.moveTo(position);
 			log(LogLevel.ERROR, "missing '" + HIERARCHY_BEGIN + "' at " + tokenStream);
-			return ParseResults.createParseError(position, "Expected hierarchy begin character ('" + HIERARCHY_BEGIN + "')", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(position, "Expected hierarchy begin character ('" + HIERARCHY_BEGIN + "')", ErrorPriority.WRONG_PARSER);
 		}
 
 		ObjectTreeNode hierarchyNode = parserToolbox.getSettings().getCustomHierarchyRoot();
 		return parseHierarchyNode(tokenStream, hierarchyNode, expectation);
 	}
 
-	private ParseResult parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ParseExpectation expectation) {
+	private ParseOutcome parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			log(LogLevel.INFO, "suggesting custom hierarchy nodes for completion...");
@@ -64,7 +64,7 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 		Token nodeToken = tokenStream.readRegexUnchecked(HIERARCHY_NODE_PATTERN, 1);
 		if (nodeToken == null) {
 			log(LogLevel.ERROR, "missing hierarchy node name at " + tokenStream);
-			return ParseResults.createParseError(startPosition, "Expected a hierarchy node name", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected a hierarchy node name", ErrorPriority.WRONG_PARSER);
 		}
 		String nodeName = nodeToken.getValue();
 		int endPosition = tokenStream.getPosition();
@@ -79,7 +79,7 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 		ObjectTreeNode firstChildNodeMatch = Iterables.getFirst(Iterables.filter(childNodes, node -> node.getName().equals(nodeName)), null);
 		if (firstChildNodeMatch == null) {
 			log(LogLevel.ERROR, "unknown hierarchy node '" + nodeName + "'");
-			return ParseResults.createParseError(startPosition, "Unknown hierarchy node '" + nodeName + "'", ErrorPriority.RIGHT_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Unknown hierarchy node '" + nodeName + "'", ErrorPriority.RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected hierarchy node '" + nodeName + "'");
 
@@ -95,6 +95,6 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		log(LogLevel.ERROR, "expected '" + HIERARCHY_SEPARATOR + "' or '" + HIERARCHY_END + "'");
-		return ParseResults.createParseError(endPosition, "Expected hierarchy separator ('" + HIERARCHY_SEPARATOR + "') or hierarchy end character ('" + HIERARCHY_END + "')", ErrorPriority.RIGHT_PARSER);
+		return ParseOutcomes.createParseError(endPosition, "Expected hierarchy separator ('" + HIERARCHY_SEPARATOR + "') or hierarchy end character ('" + HIERARCHY_END + "')", ErrorPriority.RIGHT_PARSER);
 	}
 }

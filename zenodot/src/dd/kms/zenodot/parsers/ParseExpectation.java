@@ -2,7 +2,7 @@ package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import dd.kms.zenodot.result.ParseResultType;
+import dd.kms.zenodot.result.ParseOutcomeType;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.List;
@@ -14,20 +14,20 @@ import java.util.Set;
  */
 public class ParseExpectation
 {
-	public static final Set<ParseResultType>	SUPPORTED_RESULT_TYPES	= ImmutableSet.of(
-		ParseResultType.OBJECT_PARSE_RESULT,
-		ParseResultType.CLASS_PARSE_RESULT,
-		ParseResultType.PACKAGE_PARSE_RESULT
+	public static final Set<ParseOutcomeType>	SUPPORTED_RESULT_TYPES	= ImmutableSet.of(
+		ParseOutcomeType.OBJECT_PARSE_RESULT,
+		ParseOutcomeType.CLASS_PARSE_RESULT,
+		ParseOutcomeType.PACKAGE_PARSE_RESULT
 	);
 
 	public static final ParseExpectation		CLASS					= ParseExpectationBuilder.expectClass().build();
 	public static final ParseExpectation		PACKAGE					= ParseExpectationBuilder.expectPackage().build();
 	public static final ParseExpectation		OBJECT					= ParseExpectationBuilder.expectObject().build();
 
-	private final ParseResultType	evaluationType;
+	private final ParseOutcomeType evaluationType;
 	private final List<TypeInfo>	allowedTypes;
 
-	ParseExpectation(ParseResultType evaluationType, List<TypeInfo> allowedTypes) {
+	ParseExpectation(ParseOutcomeType evaluationType, List<TypeInfo> allowedTypes) {
 		if (!SUPPORTED_RESULT_TYPES.contains(evaluationType)) {
 			throw new IllegalArgumentException("Only objects, classes, and packages can be expected as valid code evaluation types");
 		}
@@ -35,7 +35,7 @@ public class ParseExpectation
 		this.allowedTypes = allowedTypes == null ? null : ImmutableList.copyOf(allowedTypes);
 	}
 
-	public ParseResultType getEvaluationType() {
+	public ParseOutcomeType getEvaluationType() {
 		return evaluationType;
 	}
 

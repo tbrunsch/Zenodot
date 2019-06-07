@@ -12,7 +12,7 @@ package dd.kms.zenodot.result;
  *     </li>
  * </ul>
  */
-public interface AmbiguousParseResult extends ParseResult
+public interface AmbiguousParseResult extends ParseOutcome
 {
 	String getMessage();
 }

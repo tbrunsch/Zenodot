@@ -36,12 +36,12 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (contextCausesNullPointerException(context)) {
 			log(LogLevel.ERROR, "null pointer exception");
-			return ParseResults.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
+			return ParseOutcomes.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
 		}
 
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
@@ -64,7 +64,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 			methodNameToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "missing method name at " + tokenStream);
-			return ParseResults.createParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
 		}
 		String methodName = methodNameToken.getValue();
 		final int endPosition = tokenStream.getPosition();
@@ -77,7 +77,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 		if (!tokenStream.hasMore() || tokenStream.peekCharacter() != '(') {
 			log(LogLevel.ERROR, "missing '(' at " + tokenStream);
-			return ParseResults.createParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		// no code completion requested => method name must exist
@@ -85,34 +85,34 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		if (methodInfos.isEmpty()) {
 			if (getMethodInfos(context, getMethodScanner(methodName, false)).isEmpty()) {
 				log(LogLevel.ERROR, "unknown method '" + methodName + "'");
-				return ParseResults.createParseError(startPosition, "Unknown method '" + methodName + "'", ErrorPriority.RIGHT_PARSER);
+				return ParseOutcomes.createParseError(startPosition, "Unknown method '" + methodName + "'", ErrorPriority.RIGHT_PARSER);
 			} else {
 				log(LogLevel.ERROR, "method '" + methodName + "' is not visible");
-				return ParseResults.createParseError(startPosition, "Method '" + methodName + "' is not visible", ErrorPriority.RIGHT_PARSER);
+				return ParseOutcomes.createParseError(startPosition, "Method '" + methodName + "' is not visible", ErrorPriority.RIGHT_PARSER);
 			}
 		}
 		log(LogLevel.SUCCESS, "detected " + methodInfos.size() + " method(s) '" + methodName + "'");
 
 		log(LogLevel.INFO, "parsing method arguments");
 		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
-		List<ParseResult> argumentParseResults = executableDataProvider.parseExecutableArguments(tokenStream, methodInfos);
+		List<ParseOutcome> argumentParseOutcomes = executableDataProvider.parseExecutableArguments(tokenStream, methodInfos);
 
-		if (argumentParseResults.isEmpty()) {
+		if (argumentParseOutcomes.isEmpty()) {
 			log(LogLevel.INFO, "no arguments found");
 		} else {
-			int lastArgumentIndex = argumentParseResults.size() - 1;
-			ParseResult lastArgumentParseResult = argumentParseResults.get(lastArgumentIndex);
-			ParseResultType lastArgumentParseResultType = lastArgumentParseResult.getResultType();
-			log(LogLevel.INFO, "parse result: " + lastArgumentParseResultType);
+			int lastArgumentIndex = argumentParseOutcomes.size() - 1;
+			ParseOutcome lastArgumentParseOutcome = argumentParseOutcomes.get(lastArgumentIndex);
+			ParseOutcomeType lastArgumentParseOutcomeType = lastArgumentParseOutcome.getOutcomeType();
+			log(LogLevel.INFO, "parse outcome: " + lastArgumentParseOutcomeType);
 
-			if (lastArgumentParseResult.getResultType() == ParseResultType.COMPLETION_SUGGESTIONS) {
-				CompletionSuggestions argumentSuggestions = (CompletionSuggestions) lastArgumentParseResult;
+			if (lastArgumentParseOutcome.getOutcomeType() == ParseOutcomeType.COMPLETION_SUGGESTIONS) {
+				CompletionSuggestions argumentSuggestions = (CompletionSuggestions) lastArgumentParseOutcome;
 				// add argument information
 				if (argumentSuggestions.getExecutableArgumentInfo().isPresent()) {
 					// information has already been added for an executable used in a subexpression, which is more relevant
 					return argumentSuggestions;
 				}
-				List<ObjectInfo> previousArgumentInfos = argumentParseResults.subList(0, lastArgumentIndex).stream()
+				List<ObjectInfo> previousArgumentInfos = argumentParseOutcomes.subList(0, lastArgumentIndex).stream()
 					.map(ObjectParseResult.class::cast)
 					.map(ObjectParseResult::getObjectInfo)
 					.collect(Collectors.toList());
@@ -120,13 +120,13 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 				return new CompletionSuggestions(argumentSuggestions.getPosition(), argumentSuggestions.getRatedSuggestions(), Optional.of(executableArgumentInfo));
 			}
 
-			Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(lastArgumentParseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-			if (parseResultForPropagation.isPresent()) {
-				return parseResultForPropagation.get();
+			Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(lastArgumentParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+			if (parseOutcomeForPropagation.isPresent()) {
+				return parseOutcomeForPropagation.get();
 			}
 		}
 
-		List<ObjectInfo> argumentInfos = argumentParseResults.stream()
+		List<ObjectInfo> argumentInfos = argumentParseOutcomes.stream()
 			.map(ObjectParseResult.class::cast)
 			.map(ObjectParseResult::getObjectInfo)
 			.collect(Collectors.toList());
@@ -135,7 +135,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		switch (bestMatchingMethodInfos.size()) {
 			case 0:
 				log(LogLevel.ERROR, "no matching method found");
-				return ParseResults.createParseError(tokenStream.getPosition(), "No method matches the given arguments", ErrorPriority.RIGHT_PARSER);
+				return ParseOutcomes.createParseError(tokenStream.getPosition(), "No method matches the given arguments", ErrorPriority.RIGHT_PARSER);
 			case 1: {
 				ExecutableInfo bestMatchingExecutableInfo = bestMatchingMethodInfos.get(0);
 				ObjectInfo methodReturnInfo;
@@ -150,10 +150,10 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 						messageBuilder.append(": ").append(causeMessage);
 					}
 					log(LogLevel.ERROR, messageBuilder.toString());
-					return ParseResults.createParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, cause);
+					return ParseOutcomes.createParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, cause);
 				} catch (Exception e) {
 					log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-					return ParseResults.createParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
+					return ParseOutcomes.createParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 				}
 				return parserToolbox.getObjectTailParser().parse(tokenStream, methodReturnInfo, expectation);
 			}
@@ -161,7 +161,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 				String error = "Ambiguous method call. Possible candidates are:\n"
 								+ bestMatchingMethodInfos.stream().map(Object::toString).collect(Collectors.joining("\n"));
 				log(LogLevel.ERROR, error);
-				return ParseResults.createAmbiguousParseResult(tokenStream.getPosition(), error);
+				return ParseOutcomes.createAmbiguousParseResult(tokenStream.getPosition(), error);
 			}
 		}
 	}

@@ -7,7 +7,7 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Map;
 
-public class ParseResults
+public class ParseOutcomes
 {
 	public static AmbiguousParseResult createAmbiguousParseResult(int position, String message) {
 		return new AmbiguousParseResultImpl(position, message);

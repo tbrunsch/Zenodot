@@ -2,7 +2,7 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseOutcome;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -16,12 +16,12 @@ abstract class AbstractTailParser<C> extends AbstractEntityParser<C>
 		super(parserToolbox, thisInfo);
 	}
 
-	abstract ParseResult parseDot(TokenStream tokenStream, C context, ParseExpectation expectation);
-	abstract ParseResult parseOpeningSquareBracket(TokenStream tokenStream, C context, ParseExpectation expectation);
-	abstract ParseResult createParseResult(int position, C context);
+	abstract ParseOutcome parseDot(TokenStream tokenStream, C context, ParseExpectation expectation);
+	abstract ParseOutcome parseOpeningSquareBracket(TokenStream tokenStream, C context, ParseExpectation expectation);
+	abstract ParseOutcome createParseOutcome(int position, C context);
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		if (tokenStream.hasMore()) {
 			char nextChar = tokenStream.peekCharacter();
 			if (nextChar == '.') {
@@ -35,6 +35,6 @@ abstract class AbstractTailParser<C> extends AbstractEntityParser<C>
 
 		int position = tokenStream.getPosition();
 		boolean returnCompletions = tokenStream.isCaretWithinNextWhiteSpaces();
-		return returnCompletions ? CompletionSuggestions.none(position) : createParseResult(position, context);
+		return returnCompletions ? CompletionSuggestions.none(position) : createParseOutcome(position, context);
 	}
 }
