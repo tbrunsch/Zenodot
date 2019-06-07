@@ -1,10 +1,7 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.PackageParseResult;
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomeType;
-import dd.kms.zenodot.result.ParseOutcomes;
+import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -73,7 +70,7 @@ abstract class AbstractPackageParser<C> extends AbstractEntityParser<C>
 		}
 		log(LogLevel.INFO, "detected '.'");
 
-		AbstractEntityParser<PackageInfo>[] parsers = expectation.getEvaluationType() == ParseOutcomeType.PACKAGE_PARSE_RESULT
+		AbstractEntityParser<PackageInfo>[] parsers = expectation.getResultType() == ParseResultType.PACKAGE
 														? new AbstractEntityParser[]{ parserToolbox.getSubpackageParser() }
 														: new AbstractEntityParser[] { parserToolbox.getQualifiedClassParser(), parserToolbox.getSubpackageParser() };
 		return ParseUtils.parse(tokenStream, packageInfo, expectation,	parsers);

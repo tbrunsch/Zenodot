@@ -117,7 +117,7 @@ public abstract class AbstractEntityParser<C>
 	 */
 	ParseOutcome checkExpectations(ParseOutcome parseOutcome, ParseExpectation expectation) {
 		try {
-			ParseUtils.checkExpectedParseResultType(parseOutcome.getOutcomeType(), expectation);
+			ParseUtils.checkExpectedParseResultType(parseOutcome, expectation);
 		} catch (IllegalStateException e) {
 			String message = e.getMessage();
 			log(LogLevel.ERROR, message);

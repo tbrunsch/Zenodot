@@ -28,20 +28,18 @@ abstract class AbstractParser
 		ParseOutcome parseOutcome = parse(ParseMode.CODE_COMPLETION, caretPosition);
 
 		switch (parseOutcome.getOutcomeType()) {
-			case OBJECT_PARSE_RESULT:
-			case CLASS_PARSE_RESULT:
-			case PACKAGE_PARSE_RESULT: {
+			case RESULT: {
 				if (parseOutcome.getPosition() != text.length()) {
 					throw new ParseException(parseOutcome.getPosition(), "Unexpected character");
 				} else {
 					throw new IllegalStateException("Internal error: No completions available");
 				}
 			}
-			case PARSE_ERROR: {
+			case ERROR: {
 				ParseError error = (ParseError) parseOutcome;
 				throw new ParseException(error.getPosition(), error.getMessage());
 			}
-			case AMBIGUOUS_PARSE_RESULT: {
+			case AMBIGUOUS_RESULT: {
 				AmbiguousParseResult result = (AmbiguousParseResult) parseOutcome;
 				throw new ParseException(result.getPosition(), result.getMessage());
 			}
@@ -96,16 +94,15 @@ abstract class AbstractParser
 	void handleInvalidResultType(ParseOutcome parseOutcome) throws ParseException {
 		ParseOutcomeType outcomeType = parseOutcome.getOutcomeType();
 		switch (outcomeType) {
-			case OBJECT_PARSE_RESULT:
-			case CLASS_PARSE_RESULT:
-			case PACKAGE_PARSE_RESULT: {
-				throw new IllegalStateException("Internal error: Unexpected type of parse outcome: '" + outcomeType + "'");
+			case RESULT: {
+				ParseResult parseResult = (ParseResult) parseOutcome;
+				throw new IllegalStateException("Internal error: Unexpected parse result type: '" + parseResult.getResultType() + "'");
 			}
-			case PARSE_ERROR: {
+			case ERROR: {
 				ParseError error = (ParseError) parseOutcome;
 				throw new ParseException(error.getPosition(), error.getMessage(), error.getThrowable());
 			}
-			case AMBIGUOUS_PARSE_RESULT: {
+			case AMBIGUOUS_RESULT: {
 				AmbiguousParseResult result = (AmbiguousParseResult) parseOutcome;
 				throw new ParseException(result.getPosition(), result.getMessage());
 			}

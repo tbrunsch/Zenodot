@@ -1,8 +1,8 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomeType;
 import dd.kms.zenodot.result.ParseOutcomes;
+import dd.kms.zenodot.result.ParseResultType;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -35,7 +35,7 @@ public class ClassTailParser extends AbstractTailParser<TypeInfo>
 		AbstractEntityParser<TypeInfo> methodParser = parserToolbox.getClassMethodParser();
 		AbstractEntityParser<TypeInfo> innerClassParser = parserToolbox.getInnerClassParser();
 		AbstractEntityParser<TypeInfo> classObjectParser = parserToolbox.getClassObjectParser();
-		if (expectation.getEvaluationType() == ParseOutcomeType.CLASS_PARSE_RESULT) {
+		if (expectation.getResultType() == ParseResultType.CLASS) {
 			return innerClassParser.parse(tokenStream, classType, expectation);
 		} else {
 			return ParseUtils.parse(tokenStream, classType, expectation,

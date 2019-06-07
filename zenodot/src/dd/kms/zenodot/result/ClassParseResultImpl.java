@@ -14,7 +14,12 @@ class ClassParseResultImpl implements ClassParseResult
 
 	@Override
 	public ParseOutcomeType getOutcomeType() {
-		return ParseOutcomeType.CLASS_PARSE_RESULT;
+		return ParseOutcomeType.RESULT;
+	}
+
+	@Override
+	public ParseResultType getResultType() {
+		return ParseResultType.CLASS;
 	}
 
 	@Override

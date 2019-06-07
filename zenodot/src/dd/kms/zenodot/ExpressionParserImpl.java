@@ -39,7 +39,7 @@ class ExpressionParserImpl extends AbstractParser implements ExpressionParser
 		if (!settings.isEnableDynamicTyping()) {
 			// First iteration without evaluation to avoid side effects when errors occur
 			parseOutcome = parse(ParseMode.WITHOUT_EVALUATION, -1);
-			if (parseOutcome.getOutcomeType() == ParseOutcomeType.OBJECT_PARSE_RESULT) {
+			if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)) {
 				// Second iteration with evaluation (side effects cannot be avoided)
 				parseOutcome = parse(ParseMode.EVALUATION, -1);
 			}
@@ -47,8 +47,7 @@ class ExpressionParserImpl extends AbstractParser implements ExpressionParser
 			parseOutcome = parse(ParseMode.EVALUATION, -1);
 		}
 
-		ParseOutcomeType resultType = parseOutcome.getOutcomeType();
-		if (resultType == ParseOutcomeType.OBJECT_PARSE_RESULT) {
+		if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)) {
 			ObjectParseResult result = (ObjectParseResult) parseOutcome;
 			checkParsedWholeText(result);
 			return result.getObjectInfo().getObject();

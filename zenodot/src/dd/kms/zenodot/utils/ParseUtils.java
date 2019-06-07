@@ -26,7 +26,7 @@ public class ParseUtils
 			parserToolbox.getImportedClassParser(),
 			parserToolbox.getRootpackageParser()
 		);
-		checkExpectedParseResultType(classParseOutcome.getOutcomeType(), ParseExpectation.CLASS);
+		checkExpectedParseResultType(classParseOutcome, ParseExpectation.CLASS);
 		return classParseOutcome;
 	}
 
@@ -181,15 +181,17 @@ public class ParseUtils
 	 * continue parsing the expression. In that case, the returned {@link Optional} is empty.
 	 */
 	public static Optional<ParseOutcome> prepareParseOutcomeForPropagation(ParseOutcome parseOutcome, ParseExpectation expectation, ErrorPriority minimumErrorType) {
+		checkExpectedParseResultType(parseOutcome, expectation);
 		ParseOutcomeType parseOutcomeType = parseOutcome.getOutcomeType();
-		ParseOutcomeType expectedEvaluationType = expectation.getEvaluationType();
-		checkExpectedParseResultType(parseOutcomeType, expectation);
-		if (parseOutcomeType == expectedEvaluationType) {
+		if (parseOutcomeType == ParseOutcomeType.RESULT) {
+			// do not propagate valid result, but process it further
 			return Optional.empty();
 		}
-		if (parseOutcomeType != ParseOutcomeType.PARSE_ERROR) {
+		if (parseOutcomeType != ParseOutcomeType.ERROR) {
+			// propagate non-errors as-is
 			return Optional.of(parseOutcome);
 		}
+		// errors need a priority justification
 		ParseError parseError = (ParseError) parseOutcome;
 		if (parseError.getErrorType().compareTo(minimumErrorType) <= 0) {
 			// error has already sufficient priority
@@ -198,14 +200,16 @@ public class ParseUtils
 		return Optional.of(ParseOutcomes.createParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
 	}
 
-	public static void checkExpectedParseResultType(ParseOutcomeType resultType, ParseExpectation expectation) {
-		if (!ParseExpectation.SUPPORTED_RESULT_TYPES.contains(resultType)) {
-			// Only "real" outcome types will be checked. Completion suggestions and errors can always occur.
+	public static void checkExpectedParseResultType(ParseOutcome parseOutcome, ParseExpectation expectation) {
+		if (parseOutcome.getOutcomeType() != ParseOutcomeType.RESULT) {
+			// only results have to be checked
 			return;
 		}
-		ParseOutcomeType expectedType = expectation.getEvaluationType();
-		if (resultType != expectedType) {
-			throw new IllegalStateException("Internal error: Expected a parse result of type '" + expectedType + "', but obtained a parse result of type '" + resultType + "'");
+		ParseResult parseResult = (ParseResult) parseOutcome;
+		ParseResultType resultType = parseResult.getResultType();
+		ParseResultType expectedResultType = expectation.getResultType();
+		if (resultType != expectedResultType) {
+			throw new IllegalStateException("Internal error: Expected a parse result of type '" + expectedResultType + "', but obtained a parse result of type '" + resultType + "'");
 		}
 	}
 }

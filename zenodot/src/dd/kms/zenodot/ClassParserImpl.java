@@ -3,10 +3,7 @@ package dd.kms.zenodot;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.result.ClassParseResult;
-import dd.kms.zenodot.result.CompletionSuggestion;
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomeType;
+import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
@@ -33,8 +30,7 @@ class ClassParserImpl extends AbstractParser implements ClassParser
 	@Override
 	public ClassInfo evaluate() throws ParseException {
 		ParseOutcome parseOutcome = parse(ParseMode.EVALUATION, -1);
-		ParseOutcomeType resultType = parseOutcome.getOutcomeType();
-		if (resultType == ParseOutcomeType.CLASS_PARSE_RESULT) {
+		if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.CLASS)) {
 			ClassParseResult result = (ClassParseResult) parseOutcome;
 			checkParsedWholeText(result);
 			TypeInfo type = result.getType();

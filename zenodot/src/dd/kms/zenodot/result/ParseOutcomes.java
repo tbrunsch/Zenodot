@@ -36,4 +36,8 @@ public class ParseOutcomes
 	public static ExecutableArgumentInfo createExecutableArgumentInfo(int currentArgumentIndex, Map<ExecutableInfo, Boolean> applicableExecutableOverloads) {
 		return new ExecutableArgumentInfoImpl(currentArgumentIndex, applicableExecutableOverloads);
 	}
+
+	public static boolean isParseResultOfType(ParseOutcome parseOutcome, ParseResultType resultType) {
+		return parseOutcome.getOutcomeType() == ParseOutcomeType.RESULT && ((ParseResult) parseOutcome).getResultType() == resultType;
+	}
 }

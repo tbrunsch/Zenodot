@@ -156,7 +156,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 	ParseOutcome checkExpectations(ParseOutcome parseOutcome, ParseExpectation expectation) {
 		parseOutcome = super.checkExpectations(parseOutcome, expectation);
 
-		if (parseOutcome.getOutcomeType() != ParseOutcomeType.OBJECT_PARSE_RESULT) {
+		if (!ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)) {
 			// no further checks required
 			return parseOutcome;
 		}

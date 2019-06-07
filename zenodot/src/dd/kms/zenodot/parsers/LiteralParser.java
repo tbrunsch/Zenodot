@@ -152,7 +152,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		for (AbstractEntityParser parser : parsers) {
 			ParseOutcome parseOutcome = parser.parse(tokenStream, contextInfo, expectation);
 
-			if (parseOutcome.getOutcomeType() != ParseOutcomeType.PARSE_ERROR) {
+			if (parseOutcome.getOutcomeType() != ParseOutcomeType.ERROR) {
 				return parseOutcome;
 			}
 		}

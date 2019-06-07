@@ -28,8 +28,7 @@ class PackageParserImpl extends AbstractParser implements PackageParser
 	@Override
 	public PackageInfo evaluate() throws ParseException {
 		ParseOutcome parseOutcome = parse(ParseMode.EVALUATION, -1);
-		ParseOutcomeType resultType = parseOutcome.getOutcomeType();
-		if (resultType == ParseOutcomeType.PACKAGE_PARSE_RESULT) {
+		if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.PACKAGE)) {
 			PackageParseResult result = (PackageParseResult) parseOutcome;
 			checkParsedWholeText(result);
 			return result.getPackage();
