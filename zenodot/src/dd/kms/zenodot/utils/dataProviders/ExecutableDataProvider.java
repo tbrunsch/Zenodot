@@ -46,6 +46,21 @@ public class ExecutableDataProvider
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
 
+	/**
+	 * Returns a list of {@link ParseOutcome}s, one for each argument expression scanned until the method returns.
+	 * <ul>
+	 *     <li>
+	 *         If the method arguments could not be parsed completely, either due to an error or due to requested code
+	 *         completion for one of the arguments, then the returned list is guaranteed to contain at least one element.
+	 *         The last element in this list is the parse outcome that describes why not all arguments could be parsed.
+	 *     </li>
+	 *     <li>
+	 *         If all arguments could be parse completely, then the returned list contains one {@link ObjectParseResult}
+	 *         or {@link CompiledObjectParseResult} for each argument. If no arguments are specified, then the returned list
+	 *         will be empty.
+	 *     </li>
+	 * </ul>
+	 */
 	public List<ParseOutcome> parseExecutableArguments(TokenStream tokenStream, List<ExecutableInfo> availableExecutableInfos) {
 		List<ParseOutcome> arguments = new ArrayList<>();
 

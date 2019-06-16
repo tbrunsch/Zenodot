@@ -15,6 +15,7 @@ public class ParserToolbox
 {
 	private final ObjectInfo						thisInfo;
 	private final ParserSettings					settings;
+	private final EvaluationMode					evaluationMode;
 
 	private final ClassDataProvider					classDataProvider;
 	private final ExecutableDataProvider			executableDataProvider;
@@ -49,8 +50,7 @@ public class ParserToolbox
 	public ParserToolbox(ObjectInfo thisInfo, ParserSettings settings, ParseMode parseMode) {
 		this.thisInfo = thisInfo;
 		this.settings = settings;
-
-		EvaluationMode evaluationMode = getEvaluationMode(settings, parseMode);
+		this.evaluationMode = getEvaluationMode(settings, parseMode);
 
 		objectInfoProvider				= new ObjectInfoProvider(evaluationMode);
 
@@ -58,7 +58,7 @@ public class ParserToolbox
 		executableDataProvider			= new ExecutableDataProvider(this);
 		fieldDataProvider				= new FieldDataProvider(this);
 		objectTreeNodeDataProvider		= new ObjectTreeNodeDataProvider();
-		operatorResultProvider 			= new OperatorResultProvider(this, evaluationMode);
+		operatorResultProvider 			= new OperatorResultProvider(objectInfoProvider, evaluationMode);
 		variableDataProvider			= new VariableDataProvider(settings.getVariables());
 
 		castParser						= new CastParser(this, thisInfo);
@@ -90,6 +90,10 @@ public class ParserToolbox
 
 	public ParserSettings getSettings() {
 		return settings;
+	}
+
+	public EvaluationMode getEvaluationMode() {
+		return evaluationMode;
 	}
 
 	/*
@@ -203,9 +207,17 @@ public class ParserToolbox
 	public AbstractEntityParser<ObjectInfo> getVariableParser() { return variableParser; }
 
 	private static EvaluationMode getEvaluationMode(ParserSettings settings, ParseMode parseMode) {
-		if (settings.isEnableDynamicTyping()) {
-			return EvaluationMode.DYNAMICALLY_TYPED;
+		switch (parseMode) {
+			case CODE_COMPLETION:
+				return settings.isEnableDynamicTyping() ? EvaluationMode.DYNAMICALLY_TYPED : EvaluationMode.NONE;
+			case EVALUATION:
+				return settings.isEnableDynamicTyping() ? EvaluationMode.DYNAMICALLY_TYPED : EvaluationMode.STATICALLY_TYPED;
+			case WITHOUT_EVALUATION:
+				return EvaluationMode.NONE;
+			case COMPILATION:
+				return EvaluationMode.COMPILED;
+			default:
+				throw new IllegalArgumentException("Unexpected parse mode: " + parseMode);
 		}
-		return parseMode == ParseMode.EVALUATION ? EvaluationMode.STATICALLY_TYPED : EvaluationMode.NONE;
 	}
 }

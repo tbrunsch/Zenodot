@@ -1,5 +1,6 @@
 package dd.kms.zenodot.utils;
 
+import dd.kms.zenodot.result.CompiledObjectParseResult;
 import dd.kms.zenodot.settings.ParserSettings;
 
 /**
@@ -23,5 +24,14 @@ public enum ParseMode
 	/**
 	 * Internal parse mode that suppresses evaluation to avoid side effects.
 	 */
-	WITHOUT_EVALUATION
+	WITHOUT_EVALUATION,
+
+	/**
+	 * Uses for expression compilation. In contrast to {@link #EVALUATION}, the expression is not evaluated
+	 * to obtain an object, but it is compiled into an {@link CompiledObjectParseResult}.
+	 * This compiled result is parameterized in {@code this} and can be evaluated by plugging in certain
+	 * values for {@code this}. For multiple evaluations this is usually faster than evaluating the expression
+	 * for each value of {@code this}.
+	 */
+	COMPILATION
 }

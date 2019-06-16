@@ -1,20 +1,20 @@
 package dd.kms.zenodot.parsers;
 
+import com.google.common.collect.Iterables;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.MethodScanner;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
-import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
-import dd.kms.zenodot.utils.wrappers.TypeInfo;
+import dd.kms.zenodot.utils.wrappers.*;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -137,7 +137,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 				log(LogLevel.ERROR, "no matching method found");
 				return ParseOutcomes.createParseError(tokenStream.getPosition(), "No method matches the given arguments", ErrorPriority.RIGHT_PARSER);
 			case 1: {
-				ExecutableInfo bestMatchingExecutableInfo = bestMatchingMethodInfos.get(0);
+				ExecutableInfo bestMatchingExecutableInfo = Iterables.getOnlyElement(bestMatchingMethodInfos);
 				ObjectInfo methodReturnInfo;
 				try {
 					methodReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(getContextObject(context), bestMatchingExecutableInfo, argumentInfos);
@@ -155,7 +155,10 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 					log(LogLevel.ERROR, "caught exception: " + e.getMessage());
 					return ParseOutcomes.createParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 				}
-				return parserToolbox.getObjectTailParser().parse(tokenStream, methodReturnInfo, expectation);
+				ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, methodReturnInfo, expectation);
+				return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+						? compile(parseOutcome, bestMatchingExecutableInfo, argumentParseOutcomes)
+						: parseOutcome;
 			}
 			default: {
 				String error = "Ambiguous method call. Possible candidates are:\n"
@@ -188,5 +191,40 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 
 	private List<ExecutableInfo> getMethodInfos(C context, MethodScanner methodScanner) {
 		return InfoProvider.getMethodInfos(getContextType(context), methodScanner);
+	}
+
+	private ParseOutcome compile(ParseOutcome tailParseOutcome, ExecutableInfo methodInfo, List<ParseOutcome> argumentParseOutcomes) {
+		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
+			return tailParseOutcome;
+		}
+		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
+		List<CompiledObjectParseResult> compiledArgumentParseResults = (List) argumentParseOutcomes;
+		return new CompiledMethodParseResult(compiledTailParseResult, methodInfo, compiledArgumentParseResults);
+	}
+
+	private static class CompiledMethodParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult			compiledTailParseResult;
+		private final ExecutableInfo					methodInfo;
+		private final List<CompiledObjectParseResult>	compiledArgumentParseResults;
+
+		CompiledMethodParseResult(CompiledObjectParseResult compiledTailParseResult, ExecutableInfo methodInfo, List<CompiledObjectParseResult> compiledArgumentParseResults) {
+			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
+			this.compiledTailParseResult = compiledTailParseResult;
+			this.methodInfo = methodInfo;
+			this.compiledArgumentParseResults = compiledArgumentParseResults;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			List<ObjectInfo> argumentInfos = new ArrayList<>(compiledArgumentParseResults.size());
+			for (CompiledObjectParseResult compiledArgumentParseResult : compiledArgumentParseResults) {
+				argumentInfos.add(compiledArgumentParseResult.evaluate(thisInfo, thisInfo));
+			}
+			// TODO: If C == TypeInfo, then contextObject should be null instead
+			Object contextObject = context.getObject();
+			ObjectInfo methodReturnInfo = OBJECT_INFO_PROVIDER.getExecutableReturnInfo(contextObject, methodInfo, argumentInfos);
+			return compiledTailParseResult.evaluate(thisInfo, methodReturnInfo);
+		}
 	}
 }

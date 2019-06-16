@@ -1,13 +1,11 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -53,7 +51,36 @@ public class ParenthesizedExpressionParser extends AbstractEntityParser<ObjectIn
 			log(LogLevel.INFO, "no completion suggestions available at " + tokenStream);
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
+		ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, objectInfo, expectation);
+		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+				? compile(parseOutcome, expressionParseOutcome)
+				: parseOutcome;
+	}
 
-		return parserToolbox.getObjectTailParser().parse(tokenStream, objectInfo, expectation);
+	private ParseOutcome compile(ParseOutcome tailParseOutcome, ParseOutcome expressionParseOutcome) {
+		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
+			return tailParseOutcome;
+		}
+		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
+		CompiledObjectParseResult compiledExpressionParseResult = (CompiledObjectParseResult) expressionParseOutcome;
+		return new CompiledParenthesizedExpressionParseResult(compiledTailParseResult, compiledExpressionParseResult);
+	}
+
+	private static class CompiledParenthesizedExpressionParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledTailParseResult;
+		private final CompiledObjectParseResult	compiledExpressionParseResult;
+
+		CompiledParenthesizedExpressionParseResult(CompiledObjectParseResult compiledTailParseResult, CompiledObjectParseResult compiledExpressionParseResult) {
+			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
+			this.compiledTailParseResult = compiledTailParseResult;
+			this.compiledExpressionParseResult = compiledExpressionParseResult;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			ObjectInfo expressionInfo = compiledExpressionParseResult.evaluate(thisInfo, context);
+			return compiledTailParseResult.evaluate(thisInfo, expressionInfo);
+		}
 	}
 }

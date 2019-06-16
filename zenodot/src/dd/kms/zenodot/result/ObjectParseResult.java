@@ -8,4 +8,5 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 public interface ObjectParseResult extends ParseResult
 {
 	ObjectInfo getObjectInfo();
+	boolean isCompiled();
 }

@@ -201,13 +201,14 @@ public class ParseUtils
 	}
 
 	public static void checkExpectedParseResultType(ParseOutcome parseOutcome, ParseExpectation expectation) {
-		if (parseOutcome.getOutcomeType() != ParseOutcomeType.RESULT) {
+		ParseResultType expectedResultType = expectation.getResultType();
+		ParseOutcomeType parseOutcomeType = parseOutcome.getOutcomeType();
+		if (parseOutcomeType != ParseOutcomeType.RESULT) {
 			// only results have to be checked
 			return;
 		}
 		ParseResult parseResult = (ParseResult) parseOutcome;
 		ParseResultType resultType = parseResult.getResultType();
-		ParseResultType expectedResultType = expectation.getResultType();
 		if (resultType != expectedResultType) {
 			throw new IllegalStateException("Internal error: Expected a parse result of type '" + expectedResultType + "', but obtained a parse result of type '" + resultType + "'");
 		}

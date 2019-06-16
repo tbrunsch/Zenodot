@@ -51,7 +51,7 @@ public class ObjectInfoProvider
 
 	public ObjectInfo getFieldValueInfo(Object contextObject, FieldInfo fieldInfo) {
 		Object fieldValue = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode != EvaluationMode.NONE) {
+		if (evaluationMode.isEvaluateValues()) {
 			try {
 				fieldValue = fieldInfo.get(contextObject);
 			} catch (IllegalAccessException e) {
@@ -77,15 +77,15 @@ public class ObjectInfoProvider
 
 	public ObjectInfo getExecutableReturnInfo(Object contextObject, ExecutableInfo executableInfo, List<ObjectInfo> argumentInfos) throws InvocationTargetException, InstantiationException {
 		final Object methodReturnValue;
-		if (evaluationMode == EvaluationMode.NONE) {
-			methodReturnValue = InfoProvider.INDETERMINATE_VALUE;
-		} else {
+		if (evaluationMode.isEvaluateValues()) {
 			Object[] arguments = executableInfo.createArgumentArray(argumentInfos);
 			try {
 				methodReturnValue = executableInfo.invoke(contextObject, arguments);
 			} catch (IllegalAccessException e) {
 				throw new IllegalStateException("Internal error: Unexpected " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			}
+		} else {
+			methodReturnValue = InfoProvider.INDETERMINATE_VALUE;
 		}
 		TypeInfo methodReturnType = getType(methodReturnValue, executableInfo.getReturnType());
 		return InfoProvider.createObjectInfo(methodReturnValue, methodReturnType);
@@ -94,15 +94,15 @@ public class ObjectInfoProvider
 	public ObjectInfo getArrayElementInfo(ObjectInfo arrayInfo, ObjectInfo indexInfo) {
 		final Object arrayElementValue;
 		final ObjectInfo.ValueSetter valueSetter;
-		if (evaluationMode == EvaluationMode.NONE) {
-			arrayElementValue = InfoProvider.INDETERMINATE_VALUE;
-			valueSetter = null;
-		} else {
+		if (evaluationMode.isEvaluateValues()) {
 			Object arrayObject = arrayInfo.getObject();
 			Object indexObject = indexInfo.getObject();
 			int index = ReflectionUtils.convertTo(indexObject, int.class, false);
 			arrayElementValue = Array.get(arrayObject, index);
 			valueSetter = value -> Array.set(arrayObject, index, value);
+		} else {
+			arrayElementValue = InfoProvider.INDETERMINATE_VALUE;
+			valueSetter = null;
 		}
 		TypeInfo arrayElementType = getType(arrayElementValue, getType(arrayInfo).getComponentType());
 		return InfoProvider.createObjectInfo(arrayElementValue, arrayElementType, valueSetter);
@@ -110,11 +110,11 @@ public class ObjectInfoProvider
 
 	public ObjectInfo getArrayInfo(TypeInfo componentType, ObjectInfo sizeInfo) {
 		final int size;
-		if (evaluationMode == EvaluationMode.NONE) {
-			size = 0;
-		} else {
+		if (evaluationMode.isEvaluateValues()) {
 			Object sizeObject = sizeInfo.getObject();
 			size = ReflectionUtils.convertTo(sizeObject, int.class, false);
+		} else {
+			size = 0;
 		}
 		return getArrayInfo(componentType, size);
 	}
@@ -122,7 +122,7 @@ public class ObjectInfoProvider
 	public ObjectInfo getArrayInfo(TypeInfo componentType, List<ObjectInfo> elementInfos) {
 		int size = elementInfos.size();
 		ObjectInfo arrayInfo = getArrayInfo(componentType, size);
-		if (evaluationMode != EvaluationMode.NONE) {
+		if (evaluationMode.isEvaluateValues()) {
 			Class<?> componentClass = componentType.getRawType();
 			Object arrayObject = arrayInfo.getObject();
 			for (int i = 0; i < size; i++) {
@@ -138,14 +138,14 @@ public class ObjectInfoProvider
 		Object array = Array.newInstance(componentClass, size);
 		Class<?> arrayClass = array.getClass();
 		TypeInfo arrayType = InfoProvider.createTypeInfo(arrayClass);
-		Object arrayObject = evaluationMode == EvaluationMode.NONE ? InfoProvider.INDETERMINATE_VALUE : array;
+		Object arrayObject = evaluationMode.isEvaluateValues() ? array : InfoProvider.INDETERMINATE_VALUE;
 		return InfoProvider.createObjectInfo(arrayObject, arrayType);
 	}
 
 	public ObjectInfo getCastInfo(ObjectInfo objectInfo, TypeInfo targetType) throws ClassCastException {
-		Object castedValue = evaluationMode == EvaluationMode.NONE
-								? InfoProvider.INDETERMINATE_VALUE
-								: ReflectionUtils.convertTo(objectInfo.getObject(), targetType.getRawType(), true);
+		Object castedValue = evaluationMode.isEvaluateValues()
+								? ReflectionUtils.convertTo(objectInfo.getObject(), targetType.getRawType(), true)
+								: InfoProvider.INDETERMINATE_VALUE;
 		return InfoProvider.createObjectInfo(castedValue, targetType);
 	}
 

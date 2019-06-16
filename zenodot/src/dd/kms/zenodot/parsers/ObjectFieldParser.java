@@ -1,11 +1,12 @@
 package dd.kms.zenodot.parsers;
 
+import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseResultType;
+import dd.kms.zenodot.result.AbstractCompiledParseResult;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
-
-import java.util.List;
 
 /**
  * Parses

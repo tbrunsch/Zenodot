@@ -1,5 +1,7 @@
 package dd.kms.zenodot.utils;
 
+import dd.kms.zenodot.result.CompiledObjectParseResult;
+
 /**
  * Mode that describes how expressions are evaluated. This mode cannot be set explicitly.
  */
@@ -10,14 +12,14 @@ public enum EvaluationMode
 	 * <br/>
 	 * This is the usual mode for code completion.
 	 */
-	NONE,
+	NONE(false),
 
 	/**
 	 * Use declared types<br/>
 	 * <br/>
 	 * This is the usual mode when evaluating expressions.
 	 */
-	STATICALLY_TYPED,
+	STATICALLY_TYPED(true),
 
 	/**
 	 * Use runtime types<br/>
@@ -51,5 +53,24 @@ public enum EvaluationMode
 	 *     </li>
 	 * </ul>
 	 */
-	DYNAMICALLY_TYPED
+	DYNAMICALLY_TYPED(true),
+
+	/**
+	 * Like {@link #NONE}, but the result, if successfull, will be a {@link CompiledObjectParseResult}.<br/>
+	 * <br/>
+	 * This ist the mode you should use when you want to evaluate an expression over and over for different values of {@code this}.
+	 */
+	COMPILED(false)
+
+	;
+
+	private final boolean	evaluateValues;
+
+	EvaluationMode(boolean evaluateValues) {
+		this.evaluateValues = evaluateValues;
+	}
+
+	public boolean isEvaluateValues() {
+		return evaluateValues;
+	}
 }

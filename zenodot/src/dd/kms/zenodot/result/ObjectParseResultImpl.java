@@ -28,6 +28,11 @@ class ObjectParseResultImpl implements ObjectParseResult
 	}
 
 	@Override
+	public boolean isCompiled() {
+		return false;
+	}
+
+	@Override
 	public int getPosition() {
 		return position;
 	}

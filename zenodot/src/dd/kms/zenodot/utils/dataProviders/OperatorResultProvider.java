@@ -9,7 +9,6 @@ import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
 import dd.kms.zenodot.utils.EvaluationMode;
-import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -168,11 +167,11 @@ public class OperatorResultProvider
 		addLogicalOperator(BinaryOperator.LOGICAL_OR,	(a, b) -> a || b);
 	}
 
-	private final ParserToolbox 	parserToolbox;
-	private final EvaluationMode	evaluationMode;
+	private final ObjectInfoProvider 	objectInfoProvider;
+	private final EvaluationMode		evaluationMode;
 
-	public OperatorResultProvider(ParserToolbox parserToolbox, EvaluationMode evaluationMode) {
-		this.parserToolbox = parserToolbox;
+	public OperatorResultProvider(ObjectInfoProvider objectInfoProvider, EvaluationMode evaluationMode) {
+		this.objectInfoProvider = objectInfoProvider;
 		this.evaluationMode = evaluationMode;
 	}
 
@@ -214,7 +213,7 @@ public class OperatorResultProvider
 		}
 		TypeInfo resultType = primitiveClass == long.class ? InfoProvider.createTypeInfo(long.class) : InfoProvider.createTypeInfo(int.class);
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode != EvaluationMode.NONE) {
+		if (evaluationMode.isEvaluateValues()) {
 			Object object = objectInfo.getObject();
 			if (primitiveClass == long.class) {
 				result = ~ReflectionUtils.convertTo(object, long.class, false).longValue();
@@ -326,7 +325,7 @@ public class OperatorResultProvider
 			throw new OperatorException("Cannot assign values to non-lvalues or final fields");
 		}
 		TypeInfo declaredLhsType = lhs.getDeclaredType();
-		TypeInfo rhsType = parserToolbox.getObjectInfoProvider().getType(rhs);
+		TypeInfo rhsType = objectInfoProvider.getType(rhs);
 
 		// declared type of variables is unknown and we want be able to assign them a value
 		if (declaredLhsType != InfoProvider.UNKNOWN_TYPE && !MatchRatings.isConvertibleTo(rhsType, declaredLhsType)) {
@@ -334,7 +333,7 @@ public class OperatorResultProvider
 		}
 		TypeInfo declaredResultType = declaredLhsType;
 		Object resultObject = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode != EvaluationMode.NONE) {
+		if (evaluationMode.isEvaluateValues()) {
 			try {
 				resultObject = rhs.getObject();
 				lhsValueSetter.setObject(resultObject);
@@ -349,7 +348,7 @@ public class OperatorResultProvider
 	 * Utility Methods
 	 */
 	private Class<?> getClass(ObjectInfo objectInfo) {
-		TypeInfo type = parserToolbox.getObjectInfoProvider().getType(objectInfo);
+		TypeInfo type = objectInfoProvider.getType(objectInfo);
 		return type.getRawType();
 	}
 
@@ -397,7 +396,7 @@ public class OperatorResultProvider
 		}
 		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode != EvaluationMode.NONE) {
+		if (evaluationMode.isEvaluateValues()) {
 			Function<Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(objectInfo.getObject());
 		}
@@ -413,7 +412,7 @@ public class OperatorResultProvider
 		Class<?> primitiveClass = getPrimitiveClass(clazz);
 		UnaryOperatorInfo operatorInfo = UNARY_OPERATOR_WITH_ASSIGNMENT_INFO_BY_OPERATOR_AND_TYPE.get(operator, primitiveClass);
 		ObjectInfo operatorResult = applyUnaryOperatorInfo(objectInfo, operatorInfo);
-		if (evaluationMode != EvaluationMode.NONE) {
+		if (evaluationMode.isEvaluateValues()) {
 			try {
 				Object resultObject = operatorResult.getObject();
 				valueSetter.setObject(resultObject);
@@ -471,7 +470,7 @@ public class OperatorResultProvider
 		}
 		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode != EvaluationMode.NONE) {
+		if (evaluationMode.isEvaluateValues()) {
 			BiFunction<Object, Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(lhs.getObject(), rhs.getObject());
 		}
@@ -487,7 +486,7 @@ public class OperatorResultProvider
 	private ObjectInfo concat(ObjectInfo lhs, ObjectInfo rhs) {
 		TypeInfo resultType = InfoProvider.createTypeInfo(String.class);
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode != EvaluationMode.NONE) {
+		if (evaluationMode.isEvaluateValues()) {
 			String lhsAsString = getStringRepresentation(lhs.getObject());
 			String rhsAsString = getStringRepresentation(rhs.getObject());
 			result = lhsAsString + rhsAsString;

@@ -7,6 +7,7 @@ import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionKeyword;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -53,6 +54,35 @@ public class ClassObjectParser extends AbstractEntityParser<TypeInfo>
 		Class<?> classObject = contextType.getRawType();
 		ObjectInfo classObjectInfo = InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
 
-		return parserToolbox.getObjectTailParser().parse(tokenStream, classObjectInfo, expectation);
+		ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, classObjectInfo, expectation);
+		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+				? compile(parseOutcome, classObject)
+				: parseOutcome;
+	}
+
+	private ParseOutcome compile(ParseOutcome tailParseOutcome, Class<?> classObject) {
+		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
+			return tailParseOutcome;
+		}
+		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
+		return new CompiledClassObjectParseResult(compiledTailParseResult, classObject);
+	}
+
+	private static class CompiledClassObjectParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledTailParseResult;
+		private final Class<?>								classObject;
+
+		CompiledClassObjectParseResult(CompiledObjectParseResult compiledTailParseResult, Class<?> classObject) {
+			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
+			this.compiledTailParseResult = compiledTailParseResult;
+			this.classObject = classObject;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			ObjectInfo classObjectInfo = InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
+			return compiledTailParseResult.evaluate(thisInfo, classObjectInfo);
+		}
 	}
 }

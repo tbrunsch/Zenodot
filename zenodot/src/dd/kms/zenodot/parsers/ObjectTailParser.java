@@ -1,13 +1,11 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
@@ -64,9 +62,9 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 			return parseOutcomeForPropagation.get();
 		}
 
-		ObjectParseResult parseResult = (ObjectParseResult) arrayIndexParseOutcome;
-		int parsedToPosition = parseResult.getPosition();
-		ObjectInfo indexInfo = parseResult.getObjectInfo();
+		ObjectParseResult arrayIndexParseResult = (ObjectParseResult) arrayIndexParseOutcome;
+		int parsedToPosition = arrayIndexParseResult.getPosition();
+		ObjectInfo indexInfo = arrayIndexParseResult.getObjectInfo();
 		ObjectInfo elementInfo;
 		try {
 			elementInfo = parserToolbox.getObjectInfoProvider().getArrayElementInfo(contextInfo, indexInfo);
@@ -76,13 +74,18 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 			return ParseOutcomes.createParseError(indexStartPosition, e.getClass().getSimpleName() + " during array index evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 		}
 		tokenStream.moveTo(parsedToPosition);
-		return parserToolbox.getObjectTailParser().parse(tokenStream, elementInfo, expectation);
+		ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, elementInfo, expectation);
+		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+				? compileArrayParseResult(parseOutcome, arrayIndexParseResult)
+				: parseOutcome;
 
 	}
 
 	@Override
 	ParseOutcome createParseOutcome(int position, ObjectInfo objectInfo) {
-		return ParseOutcomes.createObjectParseResult(position, objectInfo);
+		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+				? ParseOutcomes.createCompiledIdentityObjectParseResult(position, objectInfo)
+				: ParseOutcomes.createObjectParseResult(position, objectInfo);
 	}
 
 	private ParseOutcome parseArrayIndex(TokenStream tokenStream, ParseExpectation expectation) {
@@ -114,6 +117,59 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
 
-		return ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
+		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+				? compileArrayIndex(arrayIndexParseOutcome, tokenStream.getPosition())
+				: ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
+	}
+
+	private ParseOutcome compileArrayParseResult(ParseOutcome tailParseOutcome, ObjectParseResult arrayIndexParseResult) {
+		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
+			return tailParseOutcome;
+		}
+		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
+		CompiledObjectParseResult compiledArrayIndexParseResult = (CompiledObjectParseResult) arrayIndexParseResult;
+		return new CompiledArrayParseResult(compiledTailParseResult, compiledArrayIndexParseResult);
+	}
+
+	private ParseOutcome compileArrayIndex(ParseOutcome arrayIndexParseOutcome, int position) {
+		if (!ParseOutcomes.isCompiledParseResult(arrayIndexParseOutcome)) {
+			return arrayIndexParseOutcome;
+		}
+		CompiledObjectParseResult compiledArrayIndexParseResult = (CompiledObjectParseResult) arrayIndexParseOutcome;
+		return new CompiledArrayIndexParseResult(compiledArrayIndexParseResult, position);
+	}
+
+	private static class CompiledArrayParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledTailParseResult;
+		private final CompiledObjectParseResult	compiledArrayIndexParseResult;
+
+		CompiledArrayParseResult(CompiledObjectParseResult compiledTailParseResult, CompiledObjectParseResult compiledArrayIndexParseResult) {
+			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
+			this.compiledTailParseResult = compiledTailParseResult;
+			this.compiledArrayIndexParseResult = compiledArrayIndexParseResult;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			ObjectInfo indexInfo = compiledArrayIndexParseResult.evaluate(thisInfo, context);
+			ObjectInfo elementInfo = OBJECT_INFO_PROVIDER.getArrayElementInfo(context, indexInfo);
+			return compiledTailParseResult.evaluate(thisInfo, elementInfo);
+		}
+	}
+
+	private static class CompiledArrayIndexParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledArrayIndexParseResult;
+
+		private CompiledArrayIndexParseResult(CompiledObjectParseResult compiledArrayIndexParseResult, int position) {
+			super(position, compiledArrayIndexParseResult.getObjectInfo());
+			this.compiledArrayIndexParseResult = compiledArrayIndexParseResult;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			return compiledArrayIndexParseResult.evaluate(thisInfo, thisInfo);
+		}
 	}
 }

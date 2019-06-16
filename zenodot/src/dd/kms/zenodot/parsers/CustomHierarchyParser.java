@@ -3,14 +3,13 @@ package dd.kms.zenodot.parsers;
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.common.RegexUtils;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.CompletionSuggestions;
+import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -51,7 +50,8 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		ObjectTreeNode hierarchyNode = parserToolbox.getSettings().getCustomHierarchyRoot();
-		return parseHierarchyNode(tokenStream, hierarchyNode, expectation);
+		ParseOutcome parseOutcome = parseHierarchyNode(tokenStream, hierarchyNode, expectation);
+		return parseOutcome;
 	}
 
 	private ParseOutcome parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ParseExpectation expectation) {
@@ -91,10 +91,38 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 		} else if (character == HIERARCHY_END) {
 			Object userObject = firstChildNodeMatch.getUserObject();
 			ObjectInfo userObjectInfo = InfoProvider.createObjectInfo(userObject, InfoProvider.UNKNOWN_TYPE);
-			return parserToolbox.getObjectTailParser().parse(tokenStream, userObjectInfo, expectation);
+			ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, userObjectInfo, expectation);
+			return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+					? compile(parseOutcome, userObjectInfo)
+					: parseOutcome;
 		}
 
 		log(LogLevel.ERROR, "expected '" + HIERARCHY_SEPARATOR + "' or '" + HIERARCHY_END + "'");
 		return ParseOutcomes.createParseError(endPosition, "Expected hierarchy separator ('" + HIERARCHY_SEPARATOR + "') or hierarchy end character ('" + HIERARCHY_END + "')", ErrorPriority.RIGHT_PARSER);
+	}
+
+	private ParseOutcome compile(ParseOutcome tailParseOutcome, ObjectInfo userObjectInfo) {
+		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
+			return tailParseOutcome;
+		}
+		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
+		return new CompiledCustomHierarchyParseResult(compiledTailParseResult, userObjectInfo);
+	}
+
+	private static class CompiledCustomHierarchyParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledTailParseResult;
+		private final ObjectInfo							userObjectInfo;
+
+		CompiledCustomHierarchyParseResult(CompiledObjectParseResult compiledTailParseResult, ObjectInfo userObjectInfo) {
+			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
+			this.compiledTailParseResult = compiledTailParseResult;
+			this.userObjectInfo = userObjectInfo;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			return compiledTailParseResult.evaluate(thisInfo, userObjectInfo);
+		}
 	}
 }

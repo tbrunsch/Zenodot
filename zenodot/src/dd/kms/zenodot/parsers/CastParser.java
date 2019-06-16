@@ -5,6 +5,7 @@ import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -82,10 +83,38 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		try {
 			ObjectInfo castInfo = parserToolbox.getObjectInfoProvider().getCastInfo(objectInfo, targetType);
 			log(LogLevel.SUCCESS, "successfully casted object");
-			return ParseOutcomes.createObjectParseResult(parsedToPosition, castInfo);
+			return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+					? compile(parseResult, targetType, parsedToPosition, castInfo)
+					: ParseOutcomes.createObjectParseResult(parsedToPosition, castInfo);
 		} catch (ClassCastException e) {
 			log(LogLevel.ERROR, "class cast exception: " + e.getMessage());
 			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Cannot cast expression to '" + targetType + "'", ErrorPriority.RIGHT_PARSER, e);
+		}
+	}
+
+	private ParseOutcome compile(ObjectParseResult objectParseResult, TypeInfo targetType, int position, ObjectInfo castInfo) {
+		if (!ParseOutcomes.isCompiledParseResult(objectParseResult)) {
+			return objectParseResult;
+		}
+		CompiledObjectParseResult compiledObjectParseResult = (CompiledObjectParseResult) objectParseResult;
+		return new CompiledCastParseResult(compiledObjectParseResult, targetType, position, castInfo);
+	}
+
+	private static class CompiledCastParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledObjectParseResult;
+		private final TypeInfo								targetType;
+
+		CompiledCastParseResult(CompiledObjectParseResult compiledObjectParseResult, TypeInfo targetType, int position, ObjectInfo castInfo) {
+			super(position, castInfo);
+			this.compiledObjectParseResult = compiledObjectParseResult;
+			this.targetType = targetType;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			ObjectInfo objectInfo = compiledObjectParseResult.evaluate(thisInfo, context);
+			return OBJECT_INFO_PROVIDER.getCastInfo(objectInfo, targetType);
 		}
 	}
 }

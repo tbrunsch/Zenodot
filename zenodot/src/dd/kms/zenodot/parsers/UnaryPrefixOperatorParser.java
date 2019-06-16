@@ -2,14 +2,12 @@ package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider;
@@ -66,6 +64,10 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 			return parseOutcomeForPropagation.get();
 		}
 
+		if (parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED) {
+			return compile(parseOutcome, operator);
+		}
+
 		ObjectParseResult expressionParseResult = (ObjectParseResult) parseOutcome;
 		int parsedToPosition = expressionParseResult.getPosition();
 		ObjectInfo expressionInfo = expressionParseResult.getObjectInfo();
@@ -82,12 +84,42 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	private ObjectInfo applyOperator(ObjectInfo objectInfo, UnaryOperator operator) throws OperatorException {
-		return OPERATOR_IMPLEMENTATIONS.get(operator).apply(parserToolbox.getOperatorResultProvider(), objectInfo);
+		return applyOperator(objectInfo, operator, parserToolbox.getOperatorResultProvider());
+	}
+
+	private static ObjectInfo applyOperator(ObjectInfo objectInfo, UnaryOperator operator, OperatorResultProvider operatorResultProvider) throws OperatorException {
+		return OPERATOR_IMPLEMENTATIONS.get(operator).apply(operatorResultProvider, objectInfo);
+	}
+
+	private ParseOutcome compile(ParseOutcome expressionParseOutcome, UnaryOperator operator) {
+		if (!ParseOutcomes.isCompiledParseResult(expressionParseOutcome)) {
+			return expressionParseOutcome;
+		}
+		CompiledObjectParseResult compiledExpressionParseResult = (CompiledObjectParseResult) expressionParseOutcome;
+		return new CompiledUnaryPrefixOperatorParseResult(compiledExpressionParseResult, operator);
 	}
 
 	@FunctionalInterface
 	private interface OperatorImplementation
 	{
 		ObjectInfo apply(OperatorResultProvider operatorResultProvider, ObjectInfo objectInfo) throws OperatorException;
+	}
+
+	private static class CompiledUnaryPrefixOperatorParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledExpressionParseResult;
+		private final UnaryOperator							operator;
+
+		private CompiledUnaryPrefixOperatorParseResult(CompiledObjectParseResult compiledExpressionParseResult, UnaryOperator operator) {
+			super(compiledExpressionParseResult.getPosition(), compiledExpressionParseResult.getObjectInfo());
+			this.compiledExpressionParseResult = compiledExpressionParseResult;
+			this.operator = operator;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			ObjectInfo expressionInfo = compiledExpressionParseResult.evaluate(thisInfo, context);
+			return applyOperator(expressionInfo, operator, OPERATOR_RESULT_PROVIDER);
+		}
 	}
 }

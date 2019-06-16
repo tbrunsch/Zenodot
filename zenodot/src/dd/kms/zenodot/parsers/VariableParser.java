@@ -1,12 +1,15 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
+import dd.kms.zenodot.result.AbstractCompiledParseResult;
+import dd.kms.zenodot.result.CompiledObjectParseResult;
 import dd.kms.zenodot.result.ParseOutcome;
 import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
@@ -76,6 +79,34 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 		Variable matchingVariable = firstVariableMatch.get();
 		ObjectInfo matchingVariableInfo = parserToolbox.getObjectInfoProvider().getVariableInfo(matchingVariable);
 
-		return parserToolbox.getObjectTailParser().parse(tokenStream, matchingVariableInfo, expectation);
+		ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, matchingVariableInfo, expectation);
+		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+				? compile(parseOutcome, matchingVariableInfo)
+				: parseOutcome;
+	}
+
+	private ParseOutcome compile(ParseOutcome tailParseOutcome, ObjectInfo variableInfo) {
+		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
+			return tailParseOutcome;
+		}
+		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
+		return new CompiledVariableParseResult(compiledTailParseResult, variableInfo);
+	}
+
+	private class CompiledVariableParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledTailParseResult;
+		private final ObjectInfo							variableInfo;
+
+		CompiledVariableParseResult(CompiledObjectParseResult compiledTailParseResult, ObjectInfo variableInfo) {
+			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
+			this.compiledTailParseResult = compiledTailParseResult;
+			this.variableInfo = variableInfo;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			return compiledTailParseResult.evaluate(thisInfo, variableInfo);
+		}
 	}
 }
