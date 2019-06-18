@@ -10,7 +10,7 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 /**
  * Base class for {@link ClassTailParser} and {@link ObjectTailParser}
  */
-abstract class AbstractTailParser<C> extends AbstractEntityParser<C>
+abstract class AbstractTailParser<C> extends AbstractParser<C>
 {
 	AbstractTailParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);

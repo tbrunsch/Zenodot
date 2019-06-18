@@ -10,7 +10,7 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
  * Parses an arbitrary Java expression without binary operators. Use the {@link ExpressionParser}
  * if binary operators should be considered as well.
  */
-public class SimpleExpressionParser extends AbstractEntityParser<ObjectInfo>
+public class SimpleExpressionParser extends AbstractParser<ObjectInfo>
 {
 	public SimpleExpressionParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);

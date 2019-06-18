@@ -31,10 +31,10 @@ public class ClassTailParser extends AbstractTailParser<TypeInfo>
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		assert characterToken.getValue().equals(".");
 
-		AbstractEntityParser<TypeInfo> fieldParser = parserToolbox.getClassFieldParser();
-		AbstractEntityParser<TypeInfo> methodParser = parserToolbox.getClassMethodParser();
-		AbstractEntityParser<TypeInfo> innerClassParser = parserToolbox.getInnerClassParser();
-		AbstractEntityParser<TypeInfo> classObjectParser = parserToolbox.getClassObjectParser();
+		AbstractParser<TypeInfo> fieldParser = parserToolbox.getClassFieldParser();
+		AbstractParser<TypeInfo> methodParser = parserToolbox.getClassMethodParser();
+		AbstractParser<TypeInfo> innerClassParser = parserToolbox.getInnerClassParser();
+		AbstractParser<TypeInfo> classObjectParser = parserToolbox.getClassObjectParser();
 		if (expectation.getResultType() == ParseResultType.CLASS) {
 			return innerClassParser.parse(tokenStream, classType, expectation);
 		} else {

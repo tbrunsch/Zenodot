@@ -135,7 +135,8 @@ public class ObjectInfoProvider
 
 	private ObjectInfo getArrayInfo(TypeInfo componentType, int size) {
 		Class<?> componentClass = componentType.getRawType();
-		Object array = Array.newInstance(componentClass, size);
+		int sizeToAllocate = evaluationMode.isEvaluateValues() ? size : 0;
+		Object array = Array.newInstance(componentClass, sizeToAllocate);
 		Class<?> arrayClass = array.getClass();
 		TypeInfo arrayType = InfoProvider.createTypeInfo(arrayClass);
 		Object arrayObject = evaluationMode.isEvaluateValues() ? array : InfoProvider.INDETERMINATE_VALUE;

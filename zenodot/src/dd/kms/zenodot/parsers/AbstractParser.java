@@ -6,6 +6,7 @@ import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -66,13 +67,13 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
  *     </li>
  * </ol>
  */
-public abstract class AbstractEntityParser<C>
+public abstract class AbstractParser<C>
 {
 	final ParserToolbox			parserToolbox;
 	final ObjectInfo			thisInfo;
 	private final ParserLogger 	logger;
 
-	AbstractEntityParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
+	AbstractParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		this.parserToolbox = parserToolbox;
 		this.thisInfo = thisInfo;
 		logger = parserToolbox.getSettings().getLogger();
@@ -97,6 +98,10 @@ public abstract class AbstractEntityParser<C>
 		} finally {
 			logger.endChildScope();
 		}
+	}
+
+	boolean isCompile() {
+		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED;
 	}
 
 	/**

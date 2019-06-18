@@ -16,7 +16,7 @@ import java.util.Optional;
 /**
  * Parses expressions of the form {@code (<class>) <expression>} in the context of {@code this}.
  */
-public class CastParser extends AbstractEntityParser<ObjectInfo>
+public class CastParser extends AbstractParser<ObjectInfo>
 {
 	public CastParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
@@ -83,7 +83,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		try {
 			ObjectInfo castInfo = parserToolbox.getObjectInfoProvider().getCastInfo(objectInfo, targetType);
 			log(LogLevel.SUCCESS, "successfully casted object");
-			return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+			return isCompile()
 					? compile(parseResult, targetType, parsedToPosition, castInfo)
 					: ParseOutcomes.createObjectParseResult(parsedToPosition, castInfo);
 		} catch (ClassCastException e) {
@@ -112,8 +112,8 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
-			ObjectInfo objectInfo = compiledObjectParseResult.evaluate(thisInfo, context);
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			ObjectInfo objectInfo = compiledObjectParseResult.evaluate(thisInfo, contextInfo);
 			return OBJECT_INFO_PROVIDER.getCastInfo(objectInfo, targetType);
 		}
 	}

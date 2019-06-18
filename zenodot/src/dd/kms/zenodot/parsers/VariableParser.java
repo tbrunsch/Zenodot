@@ -22,16 +22,16 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
 /**
  * Parses expressions of the form {@code <variable>} in the (ignored) context of {@code this}, where
- * {@code <variable>} refers to one of the variables specified by {@link ParserSettingsBuilder#addVariable(Variable)}.
+ * {@code <variable>} refers to one of the variables specified by {@link ParserSettingsBuilder#variables(List)}.
  */
-public class VariableParser extends AbstractEntityParser<ObjectInfo>
+public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
 	public VariableParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
 	}
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
@@ -79,34 +79,9 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 		Variable matchingVariable = firstVariableMatch.get();
 		ObjectInfo matchingVariableInfo = parserToolbox.getObjectInfoProvider().getVariableInfo(matchingVariable);
 
-		ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, matchingVariableInfo, expectation);
-		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
-				? compile(parseOutcome, matchingVariableInfo)
-				: parseOutcome;
-	}
-
-	private ParseOutcome compile(ParseOutcome tailParseOutcome, ObjectInfo variableInfo) {
-		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
-			return tailParseOutcome;
-		}
-		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
-		return new CompiledVariableParseResult(compiledTailParseResult, variableInfo);
-	}
-
-	private class CompiledVariableParseResult extends AbstractCompiledParseResult
-	{
-		private final CompiledObjectParseResult	compiledTailParseResult;
-		private final ObjectInfo							variableInfo;
-
-		CompiledVariableParseResult(CompiledObjectParseResult compiledTailParseResult, ObjectInfo variableInfo) {
-			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
-			this.compiledTailParseResult = compiledTailParseResult;
-			this.variableInfo = variableInfo;
-		}
-
-		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
-			return compiledTailParseResult.evaluate(thisInfo, variableInfo);
-		}
+		int position = tokenStream.getPosition();
+		return isCompile()
+				? ParseOutcomes.createCompiledConstantObjectParseResult(position, matchingVariableInfo)
+				: ParseOutcomes.createObjectParseResult(position, matchingVariableInfo);
 	}
 }

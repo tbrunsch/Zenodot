@@ -19,7 +19,7 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 /**
  * Base class for {@link ClassFieldParser} and {@link ObjectFieldParser}
  */
-abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
+abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 {
 	AbstractFieldParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
@@ -31,7 +31,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	ParseOutcome parseNext(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (contextCausesNullPointerException(context)) {
@@ -92,10 +92,10 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 		Object contextObject = getContextObject(context);
 		ObjectInfo matchingFieldInfo = parserToolbox.getObjectInfoProvider().getFieldValueInfo(contextObject, fieldInfo);
 
-		ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, matchingFieldInfo, expectation);
-		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
-				? compile(parseOutcome, fieldInfo)
-				: parseOutcome;
+		int position = tokenStream.getPosition();
+		return isCompile()
+				? compile(fieldInfo, position, matchingFieldInfo)
+				: ParseOutcomes.createObjectParseResult(position, matchingFieldInfo);
 	}
 
 	private CompletionSuggestions suggestFields(String expectedName, C context, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
@@ -123,31 +123,24 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 		return InfoProvider.getFieldInfos(getContextType(context), fieldScanner);
 	}
 
-	private ParseOutcome compile(ParseOutcome tailParseOutcome, FieldInfo fieldInfo) {
-		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
-			return tailParseOutcome;
-		}
-		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
-		return new CompiledFieldParseResult(compiledTailParseResult, fieldInfo);
+	private ParseOutcome compile(FieldInfo fieldInfo, int position, ObjectInfo objectInfo) {
+		return new CompiledFieldParseResult(fieldInfo, position, objectInfo);
 	}
 
 	private class CompiledFieldParseResult extends AbstractCompiledParseResult
 	{
-		private final CompiledObjectParseResult compiledTailParseResult;
-		private final FieldInfo					fieldInfo;
+		private final FieldInfo	fieldInfo;
 
-		CompiledFieldParseResult(CompiledObjectParseResult compiledTailParseResult, FieldInfo fieldInfo) {
-			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
+		CompiledFieldParseResult(FieldInfo fieldInfo, int position, ObjectInfo objectInfo) {
+			super(position, objectInfo);
 			this.fieldInfo = fieldInfo;
-			this.compiledTailParseResult = compiledTailParseResult;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
 			// TODO: If C == TypeInfo, then contextObject should be null instead
-			Object contextObject = context.getObject();
-			ObjectInfo matchingFieldInfo = OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
-			return compiledTailParseResult.evaluate(thisInfo, matchingFieldInfo);
+			Object contextObject = contextInfo.getObject();
+			return OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
 		}
 	}
 }

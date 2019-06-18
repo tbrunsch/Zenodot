@@ -30,7 +30,7 @@ import java.util.Optional;
  * </ul>
  * Note that the postfix operators {@code <expression>++} and {@code <expression>--} are not supported.
  */
-public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
+public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo>
 {
 	private static final Map<UnaryOperator, OperatorImplementation>	OPERATOR_IMPLEMENTATIONS = ImmutableMap.<UnaryOperator, OperatorImplementation>builder()
 		.put(UnaryOperator.INCREMENT, 	OperatorResultProvider::getIncrementInfo)
@@ -64,7 +64,7 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 			return parseOutcomeForPropagation.get();
 		}
 
-		if (parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED) {
+		if (isCompile()) {
 			return compile(parseOutcome, operator);
 		}
 
@@ -117,8 +117,8 @@ public class UnaryPrefixOperatorParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
-			ObjectInfo expressionInfo = compiledExpressionParseResult.evaluate(thisInfo, context);
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			ObjectInfo expressionInfo = compiledExpressionParseResult.evaluate(thisInfo, contextInfo);
 			return applyOperator(expressionInfo, operator, OPERATOR_RESULT_PROVIDER);
 		}
 	}

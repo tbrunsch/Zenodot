@@ -19,7 +19,7 @@ import java.util.Optional;
  * Parses subexpressions {@code <inner class>} of expressions of the form {@code <class>.<inner class>}.
  * The class {@code <class>} is the context for the parser.
  */
-public class InnerClassParser extends AbstractEntityParser<TypeInfo>
+public class InnerClassParser extends AbstractParser<TypeInfo>
 {
 	public InnerClassParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);

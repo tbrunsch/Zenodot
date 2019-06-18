@@ -3,7 +3,7 @@ package dd.kms.zenodot.utils;
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
-import dd.kms.zenodot.parsers.AbstractEntityParser;
+import dd.kms.zenodot.parsers.AbstractParser;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
@@ -34,7 +34,7 @@ public class ParseUtils
 	 * Tries to parse a subexpression with the specified parsers. The result is obtained from merging the result
 	 * of each of the specified parsers.
 	 */
-	public static <C> ParseOutcome parse(TokenStream tokenStream, C context, ParseExpectation expectation, AbstractEntityParser<? super C>... parsers) {
+	public static <C> ParseOutcome parse(TokenStream tokenStream, C context, ParseExpectation expectation, AbstractParser<? super C>... parsers) {
 		List<ParseOutcome> parseOutcomes = Arrays.stream(parsers)
 			.map(parser -> parser.parse(tokenStream, context, expectation))
 			.collect(Collectors.toList());

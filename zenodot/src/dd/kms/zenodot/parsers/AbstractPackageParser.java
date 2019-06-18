@@ -18,7 +18,7 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 /**
  * Base class for {@link RootpackageParser} and {@link SubpackageParser}
  */
-abstract class AbstractPackageParser<C> extends AbstractEntityParser<C>
+abstract class AbstractPackageParser<C> extends AbstractParser<C>
 {
 	AbstractPackageParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
@@ -70,9 +70,9 @@ abstract class AbstractPackageParser<C> extends AbstractEntityParser<C>
 		}
 		log(LogLevel.INFO, "detected '.'");
 
-		AbstractEntityParser<PackageInfo>[] parsers = expectation.getResultType() == ParseResultType.PACKAGE
-														? new AbstractEntityParser[]{ parserToolbox.getSubpackageParser() }
-														: new AbstractEntityParser[] { parserToolbox.getQualifiedClassParser(), parserToolbox.getSubpackageParser() };
+		AbstractParser<PackageInfo>[] parsers = expectation.getResultType() == ParseResultType.PACKAGE
+														? new AbstractParser[]{ parserToolbox.getSubpackageParser() }
+														: new AbstractParser[] { parserToolbox.getQualifiedClassParser(), parserToolbox.getSubpackageParser() };
 		return ParseUtils.parse(tokenStream, packageInfo, expectation,	parsers);
 	}
 

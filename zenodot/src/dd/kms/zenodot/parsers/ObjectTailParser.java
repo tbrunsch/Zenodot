@@ -35,8 +35,8 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		assert characterToken.getValue().equals(".");
 
-		AbstractEntityParser<ObjectInfo> fieldParser = parserToolbox.getObjectFieldParser();
-		AbstractEntityParser<ObjectInfo> methodParser = parserToolbox.getObjectMethodParser();
+		AbstractParser<ObjectInfo> fieldParser = parserToolbox.getObjectFieldParser();
+		AbstractParser<ObjectInfo> methodParser = parserToolbox.getObjectMethodParser();
 		return ParseUtils.parse(tokenStream, contextInfo, expectation,
 			fieldParser,
 			methodParser
@@ -73,17 +73,16 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 			log(LogLevel.ERROR, "caught exception: " + e.getMessage());
 			return ParseOutcomes.createParseError(indexStartPosition, e.getClass().getSimpleName() + " during array index evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 		}
-		tokenStream.moveTo(parsedToPosition);
-		ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, elementInfo, expectation);
-		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
-				? compileArrayParseResult(parseOutcome, arrayIndexParseResult)
-				: parseOutcome;
 
+		ParseOutcome arrayParseResult = isCompile()
+										? compileArrayParseResult(arrayIndexParseResult, parsedToPosition, elementInfo)
+										: ParseOutcomes.createObjectParseResult(parsedToPosition, elementInfo);
+		return ParseOutcomes.parseTail(tokenStream, arrayParseResult, parserToolbox, expectation);
 	}
 
 	@Override
 	ParseOutcome createParseOutcome(int position, ObjectInfo objectInfo) {
-		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+		return isCompile()
 				? ParseOutcomes.createCompiledIdentityObjectParseResult(position, objectInfo)
 				: ParseOutcomes.createObjectParseResult(position, objectInfo);
 	}
@@ -117,18 +116,14 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
 
-		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+		return isCompile()
 				? compileArrayIndex(arrayIndexParseOutcome, tokenStream.getPosition())
 				: ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
 	}
 
-	private ParseOutcome compileArrayParseResult(ParseOutcome tailParseOutcome, ObjectParseResult arrayIndexParseResult) {
-		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
-			return tailParseOutcome;
-		}
-		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
+	private ParseOutcome compileArrayParseResult(ObjectParseResult arrayIndexParseResult, int position, ObjectInfo elementInfo) {
 		CompiledObjectParseResult compiledArrayIndexParseResult = (CompiledObjectParseResult) arrayIndexParseResult;
-		return new CompiledArrayParseResult(compiledTailParseResult, compiledArrayIndexParseResult);
+		return new CompiledArrayParseResult(compiledArrayIndexParseResult, position, elementInfo);
 	}
 
 	private ParseOutcome compileArrayIndex(ParseOutcome arrayIndexParseOutcome, int position) {
@@ -136,40 +131,22 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 			return arrayIndexParseOutcome;
 		}
 		CompiledObjectParseResult compiledArrayIndexParseResult = (CompiledObjectParseResult) arrayIndexParseOutcome;
-		return new CompiledArrayIndexParseResult(compiledArrayIndexParseResult, position);
+		return ParseOutcomes.deriveCompiledObjectParseResult(compiledArrayIndexParseResult, position);
 	}
 
 	private static class CompiledArrayParseResult extends AbstractCompiledParseResult
 	{
-		private final CompiledObjectParseResult	compiledTailParseResult;
 		private final CompiledObjectParseResult	compiledArrayIndexParseResult;
 
-		CompiledArrayParseResult(CompiledObjectParseResult compiledTailParseResult, CompiledObjectParseResult compiledArrayIndexParseResult) {
-			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
-			this.compiledTailParseResult = compiledTailParseResult;
+		CompiledArrayParseResult(CompiledObjectParseResult compiledArrayIndexParseResult, int position, ObjectInfo elementInfo) {
+			super(position, elementInfo);
 			this.compiledArrayIndexParseResult = compiledArrayIndexParseResult;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
-			ObjectInfo indexInfo = compiledArrayIndexParseResult.evaluate(thisInfo, context);
-			ObjectInfo elementInfo = OBJECT_INFO_PROVIDER.getArrayElementInfo(context, indexInfo);
-			return compiledTailParseResult.evaluate(thisInfo, elementInfo);
-		}
-	}
-
-	private static class CompiledArrayIndexParseResult extends AbstractCompiledParseResult
-	{
-		private final CompiledObjectParseResult	compiledArrayIndexParseResult;
-
-		private CompiledArrayIndexParseResult(CompiledObjectParseResult compiledArrayIndexParseResult, int position) {
-			super(position, compiledArrayIndexParseResult.getObjectInfo());
-			this.compiledArrayIndexParseResult = compiledArrayIndexParseResult;
-		}
-
-		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
-			return compiledArrayIndexParseResult.evaluate(thisInfo, thisInfo);
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			ObjectInfo indexInfo = compiledArrayIndexParseResult.evaluate(thisInfo, thisInfo);
+			return OBJECT_INFO_PROVIDER.getArrayElementInfo(contextInfo, indexInfo);
 		}
 	}
 }

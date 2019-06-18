@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  * With each separator {@code #}, the expression descends to the next lower level
  * in the hierarchy.
  */
-public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
+public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
 	private static final char		HIERARCHY_BEGIN		= '{';
 	private static final char		HIERARCHY_SEPARATOR	= '#';
@@ -36,7 +36,7 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
@@ -91,10 +91,10 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 		} else if (character == HIERARCHY_END) {
 			Object userObject = firstChildNodeMatch.getUserObject();
 			ObjectInfo userObjectInfo = InfoProvider.createObjectInfo(userObject, InfoProvider.UNKNOWN_TYPE);
-			ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, userObjectInfo, expectation);
-			return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
-					? compile(parseOutcome, userObjectInfo)
-					: parseOutcome;
+			int position = tokenStream.getPosition();
+			return isCompile()
+					? ParseOutcomes.createCompiledConstantObjectParseResult(position, userObjectInfo)
+					: ParseOutcomes.createObjectParseResult(position, userObjectInfo);
 		}
 
 		log(LogLevel.ERROR, "expected '" + HIERARCHY_SEPARATOR + "' or '" + HIERARCHY_END + "'");
@@ -121,7 +121,7 @@ public class CustomHierarchyParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
 			return compiledTailParseResult.evaluate(thisInfo, userObjectInfo);
 		}
 	}

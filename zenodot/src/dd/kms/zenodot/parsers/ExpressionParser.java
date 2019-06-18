@@ -15,9 +15,7 @@ import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.ObjectInfoProvider;
 import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider;
-import dd.kms.zenodot.utils.wrappers.FieldInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -33,7 +31,7 @@ import static dd.kms.zenodot.utils.dataProviders.OperatorResultProvider.Operator
  * Parses arbitrary Java expressions including binary operators by using the
  * {@link SimpleExpressionParser} for parsing the operands.
  */
-public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
+public class ExpressionParser extends AbstractParser<ObjectInfo>
 {
 	private static final Map<BinaryOperator, OperatorImplementation>	OPERATOR_IMPLEMENTATIONS = ImmutableMap.<BinaryOperator, OperatorImplementation>builder()
 		.put(BinaryOperator.MULTIPLY, 					OperatorResultProvider::getMultiplicationInfo)
@@ -93,7 +91,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 		while (true) {
 			Token operatorToken = tokenStream.readBinaryOperatorUnchecked();
 			if (operatorToken == null) {
-				return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+				return isCompile()
 						? compile(simpleExpressionParseResults, operators, parsedToPosition, expressionInfo)
 						: ParseOutcomes.createObjectParseResult(parsedToPosition, expressionInfo);
 			}
@@ -106,7 +104,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 
 			BinaryOperator operator = BinaryOperator.getValue(operatorToken.getValue());
 			if (operator.getPrecedenceLevel() > maxOperatorPrecedenceLevelToConsider) {
-				return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+				return isCompile()
 						? compile(simpleExpressionParseResults, operators, parsedToPosition, expressionInfo)
 						: ParseOutcomes.createObjectParseResult(parsedToPosition, expressionInfo);
 			}
@@ -162,7 +160,7 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 						log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
 						return ParseOutcomes.createParseError(rhsParseResult.getPosition(), e.getMessage(), ErrorPriority.RIGHT_PARSER);
 					}
-					return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
+					return isCompile()
 							? compile(simpleExpressionParseResults, operators, rhsParseResult.getPosition(), operatorResultInfo)
 							: ParseOutcomes.createObjectParseResult(rhsParseResult.getPosition(), operatorResultInfo);
 				}
@@ -244,15 +242,15 @@ public class ExpressionParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
 			// evaluate from left to right
-			ObjectInfo expressionInfo = Iterables.getFirst(compiledSimpleExpressionParseResults, null).evaluate(thisInfo, context);
+			ObjectInfo expressionInfo = Iterables.getFirst(compiledSimpleExpressionParseResults, null).evaluate(thisInfo, contextInfo);
 			for (int i = 0; i < operators.size(); i++) {
 				BinaryOperator operator = operators.get(i);
 				if (stopCircuitEvaluation(expressionInfo, operator)) {
 					return expressionInfo;
 				}
-				ObjectInfo rhsInfo = compiledSimpleExpressionParseResults.get(i + 1).evaluate(thisInfo, context);
+				ObjectInfo rhsInfo = compiledSimpleExpressionParseResults.get(i + 1).evaluate(thisInfo, contextInfo);
 				expressionInfo = applyOperator(OPERATOR_RESULT_PROVIDER, expressionInfo, rhsInfo, operator);
 			}
 			return expressionInfo;

@@ -6,7 +6,6 @@ import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionKeyword;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -29,16 +28,16 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  *     <li>double literals</li>
  * </ul>
  */
-public class LiteralParser extends AbstractEntityParser<ObjectInfo>
+public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
 	private static final ObjectInfo	TRUE_INFO	= InfoProvider.createObjectInfo(true, InfoProvider.createTypeInfo(boolean.class));
 	private static final ObjectInfo	FALSE_INFO	= InfoProvider.createObjectInfo(false, InfoProvider.createTypeInfo(boolean.class));
 	private static final ObjectInfo	NULL_INFO	= InfoProvider.createObjectInfo(null, InfoProvider.NO_TYPE);
 
-	private final AbstractEntityParser<ObjectInfo> intParser;
-	private final AbstractEntityParser<ObjectInfo> longParser;
-	private final AbstractEntityParser<ObjectInfo> floatParser;
-	private final AbstractEntityParser<ObjectInfo> doubleParser;
+	private final AbstractParser<ObjectInfo> intParser;
+	private final AbstractParser<ObjectInfo> longParser;
+	private final AbstractParser<ObjectInfo> floatParser;
+	private final AbstractParser<ObjectInfo> doubleParser;
 
 	public LiteralParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
@@ -49,29 +48,41 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 	}
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		if (!tokenStream.hasMore()) {
 			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected a literal", ErrorPriority.WRONG_PARSER);
 		}
+		ParseOutcome parseOutcome = parseWithoutCompilingConstantLiterals(tokenStream, contextInfo);
+		boolean needsCompilation = isCompile()
+								&& ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)
+								&& !ParseOutcomes.isCompiledParseResult(parseOutcome);
+		if (needsCompilation) {
+			ObjectParseResult parseResult = (ObjectParseResult) parseOutcome;
+			return ParseOutcomes.createCompiledConstantObjectParseResult(parseResult.getPosition(), parseResult.getObjectInfo());
+		}
+		return parseOutcome;
+	}
+
+	private ParseOutcome parseWithoutCompilingConstantLiterals(TokenStream tokenStream, ObjectInfo contextInfo) {
 		String characters = tokenStream.peekCharacters();
 		if (characters.startsWith("\"")) {
-			return parseStringLiteral(tokenStream, expectation);
+			return parseStringLiteral(tokenStream);
 		} else if (characters.startsWith("'")) {
-			return parseCharacterLiteral(tokenStream, expectation);
+			return parseCharacterLiteral(tokenStream);
 		} else if (characters.startsWith("tr")) {
-			return parseNamedLiteral(tokenStream, "true", TRUE_INFO, expectation);
+			return parseNamedLiteral(tokenStream, "true", TRUE_INFO);
 		} else if (characters.startsWith("f")) {
-			return parseNamedLiteral(tokenStream, "false", FALSE_INFO, expectation);
+			return parseNamedLiteral(tokenStream, "false", FALSE_INFO);
 		} else if (characters.startsWith("n")) {
-			return parseNamedLiteral(tokenStream, "null", NULL_INFO, expectation);
+			return parseNamedLiteral(tokenStream, "null", NULL_INFO);
 		} else if (characters.startsWith("th")) {
-			return parseNamedLiteral(tokenStream, "this", thisInfo, expectation);
+			return parseNamedLiteral(tokenStream, "this", thisInfo);
 		} else {
-			return parseNumericLiteral(tokenStream, contextInfo, expectation);
+			return parseNumericLiteral(tokenStream, contextInfo);
 		}
 	}
 
-	private ParseOutcome parseStringLiteral(TokenStream tokenStream, ParseExpectation expectation) {
+	private ParseOutcome parseStringLiteral(TokenStream tokenStream) {
 		int startPosition = tokenStream.getPosition();
 		Token stringLiteralToken;
 		try {
@@ -88,10 +99,10 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteralValue + "'");
 
 		ObjectInfo stringLiteralInfo = InfoProvider.createObjectInfo(stringLiteralValue, InfoProvider.createTypeInfo(String.class));
-		return parseTail(tokenStream, stringLiteralInfo, expectation);
+		return ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), stringLiteralInfo);
 	}
 
-	private ParseOutcome parseCharacterLiteral(TokenStream tokenStream, ParseExpectation expectation) {
+	private ParseOutcome parseCharacterLiteral(TokenStream tokenStream) {
 		int startPosition = tokenStream.getPosition();
 		Token characterLiteralToken;
 		try {
@@ -111,10 +122,10 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		log(LogLevel.SUCCESS, "detected character literal '" + characterLiteralValue + "'");
 
 		ObjectInfo characterLiteralInfo = InfoProvider.createObjectInfo(characterLiteralValue.charAt(0), InfoProvider.createTypeInfo(char.class));
-		return parseTail(tokenStream, characterLiteralInfo, expectation);
+		return ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), characterLiteralInfo);
 	}
 
-	private ParseOutcome parseNamedLiteral(TokenStream tokenStream, String literalName, ObjectInfo literalInfo, ParseExpectation expectation) {
+	private ParseOutcome parseNamedLiteral(TokenStream tokenStream, String literalName, ObjectInfo literalInfo) {
 		int startPosition = tokenStream.getPosition();
 		Token literalToken = tokenStream.readKeyWordUnchecked();
 		if (literalToken == null) {
@@ -138,16 +149,13 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 			return ParseOutcomes.createParseError(startPosition, "Expected '" + literalName + "'", ErrorPriority.WRONG_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected literal '" + literalName + "'");
-		if ("this".equals(literalName)) {
-			ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, literalInfo, expectation);
-			return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
-					? compileThisParseResult(parseOutcome)
-					: parseOutcome;
-		}
-		return parseTail(tokenStream, literalInfo, expectation);
+		int position = tokenStream.getPosition();
+		return isCompile() && "this".equals(literalName)
+				? new CompiledThisParseResult(position, literalInfo)
+				: ParseOutcomes.createObjectParseResult(position, literalInfo);
 	}
 
-	private ParseOutcome parseNumericLiteral(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	private ParseOutcome parseNumericLiteral(TokenStream tokenStream, ObjectInfo contextInfo) {
 		int startPosition = tokenStream.getPosition();
 		char c = tokenStream.peekCharacter();
 		if (!"+-.0123456789".contains(String.valueOf(c))) {
@@ -155,9 +163,9 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 			return ParseOutcomes.createParseError(startPosition, "Expected a literal", ErrorPriority.WRONG_PARSER);
 		}
 
-		AbstractEntityParser[] parsers = { longParser, intParser, floatParser, doubleParser };
-		for (AbstractEntityParser parser : parsers) {
-			ParseOutcome parseOutcome = parser.parse(tokenStream, contextInfo, expectation);
+		AbstractParser[] parsers = { longParser, intParser, floatParser, doubleParser };
+		for (AbstractParser parser : parsers) {
+			ParseOutcome parseOutcome = parser.parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
 
 			if (parseOutcome.getOutcomeType() != ParseOutcomeType.ERROR) {
 				return parseOutcome;
@@ -167,66 +175,19 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 		return ParseOutcomes.createParseError(startPosition, "Expected a numeric literal", ErrorPriority.WRONG_PARSER);
 	}
 
-	private ParseOutcome parseTail(TokenStream tokenStream, ObjectInfo objectInfo, ParseExpectation expectation) {
-		return parseTail(tokenStream, objectInfo, expectation, parserToolbox);
-	}
-
-	private static ParseOutcome parseTail(TokenStream tokenStream, ObjectInfo objectInfo, ParseExpectation expectation, ParserToolbox parserToolbox) {
-		ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, objectInfo, expectation);
-		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
-			? compile(parseOutcome, objectInfo)
-			: parseOutcome;
-	}
-
-	private static ParseOutcome compile(ParseOutcome tailParseOutcome, ObjectInfo objectInfo) {
-		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
-			return tailParseOutcome;
-		}
-		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
-		return new CompiledLiteralParseResult(compiledTailParseResult, objectInfo);
-	}
-
-	private ParseOutcome compileThisParseResult(ParseOutcome tailParseOutcome) {
-		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
-			return tailParseOutcome;
-		}
-		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
-		return new CompiledThisParseResult(compiledTailParseResult);
-	}
-
-	private static class CompiledLiteralParseResult extends AbstractCompiledParseResult
-	{
-		private final CompiledObjectParseResult	compiledTailParseResult;
-		private final ObjectInfo							objectInfo;
-
-		CompiledLiteralParseResult(CompiledObjectParseResult compiledTailParseResult, ObjectInfo objectInfo) {
-			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
-			this.compiledTailParseResult = compiledTailParseResult;
-			this.objectInfo = objectInfo;
-		}
-
-		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
-			return compiledTailParseResult.evaluate(thisInfo, objectInfo);
-		}
-	}
-
 	private static class CompiledThisParseResult extends AbstractCompiledParseResult
 	{
-		private final CompiledObjectParseResult	compiledTailParseResult;
-
-		CompiledThisParseResult(CompiledObjectParseResult compiledTailParseResult) {
-			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
-			this.compiledTailParseResult = compiledTailParseResult;
+		CompiledThisParseResult(int position, ObjectInfo thisInfo) {
+			super(position, thisInfo);
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
-			return compiledTailParseResult.evaluate(thisInfo, thisInfo);
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			return thisInfo;
 		}
 	}
 
-	private static class NumericLiteralParser<T> extends AbstractEntityParser<ObjectInfo>
+	private static class NumericLiteralParser<T> extends AbstractParser<ObjectInfo>
 	{
 		private final TypeInfo				numericType;
 		private final NumericTokenReader	tokenReader;
@@ -265,7 +226,7 @@ public class LiteralParser extends AbstractEntityParser<ObjectInfo>
 			}
 
 			ObjectInfo literalInfo = InfoProvider.createObjectInfo(literalValue, numericType);
-			return parseTail(tokenStream, literalInfo, expectation, parserToolbox);
+			return ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), literalInfo);
 		}
 	}
 

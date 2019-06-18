@@ -24,7 +24,7 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 /**
  * Base class for {@link ClassMethodParser} and {@link ObjectMethodParser}
  */
-abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
+abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 {
 	AbstractMethodParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
@@ -36,7 +36,7 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	ParseOutcome parseNext(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (contextCausesNullPointerException(context)) {
@@ -155,10 +155,10 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 					log(LogLevel.ERROR, "caught exception: " + e.getMessage());
 					return ParseOutcomes.createParseError(startPosition, "Exception during method evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 				}
-				ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, methodReturnInfo, expectation);
-				return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
-						? compile(parseOutcome, bestMatchingExecutableInfo, argumentParseOutcomes)
-						: parseOutcome;
+				int position = tokenStream.getPosition();
+				return isCompile()
+						? compile(bestMatchingExecutableInfo, argumentParseOutcomes, position, methodReturnInfo)
+						: ParseOutcomes.createObjectParseResult(position, methodReturnInfo);
 			}
 			default: {
 				String error = "Ambiguous method call. Possible candidates are:\n"
@@ -193,38 +193,31 @@ abstract class AbstractMethodParser<C> extends AbstractEntityParser<C>
 		return InfoProvider.getMethodInfos(getContextType(context), methodScanner);
 	}
 
-	private ParseOutcome compile(ParseOutcome tailParseOutcome, ExecutableInfo methodInfo, List<ParseOutcome> argumentParseOutcomes) {
-		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
-			return tailParseOutcome;
-		}
-		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
+	private ParseOutcome compile(ExecutableInfo methodInfo, List<ParseOutcome> argumentParseOutcomes, int position, ObjectInfo methodReturnInfo) {
 		List<CompiledObjectParseResult> compiledArgumentParseResults = (List) argumentParseOutcomes;
-		return new CompiledMethodParseResult(compiledTailParseResult, methodInfo, compiledArgumentParseResults);
+		return new CompiledMethodParseResult(methodInfo, compiledArgumentParseResults, position, methodReturnInfo);
 	}
 
 	private static class CompiledMethodParseResult extends AbstractCompiledParseResult
 	{
-		private final CompiledObjectParseResult			compiledTailParseResult;
 		private final ExecutableInfo					methodInfo;
 		private final List<CompiledObjectParseResult>	compiledArgumentParseResults;
 
-		CompiledMethodParseResult(CompiledObjectParseResult compiledTailParseResult, ExecutableInfo methodInfo, List<CompiledObjectParseResult> compiledArgumentParseResults) {
-			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
-			this.compiledTailParseResult = compiledTailParseResult;
+		CompiledMethodParseResult(ExecutableInfo methodInfo, List<CompiledObjectParseResult> compiledArgumentParseResults, int position, ObjectInfo methodReturnInfo) {
+			super(position, methodReturnInfo);
 			this.methodInfo = methodInfo;
 			this.compiledArgumentParseResults = compiledArgumentParseResults;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
 			List<ObjectInfo> argumentInfos = new ArrayList<>(compiledArgumentParseResults.size());
 			for (CompiledObjectParseResult compiledArgumentParseResult : compiledArgumentParseResults) {
 				argumentInfos.add(compiledArgumentParseResult.evaluate(thisInfo, thisInfo));
 			}
 			// TODO: If C == TypeInfo, then contextObject should be null instead
-			Object contextObject = context.getObject();
-			ObjectInfo methodReturnInfo = OBJECT_INFO_PROVIDER.getExecutableReturnInfo(contextObject, methodInfo, argumentInfos);
-			return compiledTailParseResult.evaluate(thisInfo, methodReturnInfo);
+			Object contextObject = contextInfo.getObject();
+			return OBJECT_INFO_PROVIDER.getExecutableReturnInfo(contextObject, methodInfo, argumentInfos);
 		}
 	}
 }

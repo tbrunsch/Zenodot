@@ -15,14 +15,14 @@ import java.util.Optional;
 /**
  * Parses expressions of the form {@code (<expression>)} in the context of {@code this}.
  */
-public class ParenthesizedExpressionParser extends AbstractEntityParser<ObjectInfo>
+public class ParenthesizedExpressionParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
 	public ParenthesizedExpressionParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
 	}
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int position = tokenStream.getPosition();
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != '(') {
@@ -51,36 +51,14 @@ public class ParenthesizedExpressionParser extends AbstractEntityParser<ObjectIn
 			log(LogLevel.INFO, "no completion suggestions available at " + tokenStream);
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
-		ParseOutcome parseOutcome = parserToolbox.getObjectTailParser().parse(tokenStream, objectInfo, expectation);
-		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
-				? compile(parseOutcome, expressionParseOutcome)
-				: parseOutcome;
+		position = tokenStream.getPosition();
+		return isCompile()
+				? compile(expressionParseOutcome, position)
+				: ParseOutcomes.createObjectParseResult(position, objectInfo);
 	}
 
-	private ParseOutcome compile(ParseOutcome tailParseOutcome, ParseOutcome expressionParseOutcome) {
-		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
-			return tailParseOutcome;
-		}
-		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
+	private ParseOutcome compile(ParseOutcome expressionParseOutcome, int position) {
 		CompiledObjectParseResult compiledExpressionParseResult = (CompiledObjectParseResult) expressionParseOutcome;
-		return new CompiledParenthesizedExpressionParseResult(compiledTailParseResult, compiledExpressionParseResult);
-	}
-
-	private static class CompiledParenthesizedExpressionParseResult extends AbstractCompiledParseResult
-	{
-		private final CompiledObjectParseResult	compiledTailParseResult;
-		private final CompiledObjectParseResult	compiledExpressionParseResult;
-
-		CompiledParenthesizedExpressionParseResult(CompiledObjectParseResult compiledTailParseResult, CompiledObjectParseResult compiledExpressionParseResult) {
-			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
-			this.compiledTailParseResult = compiledTailParseResult;
-			this.compiledExpressionParseResult = compiledExpressionParseResult;
-		}
-
-		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
-			ObjectInfo expressionInfo = compiledExpressionParseResult.evaluate(thisInfo, context);
-			return compiledTailParseResult.evaluate(thisInfo, expressionInfo);
-		}
+		return ParseOutcomes.deriveCompiledObjectParseResult(compiledExpressionParseResult, position);
 	}
 }

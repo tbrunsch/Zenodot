@@ -23,7 +23,7 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  * The parsing will only be successful if either the class or its package is imported
  * (see {@link ParserSettingsBuilder#importPackages(Iterable)} and {@link ParserSettingsBuilder#importClasses(Iterable)}).
  */
-public class ImportedClassParser extends AbstractEntityParser<ObjectInfo>
+public class ImportedClassParser extends AbstractParser<ObjectInfo>
 {
 	public ImportedClassParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);

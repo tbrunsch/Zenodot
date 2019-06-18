@@ -23,7 +23,7 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  * Parses subexpressions {@code <class name>} of expressions of the form {@code <package name>.<class name>}.
  * The package {@code <package name>} is the context for the parser.
  */
-public class QualifiedClassParser extends AbstractEntityParser<PackageInfo>
+public class QualifiedClassParser extends AbstractParser<PackageInfo>
 {
 	public QualifiedClassParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
