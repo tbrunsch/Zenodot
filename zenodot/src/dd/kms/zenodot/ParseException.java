@@ -6,11 +6,11 @@ public class ParseException extends Exception
 {
 	private final int position;
 
-	ParseException(int position, String message) {
+	public ParseException(int position, String message) {
 		this(position, message, null);
 	}
 
-	ParseException(int position, String message, Throwable cause) {
+	public ParseException(int position, String message, Throwable cause) {
 		super(MessageFormat.format("Parse exception at position {0}: {1}", position, message), cause);
 		this.position = position;
 	}
