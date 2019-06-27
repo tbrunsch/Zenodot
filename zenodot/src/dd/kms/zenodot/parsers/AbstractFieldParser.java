@@ -4,17 +4,13 @@ import com.google.common.collect.Iterables;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.FieldScanner;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ParseResult;
-import dd.kms.zenodot.result.ParseResults;
+import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataProviders.FieldDataProvider;
-import dd.kms.zenodot.utils.wrappers.FieldInfo;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
-import dd.kms.zenodot.utils.wrappers.TypeInfo;
+import dd.kms.zenodot.utils.wrappers.*;
 
 import java.util.List;
 
@@ -23,7 +19,7 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 /**
  * Base class for {@link ClassFieldParser} and {@link ObjectFieldParser}
  */
-abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
+abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 {
 	AbstractFieldParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
@@ -35,12 +31,12 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	ParseOutcome parseNext(TokenStream tokenStream, C context, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (contextCausesNullPointerException(context)) {
 			log(LogLevel.ERROR, "null pointer exception");
-			return ParseResults.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
+			return ParseOutcomes.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
 		}
 
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
@@ -63,7 +59,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 			fieldNameToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "missing field name at " + tokenStream);
-			return ParseResults.createParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
 		}
 		String fieldName = fieldNameToken.getValue();
 		int endPosition = tokenStream.getPosition();
@@ -76,7 +72,7 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 
 		if (tokenStream.hasMore() && tokenStream.peekCharacter() == '(') {
 			log(LogLevel.ERROR, "unexpected '(' at " + tokenStream);
-			return ParseResults.createParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		// no code completion requested => field name must exist
@@ -84,10 +80,10 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 		if (fieldInfos.isEmpty()) {
 			if (getFieldInfos(context, getFieldScanner(fieldName, false)).isEmpty()) {
 				log(LogLevel.ERROR, "unknown field '" + fieldName + "'");
-				return ParseResults.createParseError(startPosition, "Unknown field '" + fieldName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+				return ParseOutcomes.createParseError(startPosition, "Unknown field '" + fieldName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 			} else {
 				log(LogLevel.ERROR, "field '" + fieldName + "' is not visible");
-				return ParseResults.createParseError(startPosition, "Field '" + fieldName + "' is not visible", ErrorPriority.RIGHT_PARSER);
+				return ParseOutcomes.createParseError(startPosition, "Field '" + fieldName + "' is not visible", ErrorPriority.RIGHT_PARSER);
 			}
 		}
 		log(LogLevel.SUCCESS, "detected field '" + fieldName + "'");
@@ -96,7 +92,10 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 		Object contextObject = getContextObject(context);
 		ObjectInfo matchingFieldInfo = parserToolbox.getObjectInfoProvider().getFieldValueInfo(contextObject, fieldInfo);
 
-		return parserToolbox.getObjectTailParser().parse(tokenStream, matchingFieldInfo, expectation);
+		int position = tokenStream.getPosition();
+		return isCompile()
+				? compile(fieldInfo, position, matchingFieldInfo)
+				: ParseOutcomes.createObjectParseResult(position, matchingFieldInfo);
 	}
 
 	private CompletionSuggestions suggestFields(String expectedName, C context, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
@@ -122,5 +121,26 @@ abstract class AbstractFieldParser<C> extends AbstractEntityParser<C>
 
 	private List<FieldInfo> getFieldInfos(C context, FieldScanner fieldScanner) {
 		return InfoProvider.getFieldInfos(getContextType(context), fieldScanner);
+	}
+
+	private ParseOutcome compile(FieldInfo fieldInfo, int position, ObjectInfo objectInfo) {
+		return new CompiledFieldParseResult(fieldInfo, position, objectInfo);
+	}
+
+	private class CompiledFieldParseResult extends AbstractCompiledParseResult
+	{
+		private final FieldInfo	fieldInfo;
+
+		CompiledFieldParseResult(FieldInfo fieldInfo, int position, ObjectInfo objectInfo) {
+			super(position, objectInfo);
+			this.fieldInfo = fieldInfo;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			// TODO: If C == TypeInfo, then contextObject should be null instead
+			Object contextObject = contextInfo.getObject();
+			return OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
+		}
 	}
 }

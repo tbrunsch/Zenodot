@@ -11,8 +11,8 @@ class SuccessfulEvaluation implements TestExecutor
 	}
 
 	@Override
-	public void executeTest(EvaluationTest test) {
-		test.testEvaluation(expression, expectedValue);
+	public void executeTest(EvaluationTest test, boolean compile) {
+		test.testEvaluation(expression, expectedValue, compile);
 	}
 
 	@Override

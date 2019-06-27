@@ -7,22 +7,17 @@ import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionKeyword;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.ParseUtils;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.ClassDataProvider;
-import dd.kms.zenodot.utils.dataProviders.ObjectInfoProvider;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
-
-import java.util.Arrays;
-import java.util.Optional;
 
 /**
  * Parses subexpressions {@code class} of expressions of the form {@code <class>.class}.
  * The class {@code <class>} is the context for the parser.
  */
-public class ClassObjectParser extends AbstractEntityParser<TypeInfo>
+public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 {
 	private static final String	CLASS_KEYWORD	= "class";
 
@@ -31,12 +26,12 @@ public class ClassObjectParser extends AbstractEntityParser<TypeInfo>
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, TypeInfo contextType, ParseExpectation expectation) {
+	ParseOutcome parseNext(TokenStream tokenStream, TypeInfo contextType, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 		Token keywordToken = tokenStream.readKeyWordUnchecked();
 		if (keywordToken == null) {
 			log(LogLevel.ERROR, "expected keyword '" + CLASS_KEYWORD + "'");
-			return ParseResults.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
 		}
 
 		if (keywordToken.isContainsCaret()) {
@@ -53,12 +48,34 @@ public class ClassObjectParser extends AbstractEntityParser<TypeInfo>
 
 		if (!keywordToken.getValue().equals(CLASS_KEYWORD)) {
 			log(LogLevel.ERROR, "expected keyword '" + CLASS_KEYWORD + "'");
-			return ParseResults.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
 		}
 
 		Class<?> classObject = contextType.getRawType();
 		ObjectInfo classObjectInfo = InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
 
-		return parserToolbox.getObjectTailParser().parse(tokenStream, classObjectInfo, expectation);
+		int position = tokenStream.getPosition();
+		return isCompile()
+				? compile(classObject, position, classObjectInfo)
+				: ParseOutcomes.createObjectParseResult(position, classObjectInfo);
+	}
+
+	private ParseOutcome compile(Class<?> classObject, int position, ObjectInfo classObjectInfo) {
+		return new CompiledClassObjectParseResult(classObject, position, classObjectInfo);
+	}
+
+	private static class CompiledClassObjectParseResult extends AbstractCompiledParseResult
+	{
+		private final Class<?>	classObject;
+
+		CompiledClassObjectParseResult(Class<?> classObject, int position, ObjectInfo classObjectInfo) {
+			super(position, classObjectInfo);
+			this.classObject = classObject;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			return InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
+		}
 	}
 }

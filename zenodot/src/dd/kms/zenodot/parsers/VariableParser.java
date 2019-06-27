@@ -1,12 +1,15 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.ParseResult;
-import dd.kms.zenodot.result.ParseResults;
+import dd.kms.zenodot.result.AbstractCompiledParseResult;
+import dd.kms.zenodot.result.CompiledObjectParseResult;
+import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
@@ -19,16 +22,16 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
 /**
  * Parses expressions of the form {@code <variable>} in the (ignored) context of {@code this}, where
- * {@code <variable>} refers to one of the variables specified by {@link ParserSettingsBuilder#addVariable(Variable)}.
+ * {@code <variable>} refers to one of the variables specified by {@link ParserSettingsBuilder#variables(List)}.
  */
-public class VariableParser extends AbstractEntityParser<ObjectInfo>
+public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
 	public VariableParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int startPosition = tokenStream.getPosition();
 
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
@@ -48,7 +51,7 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 			variableToken = tokenStream.readIdentifier();
 		} catch (TokenStream.JavaTokenParseException e) {
 			log(LogLevel.ERROR, "missing variable name at " + tokenStream);
-			return ParseResults.createParseError(startPosition, "Expected a variable name", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Expected a variable name", ErrorPriority.WRONG_PARSER);
 		}
 		String variableName = variableToken.getValue();
 		int endPosition = tokenStream.getPosition();
@@ -61,7 +64,7 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 
 		if (tokenStream.hasMore() && tokenStream.peekCharacter() == '(') {
 			log(LogLevel.ERROR, "unexpected '(' at " + tokenStream);
-			return ParseResults.createParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 
 		// no code completion requested => variable name must exist
@@ -69,13 +72,16 @@ public class VariableParser extends AbstractEntityParser<ObjectInfo>
 		Optional<Variable> firstVariableMatch = variables.stream().filter(variable -> variable.getName().equals(variableName)).findFirst();
 		if (!firstVariableMatch.isPresent()) {
 			log(LogLevel.ERROR, "unknown variable '" + variableName + "'");
-			return ParseResults.createParseError(startPosition, "Unknown variable '" + variableName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+			return ParseOutcomes.createParseError(startPosition, "Unknown variable '" + variableName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected variable '" + variableName + "'");
 
 		Variable matchingVariable = firstVariableMatch.get();
 		ObjectInfo matchingVariableInfo = parserToolbox.getObjectInfoProvider().getVariableInfo(matchingVariable);
 
-		return parserToolbox.getObjectTailParser().parse(tokenStream, matchingVariableInfo, expectation);
+		int position = tokenStream.getPosition();
+		return isCompile()
+				? ParseOutcomes.createCompiledConstantObjectParseResult(position, matchingVariableInfo)
+				: ParseOutcomes.createObjectParseResult(position, matchingVariableInfo);
 	}
 }

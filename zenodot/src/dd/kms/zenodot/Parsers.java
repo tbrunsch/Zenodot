@@ -11,6 +11,10 @@ public class Parsers
 		return new ExpressionParserImpl(text, settings, thisValue);
 	}
 
+	public static ExpressionCompiler createExpressionCompiler(String text, ParserSettings settings, Class<?> thisClass) {
+		return new ExpressionCompilerImpl(text, settings, thisClass);
+	}
+
 	public static ClassParser createClassParser(String text, ParserSettings settings) {
 		return new ClassParserImpl(text, settings);
 	}

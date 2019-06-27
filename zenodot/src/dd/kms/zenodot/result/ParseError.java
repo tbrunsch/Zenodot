@@ -4,7 +4,7 @@ package dd.kms.zenodot.result;
  * An instance of this interface is returned if an error has been encountered when parsing
  * a certain (sub-) expression.
  */
-public interface ParseError extends ParseResult
+public interface ParseError extends ParseOutcome
 {
 	/**
 	 * The priority of error. The lower the ordinal, the higher the priority. The error priority is used to

@@ -15,8 +15,8 @@ class ParseErrorImpl implements ParseError
 	}
 
 	@Override
-	public ParseResultType getResultType() {
-		return ParseResultType.PARSE_ERROR;
+	public ParseOutcomeType getOutcomeType() {
+		return ParseOutcomeType.ERROR;
 	}
 
 	@Override

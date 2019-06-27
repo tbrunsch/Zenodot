@@ -2,9 +2,8 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.ClassParseResult;
-import dd.kms.zenodot.result.ParseResult;
-import dd.kms.zenodot.result.ParseResults;
-import dd.kms.zenodot.settings.ParserSettingsBuilder;
+import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ClassUtils;
@@ -17,7 +16,6 @@ import dd.kms.zenodot.utils.wrappers.PackageInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Optional;
-import java.util.Set;
 
 import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
@@ -25,14 +23,14 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  * Parses subexpressions {@code <class name>} of expressions of the form {@code <package name>.<class name>}.
  * The package {@code <package name>} is the context for the parser.
  */
-public class QualifiedClassParser extends AbstractEntityParser<PackageInfo>
+public class QualifiedClassParser extends AbstractParser<PackageInfo>
 {
 	public QualifiedClassParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, PackageInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, PackageInfo contextInfo, ParseExpectation expectation) {
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			int insertionBegin = tokenStream.getPosition();
 			String className = contextInfo.getPackageName() + ".";
@@ -50,15 +48,15 @@ public class QualifiedClassParser extends AbstractEntityParser<PackageInfo>
 		}
 
 		log(LogLevel.INFO, "parsing class");
-		ParseResult classParseResult = readClass(tokenStream, contextInfo);
-		log(LogLevel.INFO, "parse result: " + classParseResult.getResultType());
+		ParseOutcome classParseOutcome = readClass(tokenStream, contextInfo);
+		log(LogLevel.INFO, "parse outcome: " + classParseOutcome.getOutcomeType());
 
-		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(classParseResult, ParseExpectation.CLASS, ErrorPriority.WRONG_PARSER);
-		if (parseResultForPropagation.isPresent()) {
-			return parseResultForPropagation.get();
+		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(classParseOutcome, ParseExpectation.CLASS, ErrorPriority.WRONG_PARSER);
+		if (parseOutcomeForPropagation.isPresent()) {
+			return parseOutcomeForPropagation.get();
 		}
 
-		ClassParseResult parseResult = (ClassParseResult) classParseResult;
+		ClassParseResult parseResult = (ClassParseResult) classParseOutcome;
 		int parsedToPosition = parseResult.getPosition();
 		TypeInfo type = parseResult.getType();
 
@@ -67,7 +65,7 @@ public class QualifiedClassParser extends AbstractEntityParser<PackageInfo>
 		return parserToolbox.getClassTailParser().parse(tokenStream, type, expectation);
 	}
 
-	private ParseResult readClass(TokenStream tokenStream, PackageInfo contextInfo) {
+	private ParseOutcome readClass(TokenStream tokenStream, PackageInfo contextInfo) {
 		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
 
 		int identifierStartPosition = tokenStream.getPosition();
@@ -75,7 +73,7 @@ public class QualifiedClassParser extends AbstractEntityParser<PackageInfo>
 		try {
 			classToken = tokenStream.readClass();
 		} catch (TokenStream.JavaTokenParseException e) {
-			return ParseResults.createParseError(identifierStartPosition, "Expected class name", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(identifierStartPosition, "Expected class name", ErrorPriority.WRONG_PARSER);
 		}
 		String className = contextInfo.getPackageName() + "." + classToken.getValue();
 		if (classToken.isContainsCaret()) {
@@ -84,8 +82,8 @@ public class QualifiedClassParser extends AbstractEntityParser<PackageInfo>
 
 		Class<?> clazz = ClassUtils.getClassUnchecked(className);
 		if (clazz != null) {
-			return ParseResults.createClassParseResult(tokenStream.getPosition(), InfoProvider.createTypeInfo(clazz));
+			return ParseOutcomes.createClassParseResult(tokenStream.getPosition(), InfoProvider.createTypeInfo(clazz));
 		}
-		return ParseResults.createParseError(tokenStream.getPosition(), "Unknown class '" + className + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+		return ParseOutcomes.createParseError(tokenStream.getPosition(), "Unknown class '" + className + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 	}
 }

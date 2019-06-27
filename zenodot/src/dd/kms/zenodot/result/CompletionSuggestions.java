@@ -10,7 +10,7 @@ import java.util.Optional;
 /**
  * A collection of {@link CompletionSuggestion} including their ratings
  */
-public class CompletionSuggestions implements ParseResult
+public class CompletionSuggestions implements ParseOutcome
 {
 	public static CompletionSuggestions none(int position) {
 		return new CompletionSuggestions(position, Collections.emptyMap());
@@ -37,8 +37,8 @@ public class CompletionSuggestions implements ParseResult
 	}
 
 	@Override
-	public ParseResultType getResultType() {
-		return ParseResultType.COMPLETION_SUGGESTIONS;
+	public ParseOutcomeType getOutcomeType() {
+		return ParseOutcomeType.COMPLETION_SUGGESTIONS;
 	}
 
 	@Override

@@ -9,17 +9,18 @@ import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Map;
 import java.util.Optional;
 
-class ExpressionParserImpl extends AbstractParser implements ExpressionParser
+class ExpressionCompilerImpl extends AbstractParser implements ExpressionCompiler
 {
-	private final Object	thisValue;
+	private final Class<?>	thisClass;
 
-	public ExpressionParserImpl(String text, ParserSettings settings, Object thisValue) {
+	public ExpressionCompilerImpl(String text, ParserSettings settings, Class<?> thisClass) {
 		super(text, settings);
-		this.thisValue = thisValue;
+		this.thisClass = thisClass;
 	}
 
 	@Override
@@ -33,24 +34,13 @@ class ExpressionParserImpl extends AbstractParser implements ExpressionParser
 	}
 
 	@Override
-	public Object evaluate() throws ParseException {
-		ParseOutcome parseOutcome;
+	public CompiledExpression compile() throws ParseException {
+		ParseOutcome parseOutcome = parse(ParseMode.COMPILATION, -1);
 
-		if (!settings.isEnableDynamicTyping()) {
-			// First iteration without evaluation to avoid side effects when errors occur
-			parseOutcome = parse(ParseMode.WITHOUT_EVALUATION, -1);
-			if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)) {
-				// Second iteration with evaluation (side effects cannot be avoided)
-				parseOutcome = parse(ParseMode.EVALUATION, -1);
-			}
-		} else {
-			parseOutcome = parse(ParseMode.EVALUATION, -1);
-		}
-
-		if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)) {
-			ObjectParseResult result = (ObjectParseResult) parseOutcome;
+		if (ParseOutcomes.isCompiledParseResult(parseOutcome)) {
+			CompiledObjectParseResult result = (CompiledObjectParseResult) parseOutcome;
 			checkParsedWholeText(result);
-			return result.getObjectInfo().getObject();
+			return createCompiledExpression(result);
 		}
 		handleInvalidResultType(parseOutcome);
 		return null;
@@ -58,8 +48,24 @@ class ExpressionParserImpl extends AbstractParser implements ExpressionParser
 
 	@Override
 	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
-		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue, InfoProvider.UNKNOWN_TYPE);
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, InfoProvider.createTypeInfo(thisClass));
 		ParserToolbox parserToolbox  = new ParserToolbox(thisInfo, settings, parseMode);
 		return parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
+	}
+
+	private CompiledExpression createCompiledExpression(CompiledObjectParseResult compiledParseResult) {
+		return new CompiledExpression()
+		{
+			@Override
+			public TypeInfo getResultType() {
+				return compiledParseResult.getObjectInfo().getDeclaredType();
+			}
+
+			@Override
+			public Object evaluate(Object thisValue) throws Exception {
+				ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue, InfoProvider.UNKNOWN_TYPE);
+				return compiledParseResult.evaluate(thisInfo, thisInfo).getObject();
+			}
+		};
 	}
 }

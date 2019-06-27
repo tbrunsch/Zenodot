@@ -22,38 +22,36 @@ abstract class AbstractParser
 		this.settings = settings;
 	}
 
-	abstract ParseResult doParse(TokenStream tokenStream, ParseMode parseMode);
+	abstract ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode);
 
 	CompletionSuggestions getCompletionSuggestions(int caretPosition) throws ParseException {
-		ParseResult parseResult = parse(ParseMode.CODE_COMPLETION, caretPosition);
+		ParseOutcome parseOutcome = parse(ParseMode.CODE_COMPLETION, caretPosition);
 
-		switch (parseResult.getResultType()) {
-			case OBJECT_PARSE_RESULT:
-			case CLASS_PARSE_RESULT:
-			case PACKAGE_PARSE_RESULT: {
-				if (parseResult.getPosition() != text.length()) {
-					throw new ParseException(parseResult.getPosition(), "Unexpected character");
+		switch (parseOutcome.getOutcomeType()) {
+			case RESULT: {
+				if (parseOutcome.getPosition() != text.length()) {
+					throw new ParseException(parseOutcome.getPosition(), "Unexpected character");
 				} else {
 					throw new IllegalStateException("Internal error: No completions available");
 				}
 			}
-			case PARSE_ERROR: {
-				ParseError error = (ParseError) parseResult;
+			case ERROR: {
+				ParseError error = (ParseError) parseOutcome;
 				throw new ParseException(error.getPosition(), error.getMessage());
 			}
-			case AMBIGUOUS_PARSE_RESULT: {
-				AmbiguousParseResult result = (AmbiguousParseResult) parseResult;
+			case AMBIGUOUS_RESULT: {
+				AmbiguousParseResult result = (AmbiguousParseResult) parseOutcome;
 				throw new ParseException(result.getPosition(), result.getMessage());
 			}
 			case COMPLETION_SUGGESTIONS: {
-				return (CompletionSuggestions) parseResult;
+				return (CompletionSuggestions) parseOutcome;
 			}
 			default:
-				throw new IllegalStateException("Unsupported parse result type: " + parseResult.getResultType());
+				throw new IllegalStateException("Unsupported parse outcome type: " + parseOutcome.getOutcomeType());
 		}
 	}
 
-	ParseResult parse(ParseMode parseMode, int caretPosition) {
+	ParseOutcome parse(ParseMode parseMode, int caretPosition) {
 		TokenStream tokenStream = new TokenStream(text, caretPosition);
 		try {
 			return doParse(tokenStream, parseMode);
@@ -75,7 +73,7 @@ abstract class AbstractParser
 			if (exceptionMessage != null) {
 				message += ("\n" + exceptionMessage);
 			}
-			return ParseResults.createParseError(-1, message, ParseError.ErrorPriority.EVALUATION_EXCEPTION, e);
+			return ParseOutcomes.createParseError(-1, message, ParseError.ErrorPriority.EVALUATION_EXCEPTION, e);
 		}
 	}
 
@@ -87,33 +85,32 @@ abstract class AbstractParser
 		return builder.build();
 	}
 
-	void checkParsedWholeText(ParseResult parseResult) throws ParseException {
-		if (parseResult.getPosition() != text.length()) {
-			throw new ParseException(parseResult.getPosition(), "Unexpected character");
+	void checkParsedWholeText(ParseOutcome parseOutcome) throws ParseException {
+		if (parseOutcome.getPosition() != text.length()) {
+			throw new ParseException(parseOutcome.getPosition(), "Unexpected character");
 		}
 	}
 
-	void handleInvalidResultType(ParseResult parseResult) throws ParseException {
-		ParseResultType resultType = parseResult.getResultType();
-		switch (resultType) {
-			case OBJECT_PARSE_RESULT:
-			case CLASS_PARSE_RESULT:
-			case PACKAGE_PARSE_RESULT: {
-				throw new IllegalStateException("Internal error: Unexpected type of parse result: '" + resultType + "'");
+	void handleInvalidResultType(ParseOutcome parseOutcome) throws ParseException {
+		ParseOutcomeType outcomeType = parseOutcome.getOutcomeType();
+		switch (outcomeType) {
+			case RESULT: {
+				ParseResult parseResult = (ParseResult) parseOutcome;
+				throw new IllegalStateException("Internal error: Unexpected parse result type: '" + parseResult.getResultType() + "'");
 			}
-			case PARSE_ERROR: {
-				ParseError error = (ParseError) parseResult;
+			case ERROR: {
+				ParseError error = (ParseError) parseOutcome;
 				throw new ParseException(error.getPosition(), error.getMessage(), error.getThrowable());
 			}
-			case AMBIGUOUS_PARSE_RESULT: {
-				AmbiguousParseResult result = (AmbiguousParseResult) parseResult;
+			case AMBIGUOUS_RESULT: {
+				AmbiguousParseResult result = (AmbiguousParseResult) parseOutcome;
 				throw new ParseException(result.getPosition(), result.getMessage());
 			}
 			case COMPLETION_SUGGESTIONS: {
 				throw new IllegalStateException("Internal error: Unexpected code completion");
 			}
 			default:
-				throw new IllegalStateException("Unsupported parse result type: " + resultType);
+				throw new IllegalStateException("Unsupported parse outcome type: " + outcomeType);
 		}
 	}
 }

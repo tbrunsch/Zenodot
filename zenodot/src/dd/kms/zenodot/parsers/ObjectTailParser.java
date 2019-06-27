@@ -1,13 +1,11 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.ParseResult;
-import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
@@ -33,12 +31,12 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResult parseDot(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome parseDot(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		assert characterToken.getValue().equals(".");
 
-		AbstractEntityParser<ObjectInfo> fieldParser = parserToolbox.getObjectFieldParser();
-		AbstractEntityParser<ObjectInfo> methodParser = parserToolbox.getObjectMethodParser();
+		AbstractParser<ObjectInfo> fieldParser = parserToolbox.getObjectFieldParser();
+		AbstractParser<ObjectInfo> methodParser = parserToolbox.getObjectMethodParser();
 		return ParseUtils.parse(tokenStream, contextInfo, expectation,
 			fieldParser,
 			methodParser
@@ -46,59 +44,63 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 	}
 
 	@Override
-	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome parseOpeningSquareBracket(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		// array access
 		TypeInfo currentContextType = parserToolbox.getObjectInfoProvider().getType(contextInfo);
 		TypeInfo elementType = currentContextType.getComponentType();
 		if (elementType == InfoProvider.NO_TYPE) {
 			log(LogLevel.ERROR, "cannot apply operator [] for non-array types");
-			return ParseResults.createParseError(tokenStream.getPosition(), "Cannot apply [] to non-array types", ErrorPriority.RIGHT_PARSER);
+			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Cannot apply [] to non-array types", ErrorPriority.RIGHT_PARSER);
 		}
 
 		int indexStartPosition = tokenStream.getPosition();
 		ParseExpectation indexExpectation = ParseExpectationBuilder.expectObject().allowedType(InfoProvider.createTypeInfo(int.class)).build();
-		ParseResult arrayIndexParseResult = parseArrayIndex(tokenStream, indexExpectation);
+		ParseOutcome arrayIndexParseOutcome = parseArrayIndex(tokenStream, indexExpectation);
 
-		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(arrayIndexParseResult, indexExpectation, ErrorPriority.RIGHT_PARSER);
-		if (parseResultForPropagation.isPresent()) {
-			return parseResultForPropagation.get();
+		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(arrayIndexParseOutcome, indexExpectation, ErrorPriority.RIGHT_PARSER);
+		if (parseOutcomeForPropagation.isPresent()) {
+			return parseOutcomeForPropagation.get();
 		}
 
-		ObjectParseResult parseResult = (ObjectParseResult) arrayIndexParseResult;
-		int parsedToPosition = parseResult.getPosition();
-		ObjectInfo indexInfo = parseResult.getObjectInfo();
+		ObjectParseResult arrayIndexParseResult = (ObjectParseResult) arrayIndexParseOutcome;
+		int parsedToPosition = arrayIndexParseResult.getPosition();
+		ObjectInfo indexInfo = arrayIndexParseResult.getObjectInfo();
 		ObjectInfo elementInfo;
 		try {
 			elementInfo = parserToolbox.getObjectInfoProvider().getArrayElementInfo(contextInfo, indexInfo);
 			log(LogLevel.SUCCESS, "detected valid array access");
 		} catch (ClassCastException | ArrayIndexOutOfBoundsException e) {
 			log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-			return ParseResults.createParseError(indexStartPosition, e.getClass().getSimpleName() + " during array index evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
+			return ParseOutcomes.createParseError(indexStartPosition, e.getClass().getSimpleName() + " during array index evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
 		}
-		tokenStream.moveTo(parsedToPosition);
-		return parserToolbox.getObjectTailParser().parse(tokenStream, elementInfo, expectation);
 
+		ParseOutcome arrayParseResult = isCompile()
+										? compileArrayParseResult(arrayIndexParseResult, parsedToPosition, elementInfo)
+										: ParseOutcomes.createObjectParseResult(parsedToPosition, elementInfo);
+		return ParseOutcomes.parseTail(tokenStream, arrayParseResult, parserToolbox, expectation);
 	}
 
 	@Override
-	ParseResult createParseResult(int position, ObjectInfo objectInfo) {
-		return ParseResults.createObjectParseResult(position, objectInfo);
+	ParseOutcome createParseOutcome(int position, ObjectInfo objectInfo) {
+		return isCompile()
+				? ParseOutcomes.createCompiledIdentityObjectParseResult(position, objectInfo)
+				: ParseOutcomes.createObjectParseResult(position, objectInfo);
 	}
 
-	private ParseResult parseArrayIndex(TokenStream tokenStream, ParseExpectation expectation) {
+	private ParseOutcome parseArrayIndex(TokenStream tokenStream, ParseExpectation expectation) {
 		log(LogLevel.INFO, "parsing array index");
 
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		assert characterToken.getValue().equals("[");
 
-		ParseResult arrayIndexParseResult = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
+		ParseOutcome arrayIndexParseOutcome = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
 
-		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(arrayIndexParseResult, expectation, ErrorPriority.RIGHT_PARSER);
-		if (parseResultForPropagation.isPresent()) {
-			return parseResultForPropagation.get();
+		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(arrayIndexParseOutcome, expectation, ErrorPriority.RIGHT_PARSER);
+		if (parseOutcomeForPropagation.isPresent()) {
+			return parseOutcomeForPropagation.get();
 		}
 
-		ObjectParseResult parseResult = ((ObjectParseResult) arrayIndexParseResult);
+		ObjectParseResult parseResult = ((ObjectParseResult) arrayIndexParseOutcome);
 		int parsedToPosition = parseResult.getPosition();
 
 		tokenStream.moveTo(parsedToPosition);
@@ -106,7 +108,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 
 		if (characterToken == null || characterToken.getValue().charAt(0) != ']') {
 			log(LogLevel.ERROR, "missing ']' at " + tokenStream);
-			return ParseResults.createParseError(parsedToPosition, "Expected closing bracket ']'", ErrorPriority.RIGHT_PARSER);
+			return ParseOutcomes.createParseError(parsedToPosition, "Expected closing bracket ']'", ErrorPriority.RIGHT_PARSER);
 		}
 
 		if (characterToken.isContainsCaret()) {
@@ -114,6 +116,37 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 			return CompletionSuggestions.none(tokenStream.getPosition());
 		}
 
-		return ParseResults.createObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
+		return isCompile()
+				? compileArrayIndex(arrayIndexParseOutcome, tokenStream.getPosition())
+				: ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), parseResult.getObjectInfo());
+	}
+
+	private ParseOutcome compileArrayParseResult(ObjectParseResult arrayIndexParseResult, int position, ObjectInfo elementInfo) {
+		CompiledObjectParseResult compiledArrayIndexParseResult = (CompiledObjectParseResult) arrayIndexParseResult;
+		return new CompiledArrayParseResult(compiledArrayIndexParseResult, position, elementInfo);
+	}
+
+	private ParseOutcome compileArrayIndex(ParseOutcome arrayIndexParseOutcome, int position) {
+		if (!ParseOutcomes.isCompiledParseResult(arrayIndexParseOutcome)) {
+			return arrayIndexParseOutcome;
+		}
+		CompiledObjectParseResult compiledArrayIndexParseResult = (CompiledObjectParseResult) arrayIndexParseOutcome;
+		return ParseOutcomes.deriveCompiledObjectParseResult(compiledArrayIndexParseResult, position);
+	}
+
+	private static class CompiledArrayParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledArrayIndexParseResult;
+
+		CompiledArrayParseResult(CompiledObjectParseResult compiledArrayIndexParseResult, int position, ObjectInfo elementInfo) {
+			super(position, elementInfo);
+			this.compiledArrayIndexParseResult = compiledArrayIndexParseResult;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			ObjectInfo indexInfo = compiledArrayIndexParseResult.evaluate(thisInfo, thisInfo);
+			return OBJECT_INFO_PROVIDER.getArrayElementInfo(contextInfo, indexInfo);
+		}
 	}
 }

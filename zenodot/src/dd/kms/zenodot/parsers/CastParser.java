@@ -5,6 +5,7 @@ import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -15,19 +16,19 @@ import java.util.Optional;
 /**
  * Parses expressions of the form {@code (<class>) <expression>} in the context of {@code this}.
  */
-public class CastParser extends AbstractEntityParser<ObjectInfo>
+public class CastParser extends AbstractParser<ObjectInfo>
 {
 	public CastParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		int position = tokenStream.getPosition();
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != '(') {
 			log(LogLevel.ERROR, "expected '('");
-			return ParseResults.createParseError(position, "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(position, "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 		if (characterToken.isContainsCaret()) {
 			log(LogLevel.INFO, "potential cast operator; no completion suggestions available");
@@ -35,15 +36,15 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
-		ParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
-		ParseResultType parseResultType = classParseResult.getResultType();
-		log(LogLevel.INFO, "parse result: " + parseResultType);
+		ParseOutcome classParseOutcome = ParseUtils.parseClass(tokenStream, parserToolbox);
+		ParseOutcomeType parseOutcomeType = classParseOutcome.getOutcomeType();
+		log(LogLevel.INFO, "parse outcome: " + parseOutcomeType);
 
-		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(classParseResult, ParseExpectation.CLASS, ErrorPriority.POTENTIALLY_RIGHT_PARSER);
-		if (parseResultForPropagation.isPresent()) {
-			return parseResultForPropagation.get();
+		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(classParseOutcome, ParseExpectation.CLASS, ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+		if (parseOutcomeForPropagation.isPresent()) {
+			return parseOutcomeForPropagation.get();
 		}
-		ClassParseResult parseResult = (ClassParseResult) classParseResult;
+		ClassParseResult parseResult = (ClassParseResult) classParseOutcome;
 		int parsedToPosition = parseResult.getPosition();
 
 		TypeInfo targetType = parseResult.getType();
@@ -53,7 +54,7 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		characterToken = tokenStream.readCharacterUnchecked();
 		if (characterToken == null || characterToken.getValue().charAt(0) != ')') {
 			log(LogLevel.ERROR, "missing ')' at " + tokenStream);
-			return ParseResults.createParseError(position, "Expected closing parenthesis ')'", ErrorPriority.RIGHT_PARSER);
+			return ParseOutcomes.createParseError(position, "Expected closing parenthesis ')'", ErrorPriority.RIGHT_PARSER);
 		}
 		log(LogLevel.SUCCESS, "detected cast operator at " + tokenStream);
 
@@ -66,15 +67,15 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		return parseAndCast(tokenStream, targetType);
 	}
 
-	private ParseResult parseAndCast(TokenStream tokenStream, TypeInfo targetType) {
+	private ParseOutcome parseAndCast(TokenStream tokenStream, TypeInfo targetType) {
 		log(LogLevel.INFO, "parsing object to cast at " + tokenStream);
-		ParseResult objectParseResult = parserToolbox.getSimpleExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
+		ParseOutcome objectParseOutcome = parserToolbox.getSimpleExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
 
-		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(objectParseResult, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-		if (parseResultForPropagation.isPresent()) {
-			return parseResultForPropagation.get();
+		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(objectParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
+		if (parseOutcomeForPropagation.isPresent()) {
+			return parseOutcomeForPropagation.get();
 		}
-		ObjectParseResult parseResult = (ObjectParseResult) objectParseResult;
+		ObjectParseResult parseResult = (ObjectParseResult) objectParseOutcome;
 		int parsedToPosition = parseResult.getPosition();
 		ObjectInfo objectInfo = parseResult.getObjectInfo();
 		tokenStream.moveTo(parsedToPosition);
@@ -82,10 +83,38 @@ public class CastParser extends AbstractEntityParser<ObjectInfo>
 		try {
 			ObjectInfo castInfo = parserToolbox.getObjectInfoProvider().getCastInfo(objectInfo, targetType);
 			log(LogLevel.SUCCESS, "successfully casted object");
-			return ParseResults.createObjectParseResult(parsedToPosition, castInfo);
+			return isCompile()
+					? compile(parseResult, targetType, parsedToPosition, castInfo)
+					: ParseOutcomes.createObjectParseResult(parsedToPosition, castInfo);
 		} catch (ClassCastException e) {
 			log(LogLevel.ERROR, "class cast exception: " + e.getMessage());
-			return ParseResults.createParseError(tokenStream.getPosition(), "Cannot cast expression to '" + targetType + "'", ErrorPriority.RIGHT_PARSER, e);
+			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Cannot cast expression to '" + targetType + "'", ErrorPriority.RIGHT_PARSER, e);
+		}
+	}
+
+	private ParseOutcome compile(ObjectParseResult objectParseResult, TypeInfo targetType, int position, ObjectInfo castInfo) {
+		if (!ParseOutcomes.isCompiledParseResult(objectParseResult)) {
+			return objectParseResult;
+		}
+		CompiledObjectParseResult compiledObjectParseResult = (CompiledObjectParseResult) objectParseResult;
+		return new CompiledCastParseResult(compiledObjectParseResult, targetType, position, castInfo);
+	}
+
+	private static class CompiledCastParseResult extends AbstractCompiledParseResult
+	{
+		private final CompiledObjectParseResult	compiledObjectParseResult;
+		private final TypeInfo								targetType;
+
+		CompiledCastParseResult(CompiledObjectParseResult compiledObjectParseResult, TypeInfo targetType, int position, ObjectInfo castInfo) {
+			super(position, castInfo);
+			this.compiledObjectParseResult = compiledObjectParseResult;
+			this.targetType = targetType;
+		}
+
+		@Override
+		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			ObjectInfo objectInfo = compiledObjectParseResult.evaluate(thisInfo, contextInfo);
+			return OBJECT_INFO_PROVIDER.getCastInfo(objectInfo, targetType);
 		}
 	}
 }

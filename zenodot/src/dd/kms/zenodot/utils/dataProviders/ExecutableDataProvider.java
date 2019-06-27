@@ -46,8 +46,23 @@ public class ExecutableDataProvider
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
 
-	public List<ParseResult> parseExecutableArguments(TokenStream tokenStream, List<ExecutableInfo> availableExecutableInfos) {
-		List<ParseResult> arguments = new ArrayList<>();
+	/**
+	 * Returns a list of {@link ParseOutcome}s, one for each argument expression scanned until the method returns.
+	 * <ul>
+	 *     <li>
+	 *         If the method arguments could not be parsed completely, either due to an error or due to requested code
+	 *         completion for one of the arguments, then the returned list is guaranteed to contain at least one element.
+	 *         The last element in this list is the parse outcome that describes why not all arguments could be parsed.
+	 *     </li>
+	 *     <li>
+	 *         If all arguments could be parse completely, then the returned list contains one {@link ObjectParseResult}
+	 *         or {@link CompiledObjectParseResult} for each argument. If no arguments are specified, then the returned list
+	 *         will be empty.
+	 *     </li>
+	 * </ul>
+	 */
+	public List<ParseOutcome> parseExecutableArguments(TokenStream tokenStream, List<ExecutableInfo> availableExecutableInfos) {
+		List<ParseOutcome> arguments = new ArrayList<>();
 
 		int position;
 		Token characterToken = tokenStream.readCharacterUnchecked();
@@ -55,7 +70,7 @@ public class ExecutableDataProvider
 
 		if (!characterToken.isContainsCaret()) {
 			if (!tokenStream.hasMore()) {
-				arguments.add(ParseResults.createParseError(tokenStream.getPosition(), "Expected argument or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
+				arguments.add(ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected argument or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 
@@ -79,7 +94,7 @@ public class ExecutableDataProvider
 					// code completion after opening '(' for executable without arguments
 					arguments.add(CompletionSuggestions.none(position));
 				} else {
-					arguments.add(ParseResults.createParseError(position, "No further arguments expected", ErrorPriority.RIGHT_PARSER));
+					arguments.add(ParseOutcomes.createParseError(position, "No further arguments expected", ErrorPriority.RIGHT_PARSER));
 				}
 				return arguments;
 			}
@@ -88,16 +103,16 @@ public class ExecutableDataProvider
 			 * Parse expression for argument i
 			 */
 			ParseExpectation argumentExpectation = ParseExpectationBuilder.expectObject().allowedTypes(expectedArgumentTypes_i).build();
-			ParseResult argumentParseResult_i = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argumentExpectation);
+			ParseOutcome argumentParseOutcome_i = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argumentExpectation);
 
-			Optional<ParseResult> argumentForPropagation = ParseUtils.prepareParseResultForPropagation(argumentParseResult_i, argumentExpectation, ErrorPriority.RIGHT_PARSER);
+			Optional<ParseOutcome> argumentForPropagation = ParseUtils.prepareParseOutcomeForPropagation(argumentParseOutcome_i, argumentExpectation, ErrorPriority.RIGHT_PARSER);
 			if (argumentForPropagation.isPresent()) {
 				arguments.add(argumentForPropagation.get());
 				return arguments;
 			}
-			arguments.add(argumentParseResult_i);
+			arguments.add(argumentParseOutcome_i);
 
-			ObjectParseResult parseResult = ((ObjectParseResult) argumentParseResult_i);
+			ObjectParseResult parseResult = ((ObjectParseResult) argumentParseOutcome_i);
 			int parsedToPosition = parseResult.getPosition();
 			tokenStream.moveTo(parsedToPosition);
 			ObjectInfo argumentInfo = parseResult.getObjectInfo();
@@ -107,7 +122,7 @@ public class ExecutableDataProvider
 			characterToken = tokenStream.readCharacterUnchecked();
 
 			if (characterToken == null) {
-				arguments.add(ParseResults.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
+				arguments.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 
@@ -120,7 +135,7 @@ public class ExecutableDataProvider
 			}
 
 			if (characterToken.getValue().charAt(0) != ',') {
-				arguments.add(ParseResults.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
+				arguments.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
 				return arguments;
 			}
 		}
@@ -183,7 +198,7 @@ public class ExecutableDataProvider
 			boolean applicable = IntStream.range(0, argumentInfos.size()).allMatch(i -> acceptsArgumentInfo(executableInfo, i, argumentInfos.get(i)));
 			applicableExecutableOverloads.put(executableInfo, applicable);
 		}
-		return ParseResults.createExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
+		return ParseOutcomes.createExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
 	}
 
 	/*

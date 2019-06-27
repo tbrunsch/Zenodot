@@ -3,10 +3,7 @@ package dd.kms.zenodot;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.result.ClassParseResult;
-import dd.kms.zenodot.result.CompletionSuggestion;
-import dd.kms.zenodot.result.ParseResult;
-import dd.kms.zenodot.result.ParseResultType;
+import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
@@ -32,20 +29,19 @@ class ClassParserImpl extends AbstractParser implements ClassParser
 
 	@Override
 	public ClassInfo evaluate() throws ParseException {
-		ParseResult parseResult = parse(ParseMode.EVALUATION, -1);
-		ParseResultType resultType = parseResult.getResultType();
-		if (resultType == ParseResultType.CLASS_PARSE_RESULT) {
-			ClassParseResult result = (ClassParseResult) parseResult;
+		ParseOutcome parseOutcome = parse(ParseMode.EVALUATION, -1);
+		if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.CLASS)) {
+			ClassParseResult result = (ClassParseResult) parseOutcome;
 			checkParsedWholeText(result);
 			TypeInfo type = result.getType();
 			return InfoProvider.createClassInfoUnchecked(type.getRawType().getName());
 		}
-		handleInvalidResultType(parseResult);
+		handleInvalidResultType(parseOutcome);
 		return null;
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ParseMode parseMode) {
+	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
 		ParserToolbox parserToolbox  = new ParserToolbox(InfoProvider.createObjectInfo(null, InfoProvider.NO_TYPE), settings, parseMode);
 		return ParseUtils.parse(tokenStream, null, ParseExpectation.CLASS,
 			parserToolbox.getImportedClassParser(),

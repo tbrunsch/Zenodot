@@ -13,8 +13,13 @@ class PackageParseResultImpl implements PackageParseResult
 	}
 
 	@Override
+	public ParseOutcomeType getOutcomeType() {
+		return ParseOutcomeType.RESULT;
+	}
+
+	@Override
 	public ParseResultType getResultType() {
-		return ParseResultType.PACKAGE_PARSE_RESULT;
+		return ParseResultType.PACKAGE;
 	}
 
 	@Override

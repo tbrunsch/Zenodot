@@ -1,8 +1,8 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.result.ParseResultType;
-import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -27,15 +27,15 @@ public class ClassTailParser extends AbstractTailParser<TypeInfo>
 	}
 
 	@Override
-	ParseResult parseDot(TokenStream tokenStream, TypeInfo classType, ParseExpectation expectation) {
+	ParseOutcome parseDot(TokenStream tokenStream, TypeInfo classType, ParseExpectation expectation) {
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		assert characterToken.getValue().equals(".");
 
-		AbstractEntityParser<TypeInfo> fieldParser = parserToolbox.getClassFieldParser();
-		AbstractEntityParser<TypeInfo> methodParser = parserToolbox.getClassMethodParser();
-		AbstractEntityParser<TypeInfo> innerClassParser = parserToolbox.getInnerClassParser();
-		AbstractEntityParser<TypeInfo> classObjectParser = parserToolbox.getClassObjectParser();
-		if (expectation.getEvaluationType() == ParseResultType.CLASS_PARSE_RESULT) {
+		AbstractParser<TypeInfo> fieldParser = parserToolbox.getClassFieldParser();
+		AbstractParser<TypeInfo> methodParser = parserToolbox.getClassMethodParser();
+		AbstractParser<TypeInfo> innerClassParser = parserToolbox.getInnerClassParser();
+		AbstractParser<TypeInfo> classObjectParser = parserToolbox.getClassObjectParser();
+		if (expectation.getResultType() == ParseResultType.CLASS) {
 			return innerClassParser.parse(tokenStream, classType, expectation);
 		} else {
 			return ParseUtils.parse(tokenStream, classType, expectation,
@@ -48,17 +48,17 @@ public class ClassTailParser extends AbstractTailParser<TypeInfo>
 	}
 
 	@Override
-	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, TypeInfo context, ParseExpectation expectation) {
+	ParseOutcome parseOpeningSquareBracket(TokenStream tokenStream, TypeInfo context, ParseExpectation expectation) {
 		/*
 		 * If called under ConstructorParser, then this is an array construction. As we do not
 		 * know, in which circumstances this method is called, the caller must handle this
 		 * operator. Hence, we stop parsing here.
 		 */
-		return ParseResults.createClassParseResult(tokenStream.getPosition(), context);
+		return ParseOutcomes.createClassParseResult(tokenStream.getPosition(), context);
 	}
 
 	@Override
-	ParseResult createParseResult(int position, TypeInfo type) {
-		return ParseResults.createClassParseResult(position, type);
+	ParseOutcome createParseOutcome(int position, TypeInfo type) {
+		return ParseOutcomes.createClassParseResult(position, type);
 	}
 }

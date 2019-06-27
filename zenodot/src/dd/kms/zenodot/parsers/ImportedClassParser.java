@@ -2,8 +2,8 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.result.ClassParseResult;
-import dd.kms.zenodot.result.ParseResult;
-import dd.kms.zenodot.result.ParseResults;
+import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -15,7 +15,6 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Optional;
-import java.util.Set;
 
 import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
@@ -24,14 +23,14 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  * The parsing will only be successful if either the class or its package is imported
  * (see {@link ParserSettingsBuilder#importPackages(Iterable)} and {@link ParserSettingsBuilder#importClasses(Iterable)}).
  */
-public class ImportedClassParser extends AbstractEntityParser<ObjectInfo>
+public class ImportedClassParser extends AbstractParser<ObjectInfo>
 {
 	public ImportedClassParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
 		super(parserToolbox, thisInfo);
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
+	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			int insertionBegin = tokenStream.getPosition();
 			String className;
@@ -50,15 +49,15 @@ public class ImportedClassParser extends AbstractEntityParser<ObjectInfo>
 		}
 
 		log(LogLevel.INFO, "parsing class");
-		ParseResult classParseResult = readClass(tokenStream);
-		log(LogLevel.INFO, "parse result: " + classParseResult.getResultType());
+		ParseOutcome classParseOutcome = readClass(tokenStream);
+		log(LogLevel.INFO, "parse outcome: " + classParseOutcome.getOutcomeType());
 
-		Optional<ParseResult> parseResultForPropagation = ParseUtils.prepareParseResultForPropagation(classParseResult, ParseExpectation.CLASS, ErrorPriority.WRONG_PARSER);
-		if (parseResultForPropagation.isPresent()) {
-			return parseResultForPropagation.get();
+		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(classParseOutcome, ParseExpectation.CLASS, ErrorPriority.WRONG_PARSER);
+		if (parseOutcomeForPropagation.isPresent()) {
+			return parseOutcomeForPropagation.get();
 		}
 
-		ClassParseResult parseResult = (ClassParseResult) classParseResult;
+		ClassParseResult parseResult = (ClassParseResult) classParseOutcome;
 		int parsedToPosition = parseResult.getPosition();
 		TypeInfo type = parseResult.getType();
 
@@ -67,7 +66,7 @@ public class ImportedClassParser extends AbstractEntityParser<ObjectInfo>
 		return parserToolbox.getClassTailParser().parse(tokenStream, type, expectation);
 	}
 
-	private ParseResult readClass(TokenStream tokenStream) {
+	private ParseOutcome readClass(TokenStream tokenStream) {
 		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
 
 		int identifierStartPosition = tokenStream.getPosition();
@@ -75,7 +74,7 @@ public class ImportedClassParser extends AbstractEntityParser<ObjectInfo>
 		try {
 			classToken = tokenStream.readClass();
 		} catch (TokenStream.JavaTokenParseException e) {
-			return ParseResults.createParseError(identifierStartPosition, "Expected class name", ErrorPriority.WRONG_PARSER);
+			return ParseOutcomes.createParseError(identifierStartPosition, "Expected class name", ErrorPriority.WRONG_PARSER);
 		}
 		String className = classToken.getValue();
 		if (classToken.isContainsCaret()) {
@@ -84,8 +83,8 @@ public class ImportedClassParser extends AbstractEntityParser<ObjectInfo>
 
 		Class<?> importedClass = classDataProvider.getImportedClass(className);
 		if (importedClass != null) {
-			return ParseResults.createClassParseResult(tokenStream.getPosition(), InfoProvider.createTypeInfo(importedClass));
+			return ParseOutcomes.createClassParseResult(tokenStream.getPosition(), InfoProvider.createTypeInfo(importedClass));
 		}
-		return ParseResults.createParseError(tokenStream.getPosition(), "Unknown class '" + className + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+		return ParseOutcomes.createParseError(tokenStream.getPosition(), "Unknown class '" + className + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
 	}
 }

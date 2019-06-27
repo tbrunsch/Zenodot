@@ -15,6 +15,7 @@ public class ParserToolbox
 {
 	private final ObjectInfo						thisInfo;
 	private final ParserSettings					settings;
+	private final EvaluationMode					evaluationMode;
 
 	private final ClassDataProvider					classDataProvider;
 	private final ExecutableDataProvider			executableDataProvider;
@@ -24,33 +25,32 @@ public class ParserToolbox
 	private final OperatorResultProvider 			operatorResultProvider;
 	private final VariableDataProvider				variableDataProvider;
 
-	private final AbstractEntityParser<ObjectInfo>	castParser;
-	private final AbstractEntityParser<TypeInfo>	classFieldParser;
-	private final AbstractEntityParser<TypeInfo>	classMethodParser;
-	private final AbstractEntityParser<TypeInfo>	classObjectParser;
-	private final AbstractEntityParser<TypeInfo>	classTailParser;
-	private final AbstractEntityParser<ObjectInfo>	constructorParser;
-	private final AbstractEntityParser<ObjectInfo>	customHierarchyParser;
-	private final AbstractEntityParser<ObjectInfo>	expressionParser;
-	private final AbstractEntityParser<ObjectInfo>	importedClassParser;
-	private final AbstractEntityParser<TypeInfo>	innerClassParser;
-	private final AbstractEntityParser<ObjectInfo>	literalParser;
-	private final AbstractEntityParser<ObjectInfo>	objectFieldParser;
-	private final AbstractEntityParser<ObjectInfo>	objectMethodParser;
-	private final AbstractEntityParser<ObjectInfo>	objectTailParser;
-	private final AbstractEntityParser<ObjectInfo>	parenthesizedExpressionParser;
-	private final AbstractEntityParser<PackageInfo>	qualifiedClassParser;
-	private final AbstractEntityParser<ObjectInfo>	rootpackageParser;
-	private final AbstractEntityParser<ObjectInfo>	simpleExpressionParser;
-	private final AbstractEntityParser<PackageInfo>	subpackageParser;
-	private final AbstractEntityParser<ObjectInfo>	unaryPrefixOperatorParser;
-	private final AbstractEntityParser<ObjectInfo>	variableParser;
+	private final AbstractParser<ObjectInfo> 		castParser;
+	private final AbstractParser<TypeInfo>			classFieldParser;
+	private final AbstractParser<TypeInfo>			classMethodParser;
+	private final AbstractParser<TypeInfo>			classObjectParser;
+	private final AbstractParser<TypeInfo>			classTailParser;
+	private final AbstractParser<ObjectInfo>		constructorParser;
+	private final AbstractParser<ObjectInfo>		customHierarchyParser;
+	private final AbstractParser<ObjectInfo>		expressionParser;
+	private final AbstractParser<ObjectInfo>		importedClassParser;
+	private final AbstractParser<TypeInfo>			innerClassParser;
+	private final AbstractParser<ObjectInfo>		literalParser;
+	private final AbstractParser<ObjectInfo>		objectFieldParser;
+	private final AbstractParser<ObjectInfo>		objectMethodParser;
+	private final AbstractParser<ObjectInfo>		objectTailParser;
+	private final AbstractParser<ObjectInfo>		parenthesizedExpressionParser;
+	private final AbstractParser<PackageInfo>		qualifiedClassParser;
+	private final AbstractParser<ObjectInfo>		rootpackageParser;
+	private final AbstractParser<ObjectInfo>		simpleExpressionParser;
+	private final AbstractParser<PackageInfo>		subpackageParser;
+	private final AbstractParser<ObjectInfo>		unaryPrefixOperatorParser;
+	private final AbstractParser<ObjectInfo>		variableParser;
 
 	public ParserToolbox(ObjectInfo thisInfo, ParserSettings settings, ParseMode parseMode) {
 		this.thisInfo = thisInfo;
 		this.settings = settings;
-
-		EvaluationMode evaluationMode = getEvaluationMode(settings, parseMode);
+		this.evaluationMode = getEvaluationMode(settings, parseMode);
 
 		objectInfoProvider				= new ObjectInfoProvider(evaluationMode);
 
@@ -58,7 +58,7 @@ public class ParserToolbox
 		executableDataProvider			= new ExecutableDataProvider(this);
 		fieldDataProvider				= new FieldDataProvider(this);
 		objectTreeNodeDataProvider		= new ObjectTreeNodeDataProvider();
-		operatorResultProvider 			= new OperatorResultProvider(this, evaluationMode);
+		operatorResultProvider 			= new OperatorResultProvider(objectInfoProvider, evaluationMode);
 		variableDataProvider			= new VariableDataProvider(settings.getVariables());
 
 		castParser						= new CastParser(this, thisInfo);
@@ -90,6 +90,10 @@ public class ParserToolbox
 
 	public ParserSettings getSettings() {
 		return settings;
+	}
+
+	public EvaluationMode getEvaluationMode() {
+		return evaluationMode;
 	}
 
 	/*
@@ -126,86 +130,94 @@ public class ParserToolbox
 	/*
 	 * Parsers
 	 */
-	public AbstractEntityParser<ObjectInfo> getCastParser() { return castParser; }
+	public AbstractParser<ObjectInfo> getCastParser() { return castParser; }
 
-	public AbstractEntityParser<TypeInfo> getClassFieldParser() {
+	public AbstractParser<TypeInfo> getClassFieldParser() {
 		return classFieldParser;
 	}
 
-	public AbstractEntityParser<TypeInfo> getClassMethodParser() {
+	public AbstractParser<TypeInfo> getClassMethodParser() {
 		return classMethodParser;
 	}
 
-	public AbstractEntityParser<TypeInfo> getClassObjectParser() { return classObjectParser; }
+	public AbstractParser<TypeInfo> getClassObjectParser() { return classObjectParser; }
 
-	public AbstractEntityParser<TypeInfo> getClassTailParser() {
+	public AbstractParser<TypeInfo> getClassTailParser() {
 		return classTailParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> createExpressionParser(int maxOperatorPrecedenceLevelToConsider) {
+	public AbstractParser<ObjectInfo> createExpressionParser(int maxOperatorPrecedenceLevelToConsider) {
 		return new ExpressionParser(this, thisInfo, maxOperatorPrecedenceLevelToConsider);
 	}
 
-	public AbstractEntityParser<ObjectInfo> getConstructorParser() {
+	public AbstractParser<ObjectInfo> getConstructorParser() {
 		return constructorParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getCustomHierarchyParser() {
+	public AbstractParser<ObjectInfo> getCustomHierarchyParser() {
 		return customHierarchyParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getExpressionParser() {
+	public AbstractParser<ObjectInfo> getExpressionParser() {
 		return expressionParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getImportedClassParser() { return importedClassParser; }
+	public AbstractParser<ObjectInfo> getImportedClassParser() { return importedClassParser; }
 
-	public AbstractEntityParser<TypeInfo> getInnerClassParser() {
+	public AbstractParser<TypeInfo> getInnerClassParser() {
 		return innerClassParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getLiteralParser() {
+	public AbstractParser<ObjectInfo> getLiteralParser() {
 		return literalParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getObjectFieldParser() {
+	public AbstractParser<ObjectInfo> getObjectFieldParser() {
 		return objectFieldParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getObjectMethodParser() {
+	public AbstractParser<ObjectInfo> getObjectMethodParser() {
 		return objectMethodParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getObjectTailParser() {
+	public AbstractParser<ObjectInfo> getObjectTailParser() {
 		return objectTailParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getParenthesizedExpressionParser() {
+	public AbstractParser<ObjectInfo> getParenthesizedExpressionParser() {
 		return parenthesizedExpressionParser;
 	}
 
-	public AbstractEntityParser<PackageInfo> getQualifiedClassParser() {
+	public AbstractParser<PackageInfo> getQualifiedClassParser() {
 		return qualifiedClassParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getRootpackageParser() { return rootpackageParser; }
+	public AbstractParser<ObjectInfo> getRootpackageParser() { return rootpackageParser; }
 
-	public AbstractEntityParser<ObjectInfo> getSimpleExpressionParser() {
+	public AbstractParser<ObjectInfo> getSimpleExpressionParser() {
 		return simpleExpressionParser;
 	}
 
-	public AbstractEntityParser<PackageInfo> getSubpackageParser() { return subpackageParser; }
+	public AbstractParser<PackageInfo> getSubpackageParser() { return subpackageParser; }
 
-	public AbstractEntityParser<ObjectInfo> getUnaryPrefixOperatorParser() {
+	public AbstractParser<ObjectInfo> getUnaryPrefixOperatorParser() {
 		return unaryPrefixOperatorParser;
 	}
 
-	public AbstractEntityParser<ObjectInfo> getVariableParser() { return variableParser; }
+	public AbstractParser<ObjectInfo> getVariableParser() { return variableParser; }
 
 	private static EvaluationMode getEvaluationMode(ParserSettings settings, ParseMode parseMode) {
-		if (settings.isEnableDynamicTyping()) {
-			return EvaluationMode.DYNAMICALLY_TYPED;
+		switch (parseMode) {
+			case CODE_COMPLETION:
+				return settings.isEnableDynamicTyping() ? EvaluationMode.DYNAMICALLY_TYPED : EvaluationMode.NONE;
+			case EVALUATION:
+				return settings.isEnableDynamicTyping() ? EvaluationMode.DYNAMICALLY_TYPED : EvaluationMode.STATICALLY_TYPED;
+			case WITHOUT_EVALUATION:
+				return EvaluationMode.NONE;
+			case COMPILATION:
+				return EvaluationMode.COMPILED;
+			default:
+				throw new IllegalArgumentException("Unexpected parse mode: " + parseMode);
 		}
-		return parseMode == ParseMode.EVALUATION ? EvaluationMode.STATICALLY_TYPED : EvaluationMode.NONE;
 	}
 }

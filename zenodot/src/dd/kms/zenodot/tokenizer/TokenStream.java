@@ -26,7 +26,7 @@ public class TokenStream implements Cloneable
 	private static final Pattern		STRING_LITERAL_PATTERN			= Pattern.compile("^(\\s*\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"\\s*).*");
 	private static final Pattern		CHARACTER_LITERAL_PATTERN		= Pattern.compile("^(\\s*'(\\\\.|[^\\\\])'\\s*).*");
 	private static final Pattern		KEYWORD_PATTERN					= IDENTIFIER_PATTERN;
-	private static final Pattern		INTEGER_LITERAL_PATTERN			= Pattern.compile("^(\\s*(0|[1-9][0-9]*)\\s*)($|[^0-9dDeEfFL].*)");
+	private static final Pattern		INTEGER_LITERAL_PATTERN			= Pattern.compile("^(\\s*(0|[1-9][0-9]*)\\s*)($|[^0-9dDeEfFL\\.].*)");
 	private static final Pattern		LONG_LITERAL_PATTERN			= Pattern.compile("^(\\s*(0|[1-9][0-9]*)[lL]\\s*).*");
 	private static final Pattern		FLOAT_LITERAL_PATTERN 			= Pattern.compile("^(\\s*(([0-9]+([eE][+-]?[0-9]+)?|\\.[0-9]+([eE][+-]?[0-9]+)?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?)[fF])\\s*).*");
 	private static final Pattern		DOUBLE_LITERAL_PATTERN 			= Pattern.compile("^(\\s*(([0-9]+(([eE][+-]?[0-9]+)?[dD]|[eE][+-]?[0-9]+[dD]?)|\\.[0-9]+([eE][+-]?[0-9]+)?[dD]?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?[dD]?))\\s*).*");
