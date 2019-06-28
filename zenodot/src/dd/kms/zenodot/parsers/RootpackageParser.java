@@ -8,8 +8,8 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
  */
 public class RootpackageParser extends AbstractPackageParser<ObjectInfo>
 {
-	public RootpackageParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public RootpackageParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

@@ -12,8 +12,8 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
  */
 abstract class AbstractTailParser<C> extends AbstractParser<C>
 {
-	AbstractTailParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	AbstractTailParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	abstract ParseOutcome parseDot(TokenStream tokenStream, C context, ParseExpectation expectation);

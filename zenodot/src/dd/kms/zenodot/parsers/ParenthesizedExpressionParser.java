@@ -17,8 +17,8 @@ import java.util.Optional;
  */
 public class ParenthesizedExpressionParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
-	public ParenthesizedExpressionParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ParenthesizedExpressionParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

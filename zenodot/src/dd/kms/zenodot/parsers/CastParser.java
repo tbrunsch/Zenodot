@@ -18,8 +18,8 @@ import java.util.Optional;
  */
 public class CastParser extends AbstractParser<ObjectInfo>
 {
-	public CastParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public CastParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class CastParser extends AbstractParser<ObjectInfo>
 
 	private ParseOutcome parseAndCast(TokenStream tokenStream, TypeInfo targetType) {
 		log(LogLevel.INFO, "parsing object to cast at " + tokenStream);
-		ParseOutcome objectParseOutcome = parserToolbox.getSimpleExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
+		ParseOutcome objectParseOutcome = parserToolbox.getSimpleExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), ParseExpectation.OBJECT);
 
 		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(objectParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
 		if (parseOutcomeForPropagation.isPresent()) {

@@ -21,8 +21,8 @@ import java.util.List;
  */
 public class ObjectMethodParser extends AbstractMethodParser<ObjectInfo>
 {
-	public ObjectMethodParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ObjectMethodParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

@@ -22,8 +22,8 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
  */
 public class ClassTailParser extends AbstractTailParser<TypeInfo>
 {
-	public ClassTailParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ClassTailParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

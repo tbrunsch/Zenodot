@@ -70,12 +70,10 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 public abstract class AbstractParser<C>
 {
 	final ParserToolbox			parserToolbox;
-	final ObjectInfo			thisInfo;
 	private final ParserLogger 	logger;
 
-	AbstractParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
+	AbstractParser(ParserToolbox parserToolbox) {
 		this.parserToolbox = parserToolbox;
-		this.thisInfo = thisInfo;
 		logger = parserToolbox.getSettings().getLogger();
 	}
 

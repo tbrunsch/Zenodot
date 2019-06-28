@@ -21,8 +21,8 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 {
 	private static final String	CLASS_KEYWORD	= "class";
 
-	public ClassObjectParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ClassObjectParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

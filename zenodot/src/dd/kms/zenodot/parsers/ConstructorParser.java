@@ -33,8 +33,8 @@ import java.util.stream.Collectors;
  */
 public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
-	public ConstructorParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ConstructorParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override
@@ -221,7 +221,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		ParseExpectation expectation = ParseExpectationBuilder.expectObject().allowedType(InfoProvider.createTypeInfo(int.class)).build();
-		ParseOutcome arraySizeParseOutcome = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
+		ParseOutcome arraySizeParseOutcome = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
 
 		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(arraySizeParseOutcome, expectation, ErrorPriority.RIGHT_PARSER);
 		if (parseOutcomeForPropagation.isPresent()) {

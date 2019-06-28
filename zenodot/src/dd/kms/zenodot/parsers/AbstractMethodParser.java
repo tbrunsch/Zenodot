@@ -26,8 +26,8 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  */
 abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 {
-	AbstractMethodParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	AbstractMethodParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	abstract boolean contextCausesNullPointerException(C context);

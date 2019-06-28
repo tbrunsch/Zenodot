@@ -22,8 +22,8 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
  */
 public class ObjectFieldParser extends AbstractFieldParser<ObjectInfo>
 {
-	public ObjectFieldParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ObjectFieldParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

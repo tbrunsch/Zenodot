@@ -61,27 +61,27 @@ public class ParserToolbox
 		operatorResultProvider 			= new OperatorResultProvider(objectInfoProvider, evaluationMode);
 		variableDataProvider			= new VariableDataProvider(settings.getVariables());
 
-		castParser						= new CastParser(this, thisInfo);
-		classFieldParser				= new ClassFieldParser(this, thisInfo);
-		classMethodParser				= new ClassMethodParser(this, thisInfo);
-		classObjectParser				= new ClassObjectParser(this, thisInfo);
-		classTailParser					= new ClassTailParser(this, thisInfo);
-		constructorParser				= new ConstructorParser(this, thisInfo);
-		customHierarchyParser			= new CustomHierarchyParser(this, thisInfo);
+		castParser						= new CastParser(this);
+		classFieldParser				= new ClassFieldParser(this);
+		classMethodParser				= new ClassMethodParser(this);
+		classObjectParser				= new ClassObjectParser(this);
+		classTailParser					= new ClassTailParser(this);
+		constructorParser				= new ConstructorParser(this);
+		customHierarchyParser			= new CustomHierarchyParser(this);
 		expressionParser				= createExpressionParser(OperatorResultProvider.MAX_BINARY_OPERATOR_PRECEDENCE_LEVEL);
-		importedClassParser				= new ImportedClassParser(this, thisInfo);
-		innerClassParser				= new InnerClassParser(this, thisInfo);
-		literalParser					= new LiteralParser(this, thisInfo);
-		objectFieldParser				= new ObjectFieldParser(this, thisInfo);
-		objectMethodParser				= new ObjectMethodParser(this, thisInfo);
-		objectTailParser				= new ObjectTailParser(this, thisInfo);
-		parenthesizedExpressionParser	= new ParenthesizedExpressionParser(this, thisInfo);
-		qualifiedClassParser			= new QualifiedClassParser(this, thisInfo);
-		rootpackageParser				= new RootpackageParser(this, thisInfo);
-		simpleExpressionParser			= new SimpleExpressionParser(this, thisInfo);
-		subpackageParser				= new SubpackageParser(this, thisInfo);
-		unaryPrefixOperatorParser		= new UnaryPrefixOperatorParser(this, thisInfo);
-		variableParser					= new VariableParser(this, thisInfo);
+		importedClassParser				= new ImportedClassParser(this);
+		innerClassParser				= new InnerClassParser(this);
+		literalParser					= new LiteralParser(this);
+		objectFieldParser				= new ObjectFieldParser(this);
+		objectMethodParser				= new ObjectMethodParser(this);
+		objectTailParser				= new ObjectTailParser(this);
+		parenthesizedExpressionParser	= new ParenthesizedExpressionParser(this);
+		qualifiedClassParser			= new QualifiedClassParser(this);
+		rootpackageParser				= new RootpackageParser(this);
+		simpleExpressionParser			= new SimpleExpressionParser(this);
+		subpackageParser				= new SubpackageParser(this);
+		unaryPrefixOperatorParser		= new UnaryPrefixOperatorParser(this);
+		variableParser					= new VariableParser(this);
 	}
 
 	public ObjectInfo getThisInfo() {
@@ -147,7 +147,7 @@ public class ParserToolbox
 	}
 
 	public AbstractParser<ObjectInfo> createExpressionParser(int maxOperatorPrecedenceLevelToConsider) {
-		return new ExpressionParser(this, thisInfo, maxOperatorPrecedenceLevelToConsider);
+		return new ExpressionParser(this, maxOperatorPrecedenceLevelToConsider);
 	}
 
 	public AbstractParser<ObjectInfo> getConstructorParser() {

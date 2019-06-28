@@ -26,8 +26,8 @@ import java.util.Optional;
  */
 public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 {
-	public ObjectTailParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ObjectTailParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo>
 		Token characterToken = tokenStream.readCharacterUnchecked();
 		assert characterToken.getValue().equals("[");
 
-		ParseOutcome arrayIndexParseOutcome = parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, expectation);
+		ParseOutcome arrayIndexParseOutcome = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
 
 		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(arrayIndexParseOutcome, expectation, ErrorPriority.RIGHT_PARSER);
 		if (parseOutcomeForPropagation.isPresent()) {

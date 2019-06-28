@@ -13,8 +13,8 @@ import java.util.List;
  */
 public class ClassFieldParser extends AbstractFieldParser<TypeInfo>
 {
-	public ClassFieldParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ClassFieldParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

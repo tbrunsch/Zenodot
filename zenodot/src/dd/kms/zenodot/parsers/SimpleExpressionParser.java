@@ -12,8 +12,8 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
  */
 public class SimpleExpressionParser extends AbstractParser<ObjectInfo>
 {
-	public SimpleExpressionParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public SimpleExpressionParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

@@ -13,8 +13,8 @@ import java.util.List;
  */
 public class ClassMethodParser extends AbstractMethodParser<TypeInfo>
 {
-	public ClassMethodParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ClassMethodParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

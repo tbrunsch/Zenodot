@@ -26,8 +26,8 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  */
 public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
-	public VariableParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public VariableParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

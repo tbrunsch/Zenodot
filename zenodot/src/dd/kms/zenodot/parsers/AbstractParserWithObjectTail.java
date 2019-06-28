@@ -7,8 +7,8 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 abstract class AbstractParserWithObjectTail<C> extends AbstractParser<C>
 {
-	AbstractParserWithObjectTail(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	AbstractParserWithObjectTail(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	abstract ParseOutcome parseNext(TokenStream tokenStream, C context, ParseExpectation expectation);

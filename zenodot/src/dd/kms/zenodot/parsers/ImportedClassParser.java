@@ -25,8 +25,8 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  */
 public class ImportedClassParser extends AbstractParser<ObjectInfo>
 {
-	public ImportedClassParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public ImportedClassParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

@@ -41,8 +41,8 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo>
 		.put(UnaryOperator.BITWISE_NOT,	OperatorResultProvider::getBitwiseNotInfo)
 		.build();
 
-	public UnaryPrefixOperatorParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public UnaryPrefixOperatorParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

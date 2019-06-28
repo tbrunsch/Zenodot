@@ -39,12 +39,12 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 	private final AbstractParser<ObjectInfo> floatParser;
 	private final AbstractParser<ObjectInfo> doubleParser;
 
-	public LiteralParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
-		intParser 		= new NumericLiteralParser<>(parserToolbox, thisInfo, InfoProvider.createTypeInfo(int.class),		TokenStream::readIntegerLiteral,	Integer::parseInt,		"Invalid int literal");
-		longParser 		= new NumericLiteralParser<>(parserToolbox, thisInfo, InfoProvider.createTypeInfo(long.class),		TokenStream::readLongLiteral, 		Long::parseLong,		"Invalid long literal");
-		floatParser 	= new NumericLiteralParser<>(parserToolbox, thisInfo, InfoProvider.createTypeInfo(float.class),		TokenStream::readFloatLiteral,		Float::parseFloat,		"Invalid float literal");
-		doubleParser 	= new NumericLiteralParser<>(parserToolbox, thisInfo, InfoProvider.createTypeInfo(double.class),	TokenStream::readDoubleLiteral,		Double::parseDouble,	"Invalid double literal");
+	public LiteralParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
+		intParser 		= new NumericLiteralParser<>(parserToolbox, InfoProvider.createTypeInfo(int.class),		TokenStream::readIntegerLiteral,	Integer::parseInt,		"Invalid int literal");
+		longParser 		= new NumericLiteralParser<>(parserToolbox, InfoProvider.createTypeInfo(long.class),	TokenStream::readLongLiteral, 		Long::parseLong,		"Invalid long literal");
+		floatParser 	= new NumericLiteralParser<>(parserToolbox, InfoProvider.createTypeInfo(float.class),	TokenStream::readFloatLiteral,		Float::parseFloat,		"Invalid float literal");
+		doubleParser 	= new NumericLiteralParser<>(parserToolbox, InfoProvider.createTypeInfo(double.class),	TokenStream::readDoubleLiteral,		Double::parseDouble,	"Invalid double literal");
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		} else if (characters.startsWith("n")) {
 			return parseNamedLiteral(tokenStream, "null", NULL_INFO);
 		} else if (characters.startsWith("th")) {
-			return parseNamedLiteral(tokenStream, "this", thisInfo);
+			return parseNamedLiteral(tokenStream, "this", parserToolbox.getThisInfo());
 		} else {
 			return parseNumericLiteral(tokenStream, contextInfo);
 		}
@@ -194,8 +194,8 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		private final NumericValueParser<T>	valueParser;
 		private final String				wrongTypeError;
 
-		NumericLiteralParser(ParserToolbox parserToolbox, ObjectInfo thisInfo, TypeInfo numericType, NumericTokenReader tokenReader, NumericValueParser<T> valueParser, String wrongTypeError) {
-			super(parserToolbox, thisInfo);
+		NumericLiteralParser(ParserToolbox parserToolbox, TypeInfo numericType, NumericTokenReader tokenReader, NumericValueParser<T> valueParser, String wrongTypeError) {
+			super(parserToolbox);
 			this.numericType = numericType;
 			this.tokenReader = tokenReader;
 			this.valueParser = valueParser;

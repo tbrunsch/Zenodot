@@ -31,8 +31,8 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 
 	private static final Pattern	HIERARCHY_NODE_PATTERN	= Pattern.compile("^([^" + RegexUtils.escapeIfSpecial(HIERARCHY_SEPARATOR) + RegexUtils.escapeIfSpecial(HIERARCHY_END) + "]*).*");
 
-	public CustomHierarchyParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public CustomHierarchyParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

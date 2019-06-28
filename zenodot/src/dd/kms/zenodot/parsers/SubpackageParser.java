@@ -10,8 +10,8 @@ import dd.kms.zenodot.utils.wrappers.PackageInfo;
  */
 public class SubpackageParser extends AbstractPackageParser<PackageInfo>
 {
-	public SubpackageParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public SubpackageParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

@@ -21,8 +21,8 @@ import java.util.Optional;
  */
 public class InnerClassParser extends AbstractParser<TypeInfo>
 {
-	public InnerClassParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	public InnerClassParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	@Override

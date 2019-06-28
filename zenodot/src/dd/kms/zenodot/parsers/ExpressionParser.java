@@ -58,8 +58,8 @@ public class ExpressionParser extends AbstractParser<ObjectInfo>
 
 	private final int maxOperatorPrecedenceLevelToConsider;
 
-	public ExpressionParser(ParserToolbox parserToolbox, ObjectInfo thisInfo, int maxOperatorPrecedenceLevelToConsider) {
-		super(parserToolbox, thisInfo);
+	public ExpressionParser(ParserToolbox parserToolbox, int maxOperatorPrecedenceLevelToConsider) {
+		super(parserToolbox);
 		this.maxOperatorPrecedenceLevelToConsider = maxOperatorPrecedenceLevelToConsider;
 	}
 

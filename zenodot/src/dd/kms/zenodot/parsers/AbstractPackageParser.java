@@ -20,8 +20,8 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  */
 abstract class AbstractPackageParser<C> extends AbstractParser<C>
 {
-	AbstractPackageParser(ParserToolbox parserToolbox, ObjectInfo thisInfo) {
-		super(parserToolbox, thisInfo);
+	AbstractPackageParser(ParserToolbox parserToolbox) {
+		super(parserToolbox);
 	}
 
 	abstract String getPackagePrefix(C contextInfo);
