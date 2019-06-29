@@ -124,7 +124,11 @@ public class ClassDataProvider
 	private Set<PackageInfo> getImportedPackages() {
 		Set<PackageInfo> importedPackages = new LinkedHashSet<>();
 		if (thisClass != null) {
-			importedPackages.add(InfoProvider.createPackageInfo(thisClass.getPackage().getName()));
+			Package pack = thisClass.getPackage();
+			// package is null for, e.g., arrays
+			if (pack != null) {
+				importedPackages.add(InfoProvider.createPackageInfo(pack.getName()));
+			}
 		}
 		importedPackages.add(InfoProvider.createPackageInfo("java.lang"));
 		importedPackages.addAll(imports.getImportedPackages());
