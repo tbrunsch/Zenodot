@@ -37,7 +37,7 @@ public class PredicateTest
 	public void testEvaluatedPredicate() {
 		String expression = "this != null && this > 0.5";
 		Predicate<Double> javaCompiledPredicate = d -> d != null && d > 0.5;
-		Predicate<Double> evaluatedPredicate = d -> (Boolean) evaluate(expression, d);
+		Predicate<Double> evaluatedPredicate = d -> Boolean.TRUE.equals(evaluate(expression, d));
 
 		List<Double> values = generateRandomValues();
 
