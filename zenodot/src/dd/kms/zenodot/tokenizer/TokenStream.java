@@ -22,7 +22,7 @@ public class TokenStream implements Cloneable
 	private static final Pattern		OPTIONAL_SPACE					= Pattern.compile("^(\\s*).*");
 	private static final Pattern		CHARACTER_PATTERN				= Pattern.compile("^(\\s*([^\\s])\\s*).*");
 	private static final Pattern		CHARACTERS_PATTERN				= Pattern.compile("^(\\s*([^\\s]+)\\s*).*");
-	private static final Pattern		IDENTIFIER_PATTERN  			= Pattern.compile("^(\\s*([A-Za-z][_A-Za-z0-9]*)\\s*).*");
+	private static final Pattern		IDENTIFIER_PATTERN  			= Pattern.compile("^(\\s*([_\\$A-Za-z][_\\$A-Za-z0-9]*)\\s*).*");
 	private static final Pattern		STRING_LITERAL_PATTERN			= Pattern.compile("^(\\s*\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"\\s*).*");
 	private static final Pattern		CHARACTER_LITERAL_PATTERN		= Pattern.compile("^(\\s*'(\\\\.|[^\\\\])'\\s*).*");
 	private static final Pattern		KEYWORD_PATTERN					= IDENTIFIER_PATTERN;
