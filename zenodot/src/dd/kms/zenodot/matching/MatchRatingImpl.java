@@ -1,5 +1,7 @@
 package dd.kms.zenodot.matching;
 
+import java.util.Objects;
+
 class MatchRatingImpl implements MatchRating
 {
 	private final StringMatch	nameMatch;
@@ -48,5 +50,20 @@ class MatchRatingImpl implements MatchRating
 	@Override
 	public String toString() {
 		return "name match: " + nameMatch + ", type match: " + typeMatch + ", access match: " + accessMatch;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		MatchRatingImpl that = (MatchRatingImpl) o;
+		return nameMatch == that.nameMatch &&
+			typeMatch == that.typeMatch &&
+			accessMatch == that.accessMatch;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(nameMatch, typeMatch, accessMatch);
 	}
 }
