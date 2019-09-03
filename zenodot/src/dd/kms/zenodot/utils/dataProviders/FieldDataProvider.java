@@ -7,7 +7,7 @@ import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionField;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
@@ -32,7 +32,7 @@ public class FieldDataProvider
 	public CompletionSuggestions suggestFields(String expectedName, Object contextObject, boolean contextIsStatic, List<FieldInfo> fieldInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			fieldInfos,
-			fieldInfo -> new CompletionSuggestionField(fieldInfo, insertionBegin, insertionEnd),
+			fieldInfo -> CompletionSuggestionFactory.fieldSuggestion(fieldInfo, insertionBegin, insertionEnd),
 			rateFieldFunc(contextObject, contextIsStatic, expectedName, expectation)
 		);
 		ParserLogger logger = parserToolbox.getSettings().getLogger();
@@ -67,9 +67,5 @@ public class FieldDataProvider
 
 	private Function<FieldInfo, MatchRating> rateFieldFunc(Object contextObject, boolean contextIsStatic, String expectedName, ParseExpectation expectation) {
 		return fieldInfo -> MatchRatings.create(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), rateFieldByAccess(fieldInfo, contextIsStatic));
-	}
-
-	public static String getFieldDisplayText(FieldInfo fieldInfo) {
-		return fieldInfo.getName();
 	}
 }

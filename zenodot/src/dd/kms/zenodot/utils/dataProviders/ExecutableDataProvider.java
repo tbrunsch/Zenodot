@@ -5,7 +5,7 @@ import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.parsers.ParseExpectationBuilder;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionMethod;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -40,7 +40,7 @@ public class ExecutableDataProvider
 	public CompletionSuggestions suggestMethods(List<ExecutableInfo> methodInfos, boolean contextIsStatic, String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			methodInfos,
-			methodInfo -> new CompletionSuggestionMethod(methodInfo, insertionBegin, insertionEnd),
+			methodInfo -> CompletionSuggestionFactory.methodSuggestion(methodInfo, insertionBegin, insertionEnd),
 			rateMethodFunc(expectedName, contextIsStatic, expectation)
 		);
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);

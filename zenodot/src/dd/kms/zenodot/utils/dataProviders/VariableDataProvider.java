@@ -4,7 +4,7 @@ import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
@@ -31,7 +31,7 @@ public class VariableDataProvider
 		List<Variable> sortedVariables = variables.stream().sorted(Comparator.comparing(Variable::getName)).collect(Collectors.toList());
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			sortedVariables,
-			variable -> new CompletionSuggestionVariable(variable, insertionBegin, insertionEnd),
+			variable -> CompletionSuggestionFactory.variableSuggestion(variable, insertionBegin, insertionEnd),
 			rateVariableFunc(expectedName, expectation)
 		);
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
@@ -52,9 +52,5 @@ public class VariableDataProvider
 
 	private Function<Variable, MatchRating> rateVariableFunc(String variableName, ParseExpectation expectation) {
 		return variable -> MatchRatings.create(rateVariableByName(variable, variableName), rateVariableByTypes(variable, expectation), AccessMatch.IGNORED);
-	}
-
-	public static String getVariableDisplayText(Variable variable) {
-		return variable.getName();
 	}
 }

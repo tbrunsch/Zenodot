@@ -4,10 +4,9 @@ import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionKeyword;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -37,7 +36,7 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 		if (keywordToken.isContainsCaret()) {
 			if (CLASS_KEYWORD.startsWith(keywordToken.getValue())) {
 				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, AccessMatch.IGNORED);
-				CompletionSuggestion suggestion = new CompletionSuggestionKeyword(CLASS_KEYWORD, startPosition, tokenStream.getPosition());
+				CompletionSuggestion suggestion = CompletionSuggestionFactory.keywordSuggestion(CLASS_KEYWORD, startPosition, tokenStream.getPosition());
 				log(LogLevel.INFO, "suggesting keyword '" + CLASS_KEYWORD + "'...");
 				return CompletionSuggestions.of(suggestion, rating);
 			} else {

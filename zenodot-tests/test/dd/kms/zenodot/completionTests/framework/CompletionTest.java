@@ -6,8 +6,6 @@ import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.result.CompletionSuggestion;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionField;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionVariable;
 import dd.kms.zenodot.settings.ParserSettings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -97,20 +95,10 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 
 	private static List<String> extractSuggestions(Map<CompletionSuggestion, MatchRating> ratedSuggestions) {
 		List<CompletionSuggestion> sortedSuggestions = new ArrayList<>(ratedSuggestions.keySet());
-		sortedSuggestions.sort(Comparator.comparingInt(CompletionTest::getCompletionSuggestionPriorityByClass));
+		sortedSuggestions.sort(Comparator.comparing(CompletionSuggestion::getType));
 		sortedSuggestions.sort(Comparator.comparing(ratedSuggestions::get));
 		return sortedSuggestions.stream()
 				.map(completion -> completion.getTextToInsert())
 				.collect(Collectors.toList());
-	}
-
-	/**
-	 * Prefer variables ({@link CompletionSuggestionVariable}) over fields ({@link CompletionSuggestionField}) over other suggestions.
-	 */
-	private static int getCompletionSuggestionPriorityByClass(CompletionSuggestion suggestion) {
-		Class<? extends CompletionSuggestion> suggestionClass = suggestion.getClass();
-		return	suggestionClass == CompletionSuggestionVariable.class	? 0 :
-				suggestionClass == CompletionSuggestionField.class		? 1
-																		: 2;
 	}
 }

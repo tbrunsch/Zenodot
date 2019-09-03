@@ -6,6 +6,11 @@ package dd.kms.zenodot.result;
 public interface CompletionSuggestion
 {
 	/**
+	 * Returns the type of the suggestion
+	 */
+	CompletionSuggestionType getType();
+
+	/**
 	 * Returns the range that should be replaced by the completion suggestion
 	 */
 	IntRange getInsertionRange();

@@ -3,7 +3,7 @@ package dd.kms.zenodot.utils.dataProviders;
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionObjectTreeNode;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
 import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.utils.ParseUtils;
 
@@ -19,7 +19,7 @@ public class ObjectTreeNodeDataProvider
 		Iterable<? extends ObjectTreeNode> nodes = contextNode.getChildNodes();
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			nodes,
-			node -> new CompletionSuggestionObjectTreeNode(node, insertionBegin, insertionEnd),
+			node -> CompletionSuggestionFactory.objectTreeNodeSuggestion(node, insertionBegin, insertionEnd),
 			rateNodeFunc(expectedName)
 		);
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);

@@ -9,8 +9,7 @@ import com.google.common.reflect.ClassPath;
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionClass;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionPackage;
+import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
 import dd.kms.zenodot.settings.Imports;
 import dd.kms.zenodot.utils.ClassUtils;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -165,7 +164,7 @@ public class ClassDataProvider
 
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			suggestedPackageNames,
-			packageName -> new CompletionSuggestionPackage(packageName, insertionBegin, insertionEnd),
+			packageName -> CompletionSuggestionFactory.packageSuggestion(packageName, insertionBegin, insertionEnd),
 			ratePackageFunc(subpackagePrefix)
 		);
 
@@ -207,7 +206,7 @@ public class ClassDataProvider
 
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			newSuggestedClasses,
-			classInfo -> new CompletionSuggestionClass(classInfo, insertionBegin, insertionEnd),
+			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd),
 			rateClassFunc(classPrefix)
 		);
 
@@ -234,7 +233,7 @@ public class ClassDataProvider
 		}
 		return ParseUtils.createRatedSuggestions(
 			classes,
-			classInfo -> new CompletionSuggestionClass(classInfo, insertionBegin, insertionEnd),
+			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd),
 			rateClassFunc(classPrefix)
 		);
 	}
@@ -245,7 +244,7 @@ public class ClassDataProvider
 			.collect(Collectors.toList());
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			classesToConsider,
-			classInfo -> new CompletionSuggestionClass(classInfo, insertionBegin, insertionEnd),
+			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd),
 			rateClassFunc(expectedName)
 		);
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
@@ -257,9 +256,5 @@ public class ClassDataProvider
 
 	private static Function<ClassInfo, MatchRating> rateClassFunc(String simpleClassName) {
 		return classInfo -> MatchRatings.create(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE, AccessMatch.IGNORED);
-	}
-
-	public static String getClassDisplayText(ClassInfo classInfo) {
-		return classInfo.getUnqualifiedName();
 	}
 }
