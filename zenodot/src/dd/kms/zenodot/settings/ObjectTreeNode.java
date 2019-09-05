@@ -1,5 +1,7 @@
 package dd.kms.zenodot.settings;
 
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+
 import javax.annotation.Nullable;
 
 /**
@@ -11,5 +13,5 @@ public interface ObjectTreeNode
 {
 	String getName();
 	Iterable<? extends ObjectTreeNode> getChildNodes();
-	@Nullable Object getUserObject();
+	ObjectInfo getUserObject();
 }

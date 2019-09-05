@@ -3,6 +3,7 @@ package dd.kms.zenodot;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.ExecutableArgumentInfo;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.Map;
 import java.util.Optional;
@@ -34,5 +35,5 @@ public interface ExpressionParser
 	 *
 	 * @throws ParseException
 	 */
-	 Object evaluate() throws ParseException;
+	 ObjectInfo evaluate() throws ParseException;
 }

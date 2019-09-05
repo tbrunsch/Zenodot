@@ -91,7 +91,7 @@ abstract class AbstractParser
 		}
 	}
 
-	void handleInvalidResultType(ParseOutcome parseOutcome) throws ParseException {
+	ParseException createInvalidResultTypeException(ParseOutcome parseOutcome) {
 		ParseOutcomeType outcomeType = parseOutcome.getOutcomeType();
 		switch (outcomeType) {
 			case RESULT: {
@@ -100,11 +100,11 @@ abstract class AbstractParser
 			}
 			case ERROR: {
 				ParseError error = (ParseError) parseOutcome;
-				throw new ParseException(error.getPosition(), error.getMessage(), error.getThrowable());
+				return new ParseException(error.getPosition(), error.getMessage(), error.getThrowable());
 			}
 			case AMBIGUOUS_RESULT: {
 				AmbiguousParseResult result = (AmbiguousParseResult) parseOutcome;
-				throw new ParseException(result.getPosition(), result.getMessage());
+				return new ParseException(result.getPosition(), result.getMessage());
 			}
 			case COMPLETION_SUGGESTIONS: {
 				throw new IllegalStateException("Internal error: Unexpected code completion");

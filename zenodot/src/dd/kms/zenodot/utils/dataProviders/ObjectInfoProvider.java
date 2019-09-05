@@ -149,9 +149,4 @@ public class ObjectInfoProvider
 								: InfoProvider.INDETERMINATE_VALUE;
 		return InfoProvider.createObjectInfo(castedValue, targetType);
 	}
-
-	public ObjectInfo getVariableInfo(Variable variable) {
-		Object value = variable.getValue();
-		return InfoProvider.createObjectInfo(value, InfoProvider.UNKNOWN_TYPE);
-	}
 }

@@ -1,18 +1,20 @@
 package dd.kms.zenodot;
 
 import dd.kms.zenodot.settings.ParserSettings;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 /**
  * API entry point of Zenodot
  */
 public class Parsers
 {
-	public static ExpressionParser createExpressionParser(String text, ParserSettings settings, Object thisValue) {
+	public static ExpressionParser createExpressionParser(String text, ParserSettings settings, ObjectInfo thisValue) {
 		return new ExpressionParserImpl(text, settings, thisValue);
 	}
 
-	public static ExpressionCompiler createExpressionCompiler(String text, ParserSettings settings, Class<?> thisClass) {
-		return new ExpressionCompilerImpl(text, settings, thisClass);
+	public static ExpressionCompiler createExpressionCompiler(String text, ParserSettings settings, TypeInfo thisType) {
+		return new ExpressionCompilerImpl(text, settings, thisType);
 	}
 
 	public static ClassParser createClassParser(String text, ParserSettings settings) {

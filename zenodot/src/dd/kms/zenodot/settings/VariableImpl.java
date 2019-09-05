@@ -1,12 +1,14 @@
 package dd.kms.zenodot.settings;
 
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+
 class VariableImpl implements Variable
 {
-	private final String	name;
-	private final Object	value;
-	private final boolean	useHardReference;
+	private final String		name;
+	private final ObjectInfo	value;
+	private final boolean		useHardReference;
 
-	public VariableImpl(String name, Object value, boolean useHardReference) {
+	public VariableImpl(String name, ObjectInfo value, boolean useHardReference) {
 		this.name = name;
 		this.value = value;
 		this.useHardReference = useHardReference;
@@ -18,7 +20,7 @@ class VariableImpl implements Variable
 	}
 
 	@Override
-	public Object getValue() {
+	public ObjectInfo getValue() {
 		return value;
 	}
 

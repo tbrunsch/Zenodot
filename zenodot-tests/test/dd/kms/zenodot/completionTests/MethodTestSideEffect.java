@@ -4,6 +4,8 @@ import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.Parsers;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.settings.ParserSettingsUtils;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +18,8 @@ public class MethodTestSideEffect
 		int caretPosition = expression.length();
 		ParserSettings settings = ParserSettingsUtils.createBuilder().enableDynamicTyping(false).build();
 		try {
-			Parsers.createExpressionParser(expression, settings, testInstance).suggestCodeCompletion(caretPosition);
+			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
+			Parsers.createExpressionParser(expression, settings, thisValue).suggestCodeCompletion(caretPosition);
 			Assert.fail("Expected ParseException");
 		} catch (ParseException ignored) {
 			/* expected */

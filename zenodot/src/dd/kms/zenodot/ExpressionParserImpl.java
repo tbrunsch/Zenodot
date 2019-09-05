@@ -7,7 +7,6 @@ import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.Map;
@@ -15,9 +14,9 @@ import java.util.Optional;
 
 class ExpressionParserImpl extends AbstractParser implements ExpressionParser
 {
-	private final Object	thisValue;
+	private final ObjectInfo	thisValue;
 
-	public ExpressionParserImpl(String text, ParserSettings settings, Object thisValue) {
+	public ExpressionParserImpl(String text, ParserSettings settings, ObjectInfo thisValue) {
 		super(text, settings);
 		this.thisValue = thisValue;
 	}
@@ -33,7 +32,7 @@ class ExpressionParserImpl extends AbstractParser implements ExpressionParser
 	}
 
 	@Override
-	public Object evaluate() throws ParseException {
+	public ObjectInfo evaluate() throws ParseException {
 		ParseOutcome parseOutcome;
 
 		if (!settings.isEnableDynamicTyping()) {
@@ -50,16 +49,14 @@ class ExpressionParserImpl extends AbstractParser implements ExpressionParser
 		if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)) {
 			ObjectParseResult result = (ObjectParseResult) parseOutcome;
 			checkParsedWholeText(result);
-			return result.getObjectInfo().getObject();
+			return result.getObjectInfo();
 		}
-		handleInvalidResultType(parseOutcome);
-		return null;
+		throw createInvalidResultTypeException(parseOutcome);
 	}
 
 	@Override
 	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
-		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue, InfoProvider.UNKNOWN_TYPE);
-		ParserToolbox parserToolbox  = new ParserToolbox(thisInfo, settings, parseMode);
-		return parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
+		ParserToolbox parserToolbox  = new ParserToolbox(thisValue, settings, parseMode);
+		return parserToolbox.getExpressionParser().parse(tokenStream, thisValue, ParseExpectation.OBJECT);
 	}
 }

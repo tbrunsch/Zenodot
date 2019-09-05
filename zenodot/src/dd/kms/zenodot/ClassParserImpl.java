@@ -36,13 +36,13 @@ class ClassParserImpl extends AbstractParser implements ClassParser
 			TypeInfo type = result.getType();
 			return InfoProvider.createClassInfoUnchecked(type.getRawType().getName());
 		}
-		handleInvalidResultType(parseOutcome);
+		createInvalidResultTypeException(parseOutcome);
 		return null;
 	}
 
 	@Override
 	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
-		ParserToolbox parserToolbox  = new ParserToolbox(InfoProvider.createObjectInfo(null, InfoProvider.NO_TYPE), settings, parseMode);
+		ParserToolbox parserToolbox  = new ParserToolbox(InfoProvider.NULL_LITERAL, settings, parseMode);
 		return ParseUtils.parse(tokenStream, null, ParseExpectation.CLASS,
 			parserToolbox.getImportedClassParser(),
 			parserToolbox.getRootpackageParser()

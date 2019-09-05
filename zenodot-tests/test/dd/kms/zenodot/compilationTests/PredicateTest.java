@@ -5,6 +5,7 @@ import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.Parsers;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.settings.ParserSettingsUtils;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,11 +48,11 @@ public class PredicateTest
 	@Test
 	public void testCompiledPredicate() throws Exception {
 		String expression = "this != null && this > 0.5";
-		CompiledExpression compiledExpression = Parsers.createExpressionCompiler(expression, PARSER_SETTINGS, Double.class).compile();
+		CompiledExpression compiledExpression = Parsers.createExpressionCompiler(expression, PARSER_SETTINGS, InfoProvider.createTypeInfo(Double.class)).compile();
 		Predicate<Double> javaCompiledPredicate = d -> d != null && d > 0.5;
 		Predicate<Double> compiledPredicate = d -> {
 			try {
-				return (Boolean) compiledExpression.evaluate(d);
+				return (Boolean) compiledExpression.evaluate(InfoProvider.createObjectInfo(d)).getObject();
 			} catch (Exception e) {
 				return false;
 			}
@@ -72,7 +73,7 @@ public class PredicateTest
 
 	private static Object evaluate(String expression, Object thisValue) {
 		try {
-			return Parsers.createExpressionParser(expression, PARSER_SETTINGS, thisValue).evaluate();
+			return Parsers.createExpressionParser(expression, PARSER_SETTINGS, InfoProvider.createObjectInfo(thisValue)).evaluate().getObject();
 		} catch (ParseException e) {
 			Assert.fail("ParseException: " + e.getMessage());
 			return null;

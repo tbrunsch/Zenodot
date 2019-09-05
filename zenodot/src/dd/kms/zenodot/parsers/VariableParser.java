@@ -77,7 +77,7 @@ public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 		log(LogLevel.SUCCESS, "detected variable '" + variableName + "'");
 
 		Variable matchingVariable = firstVariableMatch.get();
-		ObjectInfo matchingVariableInfo = parserToolbox.getObjectInfoProvider().getVariableInfo(matchingVariable);
+		ObjectInfo matchingVariableInfo = matchingVariable.getValue();
 
 		int position = tokenStream.getPosition();
 		return isCompile()

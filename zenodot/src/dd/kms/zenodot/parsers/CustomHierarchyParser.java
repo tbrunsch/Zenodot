@@ -89,12 +89,11 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 		if (character == HIERARCHY_SEPARATOR) {
 			return parseHierarchyNode(tokenStream, firstChildNodeMatch, expectation);
 		} else if (character == HIERARCHY_END) {
-			Object userObject = firstChildNodeMatch.getUserObject();
-			ObjectInfo userObjectInfo = InfoProvider.createObjectInfo(userObject, InfoProvider.UNKNOWN_TYPE);
+			ObjectInfo userObject = firstChildNodeMatch.getUserObject();
 			int position = tokenStream.getPosition();
 			return isCompile()
-					? ParseOutcomes.createCompiledConstantObjectParseResult(position, userObjectInfo)
-					: ParseOutcomes.createObjectParseResult(position, userObjectInfo);
+					? ParseOutcomes.createCompiledConstantObjectParseResult(position, userObject)
+					: ParseOutcomes.createObjectParseResult(position, userObject);
 		}
 
 		log(LogLevel.ERROR, "expected '" + HIERARCHY_SEPARATOR + "' or '" + HIERARCHY_END + "'");

@@ -2,6 +2,8 @@ package dd.kms.zenodot.common;
 
 import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.settings.ParserSettingsUtils;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -28,7 +30,7 @@ public class CustomHierarchy
 
 	public static final ComponentManager	COMPONENT_MANAGER						= new ComponentManager(EXCEL_IMPORTER, PRODUCTIVITY_CALCULATION);
 
-	public static final ObjectTreeNode ROOT									= new ObjectTreeNode() {
+	public static final ObjectTreeNode		ROOT									= new ObjectTreeNode() {
 																						@Override
 																						public String getName() {
 																							return "root";
@@ -44,8 +46,8 @@ public class CustomHierarchy
 																						}
 
 																						@Override
-																						public Object getUserObject() {
-																							return null;
+																						public ObjectInfo getUserObject() {
+																							return InfoProvider.NULL_LITERAL;
 																						}
 																					};
 
@@ -121,8 +123,8 @@ public class CustomHierarchy
 		}
 
 		@Override
-		public Object getUserObject() {
-			return component;
+		public ObjectInfo getUserObject() {
+			return InfoProvider.createObjectInfo(component);
 		}
 	}
 }

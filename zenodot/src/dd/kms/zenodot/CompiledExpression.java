@@ -1,9 +1,10 @@
 package dd.kms.zenodot;
 
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 public interface CompiledExpression
 {
 	TypeInfo getResultType();
-	Object evaluate(Object thisValue) throws Exception;
+	ObjectInfo evaluate(ObjectInfo thisValue) throws Exception;
 }

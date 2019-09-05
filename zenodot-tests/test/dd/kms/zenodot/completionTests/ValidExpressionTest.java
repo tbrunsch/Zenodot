@@ -6,6 +6,8 @@ import dd.kms.zenodot.completionTests.framework.TestData;
 import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.settings.ParserSettingsUtils;
 import dd.kms.zenodot.settings.Variable;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -64,8 +66,8 @@ public class ValidExpressionTest extends CompletionTest
 			}
 
 			@Override
-			public @Nullable Object getUserObject() {
-				return null;
+			public ObjectInfo getUserObject() {
+				return InfoProvider.NULL_LITERAL;
 			}
 		};
 

@@ -7,6 +7,9 @@ import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.settings.ParserSettings;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.wrappers.TypeInfo;
 import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,11 +60,13 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 		Class<? extends Exception> expectedExceptionClass = ParseException.class;
 		try {
+			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
 			if (compile) {
 				Class<?> testInstanceClass = testInstance == null ? Object.class : testInstance.getClass();
-				Parsers.createExpressionCompiler(expression, settings, testInstanceClass).compile().evaluate(testInstance);
+				TypeInfo thisType = InfoProvider.createTypeInfo(testInstanceClass);
+				Parsers.createExpressionCompiler(expression, settings, thisType).compile().evaluate(thisValue).getObject();
 			} else {
-				Parsers.createExpressionParser(expression, settings, testInstance).evaluate();
+				Parsers.createExpressionParser(expression, settings, thisValue).evaluate().getObject();
 			}
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
@@ -79,11 +84,13 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 		try {
 			final Object actualValue;
+			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
 			if (compile) {
 				Class<?> testInstanceClass = testInstance == null ? Object.class : testInstance.getClass();
-				actualValue = Parsers.createExpressionCompiler(expression, settings, testInstanceClass).compile().evaluate(testInstance);
+				TypeInfo thisType = InfoProvider.createTypeInfo(testInstanceClass);
+				actualValue = Parsers.createExpressionCompiler(expression, settings, thisType).compile().evaluate(thisValue).getObject();
 			} else {
-				actualValue = Parsers.createExpressionParser(expression, settings, testInstance).evaluate();
+				actualValue = Parsers.createExpressionParser(expression, settings, thisValue).evaluate().getObject();
 			}
 			if (executeAssertions) {
 				assertEquals("Expression: " + expression, expectedValue, actualValue);

@@ -1,5 +1,7 @@
 package dd.kms.zenodot.settings;
 
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+
 import javax.annotation.Nullable;
 import java.util.Collections;
 
@@ -8,10 +10,10 @@ import java.util.Collections;
  */
 class LeafObjectTreeNode implements ObjectTreeNode
 {
-	private final String	name;
-	private final Object	userObject;
+	private final String		name;
+	private final ObjectInfo	userObject;
 
-	LeafObjectTreeNode(String name, Object userObject) {
+	LeafObjectTreeNode(String name, ObjectInfo userObject) {
 		this.name = name;
 		this.userObject = userObject;
 	}
@@ -27,7 +29,7 @@ class LeafObjectTreeNode implements ObjectTreeNode
 	}
 
 	@Override
-	public @Nullable Object getUserObject() {
+	public ObjectInfo getUserObject() {
 		return userObject;
 	}
 }

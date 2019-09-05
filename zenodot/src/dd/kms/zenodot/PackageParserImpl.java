@@ -33,13 +33,13 @@ class PackageParserImpl extends AbstractParser implements PackageParser
 			checkParsedWholeText(result);
 			return result.getPackage();
 		}
-		handleInvalidResultType(parseOutcome);
+		createInvalidResultTypeException(parseOutcome);
 		return null;
 	}
 
 	@Override
 	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
-		ParserToolbox parserToolbox  = new ParserToolbox(InfoProvider.createObjectInfo(null, InfoProvider.NO_TYPE), settings, parseMode);
+		ParserToolbox parserToolbox  = new ParserToolbox(InfoProvider.NULL_LITERAL, settings, parseMode);
 		return parserToolbox.getRootpackageParser().parse(tokenStream, null, ParseExpectation.PACKAGE);
 	}
 }

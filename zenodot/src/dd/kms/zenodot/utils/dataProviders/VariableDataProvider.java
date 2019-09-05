@@ -8,6 +8,7 @@ import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Comparator;
@@ -21,10 +22,12 @@ import java.util.stream.Collectors;
  */
 public class VariableDataProvider
 {
-	private final List<Variable> variables;
+	private final List<Variable>		variables;
+	private final ObjectInfoProvider	objectInfoProvider;
 
-	public VariableDataProvider(List<Variable> variables) {
+	public VariableDataProvider(List<Variable> variables, ObjectInfoProvider objectInfoProvider) {
 		this.variables = variables;
+		this.objectInfoProvider = objectInfoProvider;
 	}
 
 	public CompletionSuggestions suggestVariables(String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
@@ -43,8 +46,8 @@ public class VariableDataProvider
 
 	private TypeMatch rateVariableByTypes(Variable variable, ParseExpectation expectation) {
 		List<TypeInfo> allowedTypes = expectation.getAllowedTypes();
-		Object value = variable.getValue();
-		TypeInfo valueType = value == null ? InfoProvider.NO_TYPE : InfoProvider.createTypeInfo(value.getClass());
+		ObjectInfo value = variable.getValue();
+		TypeInfo valueType = objectInfoProvider.getType(value);
 		return	allowedTypes == null
 					? TypeMatch.FULL
 					: allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(valueType, allowedType)).min(TypeMatch::compareTo).orElse(TypeMatch.NONE);

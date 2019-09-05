@@ -16,11 +16,11 @@ import java.util.Optional;
 
 class ExpressionCompilerImpl extends AbstractParser implements ExpressionCompiler
 {
-	private final Class<?>	thisClass;
+	private final TypeInfo	thisType;
 
-	public ExpressionCompilerImpl(String text, ParserSettings settings, Class<?> thisClass) {
+	public ExpressionCompilerImpl(String text, ParserSettings settings, TypeInfo thisType) {
 		super(text, settings);
-		this.thisClass = thisClass;
+		this.thisType = thisType;
 	}
 
 	@Override
@@ -42,13 +42,13 @@ class ExpressionCompilerImpl extends AbstractParser implements ExpressionCompile
 			checkParsedWholeText(result);
 			return createCompiledExpression(result);
 		}
-		handleInvalidResultType(parseOutcome);
+		createInvalidResultTypeException(parseOutcome);
 		return null;
 	}
 
 	@Override
 	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
-		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, InfoProvider.createTypeInfo(thisClass));
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, thisType);
 		ParserToolbox parserToolbox  = new ParserToolbox(thisInfo, settings, parseMode);
 		return parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
 	}
@@ -62,9 +62,8 @@ class ExpressionCompilerImpl extends AbstractParser implements ExpressionCompile
 			}
 
 			@Override
-			public Object evaluate(Object thisValue) throws Exception {
-				ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue, InfoProvider.UNKNOWN_TYPE);
-				return compiledParseResult.evaluate(thisInfo, thisInfo).getObject();
+			public ObjectInfo evaluate(ObjectInfo thisValue) throws Exception {
+				return compiledParseResult.evaluate(thisValue, thisValue);
 			}
 		};
 	}

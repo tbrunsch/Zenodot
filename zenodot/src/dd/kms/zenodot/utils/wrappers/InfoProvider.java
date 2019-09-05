@@ -16,9 +16,18 @@ public class InfoProvider
 {
 	public static final Object 		INDETERMINATE_VALUE = new Object();
 
+	/**
+	 * This field is only used for the {@link ObjectInfo} representing the null literal.
+	 */
 	public static final TypeInfo	NO_TYPE				= new TypeInfoImpl(null);
+
+	/**
+	 * Use this field for creating an {@link ObjectInfo} for an object whose
+	 * declared type you do not know.
+	 */
 	public static final TypeInfo	UNKNOWN_TYPE		= new TypeInfoImpl(null);
 
+	public static final ObjectInfo	NULL_LITERAL		= createObjectInfo(null, NO_TYPE);
 
 	public static List<ExecutableInfo> getAvailableExecutableInfos(Executable executable, TypeInfo declaringType) {
 		return executable.isVarArgs()
@@ -40,6 +49,10 @@ public class InfoProvider
 
 	public static FieldInfo createFieldInfo(Field field, TypeInfo declaringType) {
 		return new FieldInfoImpl(field, declaringType);
+	}
+
+	public static ObjectInfo createObjectInfo(Object object) {
+		return createObjectInfo(object, UNKNOWN_TYPE);
 	}
 
 	public static ObjectInfo createObjectInfo(Object object, TypeInfo declaredType) {

@@ -32,7 +32,6 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
 	private static final ObjectInfo	TRUE_INFO	= InfoProvider.createObjectInfo(true, InfoProvider.createTypeInfo(boolean.class));
 	private static final ObjectInfo	FALSE_INFO	= InfoProvider.createObjectInfo(false, InfoProvider.createTypeInfo(boolean.class));
-	private static final ObjectInfo	NULL_INFO	= InfoProvider.createObjectInfo(null, InfoProvider.NO_TYPE);
 
 	private final AbstractParser<ObjectInfo> intParser;
 	private final AbstractParser<ObjectInfo> longParser;
@@ -74,7 +73,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		} else if (characters.startsWith("f")) {
 			return parseNamedLiteral(tokenStream, "false", FALSE_INFO);
 		} else if (characters.startsWith("n")) {
-			return parseNamedLiteral(tokenStream, "null", NULL_INFO);
+			return parseNamedLiteral(tokenStream, "null", InfoProvider.NULL_LITERAL);
 		} else if (characters.startsWith("th")) {
 			return parseNamedLiteral(tokenStream, "this", parserToolbox.getThisInfo());
 		} else {

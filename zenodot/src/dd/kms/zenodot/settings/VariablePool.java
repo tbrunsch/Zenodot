@@ -2,6 +2,9 @@ package dd.kms.zenodot.settings;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -27,9 +30,9 @@ class VariablePool
 		ImmutableList.Builder<Variable> builder = ImmutableList.builder();
 		for (String name : variables.keySet()) {
 			ValueData valueData = variables.get(name);
-			Object value = valueData.getValue();
+			ObjectInfo value = valueData.getValue();
 			if (!valueData.isGarbageCollected()) {
-				builder.add(ParserSettingsUtils.createVariable(name, value, valueData.isUseHardReference()));
+				builder.add(ParserSettingsUtils.createVariable(name, value.getObject(), value.getDeclaredType(), valueData.isUseHardReference()));
 			}
 		}
 		return builder.build();
@@ -37,15 +40,18 @@ class VariablePool
 
 	private static class ValueData
 	{
-		private final WeakReference<Object> weakValueReference;	// always set
+		private final WeakReference<Object>	weakValueReference;
 		private final Object				hardValueReference;	// only set if user wants to save variables from being garbage collected
+		private final TypeInfo				declaredValueType;
 		private final boolean				valueIsNull;
 		private final boolean				useHardReference;
 
-		ValueData(Object value, boolean useHardReference) {
-			weakValueReference = new WeakReference<>(value);
-			hardValueReference = useHardReference ? value : null;
-			valueIsNull = value == null;
+		ValueData(ObjectInfo value, boolean useHardReference) {
+			Object object = value.getObject();
+			weakValueReference = new WeakReference<>(object);
+			hardValueReference = useHardReference ? object : null;
+			declaredValueType = value.getDeclaredType();
+			valueIsNull = object == null;
 			this.useHardReference = useHardReference;
 		}
 
@@ -53,12 +59,12 @@ class VariablePool
 			return useHardReference;
 		}
 
-		Object getValue() {
-			return weakValueReference.get();
+		ObjectInfo getValue() {
+			return InfoProvider.createObjectInfo(weakValueReference.get(), declaredValueType);
 		}
 
 		boolean isGarbageCollected() {
-			return getValue() == null && !valueIsNull;
+			return weakValueReference.get() == null && !valueIsNull;
 		}
 	}
 }
