@@ -33,13 +33,7 @@ public class ObjectInfoProvider
 		}
 
 		if (evaluationMode == EvaluationMode.DYNAMICALLY_TYPED) {
-			if (declaredType.isPrimitive()) {
-				return declaredType;
-			}
-			TypeInfo runtimeType = declaredType.getSubtype(runtimeClass);
-			return declaredType.isPrimitive()
-					? InfoProvider.createTypeInfo(Primitives.unwrap(runtimeType.getRawType()))
-					: runtimeType;
+			return declaredType.isPrimitive() ? declaredType : declaredType.getSubtype(runtimeClass);
 		} else {
 			return declaredType;
 		}
