@@ -22,8 +22,8 @@ import java.util.List;
  */
 class VariadicExecutableInfo extends AbstractExecutableInfo
 {
-	VariadicExecutableInfo(Executable executable, TypeInfo declaringType) {
-		super(executable, declaringType);
+	VariadicExecutableInfo(TypeInfo declaringType, Executable executable) {
+		super(declaringType, executable);
 
 		assert isVariadic() : "Cannot create VariadicExecutableInfo for non-variadic methods";
 	}

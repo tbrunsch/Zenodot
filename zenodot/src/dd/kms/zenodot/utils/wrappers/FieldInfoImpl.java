@@ -6,12 +6,12 @@ import java.util.Objects;
 
 class FieldInfoImpl implements FieldInfo
 {
-	private final Field		field;
 	private final TypeInfo	declaringType;
+	private final Field		field;
 
-	FieldInfoImpl(Field field, TypeInfo declaringType) {
-		this.field = field;
+	FieldInfoImpl(TypeInfo declaringType, Field field) {
 		this.declaringType = declaringType;
+		this.field = field;
 	}
 
 	@Override

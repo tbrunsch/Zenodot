@@ -29,10 +29,10 @@ public class InfoProvider
 
 	public static final ObjectInfo	NULL_LITERAL		= createObjectInfo(null, NO_TYPE);
 
-	public static List<ExecutableInfo> getAvailableExecutableInfos(Executable executable, TypeInfo declaringType) {
+	public static List<ExecutableInfo> getAvailableExecutableInfos(TypeInfo declaringType, Executable executable) {
 		return executable.isVarArgs()
-			? Arrays.asList(new RegularExecutableInfo(executable, declaringType), new VariadicExecutableInfo(executable, declaringType))
-			: Arrays.asList(new RegularExecutableInfo(executable, declaringType));
+			? Arrays.asList(new RegularExecutableInfo(declaringType, executable), new VariadicExecutableInfo(declaringType, executable))
+			: Arrays.asList(new RegularExecutableInfo(declaringType, executable));
 	}
 
 	public static ClassInfo createClassInfo(String qualifiedClassName) throws ClassNotFoundException {
@@ -47,10 +47,6 @@ public class InfoProvider
 		return new PackageInfoImpl(packageName);
 	}
 
-	public static FieldInfo createFieldInfo(Field field, TypeInfo declaringType) {
-		return new FieldInfoImpl(field, declaringType);
-	}
-
 	public static ObjectInfo createObjectInfo(Object object) {
 		return createObjectInfo(object, UNKNOWN_TYPE);
 	}
@@ -63,32 +59,36 @@ public class InfoProvider
 		return new ObjectInfoImpl(object, declaredType, valueSetter);
 	}
 
-	public static TypeInfo createTypeInfo(Type type) {
-		return type == null ? NO_TYPE : new TypeInfoImpl(TypeToken.of(type));
+	public static FieldInfo createFieldInfo(TypeInfo declaringType, Field field) {
+		return new FieldInfoImpl(declaringType, field);
 	}
 
-	public static List<FieldInfo> getFieldInfos(TypeInfo contextType, FieldScanner fieldScanner) {
-		List<Field> fields = fieldScanner.getFields(contextType.getRawType(), true);
+	public static List<FieldInfo> getFieldInfos(TypeInfo declaringType, FieldScanner fieldScanner) {
+		List<Field> fields = fieldScanner.getFields(declaringType.getRawType(), true);
 		return fields.stream()
-			.map(field -> createFieldInfo(field, contextType))
+			.map(field -> createFieldInfo(declaringType, field))
 			.collect(Collectors.toList());
 	}
 
-	public static List<ExecutableInfo> getMethodInfos(TypeInfo contextType, MethodScanner methodScanner) {
-		List<Method> methods = methodScanner.getMethods(contextType.getRawType());
+	public static List<ExecutableInfo> getMethodInfos(TypeInfo declaringType, MethodScanner methodScanner) {
+		List<Method> methods = methodScanner.getMethods(declaringType.getRawType());
 		List<ExecutableInfo> executableInfos = new ArrayList<>(methods.size());
 		for (Method method : methods) {
-			executableInfos.addAll(getAvailableExecutableInfos(method, contextType));
+			executableInfos.addAll(getAvailableExecutableInfos(declaringType, method));
 		}
 		return executableInfos;
 	}
 
-	public static List<ExecutableInfo> getConstructorInfos(TypeInfo contextType, ConstructorScanner constructorScanner) {
-		List<Constructor<?>> constructors = constructorScanner.getConstructors(contextType.getRawType());
+	public static List<ExecutableInfo> getConstructorInfos(TypeInfo declaringType, ConstructorScanner constructorScanner) {
+		List<Constructor<?>> constructors = constructorScanner.getConstructors(declaringType.getRawType());
 		List<ExecutableInfo> executableInfos = new ArrayList<>(constructors.size());
 		for (Constructor<?> constructor : constructors) {
-			executableInfos.addAll(getAvailableExecutableInfos(constructor, contextType));
+			executableInfos.addAll(getAvailableExecutableInfos(declaringType, constructor));
 		}
 		return executableInfos;
+	}
+
+	public static TypeInfo createTypeInfo(Type type) {
+		return type == null ? NO_TYPE : new TypeInfoImpl(TypeToken.of(type));
 	}
 }

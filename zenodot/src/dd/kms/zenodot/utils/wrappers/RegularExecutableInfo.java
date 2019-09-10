@@ -16,8 +16,8 @@ import java.util.List;
  */
 class RegularExecutableInfo extends AbstractExecutableInfo
 {
-	RegularExecutableInfo(Executable executable, TypeInfo declaringType) {
-		super(executable, declaringType);
+	RegularExecutableInfo(TypeInfo declaringType, Executable executable) {
+		super(declaringType, executable);
 	}
 
 	@Override

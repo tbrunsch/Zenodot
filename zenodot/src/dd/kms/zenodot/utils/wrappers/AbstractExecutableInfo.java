@@ -10,12 +10,12 @@ import java.util.Objects;
 
 abstract class AbstractExecutableInfo implements ExecutableInfo
 {
-	protected final Executable	executable;
 	private final TypeInfo		declaringType;
+	protected final Executable	executable;
 
-	AbstractExecutableInfo(Executable executable, TypeInfo declaringType) {
-		this.executable = executable;
+	AbstractExecutableInfo(TypeInfo declaringType, Executable executable) {
 		this.declaringType = declaringType;
+		this.executable = executable;
 	}
 
 	abstract boolean doIsArgumentIndexValid(int argIndex);
