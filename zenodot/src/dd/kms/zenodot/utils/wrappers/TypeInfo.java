@@ -14,7 +14,10 @@ public interface TypeInfo
 	Type getType();
 	TypeInfo getComponentType();
 	boolean isPrimitive();
+	boolean isArray();
 	boolean isSupertypeOf(TypeInfo that);
 	TypeInfo getSubtype(Class<?> subclass);
 	TypeInfo resolveType(Type type);
+	String getName();
+	String getSimpleName();
 }

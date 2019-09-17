@@ -1,5 +1,7 @@
 package dd.kms.zenodot.utils.wrappers;
 
+import dd.kms.zenodot.common.AccessModifier;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
@@ -32,6 +34,11 @@ class FieldInfoImpl implements FieldInfo
 	@Override
 	public boolean isFinal() {
 		return Modifier.isFinal(field.getModifiers());
+	}
+
+	@Override
+	public AccessModifier getAccessModifier() {
+		return AccessModifier.getValue(field.getModifiers());
 	}
 
 	@Override

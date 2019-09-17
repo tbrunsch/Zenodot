@@ -5,9 +5,14 @@ import com.google.common.reflect.TypeToken;
 import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class TypeInfoImpl implements TypeInfo
 {
+	private static Pattern	SIMPLE_TYPE_NAME_EXTRACTION_PATTERN	= Pattern.compile("([\\w]+\\.)+([\\w]+)");
+	private static String	SIMPLE_TYPE_NAME_REPLACEMENT		= "$2";
+
 	private final TypeToken<?> typeToken;
 
 	TypeInfoImpl(@Nullable TypeToken<?> typeToken) {
@@ -39,6 +44,11 @@ class TypeInfoImpl implements TypeInfo
 	}
 
 	@Override
+	public boolean isArray() {
+		return typeToken.isArray();
+	}
+
+	@Override
 	public boolean isSupertypeOf(TypeInfo obj) {
 		if (typeToken == null) {
 			return false;
@@ -61,13 +71,26 @@ class TypeInfoImpl implements TypeInfo
 	}
 
 	@Override
+	public String getName() {
+		return	typeToken == null	? null :
+				isArray()			? getComponentType().getName() + "[]"
+									: typeToken.toString();
+	}
+
+	@Override
+	public String getSimpleName() {
+		Matcher matcher = SIMPLE_TYPE_NAME_EXTRACTION_PATTERN.matcher(getName());
+		return matcher.replaceAll(SIMPLE_TYPE_NAME_REPLACEMENT);
+	}
+
+	@Override
 	public String toString() {
 		if (typeToken == null) {
 			return	this == InfoProvider.UNKNOWN_TYPE	? "unknown" :
 					this == InfoProvider.NO_TYPE		? "none"
 														: null;
 		}
-		return typeToken.toString();
+		return getName();
 	}
 
 	@Override

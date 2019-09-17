@@ -1,5 +1,6 @@
 package dd.kms.zenodot.utils.wrappers;
 
+import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.matching.TypeMatch;
 
 import java.lang.reflect.InvocationTargetException;
@@ -16,6 +17,7 @@ public interface ExecutableInfo
 	String getName();
 	int getNumberOfArguments();
 	boolean isVariadic();
+	AccessModifier getAccessModifier();
 	TypeInfo getDeclaringType();
 	boolean isStatic();
 	TypeInfo getReturnType();

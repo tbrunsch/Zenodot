@@ -1,8 +1,6 @@
 package dd.kms.zenodot.utils.dataProviders;
 
-import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.common.ReflectionUtils;
-import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.wrappers.*;
 

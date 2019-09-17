@@ -1,5 +1,7 @@
 package dd.kms.zenodot.utils.wrappers;
 
+import dd.kms.zenodot.common.AccessModifier;
+
 /**
  * Wrapper for fields<br/>
  * <br/>
@@ -11,6 +13,7 @@ public interface FieldInfo
 	TypeInfo getType();
 	boolean isStatic();
 	boolean isFinal();
+	AccessModifier getAccessModifier();
 	TypeInfo getDeclaringType();
 	Object get(Object instance) throws IllegalAccessException;
 	void set(Object instance, Object value) throws IllegalAccessException;

@@ -1,6 +1,7 @@
 package dd.kms.zenodot.utils.wrappers;
 
 import com.google.common.base.Joiner;
+import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.matching.TypeMatch;
 
 import java.lang.reflect.*;
@@ -36,6 +37,11 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 	@Override
 	public boolean isVariadic() {
 		return executable.isVarArgs();
+	}
+
+	@Override
+	public AccessModifier getAccessModifier() {
+		return AccessModifier.getValue(executable.getModifiers());
 	}
 
 	@Override
