@@ -33,10 +33,7 @@ class CompletionSuggestionMethodImpl extends AbstractCompletionSuggestion implem
 
 	@Override
 	public String getTextToInsert() {
-		return methodInfo.getName()
-				+ "("
-				+ IntStream.range(0, methodInfo.getNumberOfArguments()).mapToObj(param -> "").collect(Collectors.joining(", "))
-				+ ")";
+		return methodInfo.getName() + "()";
 	}
 
 	@Override

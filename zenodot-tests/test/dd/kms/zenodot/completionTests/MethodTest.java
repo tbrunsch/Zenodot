@@ -20,15 +20,6 @@ public class MethodTest extends CompletionTest
 		super(testData);
 	}
 
-	/*
-	 * Convention for this test: Methods whose names consist of n characters have n arguments.
-	 *
-	 * This allows auto-generating the insertion text of a method:
-	 *
-	 * "x" -> "x()", "xy" -> "xy(, )", "xyz" -> "xyz(, , )" etc.
-	 *
-	 * Exception: Method "other" whose sole purpose is not to appear among the first suggestions.
-	 */
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
@@ -52,8 +43,7 @@ public class MethodTest extends CompletionTest
 	}
 
 	private static String formatMethod(String methodName) {
-		int numArguments = methodName.length();	// convention in testMethod()
-		return methodName + "(" + IntStream.range(0, numArguments).mapToObj(i -> "").collect(Collectors.joining(", ")) + ")";
+		return methodName + "()";
 	}
 
 	private static String[] formatMethods(String... methodNames) {
