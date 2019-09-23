@@ -5,13 +5,18 @@ import dd.kms.zenodot.settings.ObjectTreeNode;
 
 import java.util.Objects;
 
-class CompletionSuggestionObjectTreeNodeImpl extends AbstractSimpleCompletionSuggestion
+class CompletionSuggestionObjectTreeNodeImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionObjectTreeNode
 {
 	private final ObjectTreeNode	node;
 
 	CompletionSuggestionObjectTreeNodeImpl(ObjectTreeNode node, int insertionBegin, int insertionEnd) {
 		super(CompletionSuggestionType.OBJECT_TREE_NODE, insertionBegin, insertionEnd);
 		this.node = node;
+	}
+
+	@Override
+	public ObjectTreeNode getObjectTreeNode() {
+		return node;
 	}
 
 	@Override

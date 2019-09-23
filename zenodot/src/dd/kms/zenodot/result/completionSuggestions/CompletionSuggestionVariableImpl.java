@@ -5,13 +5,18 @@ import dd.kms.zenodot.settings.Variable;
 
 import java.util.Objects;
 
-class CompletionSuggestionVariableImpl extends AbstractSimpleCompletionSuggestion
+class CompletionSuggestionVariableImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionVariable
 {
 	private final Variable	variable;
 
 	CompletionSuggestionVariableImpl(Variable variable, int insertionBegin, int insertionEnd) {
 		super(CompletionSuggestionType.VARIABLE, insertionBegin, insertionEnd);
 		this.variable = variable;
+	}
+
+	@Override
+	public Variable getVariable() {
+		return variable;
 	}
 
 	@Override

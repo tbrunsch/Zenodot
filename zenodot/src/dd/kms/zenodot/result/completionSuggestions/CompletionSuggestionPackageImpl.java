@@ -4,13 +4,18 @@ import dd.kms.zenodot.result.CompletionSuggestionType;
 
 import java.util.Objects;
 
-class CompletionSuggestionPackageImpl extends AbstractSimpleCompletionSuggestion
+class CompletionSuggestionPackageImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionPackage
 {
 	private final String	packageName;
 
 	CompletionSuggestionPackageImpl(String packageName, int insertionBegin, int insertionEnd) {
 		super(CompletionSuggestionType.PACKAGE, insertionBegin, insertionEnd);
 		this.packageName = packageName;
+	}
+
+	@Override
+	public String getPackageName() {
+		return packageName;
 	}
 
 	@Override

@@ -4,13 +4,18 @@ import dd.kms.zenodot.result.CompletionSuggestionType;
 
 import java.util.Objects;
 
-class CompletionSuggestionKeywordImpl extends AbstractSimpleCompletionSuggestion
+class CompletionSuggestionKeywordImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionKeyword
 {
 	private final String	keyword;
 
 	CompletionSuggestionKeywordImpl(String keyword, int insertionBegin, int insertionEnd) {
 		super(CompletionSuggestionType.KEYWORD, insertionBegin, insertionEnd);
 		this.keyword = keyword;
+	}
+
+	@Override
+	public String getKeyword() {
+		return keyword;
 	}
 
 	@Override

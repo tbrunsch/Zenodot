@@ -5,13 +5,18 @@ import dd.kms.zenodot.utils.wrappers.ClassInfo;
 
 import java.util.Objects;
 
-class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion
+class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionClass
 {
 	private final ClassInfo classInfo;
 
 	CompletionSuggestionClassImpl(ClassInfo classInfo, int insertionBegin, int insertionEnd) {
 		super(CompletionSuggestionType.CLASS, insertionBegin, insertionEnd);
 		this.classInfo = classInfo;
+	}
+
+	@Override
+	public ClassInfo getClassInfo() {
+		return classInfo;
 	}
 
 	@Override

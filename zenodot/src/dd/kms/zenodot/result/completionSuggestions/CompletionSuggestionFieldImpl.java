@@ -5,13 +5,18 @@ import dd.kms.zenodot.utils.wrappers.FieldInfo;
 
 import java.util.Objects;
 
-class CompletionSuggestionFieldImpl extends AbstractSimpleCompletionSuggestion
+class CompletionSuggestionFieldImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionField
 {
 	private final FieldInfo	fieldInfo;
 
 	CompletionSuggestionFieldImpl(FieldInfo fieldInfo, int insertionBegin, int insertionEnd) {
 		super(CompletionSuggestionType.FIELD, insertionBegin, insertionEnd);
 		this.fieldInfo = fieldInfo;
+	}
+
+	@Override
+	public FieldInfo getFieldInfo() {
+		return fieldInfo;
 	}
 
 	@Override
