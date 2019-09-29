@@ -31,6 +31,8 @@ abstract class AbstractParser
 			case RESULT: {
 				if (parseOutcome.getPosition() != text.length()) {
 					throw new ParseException(parseOutcome.getPosition(), "Unexpected character");
+				} else if (caretPosition >= 0) {
+					return CompletionSuggestions.none(caretPosition);
 				} else {
 					throw new IllegalStateException("Internal error: No completions available");
 				}
