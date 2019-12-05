@@ -75,3 +75,7 @@ Zenodot implements most but not all unary and binary operators. The following op
   - `instanceof`
   - ternary operator `? :`
   - the operators `+=`, `-=`, `*=`, `/=`, `%=`, `<<=`, `>>=`, `>>>=`, `&=`, `^=`, and `|=`
+
+# Open Source License Acknowledgement
+
+Zenodot utilizes [Guava: Google Core Libraries for Java](https://github.com/google/guava). This library is licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
