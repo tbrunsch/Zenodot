@@ -36,8 +36,7 @@ class ClassParserImpl extends AbstractParser implements ClassParser
 			TypeInfo type = result.getType();
 			return InfoProvider.createClassInfoUnchecked(type.getRawType().getName());
 		}
-		createInvalidResultTypeException(parseOutcome);
-		return null;
+		throw createInvalidResultTypeException(parseOutcome);
 	}
 
 	@Override

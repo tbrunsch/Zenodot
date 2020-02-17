@@ -42,8 +42,7 @@ class ExpressionCompilerImpl extends AbstractParser implements ExpressionCompile
 			checkParsedWholeText(result);
 			return createCompiledExpression(result);
 		}
-		createInvalidResultTypeException(parseOutcome);
-		return null;
+		throw createInvalidResultTypeException(parseOutcome);
 	}
 
 	@Override

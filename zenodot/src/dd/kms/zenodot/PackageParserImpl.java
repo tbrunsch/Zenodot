@@ -33,8 +33,7 @@ class PackageParserImpl extends AbstractParser implements PackageParser
 			checkParsedWholeText(result);
 			return result.getPackage();
 		}
-		createInvalidResultTypeException(parseOutcome);
-		return null;
+		throw createInvalidResultTypeException(parseOutcome);
 	}
 
 	@Override
