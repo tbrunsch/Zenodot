@@ -119,14 +119,7 @@ public abstract class AbstractParser<C>
 	 *          due to this expectation.
 	 */
 	ParseOutcome checkExpectations(ParseOutcome parseOutcome, ParseExpectation expectation) {
-		try {
-			ParseUtils.checkExpectedParseResultType(parseOutcome, expectation);
-		} catch (IllegalStateException e) {
-			String message = e.getMessage();
-			log(LogLevel.ERROR, message);
-			return ParseOutcomes.createParseError(parseOutcome.getPosition(), message, ErrorPriority.RIGHT_PARSER);
-		}
-		return parseOutcome;
+		return ParseUtils.checkExpectedParseResultType(parseOutcome, expectation);
 	}
 
 	/**

@@ -26,8 +26,7 @@ public class ParseUtils
 			parserToolbox.getUnqualifiedClassParser(),
 			parserToolbox.getRootpackageParser()
 		);
-		checkExpectedParseResultType(classParseOutcome, ParseExpectation.CLASS);
-		return classParseOutcome;
+		return checkExpectedParseResultType(classParseOutcome, ParseExpectation.CLASS);
 	}
 
 	/**
@@ -181,7 +180,7 @@ public class ParseUtils
 	 * continue parsing the expression. In that case, the returned {@link Optional} is empty.
 	 */
 	public static Optional<ParseOutcome> prepareParseOutcomeForPropagation(ParseOutcome parseOutcome, ParseExpectation expectation, ErrorPriority minimumErrorType) {
-		checkExpectedParseResultType(parseOutcome, expectation);
+		parseOutcome = checkExpectedParseResultType(parseOutcome, expectation);
 		ParseOutcomeType parseOutcomeType = parseOutcome.getOutcomeType();
 		if (parseOutcomeType == ParseOutcomeType.RESULT) {
 			// do not propagate valid result, but process it further
@@ -200,17 +199,21 @@ public class ParseUtils
 		return Optional.of(ParseOutcomes.createParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
 	}
 
-	public static void checkExpectedParseResultType(ParseOutcome parseOutcome, ParseExpectation expectation) {
+	public static ParseOutcome checkExpectedParseResultType(ParseOutcome parseOutcome, ParseExpectation expectation) {
 		ParseResultType expectedResultType = expectation.getResultType();
 		ParseOutcomeType parseOutcomeType = parseOutcome.getOutcomeType();
 		if (parseOutcomeType != ParseOutcomeType.RESULT) {
 			// only results have to be checked
-			return;
+			return parseOutcome;
 		}
 		ParseResult parseResult = (ParseResult) parseOutcome;
 		ParseResultType resultType = parseResult.getResultType();
 		if (resultType != expectedResultType) {
-			throw new IllegalStateException("Internal error: Expected a parse result of type '" + expectedResultType + "', but obtained a parse result of type '" + resultType + "'");
+			return ParseOutcomes.createParseError(
+					parseResult.getPosition(),
+					"The result is " + resultType.getDescription() + " and not " + expectedResultType.getDescription(),
+					ErrorPriority.RIGHT_PARSER);
 		}
+		return parseOutcome;
 	}
 }
