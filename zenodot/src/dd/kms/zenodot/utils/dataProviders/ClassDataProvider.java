@@ -1,9 +1,6 @@
 package dd.kms.zenodot.utils.dataProviders;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.primitives.Primitives;
 import com.google.common.reflect.ClassPath;
 import dd.kms.zenodot.matching.*;
@@ -27,38 +24,37 @@ import java.util.stream.Stream;
  */
 public class ClassDataProvider
 {
-	private static final Map<String, Class<?>>	PRIMITIVE_CLASSES_BY_NAME	= Primitives.allPrimitiveTypes().stream()
+	private static final Map<String, Class<?>>			PRIMITIVE_CLASSES_BY_NAME				= Primitives.allPrimitiveTypes().stream()
 		.collect(Collectors.toMap(
 					Class::getName,
 					clazz -> clazz
 				)
 		);
-	private static final List<ClassInfo>		PRIMITIVE_CLASS_INFOS		= PRIMITIVE_CLASSES_BY_NAME.keySet().stream().map(InfoProvider::createClassInfoUnchecked).collect(Collectors.toList());
+	private static final List<ClassInfo>				PRIMITIVE_CLASS_INFOS					= PRIMITIVE_CLASSES_BY_NAME.keySet().stream().map(InfoProvider::createClassInfoUnchecked).collect(Collectors.toList());
 
-	private static final ClassPath				CLASS_PATH;
-	private static final Set<String>			TOP_LEVEL_CLASS_NAMES;
-	private static final Set<String>			PACKAGE_NAMES;
+	private static final ClassPath						CLASS_PATH;
+	private static final Multimap<String, ClassInfo> 	TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES;
+	private static final Set<String>					PACKAGE_NAMES;
 
 	static {
 		ClassPath classPath;
-		Set<String> topLevelClassNames;
+		TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES = ArrayListMultimap.create();
 		try {
 			classPath = ClassPath.from(ClassLoader.getSystemClassLoader());
-			topLevelClassNames = classPath.getTopLevelClasses()
-				.stream()
-				.map(ClassPath.ClassInfo::getName)
-				.collect(Collectors.toSet());
+			for (ClassPath.ClassInfo topLevelClass : classPath.getTopLevelClasses()) {
+				String qualifiedClassName = topLevelClass.getName();
+				ClassInfo classInfo = InfoProvider.createClassInfoUnchecked(qualifiedClassName);
+				String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
+				TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.put(packageName, classInfo);
+			}
 		} catch (IOException e) {
 			classPath = null;
-			topLevelClassNames = ImmutableSet.of();
 		}
 		CLASS_PATH = classPath;
 
-		TOP_LEVEL_CLASS_NAMES = topLevelClassNames;
-
 		Set<String> packageNames = new LinkedHashSet<>();
-		for (String className : TOP_LEVEL_CLASS_NAMES) {
-			for (String packageName = ClassUtils.getParentPath(className); packageName != null; packageName = ClassUtils.getParentPath(packageName)) {
+		for (String mainPackageName : TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.keySet()) {
+			for (String packageName = mainPackageName; packageName != null; packageName = ClassUtils.getParentPath(packageName)) {
 				packageNames.add(packageName);
 			}
 		}
@@ -76,8 +72,7 @@ public class ClassDataProvider
 	}
 
 	public boolean packageExists(String packageName) {
-		String packagePrefix = packageName + ".";
-		return TOP_LEVEL_CLASS_NAMES.stream().anyMatch(name -> name.startsWith(packagePrefix));
+		return PACKAGE_NAMES.contains(packageName);
 	}
 
 	public Class<?> getImportedClass(String className) {
@@ -189,19 +184,7 @@ public class ClassDataProvider
 			// class is not fully qualified, so no match
 			return CompletionSuggestions.none(insertionEnd);
 		}
-		String prefix = packageName + ".";
-		int lastSeparatorIndex = packageName.length();
-		List<ClassInfo> newSuggestedClasses = new ArrayList<>();
-		for (String className : TOP_LEVEL_CLASS_NAMES) {
-			if (ClassUtils.lastIndexOfPathSeparator(className) != lastSeparatorIndex) {
-				continue;
-			}
-			if (!className.startsWith(prefix)) {
-				continue;
-			}
-			ClassInfo clazz = InfoProvider.createClassInfoUnchecked(className);
-			newSuggestedClasses.add(clazz);
-		}
+		Collection<ClassInfo> newSuggestedClasses = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
 		String classPrefix = ClassUtils.getLeafOfPath(classPrefixWithPackage);
 
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
