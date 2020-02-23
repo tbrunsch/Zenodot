@@ -43,7 +43,7 @@ class ClassParserImpl extends AbstractParser implements ClassParser
 	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
 		ParserToolbox parserToolbox  = new ParserToolbox(InfoProvider.NULL_LITERAL, settings, parseMode);
 		return ParseUtils.parse(tokenStream, null, ParseExpectation.CLASS,
-			parserToolbox.getImportedClassParser(),
+			parserToolbox.getUnqualifiedClassParser(),
 			parserToolbox.getRootpackageParser()
 		);
 	}

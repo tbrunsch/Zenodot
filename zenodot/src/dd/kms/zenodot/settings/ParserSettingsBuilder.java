@@ -58,6 +58,16 @@ public interface ParserSettingsBuilder
 	ParserSettingsBuilder enableDynamicTyping(boolean enableDynamicTyping);
 
 	/**
+	 * By default, when typing an unqualified class name, only classes you have imported or whose package is
+	 * imported will be considered for suggestions. With enabling this feature, also classes from other
+	 * packages will be suggested, but fully qualified.<br/>
+	 * <br/>
+	 * Consider the partial class name "Lis". If you have not imported "java.util", then you will get the
+	 * suggestion "java.util.List" if this feature is enabled. Otherwise, that class will not be suggested.
+	 */
+	ParserSettingsBuilder considerAllClassesForClassSuggestions(boolean considerAllClassesForClassSuggestions);
+
+	/**
 	 * Call this method if you want to inject a custom hierarchy into the parser that is not represented
 	 * by field and method names of classes. Each node of the custom hierarchy must be wrapped into an
 	 * {@link ObjectTreeNode}. Zenodot then provides code completion and evaluation for this hierarchy.<br/>

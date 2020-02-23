@@ -23,7 +23,7 @@ public class ParseUtils
 	 */
 	public static ParseOutcome parseClass(TokenStream tokenStream, ParserToolbox parserToolbox) {
 		ParseOutcome classParseOutcome = parse(tokenStream, null, ParseExpectation.CLASS,
-			parserToolbox.getImportedClassParser(),
+			parserToolbox.getUnqualifiedClassParser(),
 			parserToolbox.getRootpackageParser()
 		);
 		checkExpectedParseResultType(classParseOutcome, ParseExpectation.CLASS);

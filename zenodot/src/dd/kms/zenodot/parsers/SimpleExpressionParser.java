@@ -24,7 +24,7 @@ public class SimpleExpressionParser extends AbstractParser<ObjectInfo>
 			parserToolbox.getObjectMethodParser(),
 			parserToolbox.getParenthesizedExpressionParser(),
 			parserToolbox.getCastParser(),
-			parserToolbox.getImportedClassParser(),
+			parserToolbox.getUnqualifiedClassParser(),
 			parserToolbox.getRootpackageParser(),
 			parserToolbox.getConstructorParser(),
 			parserToolbox.getUnaryPrefixOperatorParser(),

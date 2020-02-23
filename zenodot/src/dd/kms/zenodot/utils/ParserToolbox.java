@@ -33,7 +33,7 @@ public class ParserToolbox
 	private final AbstractParser<ObjectInfo>		constructorParser;
 	private final AbstractParser<ObjectInfo>		customHierarchyParser;
 	private final AbstractParser<ObjectInfo>		expressionParser;
-	private final AbstractParser<ObjectInfo>		importedClassParser;
+	private final AbstractParser<ObjectInfo>		unqualifiedClassParser;
 	private final AbstractParser<TypeInfo>			innerClassParser;
 	private final AbstractParser<ObjectInfo>		literalParser;
 	private final AbstractParser<ObjectInfo>		objectFieldParser;
@@ -69,7 +69,7 @@ public class ParserToolbox
 		constructorParser				= new ConstructorParser(this);
 		customHierarchyParser			= new CustomHierarchyParser(this);
 		expressionParser				= createExpressionParser(OperatorResultProvider.MAX_BINARY_OPERATOR_PRECEDENCE_LEVEL);
-		importedClassParser				= new ImportedClassParser(this);
+		unqualifiedClassParser			= new UnqualifiedClassParser(this);
 		innerClassParser				= new InnerClassParser(this);
 		literalParser					= new LiteralParser(this);
 		objectFieldParser				= new ObjectFieldParser(this);
@@ -162,7 +162,7 @@ public class ParserToolbox
 		return expressionParser;
 	}
 
-	public AbstractParser<ObjectInfo> getImportedClassParser() { return importedClassParser; }
+	public AbstractParser<ObjectInfo> getUnqualifiedClassParser() { return unqualifiedClassParser; }
 
 	public AbstractParser<TypeInfo> getInnerClassParser() {
 		return innerClassParser;

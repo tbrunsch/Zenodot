@@ -35,7 +35,7 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
  *         The {@link ExpressionParser} calls the {@link SimpleExpressionParser} to parse the expression.
  *     </li>
  *     <li>
- *         The {@link SimpleExpressionParser} calls the {@link ImportedClassParser} to parse the class {@code String}.
+ *         The {@link SimpleExpressionParser} calls the {@link UnqualifiedClassParser} to parse the class {@code String}.
  *     </li>
  *     <li>
  *         After parsing the class {@code String}, the {@code ClassParser} calls the {@link ClassTailParser}

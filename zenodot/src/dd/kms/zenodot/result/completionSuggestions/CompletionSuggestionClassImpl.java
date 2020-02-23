@@ -8,10 +8,12 @@ import java.util.Objects;
 class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionClass
 {
 	private final ClassInfo classInfo;
+	private final boolean	unqualifiedSuggestion;
 
-	CompletionSuggestionClassImpl(ClassInfo classInfo, int insertionBegin, int insertionEnd) {
+	CompletionSuggestionClassImpl(ClassInfo classInfo, int insertionBegin, int insertionEnd, boolean unqualifiedSuggestion) {
 		super(CompletionSuggestionType.CLASS, insertionBegin, insertionEnd);
 		this.classInfo = classInfo;
+		this.unqualifiedSuggestion = unqualifiedSuggestion;
 	}
 
 	@Override
@@ -21,7 +23,7 @@ class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion i
 
 	@Override
 	public String toString() {
-		return classInfo.getUnqualifiedName();
+		return unqualifiedSuggestion ? classInfo.getUnqualifiedName() : classInfo.getNormalizedName();
 	}
 
 	@Override

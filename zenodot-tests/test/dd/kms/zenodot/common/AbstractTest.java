@@ -56,6 +56,10 @@ public class AbstractTest<T extends AbstractTest>
 		settingsBuilder.enableDynamicTyping(true);
 	}
 
+	public void enableConsideringAllClassesForClassSuggestions() {
+		settingsBuilder.considerAllClassesForClassSuggestions(true);
+	}
+
 	public void stopAtError() {
 		stopAtError = true;
 	}

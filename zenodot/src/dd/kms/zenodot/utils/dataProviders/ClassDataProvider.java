@@ -33,12 +33,12 @@ public class ClassDataProvider
 	private static final List<ClassInfo>				PRIMITIVE_CLASS_INFOS					= PRIMITIVE_CLASSES_BY_NAME.keySet().stream().map(InfoProvider::createClassInfoUnchecked).collect(Collectors.toList());
 
 	private static final ClassPath						CLASS_PATH;
-	private static final Multimap<String, ClassInfo> 	TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES;
+	private static final SetMultimap<String, ClassInfo> TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES;
 	private static final Set<String>					PACKAGE_NAMES;
 
 	static {
 		ClassPath classPath;
-		TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES = ArrayListMultimap.create();
+		TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES = HashMultimap.create();
 		try {
 			classPath = ClassPath.from(ClassLoader.getSystemClassLoader());
 			for (ClassPath.ClassInfo topLevelClass : classPath.getTopLevelClasses()) {
@@ -184,19 +184,19 @@ public class ClassDataProvider
 			// class is not fully qualified, so no match
 			return CompletionSuggestions.none(insertionEnd);
 		}
-		Collection<ClassInfo> newSuggestedClasses = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
+		Set<ClassInfo> newSuggestedClasses = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
 		String classPrefix = ClassUtils.getLeafOfPath(classPrefixWithPackage);
 
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			newSuggestedClasses,
-			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd),
+			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, true),
 			rateClassFunc(classPrefix)
 		);
 
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
 	}
 
-	public CompletionSuggestions suggestImportedClasses(int insertionBegin, int insertionEnd, String classPrefix) {
+	public CompletionSuggestions suggestClassesForName(int insertionBegin, int insertionEnd, String classPrefix, boolean considerAllClasses) {
 		ImmutableMap.Builder<CompletionSuggestion, MatchRating> suggestionBuilder = ImmutableMap.builder();
 
 		Set<ClassInfo> importedClasses = getImportedClasses();
@@ -205,6 +205,12 @@ public class ClassDataProvider
 
 		suggestionBuilder.putAll(suggestUnqualifiedClasses(insertionBegin, insertionEnd, classPrefix, importedClasses));
 		suggestionBuilder.putAll(suggestUnqualifiedClasses(insertionBegin, insertionEnd, classPrefix, additionalTopLevelClassesInPackage));
+
+		if (!classPrefix.isEmpty() && considerAllClasses) {
+			// We only search all top level classes if the class prefix is not empty to avoid suggesting all top level classes
+			Set<ClassInfo> classesToIgnoreForQualifiedClasses = Sets.union(importedClasses, additionalTopLevelClassesInPackage);
+			suggestionBuilder.putAll(suggestQualifiedClassesForUnqualifiedName(insertionBegin, insertionEnd, classPrefix, classesToIgnoreForQualifiedClasses));
+		}
 
 		return new CompletionSuggestions(insertionBegin, suggestionBuilder.build());
 	}
@@ -216,9 +222,29 @@ public class ClassDataProvider
 		}
 		return ParseUtils.createRatedSuggestions(
 			classes,
-			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd),
+			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, true),
 			rateClassFunc(classPrefix)
 		);
+	}
+
+	private static Map<CompletionSuggestion, MatchRating> suggestQualifiedClassesForUnqualifiedName(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classesToIgnore) {
+		Map<CompletionSuggestion, MatchRating> ratedSuggestions = new LinkedHashMap<>();
+		for (String packageName : TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.keySet()) {
+			int classNameStartIndex = packageName.length() + 1;
+			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
+			Set<ClassInfo> classInfosToConsider = Sets.difference(classInfos, classesToIgnore);
+			for (ClassInfo classInfo : classInfosToConsider) {
+				// Do not call classInfo.getUnqualifiedName() for performance reasons (we already know the start index)
+				String unqualifiedName = classInfo.getNormalizedName().substring(classNameStartIndex);
+				StringMatch stringMatch = MatchRatings.rateStringMatch(unqualifiedName, classPrefix);
+				if (stringMatch != StringMatch.NONE) {
+					CompletionSuggestion suggestion = CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false);
+					MatchRating rating = MatchRatings.create(stringMatch, TypeMatch.NONE, AccessMatch.IGNORED);
+					ratedSuggestions.put(suggestion, rating);
+				}
+			}
+		}
+		return ratedSuggestions;
 	}
 
 	public CompletionSuggestions suggestInnerClasses(String expectedName, Class<?> contextClass, int insertionBegin, int insertionEnd) {
@@ -227,7 +253,7 @@ public class ClassDataProvider
 			.collect(Collectors.toList());
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			classesToConsider,
-			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd),
+			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, true),
 			rateClassFunc(expectedName)
 		);
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);

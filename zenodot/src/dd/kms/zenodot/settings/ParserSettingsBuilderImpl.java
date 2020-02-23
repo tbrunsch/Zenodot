@@ -19,6 +19,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	private List<Variable>		variables;
 	private AccessModifier		minimumAccessLevel;
 	private boolean				enableDynamicTyping;
+	private boolean				considerAllClassesForClassSuggestions;
 	private ObjectTreeNode		customHierarchyRoot;
 	private ParserLogger		logger;
 
@@ -93,6 +94,12 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
+	public ParserSettingsBuilder considerAllClassesForClassSuggestions(boolean considerAllClassesForClassSuggestions) {
+		this.considerAllClassesForClassSuggestions = considerAllClassesForClassSuggestions;
+		return this;
+	}
+
+	@Override
 	public ParserSettingsBuilderImpl customHierarchyRoot(ObjectTreeNode customHierarchyRoot) {
 		this.customHierarchyRoot = customHierarchyRoot;
 		return this;
@@ -105,6 +112,6 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(importedClasses, importedPackages, variables, minimumAccessLevel, enableDynamicTyping, customHierarchyRoot, logger);
+		return new ParserSettingsImpl(importedClasses, importedPackages, variables, minimumAccessLevel, enableDynamicTyping, considerAllClassesForClassSuggestions, customHierarchyRoot, logger);
 	}
 }
