@@ -27,7 +27,9 @@ public class MethodDotFieldOrMethodTest extends CompletionTest
 			.addTest("getTestClass(c).",								"d", "i", "getObject()")
 			.addTest("getTestClass(c).get",								"getObject()")
 			.addTest("getTestClass(c).getObject(",						"c", "s")
-			.addTest("getTestClass(c).getObject(getTestClass(c).d).",	"clone()", "equals()");
+			.addTest("getTestClass(c).getObject(getTestClass(c).d).",	"clone()", "equals()")
+			.addTest("getTestInterface().der",							"derived()")
+			.addTest("getTestInterface().bas",							"base()");
 
 		testBuilder
 			.addTestWithError("getTestClazz().",								-1, ParseException.class)
@@ -48,9 +50,20 @@ public class MethodDotFieldOrMethodTest extends CompletionTest
 
 	private static class TestClassB
 	{
-		private short	s	= 1;
-		private char	c	= 'A';
+		private short			s			= 1;
+		private char			c			= 'A';
 
 		private TestClassA getTestClass(char c) { return null; }
+		private TestInterfaceB getTestInterface() { return null; }
+	}
+
+	private interface TestInterfaceA
+	{
+		void base();
+	}
+
+	private interface TestInterfaceB extends TestInterfaceA
+	{
+		void derived();
 	}
 }
