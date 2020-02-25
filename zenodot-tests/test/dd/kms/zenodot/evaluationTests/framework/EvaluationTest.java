@@ -98,6 +98,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 			return Objects.equals(expectedValue, actualValue);
 		} catch (ParseException e) {
 			if (executeAssertions) {
+				e.printStackTrace();
 				fail("Exception during expression evaluation: " + e.getMessage());
 			}
 			return false;

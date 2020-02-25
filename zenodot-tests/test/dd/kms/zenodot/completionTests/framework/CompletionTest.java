@@ -71,6 +71,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 			suggestions = extractSuggestions(Parsers.createExpressionParser(expression, settings, thisInfo).suggestCodeCompletion(caretPosition));
 		} catch (ParseException e) {
 			if (executeAssertions) {
+				e.printStackTrace();
 				fail("Exception during code completion: " + e.getMessage());
 			}
 			return false;
