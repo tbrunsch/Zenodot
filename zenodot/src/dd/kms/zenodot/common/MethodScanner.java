@@ -5,7 +5,10 @@ import com.google.common.collect.Multimap;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -41,7 +44,7 @@ public class MethodScanner
 		addMethods(clazz, filter, methodsByName);
 		return methodsByName.values()
 			.stream()
-			.sorted(new MethodComparator(clazz))
+			.sorted(new MemberComparator(clazz))
 			.collect(Collectors.toList());
 	}
 
@@ -100,61 +103,6 @@ public class MethodScanner
 	}
 
 	private Predicate<Method> getFilter() {
-		Predicate<Method> combinedFilter = null;
-		for (Predicate<Method> filter : Arrays.asList(minimumAccessLevelFilter, staticFilter, nameFilter)) {
-			if (filter == null) {
-				continue;
-			}
-			combinedFilter = combinedFilter == null ? filter : combinedFilter.and(filter);
-		}
-		return combinedFilter == null ? field -> true : combinedFilter;
-	}
-
-	/**
-	 * Compares methods by name with the following exceptions:
-	 * <ul>
-	 *     <li>Methods of the root class get a higher priority.</li>
-	 *     <li>Methods of Object get a lower priority.</li>
-	 * </ul>
-	 */
-	private static class MethodComparator implements Comparator<Method>
-	{
-		/**
-		 * Methods of the root class will be prioritized.
-		 */
-		private final Class<?> rootClass;
-
-		private MethodComparator(Class<?> rootClass) {
-			this.rootClass = rootClass;
-		}
-
-		@Override
-		public int compare(Method method1, Method method2) {
-			Class<?> declaringClass1 = method1.getDeclaringClass();
-			Class<?> declaringClass2 = method2.getDeclaringClass();
-
-			if (declaringClass1 == rootClass) {
-				if (declaringClass2 != rootClass) {
-					return -1;
-				}
-			} else {
-				if (declaringClass2 == rootClass) {
-					return 1;
-				}
-			}
-			if (declaringClass1 == Object.class) {
-				if (declaringClass2 != Object.class) {
-					return 1;
-				}
-			} else {
-				if (declaringClass2 == Object.class) {
-					return -1;
-				}
-			}
-
-			String name1 = method1.getName();
-			String name2 = method2.getName();
-			return name1.toLowerCase().compareTo(name2.toLowerCase());
-		}
+		return Filters.combine(minimumAccessLevelFilter, staticFilter, nameFilter);
 	}
 }
