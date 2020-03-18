@@ -230,7 +230,7 @@ public class ClassDataProvider
 	private static Map<CompletionSuggestion, MatchRating> suggestQualifiedClassesForUnqualifiedName(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classesToIgnore) {
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = new LinkedHashMap<>();
 		for (String packageName : TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.keySet()) {
-			int classNameStartIndex = packageName.length() + 1;
+			int classNameStartIndex = packageName == null ? 0 : packageName.length() + 1;
 			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
 			Set<ClassInfo> classInfosToConsider = Sets.difference(classInfos, classesToIgnore);
 			for (ClassInfo classInfo : classInfosToConsider) {
