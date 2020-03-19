@@ -1,6 +1,7 @@
 package dd.kms.zenodot.result.completionSuggestions;
 
 import dd.kms.zenodot.result.CompletionSuggestionType;
+import dd.kms.zenodot.utils.ClassUtils;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 
 import java.util.Objects;
@@ -8,12 +9,12 @@ import java.util.Objects;
 class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionClass
 {
 	private final ClassInfo classInfo;
-	private final boolean	unqualifiedSuggestion;
+	private final boolean	qualifiedSuggestion;
 
-	CompletionSuggestionClassImpl(ClassInfo classInfo, int insertionBegin, int insertionEnd, boolean unqualifiedSuggestion) {
+	CompletionSuggestionClassImpl(ClassInfo classInfo, int insertionBegin, int insertionEnd, boolean qualifiedSuggestion) {
 		super(CompletionSuggestionType.CLASS, insertionBegin, insertionEnd);
 		this.classInfo = classInfo;
-		this.unqualifiedSuggestion = unqualifiedSuggestion;
+		this.qualifiedSuggestion = qualifiedSuggestion;
 	}
 
 	@Override
@@ -23,7 +24,14 @@ class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion i
 
 	@Override
 	public String toString() {
-		return unqualifiedSuggestion ? classInfo.getUnqualifiedName() : classInfo.getNormalizedName();
+		StringBuilder builder = new StringBuilder(classInfo.getUnqualifiedName());
+		if (qualifiedSuggestion) {
+			String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
+			if (packageName != null) {
+				builder.append(" (").append(packageName).append(")");
+			}
+		}
+		return builder.toString();
 	}
 
 	@Override

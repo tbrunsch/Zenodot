@@ -194,7 +194,7 @@ public class ClassDataProvider
 
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			newSuggestedClasses,
-			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, true),
+			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false),
 			rateClassFunc(classPrefix)
 		);
 
@@ -227,7 +227,7 @@ public class ClassDataProvider
 		}
 		return ParseUtils.createRatedSuggestions(
 			classes,
-			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, true),
+			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false),
 			rateClassFunc(classPrefix)
 		);
 	}
@@ -240,7 +240,7 @@ public class ClassDataProvider
 			String unqualifiedName = classInfo.getUnqualifiedName();
 			StringMatch stringMatch = MatchRatings.rateStringMatch(unqualifiedName, classPrefix);
 			if (stringMatch != StringMatch.NONE) {
-				CompletionSuggestion suggestion = CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false);
+				CompletionSuggestion suggestion = CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, true);
 				MatchRating rating = MatchRatings.create(stringMatch, TypeMatch.NONE, AccessMatch.IGNORED);
 				ratedSuggestions.put(suggestion, rating);
 			}
@@ -254,7 +254,7 @@ public class ClassDataProvider
 			.collect(Collectors.toList());
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
 			classesToConsider,
-			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, true),
+			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false),
 			rateClassFunc(expectedName)
 		);
 		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
