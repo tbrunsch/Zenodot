@@ -28,6 +28,11 @@ public class FieldDotFieldTest extends EvaluationTest
 
 		testBuilder
 			.configurator(null)
+			.addTest("testInterface.BASE", 		"base")
+			.addTest("testInterface.DERIVED",	42);
+
+		testBuilder
+			.configurator(null)
 			.addTestWithError("o.i")
 			.addTestWithError("o.f");
 
@@ -47,7 +52,19 @@ public class FieldDotFieldTest extends EvaluationTest
 
 	private static class TestClass
 	{
-		private final MemberClass	tc	= new MemberClass();
-		private final Object		o	= new MemberClass();
+		private final MemberClass		tc				= new MemberClass();
+		private final Object			o				= new MemberClass();
+		private final TestInterfaceB	testInterface	= new TestInterfaceB(){};
+	}
+
+
+	private interface TestInterfaceA
+	{
+		String BASE = "base";
+	}
+
+	private interface TestInterfaceB extends TestInterfaceA
+	{
+		int DERIVED = 42;
 	}
 }

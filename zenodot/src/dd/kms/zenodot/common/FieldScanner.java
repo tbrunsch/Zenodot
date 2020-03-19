@@ -1,10 +1,13 @@
 package dd.kms.zenodot.common;
 
-import com.google.common.collect.Iterables;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -40,36 +43,55 @@ public class FieldScanner
 
 	public List<Field> getFields(Class<?> clazz, boolean filterShadowedFields) {
 		Predicate<Field> filter = getFilter();
-		Set<String> encounteredFieldNames = new HashSet<>();
-		List<Field> fields = new ArrayList<>();
-		for (Class<?> curClazz = clazz; curClazz != null; curClazz = curClazz.getSuperclass()) {
-			List<Field> declaredFields = Arrays.stream(curClazz.getDeclaredFields())
-				.filter(field -> !field.getName().startsWith("this$"))
-				.sorted(Comparator.comparing(field -> field.getName().toLowerCase()))	// sort fields because they are not guaranteed to be in any order
-				.collect(Collectors.toList());
+		Multimap<String, Field> fieldsByName = ArrayListMultimap.create();
+		addFields(clazz, filter, filterShadowedFields, fieldsByName);
+		return fieldsByName.values()
+			.stream()
+			.sorted(new MemberComparator(clazz))
+			.collect(Collectors.toList());
+	}
 
-			for (Field field : Iterables.filter(declaredFields, filter::test)) {
-				if (filterShadowedFields) {
-					String fieldName = field.getName();
-					if (encounteredFieldNames.contains(fieldName)) {
-						continue;
+	private void addFields(Class<?> clazz, Predicate<Field> filter, boolean filterShadowedFields, Multimap<String, Field> fieldsByName) {
+		if (clazz == null) {
+			return;
+		}
+		for (Field field : clazz.getDeclaredFields()) {
+			if (!filter.test(field)) {
+				continue;
+			}
+			String fieldName = field.getName();
+			Collection<Field> fields = fieldsByName.get(fieldName);
+			Iterator<Field> fieldIterator = fields.iterator();
+			boolean addField = true;
+			while (fieldIterator.hasNext()) {
+				Field otherField = fieldIterator.next();
+				Class<?> otherDeclaringClass = otherField.getDeclaringClass();
+				if (otherDeclaringClass == clazz) {
+					addField = false;
+				} else if (clazz.isAssignableFrom(otherDeclaringClass)) {
+					if (filterShadowedFields) {
+						addField = false;
 					}
-					encounteredFieldNames.add(fieldName);
+				} else if (otherDeclaringClass.isAssignableFrom(clazz)) {
+					if (filterShadowedFields) {
+						fieldIterator.remove();
+					}
 				}
+			}
+			if (addField) {
 				fields.add(field);
 			}
 		}
-		return fields;
+
+		Class<?> superclass = clazz.getSuperclass();
+		addFields(superclass, filter, filterShadowedFields, fieldsByName);
+		for (Class<?> implementedInterfaces :clazz.getInterfaces()){
+			addFields(implementedInterfaces, filter, filterShadowedFields, fieldsByName);
+		}
 	}
 
 	private Predicate<Field> getFilter() {
-		Predicate<Field> combinedFilter = null;
-		for (Predicate<Field> filter : Arrays.asList(minimumAccessLevelFilter, staticFilter, nameFilter)) {
-			if (filter == null) {
-				continue;
-			}
-			combinedFilter = combinedFilter == null ? filter : combinedFilter.and(filter);
-		}
-		return combinedFilter == null ? field -> true : combinedFilter;
+		Predicate<Field> specialClassFilter = field -> !field.getName().startsWith("this$");
+		return Filters.combine(minimumAccessLevelFilter, staticFilter, nameFilter, specialClassFilter);
 	}
 }

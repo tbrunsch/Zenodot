@@ -9,8 +9,8 @@ import dd.kms.zenodot.utils.wrappers.FieldInfo;
 
 public class CompletionSuggestionFactory
 {
-	public static CompletionSuggestion classSuggestions(ClassInfo classInfo, int insertionBegin, int insertionEnd) {
-		return new CompletionSuggestionClassImpl(classInfo, insertionBegin, insertionEnd);
+	public static CompletionSuggestion classSuggestions(ClassInfo classInfo, int insertionBegin, int insertionEnd, boolean qualifiedSuggestion) {
+		return new CompletionSuggestionClassImpl(classInfo, insertionBegin, insertionEnd, qualifiedSuggestion);
 	}
 
 	public static CompletionSuggestion fieldSuggestion(FieldInfo fieldInfo, int insertionBegin, int insertionEnd) {

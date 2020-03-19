@@ -29,6 +29,11 @@ public class MethodDotFieldOrMethodTest extends EvaluationTest
 
 		testBuilder
 			.configurator(null)
+			.addTest("getTestInterface().getBase()",	"base")
+			.addTest("getTestInterface().getDerived()",	42);
+
+		testBuilder
+			.configurator(null)
 			.addTestWithError("getTestClassAsObject().i")
 			.addTestWithError("getTestClassAsObject().d")
 			.addTestWithError("getTestClassAsObject().getString()");
@@ -50,5 +55,29 @@ public class MethodDotFieldOrMethodTest extends EvaluationTest
 		TestClass getTestClass() { return new TestClass(); }
 		Object getTestClassAsObject() { return new TestClass(); }
 		String getString() { return "xyz"; }
+		TestInterfaceB getTestInterface() { return new TestInterfaceBImpl(); }
+	}
+
+	private interface TestInterfaceA
+	{
+		String getBase();
+	}
+
+	private interface TestInterfaceB extends TestInterfaceA
+	{
+		int getDerived();
+	}
+
+	private static class TestInterfaceBImpl implements TestInterfaceB
+	{
+		@Override
+		public String getBase() {
+			return "base";
+		}
+
+		@Override
+		public int getDerived() {
+			return 42;
+		}
 	}
 }

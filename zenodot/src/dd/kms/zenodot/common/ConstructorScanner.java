@@ -28,6 +28,6 @@ public class ConstructorScanner
 	}
 
 	private Predicate<Constructor<?>> getFilter() {
-		return minimumAccessLevelFilter == null ? field -> true : minimumAccessLevelFilter;
+		return Filters.nullToFilter(minimumAccessLevelFilter);
 	}
 }

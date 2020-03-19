@@ -23,11 +23,16 @@ public class FieldDotFieldTest extends CompletionTest
 		CompletionTestBuilder testBuilder = new CompletionTestBuilder().testInstance(testInstance);
 
 		testBuilder
-			.addTest("member.",		"member", "X", "xy", "XYZ")
-			.addTest("member.x",	"X", "xy", "XYZ", "member")
-			.addTest("member.xy",	"xy", "XYZ", "X", "member")
-			.addTest("member.xyz",	"XYZ", "xy", "X", "member")
-			.addTest("member.mem",	"member", "X", "xy", "XYZ");
+			.addTest("member.",		"member", "otherMember", "X", "xy", "XYZ")
+			.addTest("member.x",	"X", "xy", "XYZ", "member", "otherMember")
+			.addTest("member.xy",	"xy", "XYZ", "X", "member", "otherMember")
+			.addTest("member.xyz",	"XYZ", "xy", "X", "member", "otherMember")
+			.addTest("member.mem",	"member", "otherMember", "X", "xy", "XYZ")
+			.addTest("member.oth",	"otherMember", "member", "X", "xy", "XYZ");
+
+		testBuilder
+			.addTest("member.otherMember.BA",	"BASE", "DERIVED")
+			.addTest("member.otherMember.DER",	"DERIVED", "BASE");
 
 		testBuilder
 			.addTestWithError("membeR.",		-1, ParseException.class)
@@ -40,10 +45,22 @@ public class FieldDotFieldTest extends CompletionTest
 
 	private static class TestClass
 	{
-		private int 		xy 		= 13;
-		private float		X		= 1.0f;
-		private char 		XYZ		= 'W';
+		private int 			xy 			= 13;
+		private float			X			= 1.0f;
+		private char 			XYZ			= 'W';
 
-		private TestClass member	= null;
+		private TestClass 		member		= null;
+		private TestInterfaceB	otherMember	= null;
+	}
+
+
+	private interface TestInterfaceA
+	{
+		int BASE = 42;
+	}
+
+	private interface TestInterfaceB extends TestInterfaceA
+	{
+		String DERIVED = "constant";
 	}
 }

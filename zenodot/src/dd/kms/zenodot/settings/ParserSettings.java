@@ -16,6 +16,7 @@ public interface ParserSettings
 	List<Variable> getVariables();
 	AccessModifier getMinimumAccessLevel();
 	boolean isEnableDynamicTyping();
+	boolean isConsiderAllClassesForClassSuggestions();
 	ObjectTreeNode getCustomHierarchyRoot();
 	ParserLogger getLogger();
 	ParserSettingsBuilder builder();

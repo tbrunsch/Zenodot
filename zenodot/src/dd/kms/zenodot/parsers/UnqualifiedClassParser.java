@@ -22,11 +22,22 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  * Parses subexpressions of the form {@code <class name>} in the context of {@code this} (ignored).
  * The parsing will only be successful if either the class or its package is imported
  * (see {@link ParserSettingsBuilder#importPackages(Iterable)} and {@link ParserSettingsBuilder#importClasses(Iterable)}).
+ * However, the parser will also provide suggestions for qualified class names if the class name
+ * matches, but is not imported.
  */
-public class ImportedClassParser extends AbstractParser<ObjectInfo>
+public class UnqualifiedClassParser extends AbstractParser<ObjectInfo>
 {
-	public ImportedClassParser(ParserToolbox parserToolbox) {
+	/**
+	 * If this flag is true, then also classes that are not imported and whose
+	 * package is not imported will be considered when creating suggestions.
+	 * However, since they are not imported they will be suggested with full
+	 * qualification.
+	 */
+	private final boolean	considerAllClassesForSuggestions;
+
+	public UnqualifiedClassParser(ParserToolbox parserToolbox) {
 		super(parserToolbox);
+		considerAllClassesForSuggestions = parserToolbox.getSettings().isConsiderAllClassesForClassSuggestions();
 	}
 
 	@Override
@@ -45,7 +56,7 @@ public class ImportedClassParser extends AbstractParser<ObjectInfo>
 			}
 			log(LogLevel.INFO, "suggesting imported classes for completion...");
 			ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-			return classDataProvider.suggestImportedClasses(insertionBegin, insertionEnd, className);
+			return classDataProvider.suggestClassesForName(insertionBegin, insertionEnd, className, considerAllClassesForSuggestions);
 		}
 
 		log(LogLevel.INFO, "parsing class");
@@ -78,7 +89,7 @@ public class ImportedClassParser extends AbstractParser<ObjectInfo>
 		}
 		String className = classToken.getValue();
 		if (classToken.isContainsCaret()) {
-			return classDataProvider.suggestImportedClasses(identifierStartPosition, tokenStream.getPosition(), className);
+			return classDataProvider.suggestClassesForName(identifierStartPosition, tokenStream.getPosition(), className, considerAllClassesForSuggestions);
 		}
 
 		Class<?> importedClass = classDataProvider.getImportedClass(className);

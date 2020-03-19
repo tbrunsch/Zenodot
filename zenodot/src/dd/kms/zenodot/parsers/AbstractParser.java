@@ -35,7 +35,7 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
  *         The {@link ExpressionParser} calls the {@link SimpleExpressionParser} to parse the expression.
  *     </li>
  *     <li>
- *         The {@link SimpleExpressionParser} calls the {@link ImportedClassParser} to parse the class {@code String}.
+ *         The {@link SimpleExpressionParser} calls the {@link UnqualifiedClassParser} to parse the class {@code String}.
  *     </li>
  *     <li>
  *         After parsing the class {@code String}, the {@code ClassParser} calls the {@link ClassTailParser}
@@ -119,14 +119,7 @@ public abstract class AbstractParser<C>
 	 *          due to this expectation.
 	 */
 	ParseOutcome checkExpectations(ParseOutcome parseOutcome, ParseExpectation expectation) {
-		try {
-			ParseUtils.checkExpectedParseResultType(parseOutcome, expectation);
-		} catch (IllegalStateException e) {
-			String message = e.getMessage();
-			log(LogLevel.ERROR, message);
-			return ParseOutcomes.createParseError(parseOutcome.getPosition(), message, ErrorPriority.RIGHT_PARSER);
-		}
-		return parseOutcome;
+		return ParseUtils.checkExpectedParseResultType(parseOutcome, expectation);
 	}
 
 	/**

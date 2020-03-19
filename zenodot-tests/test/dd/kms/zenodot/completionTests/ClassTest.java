@@ -76,6 +76,12 @@ public class ClassTest extends CompletionTest
 			.addUnstableTest("Math.p",	"pow(, )", "PI")
 			.addUnstableTest("Math.P",	"PI", "pow(, )");
 
+		testBuilder
+			.configurator(test -> test.enableConsideringAllClassesForClassSuggestions())
+			.addTest("MyC",		"MyClass (dd.kms.zenodot.classesForTest.dummies)")
+			.addTest("YADC",	"YetAnotherDummyClass (dd.kms.zenodot.classesForTest.dummies)")
+			.addTest("DummCl",	"DummyClass (dd.kms.zenodot.classesForTest)");
+
 		return testBuilder.build();
 	}
 
