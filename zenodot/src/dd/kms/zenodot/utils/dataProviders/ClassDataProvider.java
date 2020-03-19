@@ -3,6 +3,7 @@ package dd.kms.zenodot.utils.dataProviders;
 import com.google.common.collect.*;
 import com.google.common.primitives.Primitives;
 import com.google.common.reflect.ClassPath;
+import dd.kms.zenodot.common.multistringmatching.MultiStringMatcher;
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.result.CompletionSuggestion;
 import dd.kms.zenodot.result.CompletionSuggestions;
@@ -35,10 +36,12 @@ public class ClassDataProvider
 	private static final ClassPath						CLASS_PATH;
 	private static final SetMultimap<String, ClassInfo> TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES;
 	private static final Set<String>					PACKAGE_NAMES;
+	private static final MultiStringMatcher<ClassInfo>	TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES;
 
 	static {
 		ClassPath classPath;
 		TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES = HashMultimap.create();
+		TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES = new MultiStringMatcher<>();
 		try {
 			classPath = ClassPath.from(ClassLoader.getSystemClassLoader());
 			for (ClassPath.ClassInfo topLevelClass : classPath.getTopLevelClasses()) {
@@ -46,6 +49,8 @@ public class ClassDataProvider
 				ClassInfo classInfo = InfoProvider.createClassInfoUnchecked(qualifiedClassName);
 				String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
 				TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.put(packageName, classInfo);
+				String unqualifiedName = ClassUtils.getLeafOfPath(qualifiedClassName);
+				TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.put(unqualifiedName, classInfo);
 			}
 		} catch (IOException e) {
 			classPath = null;
@@ -229,19 +234,15 @@ public class ClassDataProvider
 
 	private static Map<CompletionSuggestion, MatchRating> suggestQualifiedClassesForUnqualifiedName(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classesToIgnore) {
 		Map<CompletionSuggestion, MatchRating> ratedSuggestions = new LinkedHashMap<>();
-		for (String packageName : TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.keySet()) {
-			int classNameStartIndex = packageName == null ? 0 : packageName.length() + 1;
-			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
-			Set<ClassInfo> classInfosToConsider = Sets.difference(classInfos, classesToIgnore);
-			for (ClassInfo classInfo : classInfosToConsider) {
-				// Do not call classInfo.getUnqualifiedName() for performance reasons (we already know the start index)
-				String unqualifiedName = classInfo.getNormalizedName().substring(classNameStartIndex);
-				StringMatch stringMatch = MatchRatings.rateStringMatch(unqualifiedName, classPrefix);
-				if (stringMatch != StringMatch.NONE) {
-					CompletionSuggestion suggestion = CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false);
-					MatchRating rating = MatchRatings.create(stringMatch, TypeMatch.NONE, AccessMatch.IGNORED);
-					ratedSuggestions.put(suggestion, rating);
-				}
+		Set<ClassInfo> classInfos = TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.search(classPrefix, 100);
+		Set<ClassInfo> classInfosToConsider = Sets.difference(classInfos, classesToIgnore);
+		for (ClassInfo classInfo : classInfosToConsider) {
+			String unqualifiedName = classInfo.getUnqualifiedName();
+			StringMatch stringMatch = MatchRatings.rateStringMatch(unqualifiedName, classPrefix);
+			if (stringMatch != StringMatch.NONE) {
+				CompletionSuggestion suggestion = CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false);
+				MatchRating rating = MatchRatings.create(stringMatch, TypeMatch.NONE, AccessMatch.IGNORED);
+				ratedSuggestions.put(suggestion, rating);
 			}
 		}
 		return ratedSuggestions;
