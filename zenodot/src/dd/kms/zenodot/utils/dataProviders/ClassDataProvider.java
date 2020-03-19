@@ -33,17 +33,15 @@ public class ClassDataProvider
 		);
 	private static final List<ClassInfo>				PRIMITIVE_CLASS_INFOS					= PRIMITIVE_CLASSES_BY_NAME.keySet().stream().map(InfoProvider::createClassInfoUnchecked).collect(Collectors.toList());
 
-	private static final ClassPath						CLASS_PATH;
 	private static final SetMultimap<String, ClassInfo> TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES;
 	private static final Set<String>					PACKAGE_NAMES;
 	private static final MultiStringMatcher<ClassInfo>	TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES;
 
 	static {
-		ClassPath classPath;
 		TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES = HashMultimap.create();
 		TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES = new MultiStringMatcher<>();
 		try {
-			classPath = ClassPath.from(ClassLoader.getSystemClassLoader());
+			ClassPath classPath = ClassPath.from(ClassLoader.getSystemClassLoader());
 			for (ClassPath.ClassInfo topLevelClass : classPath.getTopLevelClasses()) {
 				String qualifiedClassName = topLevelClass.getName();
 				ClassInfo classInfo = InfoProvider.createClassInfoUnchecked(qualifiedClassName);
@@ -53,9 +51,7 @@ public class ClassDataProvider
 				TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.put(unqualifiedName, classInfo);
 			}
 		} catch (IOException e) {
-			classPath = null;
 		}
-		CLASS_PATH = classPath;
 
 		Set<String> packageNames = new LinkedHashSet<>();
 		for (String mainPackageName : TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.keySet()) {
@@ -137,9 +133,8 @@ public class ClassDataProvider
 	private static Set<ClassInfo> getTopLevelClassesInPackages(Collection<PackageInfo> packages) {
 		Set<ClassInfo> classes = new HashSet<>();
 		for (PackageInfo pack : Iterables.filter(packages, Objects::nonNull)) {
-			for (ClassPath.ClassInfo classInfo : CLASS_PATH.getTopLevelClasses(pack.getPackageName())) {
-				classes.add(InfoProvider.createClassInfoUnchecked(classInfo.getName()));
-			}
+			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(pack.getPackageName());
+			classes.addAll(classInfos);
 		}
 		return classes;
 	}
