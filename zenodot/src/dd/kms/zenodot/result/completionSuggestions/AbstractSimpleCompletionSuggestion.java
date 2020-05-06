@@ -20,7 +20,7 @@ abstract class AbstractSimpleCompletionSuggestion extends AbstractCompletionSugg
 	}
 
 	@Override
-	public final String getTextToInsert() {
+	public String getTextToInsert() {
 		return toString();
 	}
 }

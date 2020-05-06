@@ -23,6 +23,11 @@ class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion i
 	}
 
 	@Override
+	public String getTextToInsert() {
+		return qualifiedSuggestion ? classInfo.getNormalizedName() : classInfo.getUnqualifiedName();
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(classInfo.getUnqualifiedName());
 		if (qualifiedSuggestion) {
