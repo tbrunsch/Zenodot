@@ -31,7 +31,7 @@ public class WildcardTest extends CompletionTest
 				test.variables(variable1, variable2);
 				test.customHierarchyRoot(CustomHierarchy.ROOT);
 			})
-			.addTest("xY", 								"xYZ", "xyz", "xxYyZz")
+			.addTest("xY", 								"xYZ", "xxYyZz", "xyz")
 			.addTest("xYZ",								"xYZ", "xyz", "xxYyZz")
 			.addUnstableTest("ArLi",					"ArrayList")
 			.addUnstableTest("LHS",						"LinkedHashSet")

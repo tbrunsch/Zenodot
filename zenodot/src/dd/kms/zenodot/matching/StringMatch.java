@@ -31,6 +31,13 @@ public enum StringMatch
 	PREFIX,
 
 	/**
+	 * The string matches the expected string when interpreting the expected string as wildcard string (see {@link RegexUtils#createRegexForWildcardString(String)}).<br/>
+	 * <br/>
+	 * <b>Example:</b> {@code actual = "myCustomSettings"}, {@code expected = "*CS"}
+	 */
+	WILDCARD,
+
+	/**
 	 * The string starts with the expected string when ignoring case-sensitivity.<br/>
 	 * <br/>
 	 * <b>Example:</b> {@code actual = "matchbox"}, {@code expected = "Match"}
@@ -50,13 +57,6 @@ public enum StringMatch
 	 * <b>Example:</b> {@code actual = "Match"}, {@code expected = "matchbox"}
 	 */
 	INVERSE_PREFIX_IGNORE_CASE,
-
-	/**
-	 * The string matches the expected string when interpreting the expected string as wildcard string (see {@link RegexUtils#createRegexForWildcardString(String)}).<br/>
-	 * <br/>
-	 * <b>Example:</b> {@code actual = "myCustomSettings"}, {@code expected = "*CS"}
-	 */
-	WILDCARD,
 
 	/**
 	 * The string does not match the expected string in any of the currently supported senses.

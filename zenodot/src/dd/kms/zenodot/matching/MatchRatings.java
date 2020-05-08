@@ -35,14 +35,14 @@ public class MatchRatings
 				return StringMatch.FULL_IGNORE_CASE;
 			} else if (actual.startsWith(expected)) {
 				return StringMatch.PREFIX;
+			} else if (WildcardPatternGenerator.generate(expected).matcher(actual).matches()) {
+				return StringMatch.WILDCARD;
 			} else if (actualLowerCase.startsWith(expectedLowerCase)) {
 				return StringMatch.PREFIX_IGNORE_CASE;
 			} else if (expected.startsWith(actual)) {
 				return StringMatch.INVERSE_PREFIX;
 			} else if (expectedLowerCase.startsWith(actualLowerCase)) {
 				return StringMatch.INVERSE_PREFIX_IGNORE_CASE;
-			} else if (WildcardPatternGenerator.generate(expected).matcher(actual).matches()) {
-				return StringMatch.WILDCARD;
 			} else {
 				return StringMatch.NONE;
 			}
