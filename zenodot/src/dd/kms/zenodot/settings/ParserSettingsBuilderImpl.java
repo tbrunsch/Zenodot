@@ -29,6 +29,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		variables = ImmutableList.of();
 		minimumAccessLevel = AccessModifier.PUBLIC;
 		enableDynamicTyping = false;
+		considerAllClassesForClassSuggestions = false;
 		customHierarchyRoot = ParserSettingsUtils.createEmptyLeafNode();
 		logger = ParserLoggers.createNullLogger();
 	}
@@ -39,6 +40,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		variables = ImmutableList.copyOf(settings.getVariables());
 		minimumAccessLevel = settings.getMinimumAccessLevel();
 		enableDynamicTyping = settings.isEnableDynamicTyping();
+		considerAllClassesForClassSuggestions = settings.isConsiderAllClassesForClassSuggestions();
 		customHierarchyRoot = settings.getCustomHierarchyRoot();
 		logger = settings.getLogger();
 	}
