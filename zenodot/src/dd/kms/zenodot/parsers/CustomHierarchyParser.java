@@ -9,9 +9,7 @@ import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.regex.Pattern;
@@ -38,7 +36,7 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 	@Override
 	ParseOutcome parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			return CodeCompletions.none(tokenStream.getPosition());
 		}
 
 		int position = tokenStream.getPosition();
@@ -58,7 +56,7 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 		int startPosition = tokenStream.getPosition();
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
 			log(LogLevel.INFO, "suggesting custom hierarchy nodes for completion...");
-			return parserToolbox.getObjectTreeNodeDataProvider().suggestNodes("", contextNode, startPosition, startPosition);
+			return parserToolbox.getObjectTreeNodeDataProvider().completeNode("", contextNode, startPosition, startPosition);
 		}
 
 		Token nodeToken = tokenStream.readRegexUnchecked(HIERARCHY_NODE_PATTERN, 1);
@@ -72,7 +70,7 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 		// check for code completion
 		if (nodeToken.isContainsCaret()) {
 			log(LogLevel.SUCCESS, "suggesting hierarchy nodes matching '" + nodeName + "'");
-			return parserToolbox.getObjectTreeNodeDataProvider().suggestNodes(nodeName, contextNode, startPosition, endPosition);
+			return parserToolbox.getObjectTreeNodeDataProvider().completeNode(nodeName, contextNode, startPosition, endPosition);
 		}
 
 		Iterable<? extends ObjectTreeNode> childNodes = contextNode.getChildNodes();

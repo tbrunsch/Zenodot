@@ -11,9 +11,9 @@ import org.junit.runners.Parameterized.Parameters;
 import java.util.Collection;
 
 @RunWith(Parameterized.class)
-public class NoSuggestionsTest extends CompletionTest
+public class NoExceptionTest extends CompletionTest
 {
-	public NoSuggestionsTest(TestData testData) {
+	public NoExceptionTest(TestData testData) {
 		super(testData);
 	}
 

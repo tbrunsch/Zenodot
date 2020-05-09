@@ -1,16 +1,11 @@
 package dd.kms.zenodot;
 
-import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLoggers;
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
-
-import java.util.Map;
 
 abstract class AbstractParser
 {
@@ -24,7 +19,7 @@ abstract class AbstractParser
 
 	abstract ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode);
 
-	CompletionSuggestions getCompletionSuggestions(int caretPosition) throws ParseException {
+	CodeCompletions getCodeCompletions(int caretPosition) throws ParseException {
 		ParseOutcome parseOutcome = parse(ParseMode.CODE_COMPLETION, caretPosition);
 
 		switch (parseOutcome.getOutcomeType()) {
@@ -32,7 +27,7 @@ abstract class AbstractParser
 				if (parseOutcome.getPosition() != text.length()) {
 					throw new ParseException(parseOutcome.getPosition(), "Unexpected character");
 				} else if (caretPosition >= 0) {
-					return CompletionSuggestions.none(caretPosition);
+					return CodeCompletions.none(caretPosition);
 				} else {
 					throw new IllegalStateException("Internal error: No completions available");
 				}
@@ -45,8 +40,8 @@ abstract class AbstractParser
 				AmbiguousParseResult result = (AmbiguousParseResult) parseOutcome;
 				throw new ParseException(result.getPosition(), result.getMessage());
 			}
-			case COMPLETION_SUGGESTIONS: {
-				return (CompletionSuggestions) parseOutcome;
+			case CODE_COMPLETIONS: {
+				return (CodeCompletions) parseOutcome;
 			}
 			default:
 				throw new IllegalStateException("Unsupported parse outcome type: " + parseOutcome.getOutcomeType());
@@ -79,14 +74,6 @@ abstract class AbstractParser
 		}
 	}
 
-	Map<CompletionSuggestion, StringMatch> extractNameMatchRatings(Map<CompletionSuggestion, MatchRating> ratedSuggestions) {
-		ImmutableMap.Builder<CompletionSuggestion, StringMatch> builder = ImmutableMap.builder();
-		for (Map.Entry<CompletionSuggestion, MatchRating> entry : ratedSuggestions.entrySet()) {
-			builder.put(entry.getKey(), entry.getValue().getNameMatch());
-		}
-		return builder.build();
-	}
-
 	void checkParsedWholeText(ParseOutcome parseOutcome) throws ParseException {
 		if (parseOutcome.getPosition() != text.length()) {
 			throw new ParseException(parseOutcome.getPosition(), "Unexpected character");
@@ -108,7 +95,7 @@ abstract class AbstractParser
 				AmbiguousParseResult result = (AmbiguousParseResult) parseOutcome;
 				return new ParseException(result.getPosition(), result.getMessage());
 			}
-			case COMPLETION_SUGGESTIONS: {
+			case CODE_COMPLETIONS: {
 				throw new IllegalStateException("Internal error: Unexpected code completion");
 			}
 			default:

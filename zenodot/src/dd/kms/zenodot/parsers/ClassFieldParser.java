@@ -1,11 +1,7 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.wrappers.FieldInfo;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
-
-import java.util.List;
 
 /**
  * Parses subexpressions {@code <static field>} of expressions of the form {@code <class>.<static field>}.

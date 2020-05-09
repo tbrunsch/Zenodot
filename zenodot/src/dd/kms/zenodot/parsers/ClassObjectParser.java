@@ -4,7 +4,7 @@ import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
+import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -36,12 +36,12 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 		if (keywordToken.isContainsCaret()) {
 			if (CLASS_KEYWORD.startsWith(keywordToken.getValue())) {
 				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, AccessMatch.IGNORED);
-				CompletionSuggestion suggestion = CompletionSuggestionFactory.keywordSuggestion(CLASS_KEYWORD, startPosition, tokenStream.getPosition());
+				CodeCompletion codeCompletion = CodeCompletionFactory.keywordCompletion(CLASS_KEYWORD, startPosition, tokenStream.getPosition(), rating);
 				log(LogLevel.INFO, "suggesting keyword '" + CLASS_KEYWORD + "'...");
-				return CompletionSuggestions.of(suggestion, rating);
+				return CodeCompletions.of(codeCompletion);
 			} else {
-				log(LogLevel.INFO, "no completion suggestions available");
-				return CompletionSuggestions.none(tokenStream.getPosition());
+				log(LogLevel.INFO, "no code completions available");
+				return CodeCompletions.none(tokenStream.getPosition());
 			}
 		}
 

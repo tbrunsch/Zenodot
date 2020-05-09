@@ -1,7 +1,6 @@
 package dd.kms.zenodot.common;
 
 import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 import java.util.Comparator;
 
 /**

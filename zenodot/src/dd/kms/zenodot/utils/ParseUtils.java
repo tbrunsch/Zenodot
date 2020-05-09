@@ -1,8 +1,6 @@
 package dd.kms.zenodot.utils;
 
 import com.google.common.collect.Iterables;
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.parsers.AbstractParser;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
@@ -46,14 +44,14 @@ public class ParseUtils
 		}
 
 		List<AmbiguousParseResult> ambiguousResults = filterParseOutcomes(parseOutcomes, AmbiguousParseResult.class);
-		List<CompletionSuggestions> completionSuggestions = filterParseOutcomes(parseOutcomes, CompletionSuggestions.class);
+		List<CodeCompletions> codeCompletions = filterParseOutcomes(parseOutcomes, CodeCompletions.class);
 		List<ParseError> errors = filterParseOutcomes(parseOutcomes, ParseError.class);
 		List<ParseOutcome> results = new ArrayList<>();
 		results.addAll(filterParseOutcomes(parseOutcomes, ObjectParseResult.class));
 		results.addAll(filterParseOutcomes(parseOutcomes, ClassParseResult.class));
 
-		if (!completionSuggestions.isEmpty()) {
-			return mergeCompletionSuggestions(completionSuggestions);
+		if (!codeCompletions.isEmpty()) {
+			return mergeCodeCompletions(codeCompletions);
 		}
 
 		boolean ambiguous = !ambiguousResults.isEmpty() || results.size() > 1;
@@ -76,25 +74,18 @@ public class ParseUtils
 		return parseResults.stream().filter(filterClass::isInstance).map(filterClass::cast).collect(Collectors.toList());
 	}
 
-	private static ParseOutcome mergeCompletionSuggestions(List<CompletionSuggestions> completionSuggestions) {
-		Map<CompletionSuggestion, MatchRating> mergedRatedSuggestions = new LinkedHashMap<>();
+	private static ParseOutcome mergeCodeCompletions(List<CodeCompletions> allCodeCompletions) {
+		List<CodeCompletion> mergedCodeCompletions = new ArrayList<>();
 		int position = Integer.MAX_VALUE;
 		Optional<ExecutableArgumentInfo> methodArgumentInfo	= Optional.empty();
-		for (CompletionSuggestions suggestions : completionSuggestions) {
-			position = Math.min(position, suggestions.getPosition());
-			Map<CompletionSuggestion, MatchRating> ratedSuggestions = suggestions.getRatedSuggestions();
-			for (CompletionSuggestion suggestion : ratedSuggestions.keySet()) {
-				MatchRating rating = mergedRatedSuggestions.containsKey(suggestion)
-										? mergedRatedSuggestions.get(suggestion)
-										: MatchRatings.NONE;
-				MatchRating newRating = ratedSuggestions.get(suggestion);
-				mergedRatedSuggestions.put(suggestion, MatchRatings.bestOf(rating, newRating));
-			}
+		for (CodeCompletions codeCompletions : allCodeCompletions) {
+			position = Math.min(position, codeCompletions.getPosition());
 			if (!methodArgumentInfo.isPresent()) {
-				methodArgumentInfo = suggestions.getExecutableArgumentInfo();
+				methodArgumentInfo = codeCompletions.getExecutableArgumentInfo();
 			}
+			mergedCodeCompletions.addAll(codeCompletions.getCompletions());
 		}
-		return new CompletionSuggestions(position, mergedRatedSuggestions, methodArgumentInfo);
+		return new CodeCompletions(position, mergedCodeCompletions, methodArgumentInfo);
 	}
 
 	private static ParseOutcome mergeResults(List<AmbiguousParseResult> ambiguousResults, List<ParseOutcome> results) {
@@ -153,16 +144,15 @@ public class ParseUtils
 	}
 
 	/*
-	 * Completion Suggestions
+	 * Code Completions
 	 */
-	public static <T> Map<CompletionSuggestion, MatchRating> createRatedSuggestions(Iterable<? extends T> objects, Function<T, CompletionSuggestion> suggestionBuilder, Function<T, MatchRating> ratingFunc) {
-		Map<CompletionSuggestion, MatchRating> ratedSuggestions = new LinkedHashMap<>();
+	public static <T> List<CodeCompletion> createCodeCompletions(Iterable<? extends T> objects, Function<T, CodeCompletion> completionBuilder) {
+		List<CodeCompletion> codeCompletions = new ArrayList<>();
 		for (T object : objects) {
-			CompletionSuggestion suggestion = suggestionBuilder.apply(object);
-			MatchRating rating = ratingFunc.apply(object);
-			ratedSuggestions.put(suggestion, rating);
+			CodeCompletion codeCompletion = completionBuilder.apply(object);
+			codeCompletions.add(codeCompletion);
 		}
-		return ratedSuggestions;
+		return codeCompletions;
 	}
 
 	/**
@@ -170,7 +160,7 @@ public class ParseUtils
 	 * result is expected or vice versa.
 	 *
 	 * Returns a non-empty {@link ParseOutcome} if the parse result is not of the expected type. This is the
-	 * case for completion suggestions, errors, and ambiguous parse results. In this case, the parse result
+	 * case for code completions, errors, and ambiguous parse results. In this case, the parse result
 	 * shall be propagated immediately.
 	 *
 	 * In case of an error, the {@link ErrorPriority} is increased (i.e., given a higher priority) to

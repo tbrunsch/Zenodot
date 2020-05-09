@@ -10,8 +10,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RunWith(Parameterized.class)
 public class MethodTest extends CompletionTest

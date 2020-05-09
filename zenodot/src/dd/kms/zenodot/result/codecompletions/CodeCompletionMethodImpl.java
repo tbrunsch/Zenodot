@@ -1,19 +1,18 @@
-package dd.kms.zenodot.result.completionSuggestions;
+package dd.kms.zenodot.result.codecompletions;
 
-import dd.kms.zenodot.result.CompletionSuggestionType;
-import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.result.CodeCompletionType;
+import dd.kms.zenodot.utils.dataproviders.ExecutableDataProvider;
 import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-class CompletionSuggestionMethodImpl extends AbstractCompletionSuggestion implements CompletionSuggestionMethod
+class CodeCompletionMethodImpl extends AbstractCodeCompletion implements CodeCompletionMethod
 {
 	private final ExecutableInfo	methodInfo;
 
-	CompletionSuggestionMethodImpl(ExecutableInfo methodInfo, int insertionBegin, int insertionEnd) {
-		super(CompletionSuggestionType.METHOD, insertionBegin, insertionEnd);
+	CodeCompletionMethodImpl(ExecutableInfo methodInfo, int insertionBegin, int insertionEnd, MatchRating rating) {
+		super(CodeCompletionType.METHOD, insertionBegin, insertionEnd, rating);
 		this.methodInfo = methodInfo;
 	}
 
@@ -46,7 +45,7 @@ class CompletionSuggestionMethodImpl extends AbstractCompletionSuggestion implem
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		CompletionSuggestionMethodImpl that = (CompletionSuggestionMethodImpl) o;
+		CodeCompletionMethodImpl that = (CodeCompletionMethodImpl) o;
 		return Objects.equals(methodInfo, that.methodInfo);
 	}
 

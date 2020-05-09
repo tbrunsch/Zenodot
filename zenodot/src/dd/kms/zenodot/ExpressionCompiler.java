@@ -1,10 +1,9 @@
 package dd.kms.zenodot;
 
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.result.CompletionSuggestion;
+import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.result.ExecutableArgumentInfo;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,7 +20,7 @@ public interface ExpressionCompiler
 	 *
 	 * @throws ParseException
 	 */
-	Map<CompletionSuggestion, MatchRating> suggestCodeCompletion(int caretPosition) throws ParseException;
+	List<CodeCompletion> getCompletions(int caretPosition) throws ParseException;
 
 	/**
 	 * Returns optional information about the arguments of the current method or constructor {@link ExecutableArgumentInfo}.

@@ -4,13 +4,18 @@ import com.google.common.collect.Iterables;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.FieldScanner;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.AbstractCompiledParseResult;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.FieldDataProvider;
-import dd.kms.zenodot.utils.wrappers.*;
+import dd.kms.zenodot.utils.dataproviders.FieldDataProvider;
+import dd.kms.zenodot.utils.wrappers.FieldInfo;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.List;
 
@@ -51,7 +56,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 				insertionEnd = startPosition;
 			}
 			log(LogLevel.INFO, "suggesting fields for completion...");
-			return suggestFields(fieldName, context, expectation, startPosition, insertionEnd);
+			return completeField(fieldName, context, expectation, startPosition, insertionEnd);
 		}
 
 		Token fieldNameToken;
@@ -67,7 +72,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		// check for code completion
 		if (fieldNameToken.isContainsCaret()) {
 			log(LogLevel.SUCCESS, "suggesting fields matching '" + fieldName + "'");
-			return suggestFields(fieldName, context, expectation, startPosition, endPosition);
+			return completeField(fieldName, context, expectation, startPosition, endPosition);
 		}
 
 		if (tokenStream.hasMore() && tokenStream.peekCharacter() == '(') {
@@ -98,12 +103,12 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 				: ParseOutcomes.createObjectParseResult(position, matchingFieldInfo);
 	}
 
-	private CompletionSuggestions suggestFields(String expectedName, C context, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+	private CodeCompletions completeField(String expectedName, C context, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		FieldDataProvider fieldDataProvider = parserToolbox.getFieldDataProvider();
 		Object contextObject = getContextObject(context);
 		List<FieldInfo> fieldInfos = getFieldInfos(context, getFieldScanner());
 		boolean contextIsStatic = isContextStatic();
-		return fieldDataProvider.suggestFields(expectedName, contextObject, contextIsStatic, fieldInfos, expectation, insertionBegin, insertionEnd);
+		return fieldDataProvider.completeField(expectedName, contextObject, contextIsStatic, fieldInfos, expectation, insertionBegin, insertionEnd);
 	}
 
 	private FieldScanner getFieldScanner() {

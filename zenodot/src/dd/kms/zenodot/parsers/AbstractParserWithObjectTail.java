@@ -1,9 +1,9 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 abstract class AbstractParserWithObjectTail<C> extends AbstractParser<C>
 {

@@ -2,7 +2,6 @@ package dd.kms.zenodot.settings;
 
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 
 /**

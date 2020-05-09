@@ -1,14 +1,16 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.PackageParseResult;
+import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.result.ParseOutcomes;
+import dd.kms.zenodot.result.ParseResultType;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.ClassDataProvider;
+import dd.kms.zenodot.utils.dataproviders.ClassDataProvider;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.PackageInfo;
 
 import java.util.Optional;
@@ -41,7 +43,7 @@ abstract class AbstractPackageParser<C> extends AbstractParser<C>
 			}
 			log(LogLevel.INFO, "suggesting packages for completion...");
 			ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-			return classDataProvider.suggestPackages(insertionBegin, insertionEnd, packageName);
+			return classDataProvider.completePackage(insertionBegin, insertionEnd, packageName);
 		}
 
 		log(LogLevel.INFO, "parsing package");
@@ -89,7 +91,7 @@ abstract class AbstractPackageParser<C> extends AbstractParser<C>
 		packageName += packageToken.getValue();
 
 		if (packageToken.isContainsCaret()) {
-			return classDataProvider.suggestPackages(identifierStartPosition, tokenStream.getPosition(), packageName);
+			return classDataProvider.completePackage(identifierStartPosition, tokenStream.getPosition(), packageName);
 		}
 		if (!classDataProvider.packageExists(packageName)) {
 			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Unknown package '" + packageName + "'", ErrorPriority.WRONG_PARSER);

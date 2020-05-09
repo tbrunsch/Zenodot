@@ -23,13 +23,13 @@ public class CompletionTestBuilder
 		return this;
 	}
 
-	public CompletionTestBuilder addTest(String expression, String... expectedSuggestions) {
-		return addTest(new SuccessfulCompletion(expression, expectedSuggestions));
+	public CompletionTestBuilder addTest(String expression, String... expectedCompletions) {
+		return addTest(new SuccessfulCompletion(expression, expectedCompletions));
 	}
 
-	public CompletionTestBuilder addUnstableTest(String expression, String... expectedSuggestions) {
+	public CompletionTestBuilder addUnstableTest(String expression, String... expectedCompletions) {
 		if (!AbstractTest.SKIP_UNSTABLE_TESTS) {
-			addTest(expression, expectedSuggestions);
+			addTest(expression, expectedCompletions);
 		}
 		return this;
 	}

@@ -4,8 +4,7 @@ import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.Parsers;
 import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.debug.ParserLogger;
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.result.CompletionSuggestion;
+import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -14,7 +13,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -38,14 +40,14 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		testExecutor.executeTest(this);
 	}
 
-	void testCompletion(String expression, String[] expectedSuggestions) {
+	void testCompletion(String expression, String[] expectedCompletions) {
 		ParserLogger logger = prepareLogger(false, -1);
 
 		boolean repeatTestAtError = isStopAtError() || isPrintLogEntriesAtError();
-		if (!runTest(expression, !repeatTestAtError, expectedSuggestions) && repeatTestAtError) {
+		if (!runTest(expression, !repeatTestAtError, expectedCompletions) && repeatTestAtError) {
 			int numLoggedEntries = logger.getNumberOfLoggedEntries();
 			prepareLogger(isPrintLogEntriesAtError(), isStopAtError() ? numLoggedEntries : -1);
-			runTest(expression, true, expectedSuggestions);
+			runTest(expression, true, expectedCompletions);
 		}
 	}
 
@@ -54,21 +56,21 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 
 		try {
 			ObjectInfo thisInfo = InfoProvider.createObjectInfo(testInstance);
-			Parsers.createExpressionParser(expression, settings, thisInfo).suggestCodeCompletion(caretPosition);
+			Parsers.createExpressionParser(expression, settings, thisInfo).getCompletions(caretPosition);
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			assertEquals(expectedExceptionClass, e.getClass());
 		}
 	}
 
-	private boolean runTest(String expression, boolean executeAssertions, String... expectedSuggestions) {
+	private boolean runTest(String expression, boolean executeAssertions, String... expectedCompletions) {
 		ParserSettings settings = settingsBuilder.build();
 
 		int caretPosition = expression.length();
-		List<String> suggestions;
+		List<String> completions;
 		try {
 			ObjectInfo thisInfo = InfoProvider.createObjectInfo(testInstance);
-			suggestions = extractSuggestions(Parsers.createExpressionParser(expression, settings, thisInfo).suggestCodeCompletion(caretPosition));
+			completions = extractCompletions(Parsers.createExpressionParser(expression, settings, thisInfo).getCompletions(caretPosition));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				e.printStackTrace();
@@ -79,30 +81,30 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		if (executeAssertions) {
 			assertTrue(MessageFormat.format("expected completions: {1}, actual completions: {2}",
 					expression,
-					expectedSuggestions,
-					suggestions),
-					suggestions.size() >= expectedSuggestions.length);
+					expectedCompletions,
+					completions),
+					completions.size() >= expectedCompletions.length);
 		}
-		if (suggestions.size() < expectedSuggestions.length) {
+		if (completions.size() < expectedCompletions.length) {
 			return false;
 		}
 
-		for (int i = 0; i < expectedSuggestions.length; i++) {
+		for (int i = 0; i < expectedCompletions.length; i++) {
 			if (executeAssertions) {
-				assertEquals(expectedSuggestions[i], suggestions.get(i));
+				assertEquals(expectedCompletions[i], completions.get(i));
 			}
-			if (!Objects.equals(expectedSuggestions[i], suggestions.get(i))) {
+			if (!Objects.equals(expectedCompletions[i], completions.get(i))) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	private static List<String> extractSuggestions(Map<CompletionSuggestion, MatchRating> ratedSuggestions) {
-		List<CompletionSuggestion> sortedSuggestions = new ArrayList<>(ratedSuggestions.keySet());
-		sortedSuggestions.sort(Comparator.comparing(CompletionSuggestion::getType));
-		sortedSuggestions.sort(Comparator.comparing(ratedSuggestions::get));
-		return sortedSuggestions.stream()
+	private static List<String> extractCompletions(List<CodeCompletion> codeCompletions) {
+		List<CodeCompletion> sortedCompletions = new ArrayList<>(codeCompletions);
+		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getType));
+		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getRating));
+		return sortedCompletions.stream()
 				.map(completion -> completion.getTextToInsert())
 				.collect(Collectors.toList());
 	}

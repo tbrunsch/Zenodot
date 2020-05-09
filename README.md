@@ -39,7 +39,7 @@ Instead of listing all things that work as expected we will highlight positive a
 
 ## Code Completion
 
-If you only want to execute Java code (or at least something similar), then you can use [Groovy](http://www.groovy-lang.org/). It is much more powerful and probably also much more reliable. However, if you need code completion when writing a single expression, then Zenodot might be the right choice for you. Zenodot provides suggestions for packages, classes, methods, and fields. The suggestions are sorted according to a rating function that takes names and types into account.
+If you only want to execute Java code (or at least something similar), then you can use [Groovy](http://www.groovy-lang.org/). It is much more powerful and probably also much more reliable. However, if you need code completion when writing a single expression, then Zenodot might be the right choice for you. Zenodot provides code completions for packages, classes, methods, and fields. The completions are rated according to a rating function that takes names and types into account.
 
 ## Dynamic Typing
 

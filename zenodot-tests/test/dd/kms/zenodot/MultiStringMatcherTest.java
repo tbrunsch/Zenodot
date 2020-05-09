@@ -1,15 +1,14 @@
 package dd.kms.zenodot;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.google.common.collect.Sets;
 import dd.kms.zenodot.common.RegexUtils;
 import dd.kms.zenodot.common.multistringmatching.MultiStringMatcher;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Tests the {@link MultiStringMatcher}. For the test it suffices to use values

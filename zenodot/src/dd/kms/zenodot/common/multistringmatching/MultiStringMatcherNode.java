@@ -1,11 +1,10 @@
 package dd.kms.zenodot.common.multistringmatching;
 
-import java.util.*;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+
+import javax.annotation.Nullable;
+import java.util.*;
 
 class MultiStringMatcherNode<T>
 {

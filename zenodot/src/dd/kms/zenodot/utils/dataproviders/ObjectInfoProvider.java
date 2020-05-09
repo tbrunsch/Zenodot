@@ -1,4 +1,4 @@
-package dd.kms.zenodot.utils.dataProviders;
+package dd.kms.zenodot.utils.dataproviders;
 
 import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.utils.EvaluationMode;

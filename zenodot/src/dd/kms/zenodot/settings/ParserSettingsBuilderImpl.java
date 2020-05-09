@@ -19,7 +19,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	private List<Variable>		variables;
 	private AccessModifier		minimumAccessLevel;
 	private boolean				enableDynamicTyping;
-	private boolean				considerAllClassesForClassSuggestions;
+	private boolean considerAllClassesForClassCompletions;
 	private ObjectTreeNode		customHierarchyRoot;
 	private ParserLogger		logger;
 
@@ -29,7 +29,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		variables = ImmutableList.of();
 		minimumAccessLevel = AccessModifier.PUBLIC;
 		enableDynamicTyping = false;
-		considerAllClassesForClassSuggestions = false;
+		considerAllClassesForClassCompletions = false;
 		customHierarchyRoot = ParserSettingsUtils.createEmptyLeafNode();
 		logger = ParserLoggers.createNullLogger();
 	}
@@ -40,7 +40,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		variables = ImmutableList.copyOf(settings.getVariables());
 		minimumAccessLevel = settings.getMinimumAccessLevel();
 		enableDynamicTyping = settings.isEnableDynamicTyping();
-		considerAllClassesForClassSuggestions = settings.isConsiderAllClassesForClassSuggestions();
+		considerAllClassesForClassCompletions = settings.isConsiderAllClassesForClassCompletions();
 		customHierarchyRoot = settings.getCustomHierarchyRoot();
 		logger = settings.getLogger();
 	}
@@ -96,8 +96,8 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilder considerAllClassesForClassSuggestions(boolean considerAllClassesForClassSuggestions) {
-		this.considerAllClassesForClassSuggestions = considerAllClassesForClassSuggestions;
+	public ParserSettingsBuilder considerAllClassesForClassCompletions(boolean considerAllClassesForClassCompletions) {
+		this.considerAllClassesForClassCompletions = considerAllClassesForClassCompletions;
 		return this;
 	}
 
@@ -114,6 +114,6 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(importedClasses, importedPackages, variables, minimumAccessLevel, enableDynamicTyping, considerAllClassesForClassSuggestions, customHierarchyRoot, logger);
+		return new ParserSettingsImpl(importedClasses, importedPackages, variables, minimumAccessLevel, enableDynamicTyping, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
 	}
 }

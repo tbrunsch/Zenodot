@@ -3,7 +3,7 @@ package dd.kms.zenodot.parsers;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
+import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -91,8 +91,8 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 			return ParseOutcomes.createParseError(startPosition, "Expected a string literal", ErrorPriority.RIGHT_PARSER);
 		}
 		if (stringLiteralToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no completion suggestions available for string literals");
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			log(LogLevel.INFO, "no code completions available for string literals");
+			return CodeCompletions.none(tokenStream.getPosition());
 		}
 		String stringLiteralValue = stringLiteralToken.getValue();
 		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteralValue + "'");
@@ -111,8 +111,8 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 			return ParseOutcomes.createParseError(startPosition, "Expected a character literal", ErrorPriority.RIGHT_PARSER);
 		}
 		if (characterLiteralToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no completion suggestions available for character literals");
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			log(LogLevel.INFO, "no code completions available for character literals");
+			return CodeCompletions.none(tokenStream.getPosition());
 		}
 		String characterLiteralValue = characterLiteralToken.getValue();
 		if (characterLiteralValue.length() != 1) {
@@ -134,13 +134,13 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		if (literalToken.isContainsCaret()) {
 			if (literalName.startsWith(literalToken.getValue())) {
 				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, AccessMatch.IGNORED);
-				CompletionSuggestion suggestion = CompletionSuggestionFactory.keywordSuggestion(literalName, startPosition, tokenStream.getPosition());
+				CodeCompletion codeCompletion = CodeCompletionFactory.keywordCompletion(literalName, startPosition, tokenStream.getPosition(), rating);
 				log(LogLevel.INFO, "suggesting literal '" + literalName + "'...");
-				return CompletionSuggestions.of(suggestion, rating);
+				return CodeCompletions.of(codeCompletion);
 
 			} else {
-				log(LogLevel.INFO, "no completion suggestions available");
-				return CompletionSuggestions.none(tokenStream.getPosition());
+				log(LogLevel.INFO, "no code completions available");
+				return CodeCompletions.none(tokenStream.getPosition());
 			}
 		}
 		if (!literalToken.getValue().equals(literalName)) {
@@ -211,8 +211,8 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 				return ParseOutcomes.createParseError(startPosition, wrongTypeError, ErrorPriority.WRONG_PARSER);
 			}
 			if (token.isContainsCaret()) {
-				log(LogLevel.INFO, "no completion suggestions available");
-				return CompletionSuggestions.none(tokenStream.getPosition());
+				log(LogLevel.INFO, "no code completions available");
+				return CodeCompletions.none(tokenStream.getPosition());
 			}
 
 			T literalValue;

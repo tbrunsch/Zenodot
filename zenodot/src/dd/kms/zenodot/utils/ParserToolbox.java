@@ -2,7 +2,7 @@ package dd.kms.zenodot.utils;
 
 import dd.kms.zenodot.parsers.*;
 import dd.kms.zenodot.settings.ParserSettings;
-import dd.kms.zenodot.utils.dataProviders.*;
+import dd.kms.zenodot.utils.dataproviders.*;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.PackageInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;

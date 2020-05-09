@@ -1,9 +1,9 @@
 package dd.kms.zenodot.completionTests;
 
+import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
-import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.utils.ClassUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -77,7 +77,7 @@ public class ClassTest extends CompletionTest
 			.addUnstableTest("Math.P",	"PI", "pow(, )");
 
 		testBuilder
-			.configurator(test -> test.enableConsideringAllClassesForClassSuggestions())
+			.configurator(test -> test.enableConsideringAllClassesForClassCompletions())
 			.addTest("MyC",		"dd.kms.zenodot.classesForTest.dummies.MyClass")
 			.addTest("YADC",	"dd.kms.zenodot.classesForTest.dummies.YetAnotherDummyClass")
 			.addTest("DummCl",	"dd.kms.zenodot.classesForTest.DummyClass");

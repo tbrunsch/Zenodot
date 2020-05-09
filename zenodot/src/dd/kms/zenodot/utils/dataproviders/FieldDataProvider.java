@@ -1,13 +1,13 @@
-package dd.kms.zenodot.utils.dataProviders;
+package dd.kms.zenodot.utils.dataproviders;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.result.CompletionSuggestion;
-import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
+import dd.kms.zenodot.result.CodeCompletion;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
@@ -15,8 +15,6 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 /**
  * Utility class for providing information about fields
@@ -29,19 +27,18 @@ public class FieldDataProvider
 		this.parserToolbox = parserToolbox;
 	}
 
-	public CompletionSuggestions suggestFields(String expectedName, Object contextObject, boolean contextIsStatic, List<FieldInfo> fieldInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
-		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
+	public CodeCompletions completeField(String expectedName, Object contextObject, boolean contextIsStatic, List<FieldInfo> fieldInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 			fieldInfos,
-			fieldInfo -> CompletionSuggestionFactory.fieldSuggestion(fieldInfo, insertionBegin, insertionEnd),
-			rateFieldFunc(contextObject, contextIsStatic, expectedName, expectation)
+			fieldInfo -> CodeCompletionFactory.fieldCompletion(fieldInfo, insertionBegin, insertionEnd, rateField(fieldInfo, contextObject, contextIsStatic, expectedName, expectation))
 		);
 		ParserLogger logger = parserToolbox.getSettings().getLogger();
-		for (CompletionSuggestion suggestion : ratedSuggestions.keySet()) {
-			String suggestionText = suggestion.toString();
-			MatchRating rating = ratedSuggestions.get(suggestion);
-			logger.log(ParserLoggers.createLogEntry(LogLevel.INFO, "FieldDataProvider", suggestionText + ": " + rating));
+		for (CodeCompletion codeCompletion : codeCompletions) {
+			String completionText = codeCompletion.toString();
+			MatchRating rating = codeCompletion.getRating();
+			logger.log(ParserLoggers.createLogEntry(LogLevel.INFO, "FieldDataProvider", completionText + ": " + rating));
 		}
-		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
+		return new CodeCompletions(insertionBegin, codeCompletions);
 	}
 
 	private StringMatch rateFieldByName(FieldInfo fieldInfo, String expectedName) {
@@ -65,7 +62,7 @@ public class FieldDataProvider
 		return fieldInfo.isStatic() && !contextIsStatic ? AccessMatch.STATIC_ACCESS_VIA_INSTANCE : AccessMatch.FULL;
 	}
 
-	private Function<FieldInfo, MatchRating> rateFieldFunc(Object contextObject, boolean contextIsStatic, String expectedName, ParseExpectation expectation) {
-		return fieldInfo -> MatchRatings.create(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), rateFieldByAccess(fieldInfo, contextIsStatic));
+	private MatchRating rateField(FieldInfo fieldInfo, Object contextObject, boolean contextIsStatic, String expectedName, ParseExpectation expectation) {
+		return MatchRatings.create(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), rateFieldByAccess(fieldInfo, contextIsStatic));
 	}
 }

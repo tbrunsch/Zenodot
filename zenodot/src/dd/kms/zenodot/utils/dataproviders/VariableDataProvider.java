@@ -1,20 +1,17 @@
-package dd.kms.zenodot.utils.dataProviders;
+package dd.kms.zenodot.utils.dataproviders;
 
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.result.CompletionSuggestion;
-import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
+import dd.kms.zenodot.result.CodeCompletion;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.utils.ParseUtils;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -30,14 +27,13 @@ public class VariableDataProvider
 		this.objectInfoProvider = objectInfoProvider;
 	}
 
-	public CompletionSuggestions suggestVariables(String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+	public CodeCompletions completeVariable(String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
 		List<Variable> sortedVariables = variables.stream().sorted(Comparator.comparing(Variable::getName)).collect(Collectors.toList());
-		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 			sortedVariables,
-			variable -> CompletionSuggestionFactory.variableSuggestion(variable, insertionBegin, insertionEnd),
-			rateVariableFunc(expectedName, expectation)
+			variable -> CodeCompletionFactory.variableCompletion(variable, insertionBegin, insertionEnd, rateVariable(variable, expectedName, expectation))
 		);
-		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
+		return new CodeCompletions(insertionBegin, codeCompletions);
 	}
 
 	private StringMatch rateVariableByName(Variable variable, String expectedName) {
@@ -53,7 +49,7 @@ public class VariableDataProvider
 					: allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(valueType, allowedType)).min(TypeMatch::compareTo).orElse(TypeMatch.NONE);
 	}
 
-	private Function<Variable, MatchRating> rateVariableFunc(String variableName, ParseExpectation expectation) {
-		return variable -> MatchRatings.create(rateVariableByName(variable, variableName), rateVariableByTypes(variable, expectation), AccessMatch.IGNORED);
+	private MatchRating rateVariable(Variable variable, String expectedName, ParseExpectation expectation) {
+		return MatchRatings.create(rateVariableByName(variable, expectedName), rateVariableByTypes(variable, expectation), AccessMatch.IGNORED);
 	}
 }

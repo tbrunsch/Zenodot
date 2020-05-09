@@ -11,11 +11,10 @@ import dd.kms.zenodot.tokenizer.Associativity;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider;
+import dd.kms.zenodot.utils.dataproviders.OperatorResultProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -25,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static dd.kms.zenodot.utils.dataProviders.OperatorResultProvider.OperatorException;
+import static dd.kms.zenodot.utils.dataproviders.OperatorResultProvider.OperatorException;
 
 /**
  * Parses arbitrary Java expressions including binary operators by using the
@@ -98,8 +97,8 @@ public class ExpressionParser extends AbstractParser<ObjectInfo>
 			log(LogLevel.SUCCESS, "detected binary operator '" + operatorToken.getValue() + "' at " + tokenStream);
 
 			if (operatorToken.isContainsCaret()) {
-				log(LogLevel.INFO, "no completion suggestions available");
-				return CompletionSuggestions.none(tokenStream.getPosition());
+				log(LogLevel.INFO, "no code completions available");
+				return CodeCompletions.none(tokenStream.getPosition());
 			}
 
 			BinaryOperator operator = BinaryOperator.getValue(operatorToken.getValue());

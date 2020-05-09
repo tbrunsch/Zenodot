@@ -1,16 +1,17 @@
-package dd.kms.zenodot.result.completionSuggestions;
+package dd.kms.zenodot.result.codecompletions;
 
-import dd.kms.zenodot.result.CompletionSuggestionType;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.result.CodeCompletionType;
 import dd.kms.zenodot.settings.Variable;
 
 import java.util.Objects;
 
-class CompletionSuggestionVariableImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionVariable
+class CodeCompletionVariableImpl extends AbstractSimpleCodeCompletion implements CodeCompletionVariable
 {
 	private final Variable	variable;
 
-	CompletionSuggestionVariableImpl(Variable variable, int insertionBegin, int insertionEnd) {
-		super(CompletionSuggestionType.VARIABLE, insertionBegin, insertionEnd);
+	CodeCompletionVariableImpl(Variable variable, int insertionBegin, int insertionEnd, MatchRating rating) {
+		super(CodeCompletionType.VARIABLE, insertionBegin, insertionEnd, rating);
 		this.variable = variable;
 	}
 
@@ -29,7 +30,7 @@ class CompletionSuggestionVariableImpl extends AbstractSimpleCompletionSuggestio
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		CompletionSuggestionVariableImpl that = (CompletionSuggestionVariableImpl) o;
+		CodeCompletionVariableImpl that = (CodeCompletionVariableImpl) o;
 		return Objects.equals(variable, that.variable);
 	}
 

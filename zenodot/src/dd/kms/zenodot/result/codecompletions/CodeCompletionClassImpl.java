@@ -1,20 +1,21 @@
-package dd.kms.zenodot.result.completionSuggestions;
+package dd.kms.zenodot.result.codecompletions;
 
-import dd.kms.zenodot.result.CompletionSuggestionType;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.result.CodeCompletionType;
 import dd.kms.zenodot.utils.ClassUtils;
 import dd.kms.zenodot.utils.wrappers.ClassInfo;
 
 import java.util.Objects;
 
-class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionClass
+class CodeCompletionClassImpl extends AbstractSimpleCodeCompletion implements CodeCompletionClass
 {
 	private final ClassInfo classInfo;
-	private final boolean	qualifiedSuggestion;
+	private final boolean	qualifiedCompletion;
 
-	CompletionSuggestionClassImpl(ClassInfo classInfo, int insertionBegin, int insertionEnd, boolean qualifiedSuggestion) {
-		super(CompletionSuggestionType.CLASS, insertionBegin, insertionEnd);
+	CodeCompletionClassImpl(ClassInfo classInfo, int insertionBegin, int insertionEnd, boolean qualifiedCompletion, MatchRating rating) {
+		super(CodeCompletionType.CLASS, insertionBegin, insertionEnd, rating);
 		this.classInfo = classInfo;
-		this.qualifiedSuggestion = qualifiedSuggestion;
+		this.qualifiedCompletion = qualifiedCompletion;
 	}
 
 	@Override
@@ -24,13 +25,13 @@ class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion i
 
 	@Override
 	public String getTextToInsert() {
-		return qualifiedSuggestion ? classInfo.getNormalizedName() : classInfo.getUnqualifiedName();
+		return qualifiedCompletion ? classInfo.getNormalizedName() : classInfo.getUnqualifiedName();
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(classInfo.getUnqualifiedName());
-		if (qualifiedSuggestion) {
+		if (qualifiedCompletion) {
 			String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
 			if (packageName != null) {
 				builder.append(" (").append(packageName).append(")");
@@ -44,7 +45,7 @@ class CompletionSuggestionClassImpl extends AbstractSimpleCompletionSuggestion i
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		CompletionSuggestionClassImpl that = (CompletionSuggestionClassImpl) o;
+		CodeCompletionClassImpl that = (CodeCompletionClassImpl) o;
 		return Objects.equals(classInfo, that.classInfo);
 	}
 

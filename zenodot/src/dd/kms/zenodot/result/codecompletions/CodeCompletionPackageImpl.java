@@ -1,15 +1,16 @@
-package dd.kms.zenodot.result.completionSuggestions;
+package dd.kms.zenodot.result.codecompletions;
 
-import dd.kms.zenodot.result.CompletionSuggestionType;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.result.CodeCompletionType;
 
 import java.util.Objects;
 
-class CompletionSuggestionPackageImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionPackage
+class CodeCompletionPackageImpl extends AbstractSimpleCodeCompletion implements CodeCompletionPackage
 {
 	private final String	packageName;
 
-	CompletionSuggestionPackageImpl(String packageName, int insertionBegin, int insertionEnd) {
-		super(CompletionSuggestionType.PACKAGE, insertionBegin, insertionEnd);
+	CodeCompletionPackageImpl(String packageName, int insertionBegin, int insertionEnd, MatchRating rating) {
+		super(CodeCompletionType.PACKAGE, insertionBegin, insertionEnd, rating);
 		this.packageName = packageName;
 	}
 
@@ -29,7 +30,7 @@ class CompletionSuggestionPackageImpl extends AbstractSimpleCompletionSuggestion
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		CompletionSuggestionPackageImpl that = (CompletionSuggestionPackageImpl) o;
+		CodeCompletionPackageImpl that = (CodeCompletionPackageImpl) o;
 		return Objects.equals(packageName, that.packageName);
 	}
 

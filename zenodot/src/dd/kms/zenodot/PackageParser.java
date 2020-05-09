@@ -1,11 +1,9 @@
 package dd.kms.zenodot;
 
-import dd.kms.zenodot.matching.StringMatch;
-import dd.kms.zenodot.result.CompletionSuggestion;
-import dd.kms.zenodot.utils.wrappers.ClassInfo;
+import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.utils.wrappers.PackageInfo;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * Parser for package names
@@ -17,7 +15,7 @@ public interface PackageParser
 	 *
 	 * @throws ParseException
 	 */
-	Map<CompletionSuggestion, StringMatch> suggestCodeCompletion(int caretPosition) throws ParseException;
+	List<CodeCompletion> getCompletions(int caretPosition) throws ParseException;
 
 	/**
 	 * Evaluates the specified package name. The result should be the same as {@link Package#getPackage(String)},

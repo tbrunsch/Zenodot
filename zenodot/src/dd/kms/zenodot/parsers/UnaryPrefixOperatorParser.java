@@ -7,11 +7,10 @@ import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider;
-import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider.OperatorException;
+import dd.kms.zenodot.utils.dataproviders.OperatorResultProvider;
+import dd.kms.zenodot.utils.dataproviders.OperatorResultProvider.OperatorException;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.Map;
@@ -52,8 +51,8 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo>
 			log(LogLevel.ERROR, "expected unary operator");
 			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Expression does not start with an unary operator", ErrorPriority.WRONG_PARSER);
 		} else if (operatorToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no completion suggestions available");
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			log(LogLevel.INFO, "no code completions available");
+			return CodeCompletions.none(tokenStream.getPosition());
 		}
 		UnaryOperator operator = UnaryOperator.getValue(operatorToken.getValue());
 

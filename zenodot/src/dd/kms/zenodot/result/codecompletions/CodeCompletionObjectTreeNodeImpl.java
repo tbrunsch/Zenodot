@@ -1,16 +1,17 @@
-package dd.kms.zenodot.result.completionSuggestions;
+package dd.kms.zenodot.result.codecompletions;
 
-import dd.kms.zenodot.result.CompletionSuggestionType;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.result.CodeCompletionType;
 import dd.kms.zenodot.settings.ObjectTreeNode;
 
 import java.util.Objects;
 
-class CompletionSuggestionObjectTreeNodeImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionObjectTreeNode
+class CodeCompletionObjectTreeNodeImpl extends AbstractSimpleCodeCompletion implements CodeCompletionObjectTreeNode
 {
 	private final ObjectTreeNode	node;
 
-	CompletionSuggestionObjectTreeNodeImpl(ObjectTreeNode node, int insertionBegin, int insertionEnd) {
-		super(CompletionSuggestionType.OBJECT_TREE_NODE, insertionBegin, insertionEnd);
+	CodeCompletionObjectTreeNodeImpl(ObjectTreeNode node, int insertionBegin, int insertionEnd, MatchRating rating) {
+		super(CodeCompletionType.OBJECT_TREE_NODE, insertionBegin, insertionEnd, rating);
 		this.node = node;
 	}
 
@@ -29,7 +30,7 @@ class CompletionSuggestionObjectTreeNodeImpl extends AbstractSimpleCompletionSug
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		CompletionSuggestionObjectTreeNodeImpl that = (CompletionSuggestionObjectTreeNodeImpl) o;
+		CodeCompletionObjectTreeNodeImpl that = (CodeCompletionObjectTreeNodeImpl) o;
 		return Objects.equals(node, that.node);
 	}
 

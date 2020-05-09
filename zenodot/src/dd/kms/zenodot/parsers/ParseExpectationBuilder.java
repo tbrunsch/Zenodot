@@ -1,7 +1,6 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.ImmutableList;
-import dd.kms.zenodot.result.ParseOutcomeType;
 import dd.kms.zenodot.result.ParseResultType;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 

@@ -8,8 +8,7 @@ import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.ClassDataProvider;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.dataproviders.ClassDataProvider;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.Arrays;
@@ -50,7 +49,7 @@ public class InnerClassParser extends AbstractParser<TypeInfo>
 		int startPosition = tokenStream.getPosition();
 
 		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
-			return classDataProvider.suggestInnerClasses("", contextClass, startPosition, startPosition);
+			return classDataProvider.completeInnerClass("", contextClass, startPosition, startPosition);
 		}
 
 		Token identifierToken;
@@ -63,7 +62,7 @@ public class InnerClassParser extends AbstractParser<TypeInfo>
 		String innerClassName = identifierToken.getValue();
 
 		if (identifierToken.isContainsCaret()) {
-			return classDataProvider.suggestInnerClasses(innerClassName, contextClass, startPosition, tokenStream.getPosition());
+			return classDataProvider.completeInnerClass(innerClassName, contextClass, startPosition, tokenStream.getPosition());
 		}
 
 		Optional<Class<?>> firstClassMatch = Arrays.stream(contextClass.getDeclaredClasses())

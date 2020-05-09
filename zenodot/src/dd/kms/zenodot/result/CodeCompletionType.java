@@ -1,9 +1,9 @@
 package dd.kms.zenodot.result;
 
 /**
- * Ordered by priority for suggestions
+ * Ordered by priority of code completions
  */
-public enum CompletionSuggestionType
+public enum CodeCompletionType
 {
 	VARIABLE		("Variable"),
 	OBJECT_TREE_NODE("Object Tree Node"),
@@ -15,7 +15,7 @@ public enum CompletionSuggestionType
 
 	private final String text;
 
-	CompletionSuggestionType(String text) {
+	CodeCompletionType(String text) {
 		this.text = text;
 	}
 

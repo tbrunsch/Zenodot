@@ -1,11 +1,13 @@
 package dd.kms.zenodot.common;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.debug.ParserConsoleLogger;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
-import dd.kms.zenodot.settings.*;
+import dd.kms.zenodot.settings.ObjectTreeNode;
+import dd.kms.zenodot.settings.ParserSettingsBuilder;
+import dd.kms.zenodot.settings.ParserSettingsUtils;
+import dd.kms.zenodot.settings.Variable;
 import org.junit.Assert;
 
 import java.util.Arrays;

@@ -6,7 +6,6 @@ import dd.kms.zenodot.utils.wrappers.ClassInfo;
 import dd.kms.zenodot.utils.wrappers.PackageInfo;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Builder for {@link ParserSettings}<br/>
@@ -59,13 +58,13 @@ public interface ParserSettingsBuilder
 
 	/**
 	 * By default, when typing an unqualified class name, only classes you have imported or whose package is
-	 * imported will be considered for suggestions. With enabling this feature, also classes from other
+	 * imported will be considered as code completions. With enabling this feature, also classes from other
 	 * packages will be suggested, but fully qualified.<br/>
 	 * <br/>
 	 * Consider the partial class name "Lis". If you have not imported "java.util", then you will get the
-	 * suggestion "java.util.List" if this feature is enabled. Otherwise, that class will not be suggested.
+	 * code completion "java.util.List" if this feature is enabled. Otherwise, that class will not be suggested.
 	 */
-	ParserSettingsBuilder considerAllClassesForClassSuggestions(boolean considerAllClassesForClassSuggestions);
+	ParserSettingsBuilder considerAllClassesForClassCompletions(boolean considerAllClassesForClassCompletions);
 
 	/**
 	 * Call this method if you want to inject a custom hierarchy into the parser that is not represented

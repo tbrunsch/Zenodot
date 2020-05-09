@@ -5,7 +5,6 @@ import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -31,8 +30,8 @@ public class CastParser extends AbstractParser<ObjectInfo>
 			return ParseOutcomes.createParseError(position, "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
 		}
 		if (characterToken.isContainsCaret()) {
-			log(LogLevel.INFO, "potential cast operator; no completion suggestions available");
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			log(LogLevel.INFO, "potential cast operator; no code completion available");
+			return CodeCompletions.none(tokenStream.getPosition());
 		}
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
@@ -60,8 +59,8 @@ public class CastParser extends AbstractParser<ObjectInfo>
 
 		if (characterToken.isContainsCaret()) {
 			// nothing we can suggest after ')'
-			log(LogLevel.INFO, "no completion suggestions available for position " + tokenStream);
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			log(LogLevel.INFO, "no code completions available for position " + tokenStream);
+			return CodeCompletions.none(tokenStream.getPosition());
 		}
 
 		return parseAndCast(tokenStream, targetType);

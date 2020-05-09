@@ -1,8 +1,8 @@
 package dd.kms.zenodot.result;
 
 import dd.kms.zenodot.utils.EvaluationMode;
-import dd.kms.zenodot.utils.dataProviders.ObjectInfoProvider;
-import dd.kms.zenodot.utils.dataProviders.OperatorResultProvider;
+import dd.kms.zenodot.utils.dataproviders.ObjectInfoProvider;
+import dd.kms.zenodot.utils.dataproviders.OperatorResultProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 public abstract class AbstractCompiledParseResult extends ObjectParseResultImpl implements CompiledObjectParseResult

@@ -1,6 +1,8 @@
 package dd.kms.zenodot.common.multistringmatching;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This class is intended to be used for searching in a fixed large list of strings

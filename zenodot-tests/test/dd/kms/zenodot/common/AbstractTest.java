@@ -1,15 +1,13 @@
 package dd.kms.zenodot.common;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.debug.ParserConsoleLogger;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
-import dd.kms.zenodot.settings.*;
-import dd.kms.zenodot.utils.ClassUtils;
-import dd.kms.zenodot.utils.wrappers.ClassInfo;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
-import dd.kms.zenodot.utils.wrappers.PackageInfo;
+import dd.kms.zenodot.settings.ObjectTreeNode;
+import dd.kms.zenodot.settings.ParserSettingsBuilder;
+import dd.kms.zenodot.settings.ParserSettingsUtils;
+import dd.kms.zenodot.settings.Variable;
 import org.junit.Assert;
 
 import java.util.Arrays;
@@ -56,8 +54,8 @@ public class AbstractTest<T extends AbstractTest>
 		settingsBuilder.enableDynamicTyping(true);
 	}
 
-	public void enableConsideringAllClassesForClassSuggestions() {
-		settingsBuilder.considerAllClassesForClassSuggestions(true);
+	public void enableConsideringAllClassesForClassCompletions() {
+		settingsBuilder.considerAllClassesForClassCompletions(true);
 	}
 
 	public void stopAtError() {

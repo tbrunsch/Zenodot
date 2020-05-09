@@ -7,10 +7,9 @@ import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.ExecutableDataProvider;
+import dd.kms.zenodot.utils.dataproviders.ExecutableDataProvider;
 import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -46,8 +45,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			return ParseOutcomes.createParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
 		}
 		if (operatorToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no completion suggestions available");
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			log(LogLevel.INFO, "no code completions available");
+			return CodeCompletions.none(tokenStream.getPosition());
 		}
 		if (!operatorToken.getValue().equals("new")) {
 			log(LogLevel.ERROR, "'new' operator expected");
@@ -100,19 +99,19 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			ParseOutcomeType lastArgumentParseOutcomeType = lastArgumentParseOutcome.getOutcomeType();
 			log(LogLevel.INFO, "parse outcome: " + lastArgumentParseOutcomeType);
 
-			if (lastArgumentParseOutcome.getOutcomeType() == ParseOutcomeType.COMPLETION_SUGGESTIONS) {
-				CompletionSuggestions argumentSuggestions = (CompletionSuggestions) lastArgumentParseOutcome;
+			if (lastArgumentParseOutcome.getOutcomeType() == ParseOutcomeType.CODE_COMPLETIONS) {
+				CodeCompletions argumentCompletions = (CodeCompletions) lastArgumentParseOutcome;
 				// add argument information
-				if (argumentSuggestions.getExecutableArgumentInfo().isPresent()) {
+				if (argumentCompletions.getExecutableArgumentInfo().isPresent()) {
 					// information has already been added for an executable used in a subexpression, which is more relevant
-					return argumentSuggestions;
+					return argumentCompletions;
 				}
 				List<ObjectInfo> previousArgumentInfos = argumentParseOutcomes.subList(0, lastArgumentIndex).stream()
 					.map(ObjectParseResult.class::cast)
 					.map(ObjectParseResult::getObjectInfo)
 					.collect(Collectors.toList());
 				ExecutableArgumentInfo executableArgumentInfo = executableDataProvider.createExecutableArgumentInfo(constructorInfos, previousArgumentInfos);
-				return new CompletionSuggestions(argumentSuggestions.getPosition(), argumentSuggestions.getRatedSuggestions(), Optional.of(executableArgumentInfo));
+				return new CodeCompletions(argumentCompletions.getPosition(), argumentCompletions.getCompletions(), Optional.of(executableArgumentInfo));
 			}
 
 			Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(lastArgumentParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
@@ -240,8 +239,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		if (characterToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no completion suggestions available at " + tokenStream);
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			log(LogLevel.INFO, "no code completions available at " + tokenStream);
+			return CodeCompletions.none(tokenStream.getPosition());
 		}
 
 		// propagate parse outcome with corrected position (includes ']')
@@ -302,7 +301,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			if (characterToken.getValue().charAt(0) == '}') {
 				if (characterToken.isContainsCaret()) {
 					// nothing we can suggest after '}'
-					elements.add(CompletionSuggestions.none(tokenStream.getPosition()));
+					elements.add(CodeCompletions.none(tokenStream.getPosition()));
 				}
 				return elements;
 			}

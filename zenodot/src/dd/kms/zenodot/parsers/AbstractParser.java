@@ -3,8 +3,7 @@ package dd.kms.zenodot.parsers;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
-import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.ParseError.ErrorPriority;
+import dd.kms.zenodot.result.ParseOutcome;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -114,7 +113,7 @@ public abstract class AbstractParser<C>
 	 *          a String expression is expected. The expression {@code Double.parseDouble(0 + "1")} is
 	 *          perfectly valid. Technically, the {@link ExpressionParser} parses the method argument and ultimately
 	 *          verifies that the argument is a String. However, for parsing {@code 0} and {@code "1"} it uses the
-	 *          {@link SimpleExpressionParser}. To allow them to return good completion suggestions,
+	 *          {@link SimpleExpressionParser}. To allow them to return good code completions,
 	 *          this parser is told to expect a String expression. However, parsing {@code 0} must not fail
 	 *          due to this expectation.
 	 */

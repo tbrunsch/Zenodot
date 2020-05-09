@@ -6,9 +6,9 @@ package dd.kms.zenodot.result;
 public enum ParseOutcomeType
 {
 	/**
-	 * Outcome type of {@link CompletionSuggestions}. The result contains completion suggestions.
+	 * Outcome type of {@link CodeCompletions}. The result contains code completions.
 	 */
-	COMPLETION_SUGGESTIONS,
+	CODE_COMPLETIONS,
 
 	/**
 	 * Outcome type of {@link ParseResult}.

@@ -9,9 +9,8 @@ import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ClassUtils;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.dataProviders.ClassDataProvider;
+import dd.kms.zenodot.utils.dataproviders.ClassDataProvider;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.PackageInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
@@ -44,7 +43,7 @@ public class QualifiedClassParser extends AbstractParser<PackageInfo>
 			}
 			log(LogLevel.INFO, "suggesting classes for completion...");
 			ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-			return classDataProvider.suggestQualifiedClasses(insertionBegin, insertionEnd, className);
+			return classDataProvider.completeQualifiedClasses(insertionBegin, insertionEnd, className);
 		}
 
 		log(LogLevel.INFO, "parsing class");
@@ -77,7 +76,7 @@ public class QualifiedClassParser extends AbstractParser<PackageInfo>
 		}
 		String className = contextInfo.getPackageName() + "." + classToken.getValue();
 		if (classToken.isContainsCaret()) {
-			return classDataProvider.suggestQualifiedClasses(identifierStartPosition, tokenStream.getPosition(), className);
+			return classDataProvider.completeQualifiedClasses(identifierStartPosition, tokenStream.getPosition(), className);
 		}
 
 		Class<?> clazz = ClassUtils.getClassUnchecked(className);

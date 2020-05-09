@@ -1,15 +1,16 @@
-package dd.kms.zenodot.result.completionSuggestions;
+package dd.kms.zenodot.result.codecompletions;
 
-import dd.kms.zenodot.result.CompletionSuggestionType;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.result.CodeCompletionType;
 
 import java.util.Objects;
 
-class CompletionSuggestionKeywordImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionKeyword
+class CodeCompletionKeywordImpl extends AbstractSimpleCodeCompletion implements CodeCompletionKeyword
 {
 	private final String	keyword;
 
-	CompletionSuggestionKeywordImpl(String keyword, int insertionBegin, int insertionEnd) {
-		super(CompletionSuggestionType.KEYWORD, insertionBegin, insertionEnd);
+	CodeCompletionKeywordImpl(String keyword, int insertionBegin, int insertionEnd, MatchRating rating) {
+		super(CodeCompletionType.KEYWORD, insertionBegin, insertionEnd, rating);
 		this.keyword = keyword;
 	}
 
@@ -28,7 +29,7 @@ class CompletionSuggestionKeywordImpl extends AbstractSimpleCompletionSuggestion
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		CompletionSuggestionKeywordImpl that = (CompletionSuggestionKeywordImpl) o;
+		CodeCompletionKeywordImpl that = (CodeCompletionKeywordImpl) o;
 		return Objects.equals(keyword, that.keyword);
 	}
 

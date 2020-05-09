@@ -1,4 +1,4 @@
-package dd.kms.zenodot.utils.dataProviders;
+package dd.kms.zenodot.utils.dataproviders;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;

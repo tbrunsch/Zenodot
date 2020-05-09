@@ -5,7 +5,6 @@ import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -48,8 +47,8 @@ public class ParenthesizedExpressionParser extends AbstractParserWithObjectTail<
 			return ParseOutcomes.createParseError(position, "Expected closing parenthesis ')'", ErrorPriority.RIGHT_PARSER);
 		}
 		if (characterToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no completion suggestions available at " + tokenStream);
-			return CompletionSuggestions.none(tokenStream.getPosition());
+			log(LogLevel.INFO, "no code completions available at " + tokenStream);
+			return CodeCompletions.none(tokenStream.getPosition());
 		}
 		position = tokenStream.getPosition();
 		return isCompile()

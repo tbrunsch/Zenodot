@@ -14,17 +14,17 @@ class ParserSettingsImpl implements ParserSettings
 	private final VariablePool 		variablePool;
 	private final AccessModifier	minimumAccessLevel;
 	private final boolean			enableDynamicTyping;
-	private final boolean			considerAllClassesForClassSuggestions;
+	private final boolean considerAllClassesForClassCompletions;
 	private final ObjectTreeNode	customHierarchyRoot;
 
 	private final ParserLogger logger;
 
-	ParserSettingsImpl(Set<ClassInfo> importedClasses, Set<PackageInfo> importedPackages, List<Variable> variables, AccessModifier minimumAccessLevel, boolean enableDynamicTyping, boolean considerAllClassesForClassSuggestions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
+	ParserSettingsImpl(Set<ClassInfo> importedClasses, Set<PackageInfo> importedPackages, List<Variable> variables, AccessModifier minimumAccessLevel, boolean enableDynamicTyping, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
 		this.variablePool = new VariablePool(variables);
 		this.minimumAccessLevel = minimumAccessLevel;
 		this.enableDynamicTyping = enableDynamicTyping;
-		this.considerAllClassesForClassSuggestions = considerAllClassesForClassSuggestions;
+		this.considerAllClassesForClassCompletions = considerAllClassesForClassCompletions;
 		this.customHierarchyRoot = customHierarchyRoot;
 		this.logger = logger;
 	}
@@ -50,8 +50,8 @@ class ParserSettingsImpl implements ParserSettings
 	}
 
 	@Override
-	public boolean isConsiderAllClassesForClassSuggestions() {
-		return considerAllClassesForClassSuggestions;
+	public boolean isConsiderAllClassesForClassCompletions() {
+		return considerAllClassesForClassCompletions;
 	}
 
 	@Override

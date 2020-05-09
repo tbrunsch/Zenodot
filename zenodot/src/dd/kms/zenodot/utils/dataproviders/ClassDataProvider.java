@@ -1,13 +1,13 @@
-package dd.kms.zenodot.utils.dataProviders;
+package dd.kms.zenodot.utils.dataproviders;
 
 import com.google.common.collect.*;
 import com.google.common.primitives.Primitives;
 import com.google.common.reflect.ClassPath;
 import dd.kms.zenodot.common.multistringmatching.MultiStringMatcher;
 import dd.kms.zenodot.matching.*;
-import dd.kms.zenodot.result.CompletionSuggestion;
-import dd.kms.zenodot.result.CompletionSuggestions;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
+import dd.kms.zenodot.result.CodeCompletion;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.settings.Imports;
 import dd.kms.zenodot.utils.ClassUtils;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -16,7 +16,6 @@ import dd.kms.zenodot.utils.wrappers.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -140,9 +139,9 @@ public class ClassDataProvider
 	}
 
 	/*
-	 * Package Suggestions
+	 * Package Completions
 	 */
-	public CompletionSuggestions suggestPackages(int insertionBegin, int insertionEnd, String packagePrefix) {
+	public CodeCompletions completePackage(int insertionBegin, int insertionEnd, String packagePrefix) {
 		String parentPackage = ClassUtils.getParentPath(packagePrefix);
 		int lastSeparatorIndex = ClassUtils.lastIndexOfPathSeparator(packagePrefix);
 		List<String> suggestedPackageNames = new ArrayList<>();
@@ -157,13 +156,12 @@ public class ClassDataProvider
 		}
 		String subpackagePrefix = ClassUtils.getLeafOfPath(packagePrefix);
 
-		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 			suggestedPackageNames,
-			packageName -> CompletionSuggestionFactory.packageSuggestion(packageName, insertionBegin, insertionEnd),
-			ratePackageFunc(subpackagePrefix)
+			packageName -> CodeCompletionFactory.packageCompletion(packageName, insertionBegin, insertionEnd, ratePackage(packageName, subpackagePrefix))
 		);
 
-		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
+		return new CodeCompletions(insertionBegin, codeCompletions);
 	}
 	private static StringMatch ratePackageByName(String packageName, String expectedName) {
 		int lastDotIndex = packageName.lastIndexOf('.');
@@ -171,95 +169,92 @@ public class ClassDataProvider
 		return MatchRatings.rateStringMatch(subpackageName, expectedName);
 	}
 
-	private static Function<String, MatchRating> ratePackageFunc(String expectedName) {
-		return packageName -> MatchRatings.create(ratePackageByName(packageName, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
+	private static MatchRating ratePackage(String packageName, String expectedName) {
+		return MatchRatings.create(ratePackageByName(packageName, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
 	}
 
 	/*
-	 * Class Suggestions
+	 * Class Completions
 	 */
-	public static CompletionSuggestions suggestQualifiedClasses(int insertionBegin, int insertionEnd, String classPrefixWithPackage) {
+	public static CodeCompletions completeQualifiedClasses(int insertionBegin, int insertionEnd, String classPrefixWithPackage) {
 		String packageName = ClassUtils.getParentPath(classPrefixWithPackage);
 		if (packageName == null) {
 			// class is not fully qualified, so no match
-			return CompletionSuggestions.none(insertionEnd);
+			return CodeCompletions.none(insertionEnd);
 		}
-		Set<ClassInfo> newSuggestedClasses = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
+		Set<ClassInfo> suggestedClasses = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
 		String classPrefix = ClassUtils.getLeafOfPath(classPrefixWithPackage);
 
-		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
-			newSuggestedClasses,
-			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false),
-			rateClassFunc(classPrefix)
+		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
+			suggestedClasses,
+			classInfo -> CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, false, rateClass(classInfo, classPrefix))
 		);
 
-		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
+		return new CodeCompletions(insertionBegin, codeCompletions);
 	}
 
-	public CompletionSuggestions suggestClassesForName(int insertionBegin, int insertionEnd, String classPrefix, boolean considerAllClasses) {
-		ImmutableMap.Builder<CompletionSuggestion, MatchRating> suggestionBuilder = ImmutableMap.builder();
+	public CodeCompletions completeClassName(int insertionBegin, int insertionEnd, String classPrefix, boolean considerAllClasses) {
+		ImmutableList.Builder<CodeCompletion> completionsBuilder = ImmutableList.builder();
 
 		Set<ClassInfo> importedClasses = getImportedClasses();
 		Set<ClassInfo> topLevelClassesInPackages = getTopLevelClassesInPackages(getImportedPackages());
 		Set<ClassInfo> additionalTopLevelClassesInPackage = Sets.difference(topLevelClassesInPackages, importedClasses);
 
-		suggestionBuilder.putAll(suggestUnqualifiedClasses(insertionBegin, insertionEnd, classPrefix, importedClasses));
-		suggestionBuilder.putAll(suggestUnqualifiedClasses(insertionBegin, insertionEnd, classPrefix, additionalTopLevelClassesInPackage));
+		completionsBuilder.addAll(completeUnqualifiedClass(insertionBegin, insertionEnd, classPrefix, importedClasses));
+		completionsBuilder.addAll(completeUnqualifiedClass(insertionBegin, insertionEnd, classPrefix, additionalTopLevelClassesInPackage));
 
 		if (!classPrefix.isEmpty() && considerAllClasses) {
-			// We only search all top level classes if the class prefix is not empty to avoid suggesting all top level classes
+			// We only search all top level classes if the class prefix is not empty to avoid generating code completions for all top level classes
 			Set<ClassInfo> classesToIgnoreForQualifiedClasses = Sets.union(importedClasses, additionalTopLevelClassesInPackage);
-			suggestionBuilder.putAll(suggestQualifiedClassesForUnqualifiedName(insertionBegin, insertionEnd, classPrefix, classesToIgnoreForQualifiedClasses));
+			completionsBuilder.addAll(completeUnqualifiedClassNameToQualifiedClass(insertionBegin, insertionEnd, classPrefix, classesToIgnoreForQualifiedClasses));
 		}
 
-		return new CompletionSuggestions(insertionBegin, suggestionBuilder.build());
+		return new CodeCompletions(insertionBegin, completionsBuilder.build());
 	}
 
-	private static Map<CompletionSuggestion, MatchRating> suggestUnqualifiedClasses(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classes) {
+	private static List<CodeCompletion> completeUnqualifiedClass(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classes) {
 		if (ClassUtils.lastIndexOfPathSeparator(classPrefix) >= 0) {
 			// class is fully qualified, so no match
-			return ImmutableMap.of();
+			return ImmutableList.of();
 		}
-		return ParseUtils.createRatedSuggestions(
+		return ParseUtils.createCodeCompletions(
 			classes,
-			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false),
-			rateClassFunc(classPrefix)
+			classInfo -> CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, false, rateClass(classInfo, classPrefix))
 		);
 	}
 
-	private static Map<CompletionSuggestion, MatchRating> suggestQualifiedClassesForUnqualifiedName(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classesToIgnore) {
-		Map<CompletionSuggestion, MatchRating> ratedSuggestions = new LinkedHashMap<>();
+	private static List<CodeCompletion> completeUnqualifiedClassNameToQualifiedClass(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classesToIgnore) {
+		ImmutableList.Builder<CodeCompletion> completionsBuilder = ImmutableList.builder();
 		Set<ClassInfo> classInfos = TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.search(classPrefix, 100);
 		Set<ClassInfo> classInfosToConsider = Sets.difference(classInfos, classesToIgnore);
 		for (ClassInfo classInfo : classInfosToConsider) {
 			String unqualifiedName = classInfo.getUnqualifiedName();
 			StringMatch stringMatch = MatchRatings.rateStringMatch(unqualifiedName, classPrefix);
 			if (stringMatch != StringMatch.NONE) {
-				CompletionSuggestion suggestion = CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, true);
 				MatchRating rating = MatchRatings.create(stringMatch, TypeMatch.NONE, AccessMatch.IGNORED);
-				ratedSuggestions.put(suggestion, rating);
+				CodeCompletion codeCompletion = CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, true, rating);
+				completionsBuilder.add(codeCompletion);
 			}
 		}
-		return ratedSuggestions;
+		return completionsBuilder.build();
 	}
 
-	public CompletionSuggestions suggestInnerClasses(String expectedName, Class<?> contextClass, int insertionBegin, int insertionEnd) {
+	public CodeCompletions completeInnerClass(String expectedName, Class<?> contextClass, int insertionBegin, int insertionEnd) {
 		List<ClassInfo> classesToConsider = Arrays.stream(contextClass.getDeclaredClasses())
 			.map(clazz -> InfoProvider.createClassInfoUnchecked(clazz.getName()))
 			.collect(Collectors.toList());
-		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
+		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 			classesToConsider,
-			classInfo -> CompletionSuggestionFactory.classSuggestions(classInfo, insertionBegin, insertionEnd, false),
-			rateClassFunc(expectedName)
+			classInfo -> CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, false, rateClass(classInfo, expectedName))
 		);
-		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
+		return new CodeCompletions(insertionBegin, codeCompletions);
 	}
 
 	private static StringMatch rateClassByName(ClassInfo classInfo, String expectedSimpleClassName) {
 		return MatchRatings.rateStringMatch(classInfo.getUnqualifiedName(), expectedSimpleClassName);
 	}
 
-	private static Function<ClassInfo, MatchRating> rateClassFunc(String simpleClassName) {
-		return classInfo -> MatchRatings.create(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE, AccessMatch.IGNORED);
+	private static MatchRating rateClass(ClassInfo classInfo, String simpleClassName) {
+		return MatchRatings.create(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE, AccessMatch.IGNORED);
 	}
 }

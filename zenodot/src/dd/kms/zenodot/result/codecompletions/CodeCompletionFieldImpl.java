@@ -1,16 +1,17 @@
-package dd.kms.zenodot.result.completionSuggestions;
+package dd.kms.zenodot.result.codecompletions;
 
-import dd.kms.zenodot.result.CompletionSuggestionType;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.result.CodeCompletionType;
 import dd.kms.zenodot.utils.wrappers.FieldInfo;
 
 import java.util.Objects;
 
-class CompletionSuggestionFieldImpl extends AbstractSimpleCompletionSuggestion implements CompletionSuggestionField
+class CodeCompletionFieldImpl extends AbstractSimpleCodeCompletion implements CodeCompletionField
 {
 	private final FieldInfo	fieldInfo;
 
-	CompletionSuggestionFieldImpl(FieldInfo fieldInfo, int insertionBegin, int insertionEnd) {
-		super(CompletionSuggestionType.FIELD, insertionBegin, insertionEnd);
+	CodeCompletionFieldImpl(FieldInfo fieldInfo, int insertionBegin, int insertionEnd, MatchRating rating) {
+		super(CodeCompletionType.FIELD, insertionBegin, insertionEnd, rating);
 		this.fieldInfo = fieldInfo;
 	}
 
@@ -29,7 +30,7 @@ class CompletionSuggestionFieldImpl extends AbstractSimpleCompletionSuggestion i
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
-		CompletionSuggestionFieldImpl that = (CompletionSuggestionFieldImpl) o;
+		CodeCompletionFieldImpl that = (CodeCompletionFieldImpl) o;
 		return Objects.equals(fieldInfo, that.fieldInfo);
 	}
 

@@ -1,11 +1,10 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.CompletionSuggestions;
+import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.ParseOutcome;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 /**
  * Base class for {@link ClassTailParser} and {@link ObjectTailParser}
@@ -35,6 +34,6 @@ abstract class AbstractTailParser<C> extends AbstractParser<C>
 
 		int position = tokenStream.getPosition();
 		boolean returnCompletions = tokenStream.isCaretWithinNextWhiteSpaces();
-		return returnCompletions ? CompletionSuggestions.none(position) : createParseOutcome(position, context);
+		return returnCompletions ? CodeCompletions.none(position) : createParseOutcome(position, context);
 	}
 }

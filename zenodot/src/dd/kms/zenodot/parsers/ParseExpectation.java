@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * Describes the expectation of the result of parsing a certain (sub-) expression. This
- * is used for checking the result of a parser and for rating completing suggestions.
+ * is used for checking the result of a parser and for rating code completions.
  */
 public class ParseExpectation
 {

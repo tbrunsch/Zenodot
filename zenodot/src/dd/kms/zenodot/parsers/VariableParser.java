@@ -1,15 +1,12 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.AbstractCompiledParseResult;
-import dd.kms.zenodot.result.CompiledObjectParseResult;
 import dd.kms.zenodot.result.ParseOutcome;
 import dd.kms.zenodot.result.ParseOutcomes;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.settings.Variable;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
@@ -43,7 +40,7 @@ public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 				insertionEnd = startPosition;
 			}
 			log(LogLevel.INFO, "suggesting variables for completion...");
-			return parserToolbox.getVariableDataProvider().suggestVariables("", expectation, startPosition, insertionEnd);
+			return parserToolbox.getVariableDataProvider().completeVariable("", expectation, startPosition, insertionEnd);
 		}
 
 		Token variableToken;
@@ -59,7 +56,7 @@ public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 		// check for code completion
 		if (variableToken.isContainsCaret()) {
 			log(LogLevel.SUCCESS, "suggesting variables matching '" + variableName + "'");
-			return parserToolbox.getVariableDataProvider().suggestVariables(variableName, expectation, startPosition, endPosition);
+			return parserToolbox.getVariableDataProvider().completeVariable(variableName, expectation, startPosition, endPosition);
 		}
 
 		if (tokenStream.hasMore() && tokenStream.peekCharacter() == '(') {

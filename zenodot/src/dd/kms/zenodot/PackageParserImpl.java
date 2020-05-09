@@ -1,7 +1,5 @@
 package dd.kms.zenodot;
 
-import dd.kms.zenodot.matching.MatchRating;
-import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.settings.ParserSettings;
@@ -11,7 +9,7 @@ import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.PackageInfo;
 
-import java.util.Map;
+import java.util.List;
 
 class PackageParserImpl extends AbstractParser implements PackageParser
 {
@@ -20,9 +18,8 @@ class PackageParserImpl extends AbstractParser implements PackageParser
 	}
 
 	@Override
-	public Map<CompletionSuggestion, StringMatch> suggestCodeCompletion(int caretPosition) throws ParseException {
-		Map<CompletionSuggestion, MatchRating> ratedSuggestions = getCompletionSuggestions(caretPosition).getRatedSuggestions();
-		return extractNameMatchRatings(ratedSuggestions);
+	public List<CodeCompletion> getCompletions(int caretPosition) throws ParseException {
+		return getCodeCompletions(caretPosition).getCompletions();
 	}
 
 	@Override

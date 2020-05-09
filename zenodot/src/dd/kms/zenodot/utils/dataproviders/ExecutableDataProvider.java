@@ -1,11 +1,11 @@
-package dd.kms.zenodot.utils.dataProviders;
+package dd.kms.zenodot.utils.dataproviders;
 
 import dd.kms.zenodot.matching.*;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.parsers.ParseExpectationBuilder;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.result.completionSuggestions.CompletionSuggestionFactory;
+import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
@@ -15,7 +15,6 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -37,13 +36,12 @@ public class ExecutableDataProvider
 		this.parserToolbox = parserToolbox;
 	}
 
-	public CompletionSuggestions suggestMethods(List<ExecutableInfo> methodInfos, boolean contextIsStatic, String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
-		Map<CompletionSuggestion, MatchRating> ratedSuggestions = ParseUtils.createRatedSuggestions(
+	public CodeCompletions completeMethod(List<ExecutableInfo> methodInfos, boolean contextIsStatic, String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 			methodInfos,
-			methodInfo -> CompletionSuggestionFactory.methodSuggestion(methodInfo, insertionBegin, insertionEnd),
-			rateMethodFunc(expectedName, contextIsStatic, expectation)
+			methodInfo -> CodeCompletionFactory.methodCompletion(methodInfo, insertionBegin, insertionEnd, rateMethod(methodInfo, expectedName, contextIsStatic, expectation))
 		);
-		return new CompletionSuggestions(insertionBegin, ratedSuggestions);
+		return new CodeCompletions(insertionBegin, codeCompletions);
 	}
 
 	/**
@@ -92,7 +90,7 @@ public class ExecutableDataProvider
 				boolean requestCodeCompletion = tokenStream.isCaretWithinNextWhiteSpaces();
 				if (i == 0 && requestCodeCompletion) {
 					// code completion after opening '(' for executable without arguments
-					arguments.add(CompletionSuggestions.none(position));
+					arguments.add(CodeCompletions.none(position));
 				} else {
 					arguments.add(ParseOutcomes.createParseError(position, "No further arguments expected", ErrorPriority.RIGHT_PARSER));
 				}
@@ -129,7 +127,7 @@ public class ExecutableDataProvider
 			if (characterToken.getValue().charAt(0) == ')') {
 				if (characterToken.isContainsCaret()) {
 					// nothing we can suggest after ')'
-					arguments.add(CompletionSuggestions.none(tokenStream.getPosition()));
+					arguments.add(CodeCompletions.none(tokenStream.getPosition()));
 				}
 				return arguments;
 			}
@@ -202,7 +200,7 @@ public class ExecutableDataProvider
 	}
 
 	/*
-	 * Suggestions
+	 * Code Completions
 	 */
 	private StringMatch rateMethodByName(ExecutableInfo methodInfo, String expectedName) {
 		return MatchRatings.rateStringMatch(methodInfo.getName(), expectedName);
@@ -224,8 +222,8 @@ public class ExecutableDataProvider
 		return methodInfo.isStatic() && !contextIsStatic ? AccessMatch.STATIC_ACCESS_VIA_INSTANCE : AccessMatch.FULL;
 	}
 
-	private Function<ExecutableInfo, MatchRating> rateMethodFunc(String methodName, boolean contextIsStatic, ParseExpectation expectation) {
-		return methodInfo -> MatchRatings.create(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), rateMethodByAccess(methodInfo, contextIsStatic));
+	private MatchRating rateMethod(ExecutableInfo methodInfo, String methodName, boolean contextIsStatic, ParseExpectation expectation) {
+		return MatchRatings.create(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), rateMethodByAccess(methodInfo, contextIsStatic));
 	}
 
 	public static String getMethodDisplayText(ExecutableInfo methodInfo) {
