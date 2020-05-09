@@ -1,7 +1,10 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.matching.*;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
@@ -35,7 +38,7 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 
 		if (keywordToken.isContainsCaret()) {
 			if (CLASS_KEYWORD.startsWith(keywordToken.getValue())) {
-				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, AccessMatch.IGNORED);
+				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, false);
 				CodeCompletion codeCompletion = CodeCompletionFactory.keywordCompletion(CLASS_KEYWORD, startPosition, tokenStream.getPosition(), rating);
 				log(LogLevel.INFO, "suggesting keyword '" + CLASS_KEYWORD + "'...");
 				return CodeCompletions.of(codeCompletion);

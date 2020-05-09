@@ -3,7 +3,10 @@ package dd.kms.zenodot.utils.dataproviders;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
-import dd.kms.zenodot.matching.*;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.result.CodeCompletions;
@@ -58,11 +61,11 @@ public class FieldDataProvider
 		return allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(type, allowedType)).min(TypeMatch::compareTo).get();
 	}
 
-	private AccessMatch rateFieldByAccess(FieldInfo fieldInfo, boolean contextIsStatic) {
-		return fieldInfo.isStatic() && !contextIsStatic ? AccessMatch.STATIC_ACCESS_VIA_INSTANCE : AccessMatch.FULL;
+	private boolean isFieldAccessDiscouraged(FieldInfo fieldInfo, boolean contextIsStatic) {
+		return fieldInfo.isStatic() && !contextIsStatic;
 	}
 
 	private MatchRating rateField(FieldInfo fieldInfo, Object contextObject, boolean contextIsStatic, String expectedName, ParseExpectation expectation) {
-		return MatchRatings.create(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), rateFieldByAccess(fieldInfo, contextIsStatic));
+		return MatchRatings.create(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), isFieldAccessDiscouraged(fieldInfo, contextIsStatic));
 	}
 }

@@ -1,6 +1,9 @@
 package dd.kms.zenodot.utils.dataproviders;
 
-import dd.kms.zenodot.matching.*;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.result.CodeCompletions;
@@ -50,6 +53,6 @@ public class VariableDataProvider
 	}
 
 	private MatchRating rateVariable(Variable variable, String expectedName, ParseExpectation expectation) {
-		return MatchRatings.create(rateVariableByName(variable, expectedName), rateVariableByTypes(variable, expectation), AccessMatch.IGNORED);
+		return MatchRatings.create(rateVariableByName(variable, expectedName), rateVariableByTypes(variable, expectation), false);
 	}
 }

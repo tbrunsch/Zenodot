@@ -1,6 +1,9 @@
 package dd.kms.zenodot.utils.dataproviders;
 
-import dd.kms.zenodot.matching.*;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
@@ -28,6 +31,6 @@ public class ObjectTreeNodeDataProvider
 	}
 
 	private MatchRating rateNode(ObjectTreeNode node, String expectedName) {
-		return MatchRatings.create(rateNodeByName(node, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
+		return MatchRatings.create(rateNodeByName(node, expectedName), TypeMatch.NONE, false);
 	}
 }

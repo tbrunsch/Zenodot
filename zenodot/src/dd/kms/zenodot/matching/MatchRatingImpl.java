@@ -6,12 +6,18 @@ class MatchRatingImpl implements MatchRating
 {
 	private final StringMatch	nameMatch;
 	private final TypeMatch		typeMatch;
-	private final AccessMatch	accessMatch;
 
-	MatchRatingImpl(StringMatch nameMatch, TypeMatch typeMatch, AccessMatch accessMatch) {
+	/**
+	 * This flag is set to true when accessing something in an unwanted way.
+	 * Currently, this flag is only set to true when accessing a static field
+	 * or method via an object instead of a class.
+	 */
+	private final boolean		accessDiscouraged;
+
+	MatchRatingImpl(StringMatch nameMatch, TypeMatch typeMatch, boolean accessDiscouraged) {
 		this.nameMatch = nameMatch;
 		this.typeMatch = typeMatch;
-		this.accessMatch = accessMatch;
+		this.accessDiscouraged = accessDiscouraged;
 	}
 
 	@Override
@@ -24,12 +30,10 @@ class MatchRatingImpl implements MatchRating
 		if (typeMatchComparisonResult != 0) {
 			return typeMatchComparisonResult;
 		}
-		if (accessMatch == AccessMatch.IGNORED || that.getAccessMatch() == AccessMatch.IGNORED) {
-			// do not compare access match if it is not relevant
+		if (accessDiscouraged == that.isAccessDiscouraged()) {
 			return 0;
 		}
-		int accessMatchComparisonResult = accessMatch.compareTo(that.getAccessMatch());
-		return accessMatchComparisonResult;
+		return accessDiscouraged ? 1 : -1;
 	}
 
 	@Override
@@ -43,13 +47,23 @@ class MatchRatingImpl implements MatchRating
 	}
 
 	@Override
-	public AccessMatch getAccessMatch() {
-		return accessMatch;
+	public boolean isAccessDiscouraged() {
+		return accessDiscouraged;
+	}
+
+	@Override
+	public int getRatingValue() {
+		int numStringMatchRatingClasses = StringMatch.values().length;
+		int numTypeMatchRatingClasses = TypeMatch.values().length;
+		int nameRating = numStringMatchRatingClasses - nameMatch.ordinal() - 1;
+		int typeRating = numTypeMatchRatingClasses - typeMatch.ordinal() - 1;
+		int accessRating = accessDiscouraged ? 0 : 1;
+		return 2*(numTypeMatchRatingClasses*nameRating + typeRating) + accessRating;
 	}
 
 	@Override
 	public String toString() {
-		return "name match: " + nameMatch + ", type match: " + typeMatch + ", access match: " + accessMatch;
+		return "name match: " + nameMatch + ", type match: " + typeMatch + ", access discouraged: " + accessDiscouraged;
 	}
 
 	@Override
@@ -59,11 +73,11 @@ class MatchRatingImpl implements MatchRating
 		MatchRatingImpl that = (MatchRatingImpl) o;
 		return nameMatch == that.nameMatch &&
 			typeMatch == that.typeMatch &&
-			accessMatch == that.accessMatch;
+			accessDiscouraged == that.accessDiscouraged;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(nameMatch, typeMatch, accessMatch);
+		return Objects.hash(nameMatch, typeMatch, accessDiscouraged);
 	}
 }

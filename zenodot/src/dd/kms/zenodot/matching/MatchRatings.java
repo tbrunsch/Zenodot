@@ -14,10 +14,10 @@ import java.util.regex.Pattern;
  */
 public class MatchRatings
 {
-	public static final MatchRating NONE	= create(StringMatch.NONE, TypeMatch.NONE, AccessMatch.IGNORED);
+	public static final MatchRating NONE	= create(StringMatch.NONE, TypeMatch.NONE, true);
 
-	public static MatchRating create(StringMatch stringMatch, TypeMatch typeMatch, AccessMatch accessMatch) {
-		return new MatchRatingImpl(stringMatch, typeMatch, accessMatch);
+	public static MatchRating create(StringMatch stringMatch, TypeMatch typeMatch, boolean accessDiscouraged) {
+		return new MatchRatingImpl(stringMatch, typeMatch, accessDiscouraged);
 	}
 
 	/*

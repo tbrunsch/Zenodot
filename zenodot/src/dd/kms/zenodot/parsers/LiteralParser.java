@@ -1,7 +1,10 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.matching.*;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.tokenizer.Token;
@@ -133,7 +136,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 		if (literalToken.isContainsCaret()) {
 			if (literalName.startsWith(literalToken.getValue())) {
-				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, AccessMatch.IGNORED);
+				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, false);
 				CodeCompletion codeCompletion = CodeCompletionFactory.keywordCompletion(literalName, startPosition, tokenStream.getPosition(), rating);
 				log(LogLevel.INFO, "suggesting literal '" + literalName + "'...");
 				return CodeCompletions.of(codeCompletion);

@@ -4,7 +4,10 @@ import com.google.common.collect.*;
 import com.google.common.primitives.Primitives;
 import com.google.common.reflect.ClassPath;
 import dd.kms.zenodot.common.multistringmatching.MultiStringMatcher;
-import dd.kms.zenodot.matching.*;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
@@ -170,7 +173,7 @@ public class ClassDataProvider
 	}
 
 	private static MatchRating ratePackage(String packageName, String expectedName) {
-		return MatchRatings.create(ratePackageByName(packageName, expectedName), TypeMatch.NONE, AccessMatch.IGNORED);
+		return MatchRatings.create(ratePackageByName(packageName, expectedName), TypeMatch.NONE, false);
 	}
 
 	/*
@@ -231,7 +234,7 @@ public class ClassDataProvider
 			String unqualifiedName = classInfo.getUnqualifiedName();
 			StringMatch stringMatch = MatchRatings.rateStringMatch(unqualifiedName, classPrefix);
 			if (stringMatch != StringMatch.NONE) {
-				MatchRating rating = MatchRatings.create(stringMatch, TypeMatch.NONE, AccessMatch.IGNORED);
+				MatchRating rating = MatchRatings.create(stringMatch, TypeMatch.NONE, false);
 				CodeCompletion codeCompletion = CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, true, rating);
 				completionsBuilder.add(codeCompletion);
 			}
@@ -255,6 +258,6 @@ public class ClassDataProvider
 	}
 
 	private static MatchRating rateClass(ClassInfo classInfo, String simpleClassName) {
-		return MatchRatings.create(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE, AccessMatch.IGNORED);
+		return MatchRatings.create(rateClassByName(classInfo, simpleClassName), TypeMatch.NONE, false);
 	}
 }

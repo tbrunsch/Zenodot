@@ -1,6 +1,9 @@
 package dd.kms.zenodot.utils.dataproviders;
 
-import dd.kms.zenodot.matching.*;
+import dd.kms.zenodot.matching.MatchRating;
+import dd.kms.zenodot.matching.MatchRatings;
+import dd.kms.zenodot.matching.StringMatch;
+import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.ParseExpectation;
 import dd.kms.zenodot.parsers.ParseExpectationBuilder;
 import dd.kms.zenodot.result.*;
@@ -218,12 +221,12 @@ public class ExecutableDataProvider
 					: allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(methodInfo.getReturnType(), allowedType)).min(TypeMatch::compareTo).orElse(TypeMatch.NONE);
 	}
 
-	private AccessMatch rateMethodByAccess(ExecutableInfo methodInfo, boolean contextIsStatic) {
-		return methodInfo.isStatic() && !contextIsStatic ? AccessMatch.STATIC_ACCESS_VIA_INSTANCE : AccessMatch.FULL;
+	private boolean isMethodAccessDiscouraged(ExecutableInfo methodInfo, boolean contextIsStatic) {
+		return methodInfo.isStatic() && !contextIsStatic;
 	}
 
 	private MatchRating rateMethod(ExecutableInfo methodInfo, String methodName, boolean contextIsStatic, ParseExpectation expectation) {
-		return MatchRatings.create(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), rateMethodByAccess(methodInfo, contextIsStatic));
+		return MatchRatings.create(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), isMethodAccessDiscouraged(methodInfo, contextIsStatic));
 	}
 
 	public static String getMethodDisplayText(ExecutableInfo methodInfo) {
