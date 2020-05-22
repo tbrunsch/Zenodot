@@ -1,11 +1,13 @@
 package dd.kms.zenodot.tokenizer;
 
 import com.google.common.collect.ImmutableMap;
+import dd.kms.zenodot.common.RegexUtils;
+import dd.kms.zenodot.flowcontrol.InternalCodeCompletionException;
+import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.ParseError;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -20,17 +22,17 @@ import java.util.stream.Collectors;
 public class TokenStream implements Cloneable
 {
 	private static final Pattern		OPTIONAL_SPACE					= Pattern.compile("^(\\s*).*");
-	private static final Pattern		CHARACTER_PATTERN				= Pattern.compile("^(\\s*([^\\s])\\s*).*");
-	private static final Pattern		CHARACTERS_PATTERN				= Pattern.compile("^(\\s*([^\\s]+)\\s*).*");
-	private static final Pattern		IDENTIFIER_PATTERN  			= Pattern.compile("^(\\s*([_\\$A-Za-z][_\\$A-Za-z0-9]*)\\s*).*");
-	private static final Pattern		STRING_LITERAL_PATTERN			= Pattern.compile("^(\\s*\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"\\s*).*");
-	private static final Pattern		CHARACTER_LITERAL_PATTERN		= Pattern.compile("^(\\s*'(\\\\.|[^\\\\])'\\s*).*");
+	private static final Pattern		CHARACTER_PATTERN				= Pattern.compile("^(([^\\s])).*");
+	private static final Pattern		CHARACTERS_PATTERN				= Pattern.compile("^(([^\\s]*)\\s*).*");
+	private static final Pattern		IDENTIFIER_PATTERN  			= Pattern.compile("^(([_\\$A-Za-z][_\\$A-Za-z0-9]*)\\s*).*");
+	private static final Pattern		STRING_LITERAL_PATTERN			= Pattern.compile("^(\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"\\s*).*");
+	private static final Pattern		CHARACTER_LITERAL_PATTERN		= Pattern.compile("^('(\\\\.|[^\\\\])'\\s*).*");
 	private static final Pattern		KEYWORD_PATTERN					= IDENTIFIER_PATTERN;
-	private static final Pattern		INTEGER_LITERAL_PATTERN			= Pattern.compile("^(\\s*(0|[1-9][0-9]*)\\s*)($|[^0-9dDeEfFL\\.].*)");
-	private static final Pattern		LONG_LITERAL_PATTERN			= Pattern.compile("^(\\s*(0|[1-9][0-9]*)[lL]\\s*).*");
-	private static final Pattern		FLOAT_LITERAL_PATTERN 			= Pattern.compile("^(\\s*(([0-9]+([eE][+-]?[0-9]+)?|\\.[0-9]+([eE][+-]?[0-9]+)?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?)[fF])\\s*).*");
-	private static final Pattern		DOUBLE_LITERAL_PATTERN 			= Pattern.compile("^(\\s*(([0-9]+(([eE][+-]?[0-9]+)?[dD]|[eE][+-]?[0-9]+[dD]?)|\\.[0-9]+([eE][+-]?[0-9]+)?[dD]?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?[dD]?))\\s*).*");
-	private static final Pattern		PACKAGE_NAME_PATTERN			= Pattern.compile("^(\\s*(\\d*[A-Za-z][_A-Za-z0-9]*)\\s*).*");	// although uncommon, there exist packages starting with an upper-case letter
+	private static final Pattern		INTEGER_LITERAL_PATTERN			= Pattern.compile("^((0|[1-9][0-9]*)\\s*)($|[^0-9dDeEfFL\\.].*)");
+	private static final Pattern		LONG_LITERAL_PATTERN			= Pattern.compile("^((0|[1-9][0-9]*)[lL]\\s*).*");
+	private static final Pattern		FLOAT_LITERAL_PATTERN 			= Pattern.compile("^((([0-9]+([eE][+-]?[0-9]+)?|\\.[0-9]+([eE][+-]?[0-9]+)?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?)[fF])\\s*).*");
+	private static final Pattern		DOUBLE_LITERAL_PATTERN 			= Pattern.compile("^((([0-9]+(([eE][+-]?[0-9]+)?[dD]|[eE][+-]?[0-9]+[dD]?)|\\.[0-9]+([eE][+-]?[0-9]+)?[dD]?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?[dD]?))\\s*).*");
+	private static final Pattern		PACKAGE_NAME_PATTERN			= Pattern.compile("^((\\d*[A-Za-z][_A-Za-z0-9]*)\\s*).*");	// although uncommon, there exist packages starting with an upper-case letter
 	private static final Pattern		CLASS_NAME_PATTERN				= PACKAGE_NAME_PATTERN;											// although uncommon, there exist class names starting with a lower-case letter
 
 	// Unary prefix operators, sorted from longest to shortest to ensure that, e.g., "++" is tested before "+"
@@ -39,7 +41,7 @@ public class TokenStream implements Cloneable
 	// Binary operators, sorted from longest to shortest to ensure that, e.g., "==" is tested before "="
 	private static final List<String> 	BINARY_OPERATORS 			= Arrays.stream(BinaryOperator.values()).map(BinaryOperator::getOperator).sorted(Comparator.comparingInt(String::length).reversed()).collect(Collectors.toList());
 
-	private static final Map<Character, Character> INTERPRETATION_OF_ESCAPED_CHARACTERS = ImmutableMap.<Character, Character>builder()
+	private static final Map<Character, Character>	INTERPRETATION_OF_ESCAPED_CHARACTERS = ImmutableMap.<Character, Character>builder()
 		.put('t', '\t')
 		.put('b', '\b')
 		.put('n', '\n')
@@ -49,6 +51,26 @@ public class TokenStream implements Cloneable
 		.put('\"', '\"')
 		.put('\\', '\\')
 		.build();
+
+	private static final Map<String, Pattern>	CHARACTERS_TO_PATTERN	= new HashMap<>();
+
+	private static Pattern getSingleCharacterPattern(char... allowedCharacters) {
+		String s = String.valueOf(allowedCharacters);
+		Pattern cachedPattern = CHARACTERS_TO_PATTERN.get(s);
+		if (cachedPattern != null) {
+			return cachedPattern;
+		}
+		StringBuilder regexBuilder = new StringBuilder("(([");
+		for (char c : allowedCharacters) {
+			String escapedCharacter = RegexUtils.escapeIfSpecial(c);
+			regexBuilder.append(escapedCharacter);
+		}
+		Pattern.compile("^(([^\\s])).*");
+		regexBuilder.append("])).*");
+		Pattern pattern = Pattern.compile(regexBuilder.toString());
+		CHARACTERS_TO_PATTERN.put(s, pattern);
+		return pattern;
+	}
 
 	private static String unescapeCharacters(String s) throws IllegalArgumentException {
 		StringBuffer unescapedString = new StringBuffer();
@@ -85,10 +107,126 @@ public class TokenStream implements Cloneable
 
 	private TokenStream(String expression, int caretPosition, int position) {
 		this.expression = expression;
-		this.caretPosition = caretPosition;
+		this.caretPosition = caretPosition < 0 ? Integer.MAX_VALUE : caretPosition;
 		this.position = position;
 	}
 
+	/*
+	 * TODO: Remove comment
+	 *
+	 * New Methods
+	 */
+	public String readIdentifier(CompletionGenerator completionGenerator, ParseExceptionGenerator exceptionGenerator) throws InternalParseException, InternalCodeCompletionException {
+		return readRegex(IDENTIFIER_PATTERN, 2, completionGenerator, exceptionGenerator, true);
+	}
+
+	public char readCharacter(ParseError.ErrorPriority errorPriority, char... expectedCharacters) throws InternalParseException, InternalCodeCompletionException {
+		CompletionGenerator completionGenerator = info -> new InternalCodeCompletionException(CodeCompletions.none(info.getTokenStartPosition()));
+		ParseExceptionGenerator parseExceptionGenerator = tokenStream -> new InternalParseException(tokenStream.getPosition(), createUnexpectedCharacterMessage(expectedCharacters), errorPriority);
+		Pattern pattern = getSingleCharacterPattern(expectedCharacters);
+		String s = readRegex(pattern, 2, completionGenerator, parseExceptionGenerator, false);
+		char c = s.charAt(0);
+		for (char expectedCharacter : expectedCharacters) {
+			if (c == expectedCharacter) {
+				return c;
+			}
+		}
+		throw new InternalParseException(position, createUnexpectedCharacterMessage(expectedCharacters) + ", but received token " + c, ParseError.ErrorPriority.INTERNAL_ERROR);
+	}
+
+	public char peekCharacter() {
+		String characters = peekCharacters();
+		return characters.isEmpty() ? 0 : characters.charAt(0);
+	}
+
+	public String peekCharacters() {
+		Matcher matcher = match(CHARACTERS_PATTERN);
+		if (!matcher.matches()) {
+			throw new IllegalStateException("Internal Error: Characters pattern did not match");
+		}
+		return matcher.group(2);
+	}
+
+	private String readRegex(Pattern pattern, int groupIndexToExtract, CompletionGenerator completionGenerator, ParseExceptionGenerator exceptionGenerator, boolean supportCompletionsInTrailingWhitespaces) throws InternalParseException, InternalCodeCompletionException {
+		if (caretPosition < position) {
+			throw new IllegalStateException("Internal error: Reading tokens after caret position");
+		}
+		int startPos = position;
+		skipSpaces();
+		int textStartPos = position;
+
+		if (caretPosition < position) {
+			// Completion within leading white spaces
+			CompletionInfo completionSuggestionInfo = new CompletionSuggestionInfoImpl(startPos, caretPosition, caretPosition, caretPosition);
+			throw completionGenerator.generate(completionSuggestionInfo);
+		}
+
+		Matcher matcher = match(pattern);
+		if (!matcher.matches()) {
+			if (caretPosition == textStartPos) {
+				// Completion at beginning of non-white spaces
+				CompletionInfo completionSuggestionInfo = new CompletionSuggestionInfoImpl(startPos, textStartPos, textStartPos, textStartPos);
+				throw completionGenerator.generate(completionSuggestionInfo);
+			}
+			// No completion requested, no match
+			throw exceptionGenerator.generate(this);
+		}
+
+		String wholeToken = matcher.group(1);
+		int endPos = textStartPos + wholeToken.length();
+		String extractedString = matcher.group(groupIndexToExtract);
+		int textEndPos = textStartPos + extractedString.length();
+
+		if (caretPosition <= endPos) {
+			// Code completion
+			if (caretPosition < textEndPos || supportCompletionsInTrailingWhitespaces) {
+				position = endPos;
+				CompletionInfo completionSuggestionInfo = new CompletionSuggestionInfoImpl(startPos, endPos, textStartPos, textEndPos);
+				throw completionGenerator.generate(completionSuggestionInfo);
+			}
+			// Move to the beginning of the trailing white spaces, return non-white spaces and handle completions when reading next token
+			position = textEndPos;
+		} else {
+			// No code completion => move to the end of the parsed area and return non-white spaces
+			position = endPos;
+		}
+		return extractedString;
+	}
+
+	private void skipSpaces() {
+		Matcher matcher = match(OPTIONAL_SPACE);
+		if (!matcher.matches()) {
+			throw new IllegalStateException("Internal Error: Optional space pattern did not match");
+		}
+		String leadingSpaces = matcher.group(1);
+		position += leadingSpaces.length();
+	}
+
+	private String createUnexpectedCharacterMessage(char[] expectedCharacters) {
+		StringBuilder builder = new StringBuilder("Expected ");
+		for (int i = 0; i < expectedCharacters.length; i++) {
+			if (i > 0) {
+				builder.append(", ");
+				if (i == expectedCharacters.length - 1) {
+					builder.append(" or ");
+				}
+			}
+			builder.append("'").append(expectedCharacters[i]).append("'");
+		}
+		return builder.toString();
+	}
+
+	private Matcher match(Pattern pattern) {
+		return pattern.matcher(expression.substring(position));
+	}
+
+
+
+	/*
+	 * TODO: Remove if not required anymore
+	 *
+	 * Old Methods
+	 */
 	public boolean hasMore() {
 		return position < expression.length() && CHARACTER_PATTERN.matcher(expression.substring(position)).matches();
 	}
@@ -166,8 +304,8 @@ public class TokenStream implements Cloneable
 		String extractedString = matcher.group(groupIndexToExtract);
 		String stringWithSpaces = matcher.group(1);
 		int length = stringWithSpaces.length();
-		boolean containsCaret = moveForward(length);
-		return new Token(extractedString, containsCaret);
+		moveForward(length);
+		return new Token(extractedString, position >= caretPosition);
 	}
 
 	public Token readRegexUnchecked(Pattern regex, int groupIndexToExtract) {
@@ -176,16 +314,6 @@ public class TokenStream implements Cloneable
 		} catch (JavaTokenParseException e) {
 			return null;
 		}
-	}
-
-	public char peekCharacter() {
-		String characters = peekCharacters();
-		return characters == null ? 0 : characters.charAt(0);
-	}
-
-	public String peekCharacters() {
-		Matcher matcher = CHARACTERS_PATTERN.matcher(expression.substring(position));
-		return matcher.matches() ? matcher.group(2) : null;
 	}
 
 	public Token readCharacterUnchecked() {
@@ -203,10 +331,6 @@ public class TokenStream implements Cloneable
 	}
 
 	private Token readOperatorUnchecked(List<String> availableOperators) {
-		boolean containsCaret = false;
-
-		containsCaret |= readOptionalSpace().isContainsCaret();
-
 		int expressionLength = expression.length();
 		String detectedOperator = null;
 		for (String operator : availableOperators) {
@@ -221,21 +345,15 @@ public class TokenStream implements Cloneable
 			return null;
 		}
 
-		containsCaret |= moveForward(detectedOperator.length());
+		moveForward(detectedOperator.length());
 
-		containsCaret |= readRegexUnchecked(OPTIONAL_SPACE, 1).isContainsCaret();
+		readRegexUnchecked(OPTIONAL_SPACE, 1).isContainsCaret();
 
-		return new Token(detectedOperator, containsCaret);
+		return new Token(detectedOperator, position >= caretPosition);
 	}
 
-	/**
-	 * Returns true if the caret is encountered when moving from position to nextPosition
-	 */
-	private boolean moveForward(int numCharacters) {
-		int newPosition = position + numCharacters;
-		boolean containsCaret = position < caretPosition && caretPosition <= newPosition;
-		moveTo(newPosition);
-		return containsCaret;
+	private void moveForward(int numCharacters) {
+		moveTo(position + numCharacters);
 	}
 
 	public void moveTo(int newPosition) {
@@ -258,6 +376,56 @@ public class TokenStream implements Cloneable
 	{
 		JavaTokenParseException(String message) {
 			super(message);
+		}
+	}
+
+	private class CompletionSuggestionInfoImpl implements CompletionInfo
+	{
+		private final int startPos;
+		private final int endPos;
+		private final int textStartPos;
+		private final int textEndPos;
+
+		private CompletionSuggestionInfoImpl(int startPos, int endPos, int textStartPos, int textEndPos) {
+			this.startPos = startPos;
+			this.endPos = endPos;
+			this.textStartPos = textStartPos;
+			this.textEndPos = textEndPos;
+		}
+
+		@Override
+		public int getTokenStartPosition() {
+			return startPos;
+		}
+
+		@Override
+		public int getTokenEndPosition() {
+			return endPos;
+		}
+
+		@Override
+		public int getTokenTextStartPosition() {
+			return textStartPos;
+		}
+
+		@Override
+		public int getTokenTextEndPosition() {
+			return textEndPos;
+		}
+
+		@Override
+		public int getCaretPosition() {
+			return caretPosition;
+		}
+
+		@Override
+		public String getTokenText() {
+			return expression.substring(textStartPos, textEndPos);
+		}
+
+		@Override
+		public String getTokenTextUntilCaret() {
+			return expression.substring(textStartPos, Math.min(textEndPos, caretPosition));
 		}
 	}
 }
