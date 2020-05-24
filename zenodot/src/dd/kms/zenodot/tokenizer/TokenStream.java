@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
  */
 public class TokenStream implements Cloneable
 {
+	public static final char			EMPTY_CHARACTER					= 0;
+
 	private static final Pattern		OPTIONAL_SPACE					= Pattern.compile("^(\\s*).*");
 	private static final Pattern		CHARACTER_PATTERN				= Pattern.compile("^(([^\\s])).*");
 	private static final Pattern		CHARACTERS_PATTERN				= Pattern.compile("^(([^\\s]*)\\s*).*");
@@ -61,12 +63,20 @@ public class TokenStream implements Cloneable
 			return cachedPattern;
 		}
 		StringBuilder regexBuilder = new StringBuilder("(([");
+		boolean allowEmptyCharacter = false;
 		for (char c : allowedCharacters) {
-			String escapedCharacter = RegexUtils.escapeIfSpecial(c);
-			regexBuilder.append(escapedCharacter);
+			if (c == EMPTY_CHARACTER) {
+				allowEmptyCharacter = true;
+			} else {
+				String escapedCharacter = RegexUtils.escapeIfSpecial(c);
+				regexBuilder.append(escapedCharacter);
+			}
 		}
-		Pattern.compile("^(([^\\s])).*");
-		regexBuilder.append("])).*");
+		regexBuilder.append("]");
+		if (allowEmptyCharacter) {
+			regexBuilder.append("?");
+		}
+		regexBuilder.append(")).*");
 		Pattern pattern = Pattern.compile(regexBuilder.toString());
 		CHARACTERS_TO_PATTERN.put(s, pattern);
 		return pattern;
@@ -125,7 +135,10 @@ public class TokenStream implements Cloneable
 		ParseExceptionGenerator parseExceptionGenerator = tokenStream -> new InternalParseException(tokenStream.getPosition(), createUnexpectedCharacterMessage(expectedCharacters), errorPriority);
 		Pattern pattern = getSingleCharacterPattern(expectedCharacters);
 		String s = readRegex(pattern, 2, completionGenerator, parseExceptionGenerator, false);
-		char c = s.charAt(0);
+		if (s.length() > 1) {
+			throw new InternalParseException(position, "Obtained " + s.length() + " characters when parsing only 1: " + s, ParseError.ErrorPriority.INTERNAL_ERROR);
+		}
+		char c = s.isEmpty() ? EMPTY_CHARACTER : s.charAt(0);
 		for (char expectedCharacter : expectedCharacters) {
 			if (c == expectedCharacter) {
 				return c;
@@ -136,7 +149,7 @@ public class TokenStream implements Cloneable
 
 	public char peekCharacter() {
 		String characters = peekCharacters();
-		return characters.isEmpty() ? 0 : characters.charAt(0);
+		return characters.isEmpty() ? EMPTY_CHARACTER : characters.charAt(0);
 	}
 
 	public String peekCharacters() {
