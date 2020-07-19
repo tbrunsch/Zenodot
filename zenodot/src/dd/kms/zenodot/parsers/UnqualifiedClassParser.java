@@ -1,22 +1,18 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.ClassParseResult;
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomes;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.tokenizer.Token;
+import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataproviders.ClassDataProvider;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
-
-import java.util.Optional;
-
-import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
 /**
  * Parses subexpressions of the form {@code <class name>} in the context of {@code this} (ignored).
@@ -25,7 +21,7 @@ import static dd.kms.zenodot.result.ParseError.ErrorPriority;
  * However, the parser will also provide code completions for qualified class names if the class name
  * matches, but is not imported.
  */
-public class UnqualifiedClassParser extends AbstractParser<ObjectInfo>
+public class UnqualifiedClassParser<T extends ParseResult, S extends ParseResultExpectation<T>> extends AbstractParser<ObjectInfo, T, S>
 {
 	/**
 	 * If this flag is true, then also classes that are not imported and whose
@@ -41,61 +37,32 @@ public class UnqualifiedClassParser extends AbstractParser<ObjectInfo>
 	}
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
-		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
-			int insertionBegin = tokenStream.getPosition();
-			String className;
-			int insertionEnd;
-			try {
-				Token classToken = tokenStream.readClass();
-				className = classToken.getValue();
-				insertionEnd = tokenStream.getPosition();
-			} catch (TokenStream.JavaTokenParseException e) {
-				className = "";
-				insertionEnd = insertionBegin;
-			}
-			log(LogLevel.INFO, "suggesting imported classes for completion...");
-			ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-			return classDataProvider.completeClassName(insertionBegin, insertionEnd, className, considerAllClassesForCompletions);
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, S expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+		String className = tokenStream.readClass(this::suggestClasses);
+
+		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
+		Class<?> importedClass = classDataProvider.getImportedClass(className);
+
+		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
+
+		if (importedClass == null) {
+			throw new InternalParseException("Unknown class '" + className + "'");
 		}
 
-		log(LogLevel.INFO, "parsing class");
-		ParseOutcome classParseOutcome = readClass(tokenStream);
-		log(LogLevel.INFO, "parse outcome: " + classParseOutcome.getOutcomeType());
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(classParseOutcome, ParseExpectation.CLASS, ErrorPriority.WRONG_PARSER);
-		if (parseOutcomeForPropagation.isPresent()) {
-			return parseOutcomeForPropagation.get();
-		}
-
-		ClassParseResult parseResult = (ClassParseResult) classParseOutcome;
-		int parsedToPosition = parseResult.getPosition();
-		TypeInfo type = parseResult.getType();
-
-		tokenStream.moveTo(parsedToPosition);
-
-		return parserToolbox.getClassTailParser().parse(tokenStream, type, expectation);
+		TypeInfo type = InfoProvider.createTypeInfo(importedClass);
+		return parserToolbox.createParser(ClassTailParser.class).parse(tokenStream, type, expectation);
 	}
 
-	private ParseOutcome readClass(TokenStream tokenStream) {
+	private CodeCompletions suggestClasses(CompletionInfo info) {
+		int insertionBegin = getInsertionBegin(info);
+		int insertionEnd = getInsertionEnd(info);
+		String nameToComplete = getTextToComplete(info);
+
+		log(LogLevel.SUCCESS, "suggesting classes matching '" + nameToComplete + "'");
+
 		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-
-		int identifierStartPosition = tokenStream.getPosition();
-		Token classToken;
-		try {
-			classToken = tokenStream.readClass();
-		} catch (TokenStream.JavaTokenParseException e) {
-			return ParseOutcomes.createParseError(identifierStartPosition, "Expected class name", ErrorPriority.WRONG_PARSER);
-		}
-		String className = classToken.getValue();
-		if (classToken.isContainsCaret()) {
-			return classDataProvider.completeClassName(identifierStartPosition, tokenStream.getPosition(), className, considerAllClassesForCompletions);
-		}
-
-		Class<?> importedClass = classDataProvider.getImportedClass(className);
-		if (importedClass != null) {
-			return ParseOutcomes.createClassParseResult(tokenStream.getPosition(), InfoProvider.createTypeInfo(importedClass));
-		}
-		return ParseOutcomes.createParseError(tokenStream.getPosition(), "Unknown class '" + className + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
+		return classDataProvider.completeClassName(insertionBegin, insertionEnd, nameToComplete, considerAllClassesForCompletions);
 	}
 }

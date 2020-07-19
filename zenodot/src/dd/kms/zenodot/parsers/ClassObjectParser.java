@@ -1,14 +1,17 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.InternalParseException;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
-import dd.kms.zenodot.tokenizer.Token;
+import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
@@ -22,56 +25,50 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 {
 	private static final String	CLASS_KEYWORD	= "class";
+	private static final String	ERROR_MESSAGE	= "Expected keyword '" + CLASS_KEYWORD + "'";
 
 	public ClassObjectParser(ParserToolbox parserToolbox) {
 		super(parserToolbox);
 	}
 
 	@Override
-	ParseOutcome parseNext(TokenStream tokenStream, TypeInfo contextType, ParseExpectation expectation) {
-		int startPosition = tokenStream.getPosition();
-		Token keywordToken = tokenStream.readKeyWordUnchecked();
-		if (keywordToken == null) {
-			log(LogLevel.ERROR, "expected keyword '" + CLASS_KEYWORD + "'");
-			return ParseOutcomes.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
+	ObjectParseResult parseNext(TokenStream tokenStream, TypeInfo contextType, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+		String keyword = tokenStream.readKeyword(this::suggestClassKeyword, ERROR_MESSAGE);
+		if (!CLASS_KEYWORD.equals(keyword)) {
+			throw new InternalParseException(ERROR_MESSAGE);
 		}
-
-		if (keywordToken.isContainsCaret()) {
-			if (CLASS_KEYWORD.startsWith(keywordToken.getValue())) {
-				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, false);
-				CodeCompletion codeCompletion = CodeCompletionFactory.keywordCompletion(CLASS_KEYWORD, startPosition, tokenStream.getPosition(), rating);
-				log(LogLevel.INFO, "suggesting keyword '" + CLASS_KEYWORD + "'...");
-				return CodeCompletions.of(codeCompletion);
-			} else {
-				log(LogLevel.INFO, "no code completions available");
-				return CodeCompletions.none(tokenStream.getPosition());
-			}
-		}
-
-		if (!keywordToken.getValue().equals(CLASS_KEYWORD)) {
-			log(LogLevel.ERROR, "expected keyword '" + CLASS_KEYWORD + "'");
-			return ParseOutcomes.createParseError(startPosition, "Expected keyword '" + CLASS_KEYWORD + "'", ErrorPriority.WRONG_PARSER);
-		}
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
 		Class<?> classObject = contextType.getRawType();
 		ObjectInfo classObjectInfo = InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
 
-		int position = tokenStream.getPosition();
 		return isCompile()
-				? compile(classObject, position, classObjectInfo)
-				: ParseOutcomes.createObjectParseResult(position, classObjectInfo);
+				? new CompiledClassObjectParseResult(classObject, classObjectInfo)
+				: ParseResults.createObjectParseResult(classObjectInfo);
 	}
 
-	private ParseOutcome compile(Class<?> classObject, int position, ObjectInfo classObjectInfo) {
-		return new CompiledClassObjectParseResult(classObject, position, classObjectInfo);
+	private CodeCompletions suggestClassKeyword(CompletionInfo info) throws InternalParseException {
+		int insertionBegin = getInsertionBegin(info);
+		int insertionEnd = getInsertionEnd(info);
+		String nameToComplete = getTextToComplete(info);
+
+		if (!CLASS_KEYWORD.startsWith(nameToComplete)) {
+			return CodeCompletions.NONE;
+		}
+		log(LogLevel.SUCCESS, "suggesting keyword '" + CLASS_KEYWORD + "'");
+
+		StringMatch stringMatch = MatchRatings.rateStringMatch(CLASS_KEYWORD, nameToComplete);
+		MatchRating matchRating = MatchRatings.create(stringMatch, TypeMatch.NONE, false);
+		CodeCompletion completion = CodeCompletionFactory.keywordCompletion(CLASS_KEYWORD, insertionBegin, insertionEnd, matchRating);
+		return CodeCompletions.of(completion);
 	}
 
 	private static class CompiledClassObjectParseResult extends AbstractCompiledParseResult
 	{
 		private final Class<?>	classObject;
 
-		CompiledClassObjectParseResult(Class<?> classObject, int position, ObjectInfo classObjectInfo) {
-			super(position, classObjectInfo);
+		CompiledClassObjectParseResult(Class<?> classObject, ObjectInfo classObjectInfo) {
+			super(classObjectInfo);
 			this.classObject = classObject;
 		}
 

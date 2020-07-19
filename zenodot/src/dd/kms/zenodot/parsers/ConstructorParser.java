@@ -1,11 +1,12 @@
 package dd.kms.zenodot.parsers;
 
+import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.ConstructorScanner;
 import dd.kms.zenodot.debug.LogLevel;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.ParseError.ErrorPriority;
-import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -15,10 +16,10 @@ import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -32,285 +33,145 @@ import java.util.stream.Collectors;
  */
 public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
+	private static final String	NEW_KEYWORD		= "new";
+	private static final String	ERROR_MESSAGE	= "Expected keyword '" + NEW_KEYWORD + "'";
+
 	public ConstructorParser(ParserToolbox parserToolbox) {
 		super(parserToolbox);
 	}
 
 	@Override
-	ParseOutcome parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
-		int startPosition = tokenStream.getPosition();
-		Token operatorToken = tokenStream.readKeyWordUnchecked();
-		if (operatorToken == null) {
-			log(LogLevel.ERROR, "'new' operator expected");
-			return ParseOutcomes.createParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
+	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+		String keyword = tokenStream.readKeyword(TokenStream.NO_COMPLETIONS, ERROR_MESSAGE);
+		if (!NEW_KEYWORD.equals(keyword)) {
+			throw new InternalParseException(ERROR_MESSAGE);
 		}
-		if (operatorToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no code completions available");
-			return CodeCompletions.none(tokenStream.getPosition());
-		}
-		if (!operatorToken.getValue().equals("new")) {
-			log(LogLevel.ERROR, "'new' operator expected");
-			return ParseOutcomes.createParseError(startPosition, "Expected operator 'new'", ErrorPriority.WRONG_PARSER);
-		}
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
-		ParseOutcome classParseOutcome = ParseUtils.parseClass(tokenStream, parserToolbox);
-		ParseOutcomeType parseOutcomeType = classParseOutcome.getOutcomeType();
-		log(LogLevel.INFO, "parse outcome: " + parseOutcomeType);
+		ClassParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
+		TypeInfo type = classParseResult.getType();
 
-		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(classParseOutcome, ParseExpectation.CLASS, ErrorPriority.RIGHT_PARSER);
-		if (parseOutcomeForPropagation.isPresent()) {
-			return parseOutcomeForPropagation.get();
-		}
-		ClassParseResult parseResult = (ClassParseResult) classParseOutcome;
-		int parsedToPosition = parseResult.getPosition();
-		TypeInfo type = parseResult.getType();
-
-		tokenStream.moveTo(parsedToPosition);
-
-		char nextChar = tokenStream.peekCharacter();
-		if (nextChar == '(') {
-			return parseObjectConstructor(tokenStream, startPosition, type);
-		} else if (nextChar == '[') {
-			return parseArrayConstructor(tokenStream, startPosition, type);
-		} else {
-			log(LogLevel.ERROR, "missing '(' at " + tokenStream);
-			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
+		char nextChar = tokenStream.readCharacter('(', '[');
+		switch (nextChar) {
+			case '(':
+				return parseObjectConstructor(tokenStream, type);
+			case '[':
+				return parseArrayConstructor(tokenStream, type);
+			default:
+				throw new InternalErrorException(tokenStream.toString() +  ": Expected '(' or '[', but found '" + nextChar + "'. This case should have been handled earlier.");
 		}
 	}
 
-	private ParseOutcome parseObjectConstructor(TokenStream tokenStream, int startPosition, TypeInfo constructorType) {
+	private ObjectParseResult parseObjectConstructor(TokenStream tokenStream, TypeInfo constructorType) throws InternalParseException, AmbiguousParseResultException, InternalErrorException, CodeCompletionException, InternalEvaluationException {
 		Class<?> constructorClass = constructorType.getRawType();
 		if (constructorClass.getEnclosingClass() != null && !Modifier.isStatic(constructorClass.getModifiers())) {
-			log(LogLevel.ERROR, "cannot instantiate non-static inner class");
-			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Cannot instantiate inner class '" + constructorClass.getName() + "'", ErrorPriority.RIGHT_PARSER);
+			throw new InternalParseException("Cannot instantiate non-static inner class '" + constructorClass.getName() + "'");
 		}
 		List<ExecutableInfo> constructorInfos = getConstructorInfos(constructorType);
 
 		log(LogLevel.INFO, "parsing constructor arguments");
 		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
-		List<ParseOutcome> argumentParseOutcomes = executableDataProvider.parseExecutableArguments(tokenStream, constructorInfos);
-
-		if (argumentParseOutcomes.isEmpty()) {
-			log(LogLevel.INFO, "no arguments found");
-		} else {
-			int lastArgumentIndex = argumentParseOutcomes.size() - 1;
-			ParseOutcome lastArgumentParseOutcome = argumentParseOutcomes.get(lastArgumentIndex);
-			ParseOutcomeType lastArgumentParseOutcomeType = lastArgumentParseOutcome.getOutcomeType();
-			log(LogLevel.INFO, "parse outcome: " + lastArgumentParseOutcomeType);
-
-			if (lastArgumentParseOutcome.getOutcomeType() == ParseOutcomeType.CODE_COMPLETIONS) {
-				CodeCompletions argumentCompletions = (CodeCompletions) lastArgumentParseOutcome;
-				// add argument information
-				if (argumentCompletions.getExecutableArgumentInfo().isPresent()) {
-					// information has already been added for an executable used in a subexpression, which is more relevant
-					return argumentCompletions;
-				}
-				List<ObjectInfo> previousArgumentInfos = argumentParseOutcomes.subList(0, lastArgumentIndex).stream()
-					.map(ObjectParseResult.class::cast)
-					.map(ObjectParseResult::getObjectInfo)
-					.collect(Collectors.toList());
-				ExecutableArgumentInfo executableArgumentInfo = executableDataProvider.createExecutableArgumentInfo(constructorInfos, previousArgumentInfos);
-				return new CodeCompletions(argumentCompletions.getPosition(), argumentCompletions.getCompletions(), Optional.of(executableArgumentInfo));
-			}
-
-			Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(lastArgumentParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-			if (parseOutcomeForPropagation.isPresent()) {
-				return parseOutcomeForPropagation.get();
-			}
-		}
-
-		List<ObjectInfo> argumentInfos = argumentParseOutcomes.stream()
-			.map(ObjectParseResult.class::cast)
-			.map(ObjectParseResult::getObjectInfo)
-			.collect(Collectors.toList());
-		List<ExecutableInfo> bestMatchingConstructorInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutableInfos(constructorInfos, argumentInfos);
+		List<ObjectParseResult> argumentResults = executableDataProvider.parseArguments(tokenStream, constructorInfos);
+		List<ObjectInfo> argumentInfos = argumentResults.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
+		List<ExecutableInfo> bestMatchingConstructorInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutables(constructorInfos, argumentInfos);
 
 		switch (bestMatchingConstructorInfos.size()) {
 			case 0:
-				log(LogLevel.ERROR, "no matching constructor found");
-				return ParseOutcomes.createParseError(tokenStream.getPosition(), "No constructor matches the given arguments", ErrorPriority.RIGHT_PARSER);
+				throw new InternalParseException("No constructor matches the given arguments");
 			case 1: {
 				ExecutableInfo bestMatchingConstructorInfo = bestMatchingConstructorInfos.get(0);
 				ObjectInfo constructorReturnInfo;
 				try {
-					constructorReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(null, bestMatchingConstructorInfo, argumentInfos);
 					log(LogLevel.SUCCESS, "found unique matching constructor");
+					constructorReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(null, bestMatchingConstructorInfo, argumentInfos);
 				} catch (Exception e) {
-					log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-					return ParseOutcomes.createParseError(startPosition, "Exception during constructor evaluation", ErrorPriority.EVALUATION_EXCEPTION, e);
+					throw new InternalEvaluationException("Error when trying to invoke constructor of '" + constructorClass.getSimpleName() + "': " + e.getMessage(), e);
 				}
-				int position = tokenStream.getPosition();
 				return isCompile()
-						? compileObjectConstructorParseResult(bestMatchingConstructorInfo, argumentParseOutcomes, position, constructorReturnInfo)
-						: ParseOutcomes.createObjectParseResult(position, constructorReturnInfo);
+						? new CompileObjectConstructorParseResult(bestMatchingConstructorInfo, (List) argumentResults, constructorReturnInfo)
+						: ParseResults.createObjectParseResult(constructorReturnInfo);
 			}
 			default: {
 				String error = "Ambiguous constructor call. Possible candidates are:\n"
 								+ bestMatchingConstructorInfos.stream().map(ConstructorParser::formatConstructorInfo).collect(Collectors.joining("\n"));
-				log(LogLevel.ERROR, error);
-				return ParseOutcomes.createAmbiguousParseResult(tokenStream.getPosition(), error);
+				throw new AmbiguousParseResultException(error);
 			}
 		}
 	}
 
-	private ParseOutcome parseArrayConstructor(TokenStream tokenStream, int startPosition, TypeInfo componentType) {
+	private ObjectParseResult parseArrayConstructor(TokenStream tokenStream, TypeInfo componentType) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
 		// TODO: currently, only 1d arrays are supported
-		ParseOutcome arraySizeParseOutcome = parseArraySize(tokenStream);
-		if (arraySizeParseOutcome == null) {
+		@Nullable ObjectParseResult arraySizeParseResult = parseArraySize(tokenStream);
+		if (arraySizeParseResult == null) {
 			// array constructor with initializer list (e.g., "new int[] { 1, 2, 3 }")
 			log(LogLevel.INFO, "parsing array elements at " + tokenStream);
-			List<ParseOutcome> elementParseOutcomes = parseArrayElements(tokenStream, ParseExpectationBuilder.expectObject().allowedType(componentType).build());
-
-			if (elementParseOutcomes.isEmpty()) {
-				log(LogLevel.INFO, "detected empty array");
-			} else {
-				ParseOutcome lastArgumentParseOutcome = elementParseOutcomes.get(elementParseOutcomes.size()-1);
-				ParseOutcomeType lastArgumentParseOutcomeType = lastArgumentParseOutcome.getOutcomeType();
-				log(LogLevel.INFO, "parse outcome: " + lastArgumentParseOutcomeType);
-
-				Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(lastArgumentParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-				if (parseOutcomeForPropagation.isPresent()) {
-					return parseOutcomeForPropagation.get();
-				}
-			}
-
-			List<ObjectInfo> elementInfos = elementParseOutcomes.stream().map(ObjectParseResult.class::cast).map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
+			ObjectParseResultExpectation elementExpectation = new ObjectParseResultExpectation(ImmutableList.of(componentType), true);
+			List<ObjectParseResult> elementParseResults = parseArrayElements(tokenStream, elementExpectation);
+			List<ObjectInfo> elementInfos = elementParseResults.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
 			ObjectInfo arrayInfo = parserToolbox.getObjectInfoProvider().getArrayInfo(componentType, elementInfos);
 			log(LogLevel.SUCCESS, "detected valid array construction with initializer list");
-			int position = tokenStream.getPosition();
 			return isCompile()
-					? compileArrayConstructorWithInitializerListParseResult(componentType, elementParseOutcomes, position, arrayInfo)
-					: ParseOutcomes.createObjectParseResult(position, arrayInfo);
+					? new CompiledArrayConstructorWithInitializerListParseResult(componentType, (List) elementParseResults, arrayInfo)
+					: ParseResults.createObjectParseResult(arrayInfo);
 		} else {
 			// array constructor with default initialization (e.g., "new int[3]")
-			Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(arraySizeParseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-			if (parseOutcomeForPropagation.isPresent()) {
-				return parseOutcomeForPropagation.get();
-			}
-			ObjectParseResult sizeParseResult = (ObjectParseResult) arraySizeParseOutcome;
-			int parsedToPosition = sizeParseResult.getPosition();
-			ObjectInfo sizeInfo = sizeParseResult.getObjectInfo();
 			ObjectInfo arrayInfo;
 			try {
+				ObjectInfo sizeInfo = arraySizeParseResult.getObjectInfo();
 				arrayInfo = parserToolbox.getObjectInfoProvider().getArrayInfo(componentType, sizeInfo);
 				log(LogLevel.SUCCESS, "detected valid array construction with null initialization");
 			} catch (ClassCastException | NegativeArraySizeException e) {
 				log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-				return ParseOutcomes.createParseError(startPosition, e.getClass().getSimpleName() + " during array construction", ErrorPriority.EVALUATION_EXCEPTION, e);
+				throw new InternalEvaluationException("Exception during array construction: " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			}
-			tokenStream.moveTo(parsedToPosition);
-			int position = tokenStream.getPosition();
 			return isCompile()
-					? compileArrayConstructorWithDefaultInitialization(componentType, sizeParseResult, position, arrayInfo)
-					: ParseOutcomes.createObjectParseResult(position, arrayInfo);
+					? new CompiledArrayConstructorWithDefaultInitializationParseResult(componentType, (CompiledObjectParseResult) arraySizeParseResult, arrayInfo)
+					: ParseResults.createObjectParseResult(arrayInfo);
 		}
 	}
 
 	// returns null if no size is specified (e.g. in "new int[] { 1, 2, 3 }")
-	private ParseOutcome parseArraySize(TokenStream tokenStream) {
+	private @Nullable ObjectParseResult parseArraySize(TokenStream tokenStream) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalErrorException, InternalEvaluationException {
 		log(LogLevel.INFO, "parsing array size");
 
-		Token characterToken = tokenStream.readCharacterUnchecked();
-		assert characterToken.getValue().equals("[");
-
-		if (tokenStream.peekCharacter() == ']') {
-			tokenStream.readCharacterUnchecked();
+		if (tokenStream.skipCharacter(']')) {
 			return null;
 		}
 
-		ParseExpectation expectation = ParseExpectationBuilder.expectObject().allowedType(InfoProvider.createTypeInfo(int.class)).build();
-		ParseOutcome arraySizeParseOutcome = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
+		ObjectParseResultExpectation sizeExpectation = new ObjectParseResultExpectation(ImmutableList.of(InfoProvider.createTypeInfo(int.class)), true);
+		ObjectParseResult arraySizeParseResult = parserToolbox.createExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), sizeExpectation);
 
-		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(arraySizeParseOutcome, expectation, ErrorPriority.RIGHT_PARSER);
-		if (parseOutcomeForPropagation.isPresent()) {
-			return parseOutcomeForPropagation.get();
-		}
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		ObjectParseResult sizeParseResult = ((ObjectParseResult) arraySizeParseOutcome);
-		int parsedToPosition = sizeParseResult.getPosition();
+		tokenStream.readCharacter(']');
 
-		tokenStream.moveTo(parsedToPosition);
-		characterToken = tokenStream.readCharacterUnchecked();
-
-		if (characterToken == null || characterToken.getValue().charAt(0) != ']') {
-			log(LogLevel.ERROR, "missing ']' at " + tokenStream);
-			return ParseOutcomes.createParseError(parsedToPosition, "Expected closing bracket ']'", ErrorPriority.RIGHT_PARSER);
-		}
-
-		if (characterToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no code completions available at " + tokenStream);
-			return CodeCompletions.none(tokenStream.getPosition());
-		}
-
-		// propagate parse outcome with corrected position (includes ']')
 		return isCompile()
-				? compileArraySize(sizeParseResult, tokenStream.getPosition())
-				: ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), sizeParseResult.getObjectInfo());
+				? new CompiledArraySizeParseResult((CompiledObjectParseResult) arraySizeParseResult)
+				: ParseResults.createObjectParseResult(arraySizeParseResult.getObjectInfo());
 	}
 
-	private List<ParseOutcome> parseArrayElements(TokenStream tokenStream, ParseExpectation expectation) {
-		List<ParseOutcome> elements = new ArrayList<>();
+	private List<ObjectParseResult> parseArrayElements(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+		List<ObjectParseResult> elements = new ArrayList<>();
 
-		int position = tokenStream.getPosition();
-		Token characterToken = tokenStream.readCharacterUnchecked();
-		if (characterToken == null || characterToken.getValue().charAt(0) != '{') {
-			log(LogLevel.ERROR, "missing '{'");
-			elements.add(ParseOutcomes.createParseError(position, "Expected opening curly bracket '{'", ErrorPriority.RIGHT_PARSER));
-			return elements;
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
+
+		tokenStream.readCharacter('{');
+
+		boolean foundClosingCurlyBrace = false;
+		if (tokenStream.skipCharacter('}')) {
+			foundClosingCurlyBrace = true;
 		}
-
-		if (!characterToken.isContainsCaret()) {
-			if (!tokenStream.hasMore()) {
-				elements.add(ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected element or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
-				return elements;
-			}
-
-			char nextCharacter = tokenStream.peekCharacter();
-			if (nextCharacter == '}') {
-				tokenStream.readCharacterUnchecked();
-				return elements;
-			}
-		}
-
-		while (true) {
+		while (!foundClosingCurlyBrace) {
 			/*
 			 * Parse expression for argument i
 			 */
-			ParseOutcome element = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
-
-			Optional<ParseOutcome> elementForPropagation = ParseUtils.prepareParseOutcomeForPropagation(element, expectation, ErrorPriority.RIGHT_PARSER);
-			if (elementForPropagation.isPresent()) {
-				elements.add(elementForPropagation.get());
-				return elements;
-			}
+			ObjectParseResult element = parserToolbox.createExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);
 			elements.add(element);
 
-			ObjectParseResult parseResult = ((ObjectParseResult) element);
-			int parsedToPosition = parseResult.getPosition();
-			tokenStream.moveTo(parsedToPosition);
-
-			position = tokenStream.getPosition();
-			characterToken = tokenStream.readCharacterUnchecked();
-
-			if (characterToken == null) {
-				elements.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
-				return elements;
-			}
-
-			if (characterToken.getValue().charAt(0) == '}') {
-				if (characterToken.isContainsCaret()) {
-					// nothing we can suggest after '}'
-					elements.add(CodeCompletions.none(tokenStream.getPosition()));
-				}
-				return elements;
-			}
-
-			if (characterToken.getValue().charAt(0) != ',') {
-				elements.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing curly bracket '}'", ErrorPriority.RIGHT_PARSER));
-				return elements;
-			}
+			foundClosingCurlyBrace = tokenStream.readCharacter(',', '}') == '}';
 		}
+		return elements;
 	}
 
 	private List<ExecutableInfo> getConstructorInfos(TypeInfo constructorType) {
@@ -326,47 +187,24 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				+ ")";
 	}
 
-	private ParseOutcome compileObjectConstructorParseResult(ExecutableInfo constructorInfo, List<ParseOutcome> argumentParseOutcomes, int position, ObjectInfo constructorReturnInfo) {
-		List<CompiledObjectParseResult> compiledArgumentParseResults = (List) argumentParseOutcomes;
-		return new CompileObjectConstructorParseResult(constructorInfo, compiledArgumentParseResults, position, constructorReturnInfo);
-	}
-
-	private ParseOutcome compileArrayConstructorWithInitializerListParseResult(TypeInfo componentType, List<ParseOutcome> elementParseOutcomes, int position, ObjectInfo arrayInfo) {
-		List<CompiledObjectParseResult> compiledElementParseResults = (List) elementParseOutcomes;
-		return new CompiledArrayConstructorWithInitializerListParseResult(componentType, compiledElementParseResults, position, arrayInfo);
-	}
-
-	private ParseOutcome compileArrayConstructorWithDefaultInitialization(TypeInfo componentType, ParseResult sizeParseResult, int position, ObjectInfo arrayInfo) {
-		CompiledObjectParseResult compiledSizeParseResult = (CompiledObjectParseResult) sizeParseResult;
-		return new CompiledArrayConstructorWithDefaultInitializationParseResult(componentType, compiledSizeParseResult, position, arrayInfo);
-	}
-
-	private ParseOutcome compileArraySize(ObjectParseResult sizeParseResult, int position) {
-		if (!ParseOutcomes.isCompiledParseResult(sizeParseResult)) {
-			return sizeParseResult;
-		}
-		CompiledObjectParseResult compiledSizeParseResult = (CompiledObjectParseResult) sizeParseResult;
-		return new CompiledArraySizeParseResult(compiledSizeParseResult, position);
-	}
-
 	private static class CompileObjectConstructorParseResult extends AbstractCompiledParseResult
 	{
-		private final ExecutableInfo					constructorInfo;
-		private final List<CompiledObjectParseResult>	compiledArgumentParseResults;
+		private final ExecutableInfo					constructor;
+		private final List<CompiledObjectParseResult>	compiledArguments;
 
-		CompileObjectConstructorParseResult(ExecutableInfo constructorInfo, List<CompiledObjectParseResult> compiledArgumentParseResults, int position, ObjectInfo constructorReturnInfo) {
-			super(position, constructorReturnInfo);
-			this.constructorInfo = constructorInfo;
-			this.compiledArgumentParseResults = compiledArgumentParseResults;
+		CompileObjectConstructorParseResult(ExecutableInfo constructor, List<CompiledObjectParseResult> compiledArguments, ObjectInfo constructorReturnInfo) {
+			super(constructorReturnInfo);
+			this.constructor = constructor;
+			this.compiledArguments = compiledArguments;
 		}
 
 		@Override
 		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			List<ObjectInfo> argumentInfos = new ArrayList<>(compiledArgumentParseResults.size());
-			for (CompiledObjectParseResult compiledArgumentParseResult : compiledArgumentParseResults) {
-				argumentInfos.add(compiledArgumentParseResult.evaluate(thisInfo, thisInfo));
+			List<ObjectInfo> arguments = new ArrayList<>(compiledArguments.size());
+			for (CompiledObjectParseResult compiledArgument : compiledArguments) {
+				arguments.add(compiledArgument.evaluate(thisInfo, thisInfo));
 			}
-			return OBJECT_INFO_PROVIDER.getExecutableReturnInfo(null, constructorInfo, argumentInfos);
+			return OBJECT_INFO_PROVIDER.getExecutableReturnInfo(null, constructor, arguments);
 		}
 	}
 
@@ -375,8 +213,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		private final TypeInfo							componentType;
 		private final List<CompiledObjectParseResult>	compiledElementParseResults;
 
-		CompiledArrayConstructorWithInitializerListParseResult(TypeInfo componentType, List<CompiledObjectParseResult> compiledElementParseResults, int position, ObjectInfo arrayInfo) {
-			super(position, arrayInfo);
+		CompiledArrayConstructorWithInitializerListParseResult(TypeInfo componentType, List<CompiledObjectParseResult> compiledElementParseResults, ObjectInfo arrayInfo) {
+			super(arrayInfo);
 			this.componentType = componentType;
 			this.compiledElementParseResults = compiledElementParseResults;
 		}
@@ -396,8 +234,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		private final TypeInfo					componentType;
 		private final CompiledObjectParseResult	compiledSizeParseResult;
 
-		CompiledArrayConstructorWithDefaultInitializationParseResult(TypeInfo componentType, CompiledObjectParseResult compiledSizeParseResult, int position, ObjectInfo arrayInfo) {
-			super(position, arrayInfo);
+		CompiledArrayConstructorWithDefaultInitializationParseResult(TypeInfo componentType, CompiledObjectParseResult compiledSizeParseResult, ObjectInfo arrayInfo) {
+			super(arrayInfo);
 			this.componentType = componentType;
 			this.compiledSizeParseResult = compiledSizeParseResult;
 		}
@@ -414,8 +252,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 	{
 		private final CompiledObjectParseResult	compiledSizeParseResult;
 
-		CompiledArraySizeParseResult(CompiledObjectParseResult compiledSizeParseResult, int position) {
-			super(position, compiledSizeParseResult.getObjectInfo());
+		CompiledArraySizeParseResult(CompiledObjectParseResult compiledSizeParseResult) {
+			super(compiledSizeParseResult.getObjectInfo());
 			this.compiledSizeParseResult = compiledSizeParseResult;
 		}
 

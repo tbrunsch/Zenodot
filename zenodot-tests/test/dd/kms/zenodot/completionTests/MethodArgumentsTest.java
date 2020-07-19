@@ -35,8 +35,7 @@ public class MethodArgumentsTest extends CompletionTest
 		testBuilder
 			.addTestWithError("prefixI(prefixD)",	-1,	IllegalStateException.class)
 			.addTestWithError("prefixD(prefixI)",		ParseException.class)
-			.addTestWithError("prefixC(prefixI,",		ParseException.class)
-			.addTestWithError("prefixI(prefixD))",	-1,	ParseException.class);
+			.addTestWithError("prefixC(prefixI,",		ParseException.class);
 
 		return testBuilder.build();
 	}

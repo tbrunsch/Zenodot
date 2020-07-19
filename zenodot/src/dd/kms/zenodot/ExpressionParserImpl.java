@@ -1,7 +1,10 @@
 package dd.kms.zenodot;
 
-import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.result.CodeCompletion;
+import dd.kms.zenodot.result.ExecutableArgumentInfo;
+import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
@@ -11,51 +14,47 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import java.util.List;
 import java.util.Optional;
 
-class ExpressionParserImpl extends AbstractParser implements ExpressionParser
+class ExpressionParserImpl extends AbstractParser<ObjectParseResult, ObjectParseResultExpectation> implements ExpressionParser
 {
+	private static final ObjectParseResultExpectation	PARSE_RESULT_EXPECTATION	= new ObjectParseResultExpectation().parseWholeText(true);
+
 	private final ObjectInfo	thisValue;
 
-	public ExpressionParserImpl(String text, ParserSettings settings, ObjectInfo thisValue) {
+	ExpressionParserImpl(String text, ParserSettings settings, ObjectInfo thisValue) {
 		super(text, settings);
 		this.thisValue = thisValue;
 	}
 
 	@Override
 	public List<CodeCompletion> getCompletions(int caretPosition) throws ParseException {
-		return getCodeCompletions(caretPosition).getCompletions();
+		return getCodeCompletions(caretPosition, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
 	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(int caretPosition) throws ParseException {
-		return getCodeCompletions(caretPosition).getExecutableArgumentInfo();
+		return getCodeCompletions(caretPosition, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
 	}
 
 	@Override
 	public ObjectInfo evaluate() throws ParseException {
-		ParseOutcome parseOutcome;
-
-		if (!settings.isEnableDynamicTyping()) {
-			// First iteration without evaluation to avoid side effects when errors occur
-			parseOutcome = parse(ParseMode.WITHOUT_EVALUATION, -1);
-			if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)) {
-				// Second iteration with evaluation (side effects cannot be avoided)
-				parseOutcome = parse(ParseMode.EVALUATION, -1);
+		TokenStream tokenStream = new TokenStream(text, -1);
+		ObjectParseResult parseResult;
+		try {
+			if (!settings.isEnableDynamicTyping()) {
+				// first iteration without evaluation to avoid side effects when errors occur
+				parse(tokenStream, ParseMode.WITHOUT_EVALUATION, PARSE_RESULT_EXPECTATION);
+				tokenStream.setPosition(0);
 			}
-		} else {
-			parseOutcome = parse(ParseMode.EVALUATION, -1);
+			parseResult = parse(tokenStream, ParseMode.EVALUATION, PARSE_RESULT_EXPECTATION);
+		} catch (Throwable t) {
+			throw new ParseException(tokenStream.getPosition(), t.getMessage(), t);
 		}
-
-		if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)) {
-			ObjectParseResult result = (ObjectParseResult) parseOutcome;
-			checkParsedWholeText(result);
-			return result.getObjectInfo();
-		}
-		throw createInvalidResultTypeException(parseOutcome);
+		return parseResult.getObjectInfo();
 	}
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
+	ObjectParseResult doParse(TokenStream tokenStream, ParseMode parseMode, ObjectParseResultExpectation parseResultExpectation) throws InternalErrorException, InternalEvaluationException, CodeCompletionException, AmbiguousParseResultException, InternalParseException {
 		ParserToolbox parserToolbox  = new ParserToolbox(thisValue, settings, parseMode);
-		return parserToolbox.getExpressionParser().parse(tokenStream, thisValue, ParseExpectation.OBJECT);
+		return parserToolbox.createExpressionParser().parse(tokenStream, thisValue, parseResultExpectation);
 	}
 }

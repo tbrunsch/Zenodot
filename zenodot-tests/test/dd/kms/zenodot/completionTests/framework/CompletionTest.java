@@ -8,6 +8,7 @@ import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -59,7 +60,10 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 			Parsers.createExpressionParser(expression, settings, thisInfo).getCompletions(caretPosition);
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
-			assertEquals(expectedExceptionClass, e.getClass());
+			if (e.getClass() != expectedExceptionClass) {
+				e.printStackTrace();
+				Assert.assertEquals(expectedExceptionClass, e.getClass());
+			}
 		}
 	}
 

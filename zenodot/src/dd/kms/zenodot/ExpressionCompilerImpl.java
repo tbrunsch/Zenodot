@@ -1,7 +1,11 @@
 package dd.kms.zenodot;
 
-import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.result.CodeCompletion;
+import dd.kms.zenodot.result.CompiledObjectParseResult;
+import dd.kms.zenodot.result.ExecutableArgumentInfo;
+import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
@@ -13,42 +17,48 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 import java.util.List;
 import java.util.Optional;
 
-class ExpressionCompilerImpl extends AbstractParser implements ExpressionCompiler
+class ExpressionCompilerImpl extends AbstractParser<ObjectParseResult, ObjectParseResultExpectation> implements ExpressionCompiler
 {
+	private static final ObjectParseResultExpectation	PARSE_RESULT_EXPECTATION	= new ObjectParseResultExpectation().parseWholeText(true);
+
 	private final TypeInfo	thisType;
 
-	public ExpressionCompilerImpl(String text, ParserSettings settings, TypeInfo thisType) {
+	ExpressionCompilerImpl(String text, ParserSettings settings, TypeInfo thisType) {
 		super(text, settings);
 		this.thisType = thisType;
 	}
 
 	@Override
 	public List<CodeCompletion> getCompletions(int caretPosition) throws ParseException {
-		return getCodeCompletions(caretPosition).getCompletions();
+		return getCodeCompletions(caretPosition, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
 	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(int caretPosition) throws ParseException {
-		return getCodeCompletions(caretPosition).getExecutableArgumentInfo();
+		return getCodeCompletions(caretPosition, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
 	}
 
 	@Override
 	public CompiledExpression compile() throws ParseException {
-		ParseOutcome parseOutcome = parse(ParseMode.COMPILATION, -1);
-
-		if (ParseOutcomes.isCompiledParseResult(parseOutcome)) {
-			CompiledObjectParseResult result = (CompiledObjectParseResult) parseOutcome;
-			checkParsedWholeText(result);
-			return createCompiledExpression(result);
+		TokenStream tokenStream = new TokenStream(text, -1);
+		CompiledObjectParseResult compiledObjectParseResult;
+		try {
+			ObjectParseResult parseResult = parse(tokenStream, ParseMode.COMPILATION, PARSE_RESULT_EXPECTATION);
+			if (!(parseResult instanceof CompiledObjectParseResult)) {
+				throw new InternalErrorException("Parse result is not compiled");
+			}
+			compiledObjectParseResult = (CompiledObjectParseResult) parseResult;
+		} catch (Throwable t) {
+			throw new ParseException(tokenStream.getPosition(), t.getMessage(), t);
 		}
-		throw createInvalidResultTypeException(parseOutcome);
+		return createCompiledExpression(compiledObjectParseResult);
 	}
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
+	ObjectParseResult doParse(TokenStream tokenStream, ParseMode parseMode, ObjectParseResultExpectation parseResultExpectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalEvaluationException, InternalErrorException {
 		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, thisType);
 		ParserToolbox parserToolbox  = new ParserToolbox(thisInfo, settings, parseMode);
-		return parserToolbox.getExpressionParser().parse(tokenStream, thisInfo, ParseExpectation.OBJECT);
+		return parserToolbox.createExpressionParser().parse(tokenStream, thisInfo, parseResultExpectation);
 	}
 
 	private CompiledExpression createCompiledExpression(CompiledObjectParseResult compiledParseResult) {

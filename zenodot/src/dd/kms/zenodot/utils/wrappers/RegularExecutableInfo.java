@@ -48,7 +48,7 @@ class RegularExecutableInfo extends AbstractExecutableInfo
 
 	private TypeMatch rateArgumentTypeMatch(int argIndex, TypeInfo argumentType) {
 		TypeInfo expectedArgumentType = getExpectedArgumentType(argIndex);
-		return MatchRatings.rateTypeMatch(argumentType, expectedArgumentType);
+		return MatchRatings.rateTypeMatch(expectedArgumentType, argumentType);
 	}
 
 	@Override

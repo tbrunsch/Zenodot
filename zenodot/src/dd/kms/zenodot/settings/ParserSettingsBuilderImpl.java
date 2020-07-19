@@ -14,6 +14,7 @@ import java.util.Set;
 
 class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
+	private CompletionMode 		completionMode;
 	private Set<ClassInfo>		importedClasses;
 	private Set<PackageInfo>	importedPackages;
 	private List<Variable>		variables;
@@ -24,6 +25,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	private ParserLogger		logger;
 
 	ParserSettingsBuilderImpl() {
+		completionMode = CompletionMode.COMPLETE_AND_REPLACE_WHOLE_WORDS;
 		importedClasses = ImmutableSet.of();
 		importedPackages = ImmutableSet.of();
 		variables = ImmutableList.of();
@@ -35,6 +37,7 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	ParserSettingsBuilderImpl(ParserSettings settings) {
+		completionMode = settings.getCompletionMode();
 		importedClasses = ImmutableSet.copyOf(settings.getImports().getImportedClasses());
 		importedPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackages());
 		variables = ImmutableList.copyOf(settings.getVariables());
@@ -43,6 +46,12 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		considerAllClassesForClassCompletions = settings.isConsiderAllClassesForClassCompletions();
 		customHierarchyRoot = settings.getCustomHierarchyRoot();
 		logger = settings.getLogger();
+	}
+
+	@Override
+	public ParserSettingsBuilder completionMode(CompletionMode completionMode) {
+		this.completionMode = completionMode;
+		return this;
 	}
 
 	@Override
@@ -114,6 +123,6 @@ class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(importedClasses, importedPackages, variables, minimumAccessLevel, enableDynamicTyping, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
+		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, variables, minimumAccessLevel, enableDynamicTyping, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
 	}
 }

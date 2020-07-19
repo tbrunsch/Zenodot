@@ -4,22 +4,10 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 class ClassParseResultImpl implements ClassParseResult
 {
-	private final int		position; // exclusive
 	private final TypeInfo type;
 
-	ClassParseResultImpl(int position, TypeInfo type) {
-		this.position = position;
+	ClassParseResultImpl(TypeInfo type) {
 		this.type = type;
-	}
-
-	@Override
-	public ParseOutcomeType getOutcomeType() {
-		return ParseOutcomeType.RESULT;
-	}
-
-	@Override
-	public ParseResultType getResultType() {
-		return ParseResultType.CLASS;
 	}
 
 	@Override
@@ -28,12 +16,7 @@ class ClassParseResultImpl implements ClassParseResult
 	}
 
 	@Override
-	public int getPosition() {
-		return position;
-	}
-
-	@Override
 	public String toString() {
-		return "Parsed until " + position + ": " + type;
+		return type.toString();
 	}
 }

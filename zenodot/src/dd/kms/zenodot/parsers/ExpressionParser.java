@@ -2,27 +2,24 @@ package dd.kms.zenodot.parsers;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.matching.MatchRatings;
-import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.ParseError.ErrorPriority;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.result.AbstractCompiledParseResult;
+import dd.kms.zenodot.result.CompiledObjectParseResult;
+import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.Associativity;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
-import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
-import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataproviders.OperatorResultProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
-import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static dd.kms.zenodot.utils.dataproviders.OperatorResultProvider.OperatorException;
 
@@ -30,7 +27,7 @@ import static dd.kms.zenodot.utils.dataproviders.OperatorResultProvider.Operator
  * Parses arbitrary Java expressions including binary operators by using the
  * {@link SimpleExpressionParser} for parsing the operands.
  */
-public class ExpressionParser extends AbstractParser<ObjectInfo>
+public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation>
 {
 	private static final Map<BinaryOperator, OperatorImplementation>	OPERATOR_IMPLEMENTATIONS = ImmutableMap.<BinaryOperator, OperatorImplementation>builder()
 		.put(BinaryOperator.MULTIPLY, 					OperatorResultProvider::getMultiplicationInfo)
@@ -63,137 +60,78 @@ public class ExpressionParser extends AbstractParser<ObjectInfo>
 	}
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
-		List<ObjectParseResult> simpleExpressionParseResults = new ArrayList<>();
+	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalEvaluationException, InternalErrorException {
+		ObjectParseResultExpectation operandExpectation = expectation.parseWholeText(false).resultTypeMustMatch(false);
+
+		List<ObjectParseResult> operands = new ArrayList<>();
 		List<BinaryOperator> operators = new ArrayList<>();
 
-		log(LogLevel.INFO, "parsing first expression");
-		ParseOutcome parseOutcome = parserToolbox.getSimpleExpressionParser().parse(tokenStream, contextInfo, expectation);
+		log(LogLevel.INFO, "parsing first operand");
+		ObjectParseResult firstOperand = parserToolbox.createParser(SimpleExpressionParser.class).parse(tokenStream, contextInfo, operandExpectation);
+		ObjectInfo accumulatedResultInfo = firstOperand.getObjectInfo();
+		operands.add(firstOperand);
 
-		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(parseOutcome, expectation, ErrorPriority.WRONG_PARSER);
-		if (parseOutcomeForPropagation.isPresent()) {
-			return parseOutcomeForPropagation.get();
-		}
-		ObjectParseResult simpleExpressionParseResult = (ObjectParseResult) parseOutcome;
-		ObjectInfo expressionInfo = simpleExpressionParseResult.getObjectInfo();
-		int parsedToPosition = simpleExpressionParseResult.getPosition();
-		tokenStream.moveTo(parsedToPosition);
-		simpleExpressionParseResults.add(simpleExpressionParseResult);
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
 		/*
 		 * If short circuit evaluation becomes active, then we must switch to a non-evaluating contextInfo,
 		 * but still check for syntax errors.
 		 */
-
 		ParserToolbox parserToolbox = this.parserToolbox;
 		boolean considerOperatorResult = true;
 		while (true) {
-			Token operatorToken = tokenStream.readBinaryOperatorUnchecked();
-			if (operatorToken == null) {
-				return isCompile()
-						? compile(simpleExpressionParseResults, operators, parsedToPosition, expressionInfo)
-						: ParseOutcomes.createObjectParseResult(parsedToPosition, expressionInfo);
-			}
-			log(LogLevel.SUCCESS, "detected binary operator '" + operatorToken.getValue() + "' at " + tokenStream);
+			BinaryOperator operator = tokenStream.peekBinaryOperator();
+			if (operator == null || operator.getPrecedenceLevel() > maxOperatorPrecedenceLevelToConsider) {
+				// Example: parsed "+" in "a*b + c" => only evaluate "a*b" and let outer expression parser evaluate sum of a*b and c
+				if (operator != null) {
+					log(LogLevel.SUCCESS, "detected binary operator '" + operator + "' at " + tokenStream);
+				}
 
-			if (operatorToken.isContainsCaret()) {
-				log(LogLevel.INFO, "no code completions available");
-				return CodeCompletions.none(tokenStream.getPosition());
+				return isCompile()
+					? new CompiledExpressionParseResult((List) operands, operators, accumulatedResultInfo)
+					: ParseResults.createObjectParseResult(accumulatedResultInfo);
 			}
 
-			BinaryOperator operator = BinaryOperator.getValue(operatorToken.getValue());
-			if (operator.getPrecedenceLevel() > maxOperatorPrecedenceLevelToConsider) {
-				return isCompile()
-						? compile(simpleExpressionParseResults, operators, parsedToPosition, expressionInfo)
-						: ParseOutcomes.createObjectParseResult(parsedToPosition, expressionInfo);
-			}
+			tokenStream.readBinaryOperator();
 			operators.add(operator);
 
-			switch (operator.getAssociativity()) {
-				case LEFT_TO_RIGHT: {
-					if (considerOperatorResult && stopCircuitEvaluation(expressionInfo, operator)) {
-						parserToolbox = deriveToolboxWithoutEvaluation(parserToolbox);
-						considerOperatorResult = false;
-					}
-					parseOutcome = parserToolbox.createExpressionParser(operator.getPrecedenceLevel() - 1).parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
+			/*
+			 * We use an expression parser to parse the next operand. This can also be a compound expression,
+			 * so we use the expression parser and must specify an operator precedence level.
+			 *
+			 * Case 1: left-to-right associative operator: The next operator must only contain operators
+			 * of higher precedence (= lower precedence level). Example: Parsed "+" in "a + b*c + d". Now
+			 * use the expression parser for evaluating b*c as second operand. Operators with the same
+			 * precedence level as "+" or higher are not allowed.
+			 *
+			 * Case 2: right-to-left associative operator: The next operator must only contain operators
+			 * of higher or the same precedence. Example: Parsed first "=" in "a = b = c*d". Now use the
+			 * expression parser for evaluating "b = c*d" as second operand.
+			 */
+			Associativity associativity = operator.getAssociativity();
+			int operatorPrecedenceLevelForNextOperand = operator.getPrecedenceLevel() - (associativity == Associativity.LEFT_TO_RIGHT ? 1 : 0);
 
-					parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(parseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-					if (parseOutcomeForPropagation.isPresent()) {
-						return parseOutcomeForPropagation.get();
-					}
-					ObjectParseResult rhsParseResult = (ObjectParseResult) parseOutcome;
-					ObjectInfo rhsInfo = rhsParseResult.getObjectInfo();
-					parsedToPosition = rhsParseResult.getPosition();
-					tokenStream.moveTo(parsedToPosition);
-					simpleExpressionParseResults.add(rhsParseResult);
-
-					try {
-						// Check syntax even if result of operator is not considered because of short circuit evaluation
-						ObjectInfo operatorResult = applyOperator(parserToolbox.getOperatorResultProvider(), expressionInfo, rhsInfo, operator);
-						if (considerOperatorResult) {
-							expressionInfo = operatorResult;
-						}
-						log(LogLevel.SUCCESS, "applied operator successfully");
-					} catch (OperatorException e) {
-						log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
-						return ParseOutcomes.createParseError(parsedToPosition, e.getMessage(), ErrorPriority.RIGHT_PARSER);
-					}
-					break;
+			if (considerOperatorResult && stopCircuitEvaluation(accumulatedResultInfo, operator)) {
+				parserToolbox = deriveToolboxWithoutEvaluation(parserToolbox);
+				considerOperatorResult = false;
+			}
+			log(LogLevel.INFO, "parsing next operand");
+			AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation> nextOperandParser = parserToolbox.createExpressionParser(operatorPrecedenceLevelForNextOperand);
+			ObjectParseResult nextOperand = nextOperandParser.parse(tokenStream, contextInfo, operandExpectation);
+			ObjectInfo nextOperandInfo = nextOperand.getObjectInfo();
+			operands.add(nextOperand);
+			try {
+				// Check syntax even if result of operator is not considered because of short circuit evaluation
+				ObjectInfo operatorResult = applyOperator(parserToolbox.getOperatorResultProvider(), accumulatedResultInfo, nextOperandInfo, operator);
+				if (considerOperatorResult) {
+					accumulatedResultInfo = operatorResult;
 				}
-				case RIGHT_TO_LEFT: {
-					parseOutcome = parserToolbox.createExpressionParser(operator.getPrecedenceLevel()).parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
-
-					parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(parseOutcome, ParseExpectation.OBJECT, ErrorPriority.RIGHT_PARSER);
-					if (parseOutcomeForPropagation.isPresent()) {
-						return parseOutcomeForPropagation.get();
-					}
-					ObjectParseResult rhsParseResult = (ObjectParseResult) parseOutcome;
-					ObjectInfo rhsInfo = rhsParseResult.getObjectInfo();
-					simpleExpressionParseResults.add(rhsParseResult);
-
-					ObjectInfo operatorResultInfo;
-					try {
-						operatorResultInfo = applyOperator(parserToolbox.getOperatorResultProvider(), expressionInfo, rhsInfo, operator);
-						log(LogLevel.SUCCESS, "applied operator successfully");
-					} catch (OperatorException e) {
-						log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
-						return ParseOutcomes.createParseError(rhsParseResult.getPosition(), e.getMessage(), ErrorPriority.RIGHT_PARSER);
-					}
-					return isCompile()
-							? compile(simpleExpressionParseResults, operators, rhsParseResult.getPosition(), operatorResultInfo)
-							: ParseOutcomes.createObjectParseResult(rhsParseResult.getPosition(), operatorResultInfo);
-				}
-				default:
-					return ParseOutcomes.createParseError(tokenStream.getPosition(), "Internal error: Unknown operator associativity: " + operator.getAssociativity(), ErrorPriority.INTERNAL_ERROR);
+				log(LogLevel.SUCCESS, "applied operator successfully");
+			} catch (OperatorException e) {
+				log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
+				throw new InternalParseException(e.getMessage());
 			}
 		}
-	}
-
-	@Override
-	ParseOutcome checkExpectations(ParseOutcome parseOutcome, ParseExpectation expectation) {
-		parseOutcome = super.checkExpectations(parseOutcome, expectation);
-
-		if (!ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)) {
-			// no further checks required
-			return parseOutcome;
-		}
-
-		ObjectParseResult objectParseResult = (ObjectParseResult) parseOutcome;
-		List<TypeInfo> allowedTypes = expectation.getAllowedTypes();
-		TypeInfo resultType = parserToolbox.getObjectInfoProvider().getType(objectParseResult.getObjectInfo());
-		if (allowedTypes != null && allowedTypes.stream().noneMatch(expectedResultType -> MatchRatings.isConvertibleTo(resultType, expectedResultType))) {
-			String messagePrefix = "The class '" + resultType + "' is not assignable to ";
-			String messageMiddle = allowedTypes.size() > 1
-					? "any of the expected classes "
-					: "the expected class ";
-			String messageSuffix = "'" + allowedTypes.stream().map(Object::toString).collect(Collectors.joining("', '")) + "'";
-			String message = messagePrefix + messageMiddle + messageSuffix;
-			log(LogLevel.ERROR, message);
-			return ParseOutcomes.createParseError(parseOutcome.getPosition(), message, ErrorPriority.RIGHT_PARSER);
-		}
-
-		return objectParseResult;
-
 	}
 
 	private ObjectInfo applyOperator(OperatorResultProvider operatorResultProvider, ObjectInfo lhs, ObjectInfo rhs, BinaryOperator operator) throws OperatorException {
@@ -211,11 +149,6 @@ public class ExpressionParser extends AbstractParser<ObjectInfo>
 				: parserToolbox;
 	}
 
-	private ParseOutcome compile(List<ObjectParseResult> simpleExpressionParseResults, List<BinaryOperator> operators, int position, ObjectInfo expressionInfo) {
-		List<CompiledObjectParseResult> compiledSimpleExpressionParseResults = (List) simpleExpressionParseResults;
-		return new CompiledExpressionParseResult(compiledSimpleExpressionParseResults, operators, position, expressionInfo);
-	}
-
 	@FunctionalInterface
 	private interface OperatorImplementation
 	{
@@ -224,35 +157,42 @@ public class ExpressionParser extends AbstractParser<ObjectInfo>
 
 	private class CompiledExpressionParseResult extends AbstractCompiledParseResult
 	{
-		private final List<CompiledObjectParseResult>	compiledSimpleExpressionParseResults;
-		private final List<BinaryOperator>							operators;
+		private final List<CompiledObjectParseResult>	operands;
+		private final List<BinaryOperator>				operators;
 
-		CompiledExpressionParseResult(List<CompiledObjectParseResult> compiledSimpleExpressionParseResults, List<BinaryOperator> operators, int position, ObjectInfo expressionInfo) {
-			super(position, expressionInfo);
+		CompiledExpressionParseResult(List<CompiledObjectParseResult> operands, List<BinaryOperator> operators, ObjectInfo expressionInfo) {
+			super(expressionInfo);
 
-			Preconditions.checkArgument(compiledSimpleExpressionParseResults.size() == operators.size() + 1);
+			Preconditions.checkArgument(operands.size() == operators.size() + 1);
 
-			// the following precondition allows evaluating the expression from left to right
-			Preconditions.checkArgument(operators.size() <= 1
-										|| operators.stream().allMatch(op -> op.getAssociativity() == Associativity.LEFT_TO_RIGHT));
+			/*
+			 * Since only the assignment operator evaluates from right to left and has the highest
+			 * precedence level (= lowest precedence), it is guaranteed (except for possible coding
+			 * bugs) that this constructor is only called for 1 operator if it is right-to-left
+			 * associative.
+			 */
+			boolean canBeEvaluatedFromLeftToRight = operators.size() == 1
+				|| operators.stream().allMatch(op -> op.getAssociativity() == Associativity.LEFT_TO_RIGHT);
+			Preconditions.checkArgument(canBeEvaluatedFromLeftToRight);
 
-			this.compiledSimpleExpressionParseResults = compiledSimpleExpressionParseResults;
+			this.operands = operands;
 			this.operators = operators;
 		}
 
 		@Override
 		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
 			// evaluate from left to right
-			ObjectInfo expressionInfo = Iterables.getFirst(compiledSimpleExpressionParseResults, null).evaluate(thisInfo, contextInfo);
+			ObjectInfo accumulatedResultInfo = operands.get(0).evaluate(thisInfo, contextInfo);
 			for (int i = 0; i < operators.size(); i++) {
 				BinaryOperator operator = operators.get(i);
-				if (stopCircuitEvaluation(expressionInfo, operator)) {
-					return expressionInfo;
+				if (stopCircuitEvaluation(accumulatedResultInfo, operator)) {
+					return accumulatedResultInfo;
 				}
-				ObjectInfo rhsInfo = compiledSimpleExpressionParseResults.get(i + 1).evaluate(thisInfo, contextInfo);
-				expressionInfo = applyOperator(OPERATOR_RESULT_PROVIDER, expressionInfo, rhsInfo, operator);
+				CompiledObjectParseResult nextOperand = operands.get(i + 1);
+				ObjectInfo nextOperandInfo = nextOperand.evaluate(thisInfo, contextInfo);
+				accumulatedResultInfo = applyOperator(OPERATOR_RESULT_PROVIDER, accumulatedResultInfo, nextOperandInfo, operator);
 			}
-			return expressionInfo;
+			return accumulatedResultInfo;
 		}
 	}
 }

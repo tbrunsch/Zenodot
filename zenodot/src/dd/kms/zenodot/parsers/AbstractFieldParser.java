@@ -4,11 +4,16 @@ import com.google.common.collect.Iterables;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.FieldScanner;
 import dd.kms.zenodot.debug.LogLevel;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.InternalEvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.AbstractCompiledParseResult;
 import dd.kms.zenodot.result.CodeCompletions;
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomes;
-import dd.kms.zenodot.tokenizer.Token;
+import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.ParseResults;
+import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataproviders.FieldDataProvider;
@@ -18,8 +23,6 @@ import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.List;
-
-import static dd.kms.zenodot.result.ParseError.ErrorPriority;
 
 /**
  * Base class for {@link ClassFieldParser} and {@link ObjectFieldParser}
@@ -36,79 +39,53 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ParseOutcome parseNext(TokenStream tokenStream, C context, ParseExpectation expectation) {
-		int startPosition = tokenStream.getPosition();
-
+	ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException, InternalEvaluationException {
 		if (contextCausesNullPointerException(context)) {
-			log(LogLevel.ERROR, "null pointer exception");
-			return ParseOutcomes.createParseError(startPosition, "Null pointer exception", ErrorPriority.EVALUATION_EXCEPTION);
+			throw new InternalParseException("Null pointer exception");
 		}
 
-		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
-			String fieldName;
-			int insertionEnd;
-			try {
-				Token fieldNameToken = tokenStream.readIdentifier();
-				fieldName = fieldNameToken.getValue();
-				insertionEnd = tokenStream.getPosition();
-			} catch (TokenStream.JavaTokenParseException e) {
-				fieldName = "";
-				insertionEnd = startPosition;
-			}
-			log(LogLevel.INFO, "suggesting fields for completion...");
-			return completeField(fieldName, context, expectation, startPosition, insertionEnd);
-		}
+		String fieldName = tokenStream.readIdentifier(info -> suggestFields(context, expectation, info), "Expected a field");
 
-		Token fieldNameToken;
-		try {
-			fieldNameToken = tokenStream.readIdentifier();
-		} catch (TokenStream.JavaTokenParseException e) {
-			log(LogLevel.ERROR, "missing field name at " + tokenStream);
-			return ParseOutcomes.createParseError(startPosition, "Expected an identifier", ErrorPriority.WRONG_PARSER);
+		if (tokenStream.peekCharacter() == '(') {
+			throw new InternalParseException("Unexpected opening parenthesis '('");
 		}
-		String fieldName = fieldNameToken.getValue();
-		int endPosition = tokenStream.getPosition();
+		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
 
-		// check for code completion
-		if (fieldNameToken.isContainsCaret()) {
-			log(LogLevel.SUCCESS, "suggesting fields matching '" + fieldName + "'");
-			return completeField(fieldName, context, expectation, startPosition, endPosition);
-		}
-
-		if (tokenStream.hasMore() && tokenStream.peekCharacter() == '(') {
-			log(LogLevel.ERROR, "unexpected '(' at " + tokenStream);
-			return ParseOutcomes.createParseError(tokenStream.getPosition() + 1, "Unexpected opening parenthesis '('", ErrorPriority.WRONG_PARSER);
-		}
-
-		// no code completion requested => field name must exist
 		List<FieldInfo> fieldInfos = getFieldInfos(context, getFieldScanner(fieldName, true));
 		if (fieldInfos.isEmpty()) {
-			if (getFieldInfos(context, getFieldScanner(fieldName, false)).isEmpty()) {
-				log(LogLevel.ERROR, "unknown field '" + fieldName + "'");
-				return ParseOutcomes.createParseError(startPosition, "Unknown field '" + fieldName + "'", ErrorPriority.POTENTIALLY_RIGHT_PARSER);
-			} else {
-				log(LogLevel.ERROR, "field '" + fieldName + "' is not visible");
-				return ParseOutcomes.createParseError(startPosition, "Field '" + fieldName + "' is not visible", ErrorPriority.RIGHT_PARSER);
-			}
+			throw createFieldNotFoundException(context, fieldName);
 		}
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 		log(LogLevel.SUCCESS, "detected field '" + fieldName + "'");
 
 		FieldInfo fieldInfo = Iterables.getOnlyElement(fieldInfos);
 		Object contextObject = getContextObject(context);
 		ObjectInfo matchingFieldInfo = parserToolbox.getObjectInfoProvider().getFieldValueInfo(contextObject, fieldInfo);
 
-		int position = tokenStream.getPosition();
 		return isCompile()
-				? compile(fieldInfo, position, matchingFieldInfo)
-				: ParseOutcomes.createObjectParseResult(position, matchingFieldInfo);
+				? compile(fieldInfo, matchingFieldInfo)
+				: ParseResults.createObjectParseResult(matchingFieldInfo);
 	}
 
-	private CodeCompletions completeField(String expectedName, C context, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+	private CodeCompletions suggestFields(C context, ObjectParseResultExpectation expectation, CompletionInfo info) {
+		int insertionBegin = getInsertionBegin(info);
+		int insertionEnd = getInsertionEnd(info);
+		String nameToComplete = getTextToComplete(info);
+
+		log(LogLevel.SUCCESS, "suggesting fields matching '" + nameToComplete + "'");
+
 		FieldDataProvider fieldDataProvider = parserToolbox.getFieldDataProvider();
 		Object contextObject = getContextObject(context);
 		List<FieldInfo> fieldInfos = getFieldInfos(context, getFieldScanner());
 		boolean contextIsStatic = isContextStatic();
-		return fieldDataProvider.completeField(expectedName, contextObject, contextIsStatic, fieldInfos, expectation, insertionBegin, insertionEnd);
+		return fieldDataProvider.completeField(nameToComplete, contextObject, contextIsStatic, fieldInfos, expectation, insertionBegin, insertionEnd);
+	}
+
+	private InternalParseException createFieldNotFoundException(C context, String fieldName) {
+		// distinguish between "unknown field" and "field not visible"
+		List<FieldInfo> allFields = getFieldInfos(context, getFieldScanner(fieldName, false));
+		String error = allFields.isEmpty() ? "Unknown field '"+ fieldName + "'" : "Field '" + fieldName + "' is not visible";
+		return new InternalParseException(error);
 	}
 
 	private FieldScanner getFieldScanner() {
@@ -128,23 +105,22 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		return InfoProvider.getFieldInfos(getContextType(context), fieldScanner);
 	}
 
-	private ParseOutcome compile(FieldInfo fieldInfo, int position, ObjectInfo objectInfo) {
-		return new CompiledFieldParseResult(fieldInfo, position, objectInfo);
+	private ObjectParseResult compile(FieldInfo fieldInfo, ObjectInfo objectInfo) {
+		return new CompiledFieldParseResult(fieldInfo, objectInfo);
 	}
 
 	private class CompiledFieldParseResult extends AbstractCompiledParseResult
 	{
 		private final FieldInfo	fieldInfo;
 
-		CompiledFieldParseResult(FieldInfo fieldInfo, int position, ObjectInfo objectInfo) {
-			super(position, objectInfo);
+		CompiledFieldParseResult(FieldInfo fieldInfo, ObjectInfo objectInfo) {
+			super(objectInfo);
 			this.fieldInfo = fieldInfo;
 		}
 
 		@Override
 		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			// TODO: If C == TypeInfo, then contextObject should be null instead
-			Object contextObject = contextInfo.getObject();
+			Object contextObject = isContextStatic() ? null : contextInfo.getObject();
 			return OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
 		}
 	}

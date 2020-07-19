@@ -64,7 +64,7 @@ class VariadicExecutableInfo extends AbstractExecutableInfo
 			return TypeMatch.NONE;
 		}
 		TypeInfo expectedArgumentType = getExpectedArgumentType(argIndex);
-		return MatchRatings.rateTypeMatch(argumentType, expectedArgumentType);
+		return MatchRatings.rateTypeMatch(expectedArgumentType, argumentType);
 	}
 
 	@Override

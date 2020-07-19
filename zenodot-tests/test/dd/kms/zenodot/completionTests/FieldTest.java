@@ -33,7 +33,6 @@ public class FieldTest extends CompletionTest
 
 		testBuilder
 			.addTestWithError("xy",		-1,	IllegalStateException.class)
-			.addTestWithError("bla",	-1,	ParseException.class)
 			.addTestWithError("xy,",		ParseException.class);
 
 		return testBuilder.build();

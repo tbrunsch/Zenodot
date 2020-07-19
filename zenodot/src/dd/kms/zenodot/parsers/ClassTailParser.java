@@ -1,13 +1,20 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomes;
-import dd.kms.zenodot.result.ParseResultType;
-import dd.kms.zenodot.tokenizer.Token;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.expectations.ClassParseResultExpectation;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.result.ClassParseResult;
+import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Parses subexpressions
@@ -19,45 +26,43 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
  * The class {@code <class>} is the context for the parser. If the subexpression does not start with a dot ({@code .}),
  * then {@code <class>} is returned as parse result.
  */
-public class ClassTailParser extends AbstractTailParser<TypeInfo>
+public class ClassTailParser<T extends ParseResult, S extends ParseResultExpectation<T>> extends AbstractTailParser<TypeInfo, T, S>
 {
 	public ClassTailParser(ParserToolbox parserToolbox) {
 		super(parserToolbox);
 	}
 
 	@Override
-	ParseOutcome parseDot(TokenStream tokenStream, TypeInfo classType, ParseExpectation expectation) {
-		Token characterToken = tokenStream.readCharacterUnchecked();
-		assert characterToken.getValue().equals(".");
-
-		AbstractParser<TypeInfo> fieldParser = parserToolbox.getClassFieldParser();
-		AbstractParser<TypeInfo> methodParser = parserToolbox.getClassMethodParser();
-		AbstractParser<TypeInfo> innerClassParser = parserToolbox.getInnerClassParser();
-		AbstractParser<TypeInfo> classObjectParser = parserToolbox.getClassObjectParser();
-		if (expectation.getResultType() == ParseResultType.CLASS) {
-			return innerClassParser.parse(tokenStream, classType, expectation);
-		} else {
-			return ParseUtils.parse(tokenStream, classType, expectation,
-				fieldParser,
-				methodParser,
-				innerClassParser,
-				classObjectParser
+	ParseResult parseDot(TokenStream tokenStream, TypeInfo classType, S expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalEvaluationException, InternalErrorException {
+		if (expectation instanceof ClassParseResultExpectation) {
+			InnerClassParser<ClassParseResult, ClassParseResultExpectation> innerClassParser = parserToolbox.createParser(InnerClassParser.class);
+			return innerClassParser.parse(tokenStream, classType, (ClassParseResultExpectation) expectation);
+		} else if (expectation instanceof ObjectParseResultExpectation) {
+			List<AbstractParser<TypeInfo, ObjectParseResult, ObjectParseResultExpectation>> parsers = Arrays.asList(
+				parserToolbox.createParser(ClassFieldParser.class),
+				parserToolbox.createParser(ClassMethodParser.class),
+				parserToolbox.createParser(InnerClassParser.class),
+				parserToolbox.createParser(ClassObjectParser.class)
 			);
+			// possible ambiguities: field name identical to inner class name => field wins
+			return ParseUtils.parse(tokenStream, classType, (ObjectParseResultExpectation) expectation, parsers);
+		} else {
+			throw new InternalErrorException("Class tail parser does not meet expectations of type '" + expectation.getClass().getSimpleName() + "'");
 		}
 	}
 
 	@Override
-	ParseOutcome parseOpeningSquareBracket(TokenStream tokenStream, TypeInfo context, ParseExpectation expectation) {
+	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, TypeInfo context, S expectation) {
 		/*
 		 * If called under ConstructorParser, then this is an array construction. As we do not
 		 * know, in which circumstances this method is called, the caller must handle this
 		 * operator. Hence, we stop parsing here.
 		 */
-		return ParseOutcomes.createClassParseResult(tokenStream.getPosition(), context);
+		return createParseResult(context);
 	}
 
 	@Override
-	ParseOutcome createParseOutcome(int position, TypeInfo type) {
-		return ParseOutcomes.createClassParseResult(position, type);
+	ParseResult createParseResult(TypeInfo type) {
+		return ParseResults.createClassParseResult(type);
 	}
 }

@@ -1,15 +1,13 @@
 package dd.kms.zenodot.utils.dataproviders;
 
+import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
-import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.parsers.ParseExpectationBuilder;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.ParseError.ErrorPriority;
 import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
-import dd.kms.zenodot.tokenizer.Token;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -39,129 +37,115 @@ public class ExecutableDataProvider
 		this.parserToolbox = parserToolbox;
 	}
 
-	public CodeCompletions completeMethod(List<ExecutableInfo> methodInfos, boolean contextIsStatic, String expectedName, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+	public CodeCompletions completeMethod(List<ExecutableInfo> methodInfos, boolean contextIsStatic, String expectedName, ObjectParseResultExpectation expectation, int insertionBegin, int insertionEnd) {
 		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 			methodInfos,
 			methodInfo -> CodeCompletionFactory.methodCompletion(methodInfo, insertionBegin, insertionEnd, rateMethod(methodInfo, expectedName, contextIsStatic, expectation))
 		);
-		return new CodeCompletions(insertionBegin, codeCompletions);
+		return new CodeCompletions(codeCompletions);
 	}
 
 	/**
-	 * Returns a list of {@link ParseOutcome}s, one for each argument expression scanned until the method returns.
-	 * <ul>
-	 *     <li>
-	 *         If the method arguments could not be parsed completely, either due to an error or due to requested code
-	 *         completion for one of the arguments, then the returned list is guaranteed to contain at least one element.
-	 *         The last element in this list is the parse outcome that describes why not all arguments could be parsed.
-	 *     </li>
-	 *     <li>
-	 *         If all arguments could be parse completely, then the returned list contains one {@link ObjectParseResult}
-	 *         or {@link CompiledObjectParseResult} for each argument. If no arguments are specified, then the returned list
-	 *         will be empty.
-	 *     </li>
-	 * </ul>
+	 * Parses the arguments of executables including the final ')'
 	 */
-	public List<ParseOutcome> parseExecutableArguments(TokenStream tokenStream, List<ExecutableInfo> availableExecutableInfos) {
-		List<ParseOutcome> arguments = new ArrayList<>();
+	public List<ObjectParseResult> parseArguments(TokenStream tokenStream, List<ExecutableInfo> executables) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+		List<ObjectParseResult> arguments = new ArrayList<>();
 
-		int position;
-		Token characterToken = tokenStream.readCharacterUnchecked();
-		assert characterToken != null && characterToken.getValue().charAt(0) == '(';
-
-		if (!characterToken.isContainsCaret()) {
-			if (!tokenStream.hasMore()) {
-				arguments.add(ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected argument or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
-				return arguments;
-			}
-
-			char nextCharacter = tokenStream.peekCharacter();
-			if (nextCharacter == ')') {
-				tokenStream.readCharacterUnchecked();
-				return arguments;
-			}
+		boolean foundClosingParenthesis = false;
+		if (tokenStream.skipCharacter(')')) {
+			foundClosingParenthesis = true;
 		}
 
-		for (int argIndex = 0; ; argIndex++) {
-			final int i = argIndex;
-
-			availableExecutableInfos = availableExecutableInfos.stream().filter(executableInfo -> executableInfo.isArgumentIndexValid(i)).collect(Collectors.toList());
-			List<TypeInfo> expectedArgumentTypes_i = getExpectedArgumentTypes(availableExecutableInfos, i);
-
-			if (expectedArgumentTypes_i.isEmpty()) {
-				position = tokenStream.getPosition();
-				boolean requestCodeCompletion = tokenStream.isCaretWithinNextWhiteSpaces();
-				if (i == 0 && requestCodeCompletion) {
-					// code completion after opening '(' for executable without arguments
-					arguments.add(CodeCompletions.none(position));
+		// iterate over the argument list (i = argument index)
+		for (int i = 0; !foundClosingParenthesis; i++) {
+			// only consider executables that accept an i'th argument
+			executables = filterExecutablesWithValidArgumentIndex(executables, i);
+			if (executables.isEmpty()) {
+				if (i == 0) {
+					/*
+					 * Scenario: method(XYZ for X != ')' and a method without arguments
+					 *
+					 * If XYZ is empty and contains the caret, then we simply return
+					 * no suggestions. Otherwise we throw a parse exception.
+					 */
+					tokenStream.readRemainingWhitespaces(TokenStream.NO_COMPLETIONS, "No further arguments expected");
+					throw new InternalParseException("Missing ')'");
 				} else {
-					arguments.add(ParseOutcomes.createParseError(position, "No further arguments expected", ErrorPriority.RIGHT_PARSER));
+					/*
+					 * Scenario: method(arg_1, arg_2, ..., arg_n, XYZ for X != ')' and no method
+					 *           accepts more than n arguments.
+					 * => Throw a parse exception
+					 */
+					throw new InternalParseException("No further arguments expected");
 				}
-				return arguments;
 			}
 
-			/*
-			 * Parse expression for argument i
-			 */
-			ParseExpectation argumentExpectation = ParseExpectationBuilder.expectObject().allowedTypes(expectedArgumentTypes_i).build();
-			ParseOutcome argumentParseOutcome_i = parserToolbox.getExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argumentExpectation);
-
-			Optional<ParseOutcome> argumentForPropagation = ParseUtils.prepareParseOutcomeForPropagation(argumentParseOutcome_i, argumentExpectation, ErrorPriority.RIGHT_PARSER);
-			if (argumentForPropagation.isPresent()) {
-				arguments.add(argumentForPropagation.get());
-				return arguments;
-			}
-			arguments.add(argumentParseOutcome_i);
-
-			ObjectParseResult parseResult = ((ObjectParseResult) argumentParseOutcome_i);
-			int parsedToPosition = parseResult.getPosition();
-			tokenStream.moveTo(parsedToPosition);
-			ObjectInfo argumentInfo = parseResult.getObjectInfo();
-			availableExecutableInfos = availableExecutableInfos.stream().filter(executableInfo -> acceptsArgumentInfo(executableInfo, i, argumentInfo)).collect(Collectors.toList());
-
-			position = tokenStream.getPosition();
-			characterToken = tokenStream.readCharacterUnchecked();
-
-			if (characterToken == null) {
-				arguments.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
-				return arguments;
-			}
-
-			if (characterToken.getValue().charAt(0) == ')') {
-				if (characterToken.isContainsCaret()) {
-					// nothing we can suggest after ')'
-					arguments.add(CodeCompletions.none(tokenStream.getPosition()));
+			// parse argument i
+			List<TypeInfo> expectedArgTypes_i = getExpectedArgumentTypes(executables, i);
+			ObjectParseResultExpectation argExpectation = new ObjectParseResultExpectation(expectedArgTypes_i, true);
+			ObjectParseResult argument_i;
+			try {
+				argument_i = parserToolbox.createExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argExpectation);
+			} catch (CodeCompletionException e) {
+				CodeCompletions completions = e.getCompletions();
+				if (!completions.getExecutableArgumentInfo().isPresent()) {
+					/*
+					 * The code completion does not come from a cascaded method/constructor call
+					 * that already has an executable argument info => We can provide some for this
+					 * method call.
+					 */
+					List<ObjectInfo> argumentInfos = arguments.stream()
+						.map(ObjectParseResult::getObjectInfo)
+						.collect(Collectors.toList());
+					ExecutableArgumentInfo executableArgumentInfo = createExecutableArgumentInfo(executables, argumentInfos);
+					completions.setExecutableArgumentInfo(executableArgumentInfo);
 				}
-				return arguments;
+				throw e;
 			}
+			arguments.add(argument_i);
 
-			if (characterToken.getValue().charAt(0) != ',') {
-				arguments.add(ParseOutcomes.createParseError(position, "Expected comma ',' or closing parenthesis ')'", ErrorPriority.RIGHT_PARSER));
-				return arguments;
-			}
+			// only consider executables that accept argument_i as the i'th argument
+			ObjectInfo argument = argument_i.getObjectInfo();
+			executables = filterExecutablesWithValidArgumentType(executables, i, argument);
+			assert !executables.isEmpty();
+
+			foundClosingParenthesis = tokenStream.readCharacter(',', ')') == ')';
 		}
+		return arguments;
 	}
 
-	// assumes that each of the executableInfos accepts an argument for index argIndex
-	private List<TypeInfo> getExpectedArgumentTypes(List<ExecutableInfo> executableInfos, int argIndex) {
-		return executableInfos.stream()
-				.map(executableInfo -> executableInfo.getExpectedArgumentType(argIndex))
-				.distinct()
-				.collect(Collectors.toList());
+	private List<ExecutableInfo> filterExecutablesWithValidArgumentIndex(List<ExecutableInfo> executables, int argIndex) {
+		return executables.stream()
+			.filter(executable -> executable.isArgumentIndexValid(argIndex))
+			.collect(Collectors.toList());
 	}
 
-	private boolean acceptsArgumentInfo(ExecutableInfo executableInfo, int argIndex, ObjectInfo argInfo) {
-		TypeInfo expectedArgumentType;
+	private List<ExecutableInfo> filterExecutablesWithValidArgumentType(List<ExecutableInfo> executables, int argIndex, ObjectInfo arg) {
+		return executables.stream()
+			.filter(executable -> acceptsArgument(executable, argIndex, arg))
+			.collect(Collectors.toList());
+	}
+
+	// assumes that each of the executables accepts an argument for index argIndex
+	private List<TypeInfo> getExpectedArgumentTypes(List<ExecutableInfo> executables, int argIndex) {
+		return executables.stream()
+			.map(executable -> executable.getExpectedArgumentType(argIndex))
+			.distinct()
+			.collect(Collectors.toList());
+	}
+
+	private boolean acceptsArgument(ExecutableInfo executable, int argIndex, ObjectInfo arg) {
+		TypeInfo expectedArgType;
 		try {
-			expectedArgumentType = executableInfo.getExpectedArgumentType(argIndex);
+			expectedArgType = executable.getExpectedArgumentType(argIndex);
 		} catch (IndexOutOfBoundsException e) {
 			return false;
 		}
-		TypeInfo argumentType = parserToolbox.getObjectInfoProvider().getType(argInfo);
-		return MatchRatings.isConvertibleTo(argumentType, expectedArgumentType);
+		TypeInfo argType = parserToolbox.getObjectInfoProvider().getType(arg);
+		return MatchRatings.isConvertibleTo(argType, expectedArgType);
 	}
 
-	public List<ExecutableInfo> getBestMatchingExecutableInfos(List<ExecutableInfo> availableExecutableInfos, List<ObjectInfo> argumentInfos) {
+	public List<ExecutableInfo> getBestMatchingExecutables(List<ExecutableInfo> availableExecutableInfos, List<ObjectInfo> argumentInfos) {
 		ObjectInfoProvider objectInfoProvider = parserToolbox.getObjectInfoProvider();
 		List<TypeInfo> argumentTypes = argumentInfos.stream().map(objectInfoProvider::getType).collect(Collectors.toList());
 		Map<ExecutableInfo, TypeMatch> ratedExecutableInfos = availableExecutableInfos.stream()
@@ -196,36 +180,33 @@ public class ExecutableDataProvider
 		int currentArgumentIndex = argumentInfos.size();
 		Map<ExecutableInfo, Boolean> applicableExecutableOverloads = new LinkedHashMap<>(executableInfos.size());
 		for (ExecutableInfo executableInfo : executableInfos) {
-			boolean applicable = IntStream.range(0, argumentInfos.size()).allMatch(i -> acceptsArgumentInfo(executableInfo, i, argumentInfos.get(i)));
+			boolean applicable = IntStream.range(0, argumentInfos.size()).allMatch(i -> acceptsArgument(executableInfo, i, argumentInfos.get(i)));
 			applicableExecutableOverloads.put(executableInfo, applicable);
 		}
-		return ParseOutcomes.createExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
+		return ParseResults.createExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
 	}
 
 	/*
 	 * Code Completions
 	 */
 	private StringMatch rateMethodByName(ExecutableInfo methodInfo, String expectedName) {
-		return MatchRatings.rateStringMatch(methodInfo.getName(), expectedName);
+		return MatchRatings.rateStringMatch(expectedName, methodInfo.getName());
 	}
 
-	private TypeMatch rateMethodByTypes(ExecutableInfo methodInfo, ParseExpectation expectation) {
+	private TypeMatch rateMethodByTypes(ExecutableInfo methodInfo, ObjectParseResultExpectation expectation) {
 		/*
 		 * Even for EvaluationMode.DYNAMICALLY_TYPED we only consider the declared return type of the method instead
 		 * of the runtime type of the returned object. Otherwise, we would have to invoke the method for code
 		 * completion, possibly causing undesired side effects.
 		 */
-		List<TypeInfo> allowedTypes = expectation.getAllowedTypes();
-		return	allowedTypes == null
-					? TypeMatch.FULL
-					: allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(methodInfo.getReturnType(), allowedType)).min(TypeMatch::compareTo).orElse(TypeMatch.NONE);
+		return expectation.rateTypeMatch(methodInfo.getReturnType());
 	}
 
 	private boolean isMethodAccessDiscouraged(ExecutableInfo methodInfo, boolean contextIsStatic) {
 		return methodInfo.isStatic() && !contextIsStatic;
 	}
 
-	private MatchRating rateMethod(ExecutableInfo methodInfo, String methodName, boolean contextIsStatic, ParseExpectation expectation) {
+	private MatchRating rateMethod(ExecutableInfo methodInfo, String methodName, boolean contextIsStatic, ObjectParseResultExpectation expectation) {
 		return MatchRatings.create(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), isMethodAccessDiscouraged(methodInfo, contextIsStatic));
 	}
 
@@ -234,9 +215,9 @@ public class ExecutableDataProvider
 		final String argumentsAsString;
 		if (methodInfo.isVariadic()) {
 			int lastArgumentIndex = numArguments - 1;
-			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getRawType().getSimpleName().toString() + (i == lastArgumentIndex ? "..." : "")).collect(Collectors.joining(", "));
+			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getRawType().getSimpleName() + (i == lastArgumentIndex ? "..." : "")).collect(Collectors.joining(", "));
 		} else {
-			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getRawType().getSimpleName().toString()).collect(Collectors.joining(", "));
+			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getRawType().getSimpleName()).collect(Collectors.joining(", "));
 		}
 		return methodInfo.getName()
 				+ "("

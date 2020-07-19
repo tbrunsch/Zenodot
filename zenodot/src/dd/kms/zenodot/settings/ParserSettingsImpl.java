@@ -10,16 +10,17 @@ import java.util.Set;
 
 class ParserSettingsImpl implements ParserSettings
 {
+	private final CompletionMode	completionMode;
 	private final Imports			imports;
 	private final VariablePool 		variablePool;
 	private final AccessModifier	minimumAccessLevel;
 	private final boolean			enableDynamicTyping;
-	private final boolean considerAllClassesForClassCompletions;
+	private final boolean 			considerAllClassesForClassCompletions;
 	private final ObjectTreeNode	customHierarchyRoot;
+	private final ParserLogger 		logger;
 
-	private final ParserLogger logger;
-
-	ParserSettingsImpl(Set<ClassInfo> importedClasses, Set<PackageInfo> importedPackages, List<Variable> variables, AccessModifier minimumAccessLevel, boolean enableDynamicTyping, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
+	ParserSettingsImpl(CompletionMode completionMode, Set<ClassInfo> importedClasses, Set<PackageInfo> importedPackages, List<Variable> variables, AccessModifier minimumAccessLevel, boolean enableDynamicTyping, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
+		this.completionMode = completionMode;
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
 		this.variablePool = new VariablePool(variables);
 		this.minimumAccessLevel = minimumAccessLevel;
@@ -27,6 +28,11 @@ class ParserSettingsImpl implements ParserSettings
 		this.considerAllClassesForClassCompletions = considerAllClassesForClassCompletions;
 		this.customHierarchyRoot = customHierarchyRoot;
 		this.logger = logger;
+	}
+
+	@Override
+	public CompletionMode getCompletionMode() {
+		return completionMode;
 	}
 
 	@Override

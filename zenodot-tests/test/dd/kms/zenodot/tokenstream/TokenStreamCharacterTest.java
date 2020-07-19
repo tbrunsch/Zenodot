@@ -1,11 +1,8 @@
 package dd.kms.zenodot.tokenstream;
 
-import dd.kms.zenodot.flowcontrol.InternalCodeCompletionException;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.flowcontrol.InternalParseException;
-import dd.kms.zenodot.result.CodeCompletions;
-import dd.kms.zenodot.result.ParseError;
-import dd.kms.zenodot.tokenizer.CompletionGenerator;
-import dd.kms.zenodot.tokenizer.ParseExceptionGenerator;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,14 +29,11 @@ public class TokenStreamCharacterTest
 	}
 
 	@Test
-	public void testReadOneOfMultipleCharacters() throws InternalParseException, InternalCodeCompletionException {
+	public void testReadOneOfMultipleCharacters() throws InternalParseException, CodeCompletionException, InternalErrorException {
 		TokenStream tokenStream = new TokenStream(expression, -1);
+		tokenStream.readIdentifier(TokenStream.NO_COMPLETIONS, "Unexpected parse exception");
 
-		CompletionGenerator identifierCompletionGenerator = info -> new InternalCodeCompletionException(CodeCompletions.none(info.getCaretPosition()));
-		ParseExceptionGenerator identifierExceptionGenerator = stream -> new InternalParseException(stream.getPosition(), "Unexpected parse exception", ParseError.ErrorPriority.INTERNAL_ERROR);
-		tokenStream.readIdentifier(identifierCompletionGenerator, identifierExceptionGenerator);
-
-		char tailCharacter = tokenStream.readCharacter(ParseError.ErrorPriority.RIGHT_PARSER, '.', '[', TokenStream.EMPTY_CHARACTER);
+		char tailCharacter = tokenStream.readCharacter('.', '[', TokenStream.EMPTY_CHARACTER);
 		char expectedCharacter =	expression.endsWith(".")	? '.' :
 									expression.endsWith("[")	? '['
 																: TokenStream.EMPTY_CHARACTER;

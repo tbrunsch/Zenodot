@@ -1,5 +1,14 @@
 # Technical Documentation
 
+## TODO
+compilation:
+- Object parse results should always be checked by the abstract parser whether they are compiled or not (against the compilation flag)
+- Whether an expression should be compiled and whether a parser should check the expected result type and result class should also be described by the ParseExpectation
+- Why do we distinguish between a "normal" ObjectParseResult and a "compiled" ParseResult? Maybe we can combine it?
+
+- remove type token dependency and use class instead; However, make clear in the API that pure objects anfferent parsers in order to filter the most likely parser error when med classes are used and leave room for supporting generix later (e.g., method names should make clear which variant is used; no overloads with Object vs. ObjectX)
+  
+
 Since providing code completions can only be done when the expression before the caret position has been parsed, there is only one algorithm for parsing expressions and providing code completions. If an expression has to be parsed, then the caret position is simply set to an invalid value (e.g., -1 or Integer.MAX_VALUE) to ensure that the algorithm does not encounter the caret when parsing the expression.
 
 ## Token
@@ -30,3 +39,6 @@ It is quite cumbersome to check after each read of a token whether a parser erro
 - The parsing workflow is much clearer: The focus is on parsing. Everything else happens parallel to the regular workflow.
 - The method signatures become much cleaner: The only thing a parse method can return is a result. Neither errors nor code completions have to be returned because they are propagated via exceptions.
 
+## Compiled Expressions
+
+For evaluating the same expression over and over again for different values of `this`, it is inefficient to always parse the expression. Hence, for this use case we support generating a "compiled" expression. Compiled expressions can be evaluated much faster than it takes to parse an expression. Since the base logic of parsing and compiling an expression is identical, the parsers can do both. This makes the code a bit less readable though and the return value of the parsing methods a bit more unspecific: It can either be a compiled result or a parse result. It would be nice if we could always simply compile the expression and then evaluate it, but then we would lose the dynamic typing feature for evaluated expressions: The parsing process with dynamic typing relies on evaluating partial expressions. Hence, parsing and evaluation cannot be separated here. 

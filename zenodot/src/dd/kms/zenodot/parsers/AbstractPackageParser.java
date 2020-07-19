@@ -1,11 +1,14 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.expectations.PackageParseResultExpectation;
+import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.PackageParseResult;
-import dd.kms.zenodot.result.ParseOutcome;
-import dd.kms.zenodot.result.ParseOutcomes;
-import dd.kms.zenodot.result.ParseResultType;
-import dd.kms.zenodot.tokenizer.Token;
+import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseResults;
+import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -13,89 +16,61 @@ import dd.kms.zenodot.utils.dataproviders.ClassDataProvider;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.PackageInfo;
 
-import java.util.Optional;
-
-import static dd.kms.zenodot.result.ParseError.ErrorPriority;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base class for {@link RootpackageParser} and {@link SubpackageParser}
  */
-abstract class AbstractPackageParser<C> extends AbstractParser<C>
+abstract class AbstractPackageParser<C, T extends ParseResult, S extends ParseResultExpectation<T>> extends AbstractParser<C, T, S>
 {
 	AbstractPackageParser(ParserToolbox parserToolbox) {
 		super(parserToolbox);
 	}
 
-	abstract String getPackagePrefix(C contextInfo);
+	abstract String getPackagePrefix(C context);
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, C contextInfo, ParseExpectation expectation) {
-		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
-			int insertionBegin = tokenStream.getPosition();
-			String packageName = getPackagePrefix(contextInfo);
-			int insertionEnd;
-			try {
-				Token packageNameToken = tokenStream.readPackage();
-				packageName += packageNameToken.getValue();
-				insertionEnd = tokenStream.getPosition();
-			} catch (TokenStream.JavaTokenParseException e) {
-				insertionEnd = insertionBegin;
-			}
-			log(LogLevel.INFO, "suggesting packages for completion...");
-			ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-			return classDataProvider.completePackage(insertionBegin, insertionEnd, packageName);
-		}
-
+	ParseResult doParse(TokenStream tokenStream, C context, S expectation) throws InternalParseException, CodeCompletionException, InternalErrorException, AmbiguousParseResultException, InternalEvaluationException {
 		log(LogLevel.INFO, "parsing package");
-		ParseOutcome packageParseOutcome = readPackage(tokenStream, contextInfo);
-		log(LogLevel.INFO, "parse outcome: " + packageParseOutcome.getOutcomeType());
+		PackageParseResult packageParseResult = readPackage(tokenStream, context);
 
-		Optional<ParseOutcome> parseOutcomeForPropagation = ParseUtils.prepareParseOutcomeForPropagation(packageParseOutcome, ParseExpectation.PACKAGE, ErrorPriority.WRONG_PARSER);
-		if (parseOutcomeForPropagation.isPresent()) {
-			return parseOutcomeForPropagation.get();
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
+
+		char nextChar = tokenStream.readCharacter('.', TokenStream.EMPTY_CHARACTER);
+		if (nextChar == TokenStream.EMPTY_CHARACTER) {
+			return packageParseResult;
 		}
 
-		PackageParseResult parseResult = (PackageParseResult) packageParseOutcome;
-		int parsedToPosition = parseResult.getPosition();
-		PackageInfo packageInfo = parseResult.getPackage();
+		PackageInfo packageInfo = packageParseResult.getPackage();
 
-		tokenStream.moveTo(parsedToPosition);
-
-		Token characterToken = tokenStream.readCharacterUnchecked();
-		if (characterToken == null) {
-			return parseResult;
+		List<AbstractParser<PackageInfo, T, S>> parsers = new ArrayList<>();
+		if (!(expectation instanceof PackageParseResultExpectation)) {
+			parsers.add(parserToolbox.createParser(QualifiedClassParser.class));
 		}
-		char nextChar = characterToken.getValue().charAt(0);
-		if (nextChar != '.') {
-			log(LogLevel.ERROR, "detected '" + nextChar + "'");
-			return ParseOutcomes.createParseError(parsedToPosition, "Unexpected character '" + nextChar + "'", ErrorPriority.RIGHT_PARSER);
-		}
-		log(LogLevel.INFO, "detected '.'");
-
-		AbstractParser<PackageInfo>[] parsers = expectation.getResultType() == ParseResultType.PACKAGE
-														? new AbstractParser[]{ parserToolbox.getSubpackageParser() }
-														: new AbstractParser[] { parserToolbox.getQualifiedClassParser(), parserToolbox.getSubpackageParser() };
-		return ParseUtils.parse(tokenStream, packageInfo, expectation,	parsers);
+		parsers.add(parserToolbox.createParser(SubpackageParser.class));
+		// possible ambiguities: class name identical to subpackage in same package => class name wins
+		return ParseUtils.parse(tokenStream, packageInfo, expectation, parsers);
 	}
 
-	private ParseOutcome readPackage(TokenStream tokenStream, C contextInfo) {
+	private PackageParseResult readPackage(TokenStream tokenStream, C context) throws InternalParseException, CodeCompletionException {
+		String packagePrefix = getPackagePrefix(context);
+		String packageName = packagePrefix + tokenStream.readPackage(info -> suggestPackages(info, context));
 		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-		String packageName = getPackagePrefix(contextInfo);
-		int identifierStartPosition = tokenStream.getPosition();
-		Token packageToken;
-		try {
-			packageToken = tokenStream.readPackage();
-		} catch (TokenStream.JavaTokenParseException e) {
-			return ParseOutcomes.createParseError(identifierStartPosition, "Expected package name", ErrorPriority.WRONG_PARSER);
-		}
-		packageName += packageToken.getValue();
-
-		if (packageToken.isContainsCaret()) {
-			return classDataProvider.completePackage(identifierStartPosition, tokenStream.getPosition(), packageName);
-		}
 		if (!classDataProvider.packageExists(packageName)) {
-			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Unknown package '" + packageName + "'", ErrorPriority.WRONG_PARSER);
+			throw new InternalParseException("Unknown package '" + packageName + "'");
 		}
-		return ParseOutcomes.createPackageParseResult(tokenStream.getPosition(), InfoProvider.createPackageInfo(packageName));
+		return ParseResults.createPackageParseResult(InfoProvider.createPackageInfo(packageName));
+	}
+
+	private CodeCompletions suggestPackages(CompletionInfo info, C context) {
+		int insertionBegin = getInsertionBegin(info);
+		int insertionEnd = getInsertionEnd(info);
+		String nameToComplete = getPackagePrefix(context) + getTextToComplete(info);
+
+		log(LogLevel.SUCCESS, "suggesting packages matching '" + nameToComplete + "'");
+
+		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
+		return classDataProvider.completePackage(insertionBegin, insertionEnd, nameToComplete);
 	}
 }

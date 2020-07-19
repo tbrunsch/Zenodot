@@ -1,7 +1,10 @@
 package dd.kms.zenodot;
 
-import dd.kms.zenodot.parsers.ParseExpectation;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.RootpackageParser;
+import dd.kms.zenodot.parsers.expectations.PackageParseResultExpectation;
+import dd.kms.zenodot.result.CodeCompletion;
+import dd.kms.zenodot.result.PackageParseResult;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
@@ -11,31 +14,35 @@ import dd.kms.zenodot.utils.wrappers.PackageInfo;
 
 import java.util.List;
 
-class PackageParserImpl extends AbstractParser implements PackageParser
+class PackageParserImpl extends AbstractParser<PackageParseResult, PackageParseResultExpectation> implements PackageParser
 {
-	public PackageParserImpl(String text, ParserSettings settings) {
+	private static final PackageParseResultExpectation	PARSE_RESULT_EXPECTATION	= new PackageParseResultExpectation().parseWholeText(true);
+
+	PackageParserImpl(String text, ParserSettings settings) {
 		super(text, settings);
 	}
 
 	@Override
 	public List<CodeCompletion> getCompletions(int caretPosition) throws ParseException {
-		return getCodeCompletions(caretPosition).getCompletions();
+		return getCodeCompletions(caretPosition, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
 	public PackageInfo evaluate() throws ParseException {
-		ParseOutcome parseOutcome = parse(ParseMode.EVALUATION, -1);
-		if (ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.PACKAGE)) {
-			PackageParseResult result = (PackageParseResult) parseOutcome;
-			checkParsedWholeText(result);
-			return result.getPackage();
+		TokenStream tokenStream = new TokenStream(text, -1);
+		PackageParseResult parseResult;
+		try {
+			parseResult = parse(tokenStream, ParseMode.EVALUATION, PARSE_RESULT_EXPECTATION);
+		} catch (Throwable t) {
+			throw new ParseException(tokenStream.getPosition(), t.getMessage(), t);
 		}
-		throw createInvalidResultTypeException(parseOutcome);
+		return parseResult.getPackage();
 	}
 
 	@Override
-	ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode) {
+	PackageParseResult doParse(TokenStream tokenStream, ParseMode parseMode, PackageParseResultExpectation parseResultExpectation) throws InternalErrorException, InternalEvaluationException, CodeCompletionException, AmbiguousParseResultException, InternalParseException {
 		ParserToolbox parserToolbox  = new ParserToolbox(InfoProvider.NULL_LITERAL, settings, parseMode);
-		return parserToolbox.getRootpackageParser().parse(tokenStream, null, ParseExpectation.PACKAGE);
+		RootpackageParser<PackageParseResult, PackageParseResultExpectation> rootpackageParser = parserToolbox.createParser(RootpackageParser.class);
+		return rootpackageParser.parse(tokenStream, null, parseResultExpectation);
 	}
 }

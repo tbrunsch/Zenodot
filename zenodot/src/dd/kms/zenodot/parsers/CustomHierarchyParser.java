@@ -1,18 +1,23 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.Iterables;
-import dd.kms.zenodot.common.RegexUtils;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.ParseError.ErrorPriority;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.settings.ObjectTreeNode;
 import dd.kms.zenodot.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.tokenizer.Token;
+import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
+import dd.kms.zenodot.utils.dataproviders.ObjectTreeNodeDataProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 /**
  * Parses expressions of the form {@code {<child level 1>#...#<child level n>}} in
@@ -27,99 +32,54 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 	private static final char		HIERARCHY_SEPARATOR	= '#';
 	private static final char		HIERARCHY_END		= '}';
 
-	private static final Pattern	HIERARCHY_NODE_PATTERN	= Pattern.compile("^([^" + RegexUtils.escapeIfSpecial(HIERARCHY_SEPARATOR) + RegexUtils.escapeIfSpecial(HIERARCHY_END) + "]*).*");
-
 	public CustomHierarchyParser(ParserToolbox parserToolbox) {
 		super(parserToolbox);
 	}
 
 	@Override
-	ParseOutcome parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
-		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
-			return CodeCompletions.none(tokenStream.getPosition());
-		}
+	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+		tokenStream.readCharacter(HIERARCHY_BEGIN);
 
-		int position = tokenStream.getPosition();
-		Token characterToken = tokenStream.readCharacterUnchecked();
-		if (characterToken == null || characterToken.getValue().charAt(0) != HIERARCHY_BEGIN) {
-			tokenStream.moveTo(position);
-			log(LogLevel.ERROR, "missing '" + HIERARCHY_BEGIN + "' at " + tokenStream);
-			return ParseOutcomes.createParseError(position, "Expected hierarchy begin character ('" + HIERARCHY_BEGIN + "')", ErrorPriority.WRONG_PARSER);
-		}
+		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
 
 		ObjectTreeNode hierarchyNode = parserToolbox.getSettings().getCustomHierarchyRoot();
-		ParseOutcome parseOutcome = parseHierarchyNode(tokenStream, hierarchyNode, expectation);
-		return parseOutcome;
+		return parseHierarchyNode(tokenStream, hierarchyNode, expectation);
 	}
 
-	private ParseOutcome parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ParseExpectation expectation) {
-		int startPosition = tokenStream.getPosition();
-		if (tokenStream.isCaretWithinNextWhiteSpaces()) {
-			log(LogLevel.INFO, "suggesting custom hierarchy nodes for completion...");
-			return parserToolbox.getObjectTreeNodeDataProvider().completeNode("", contextNode, startPosition, startPosition);
-		}
-
-		Token nodeToken = tokenStream.readRegexUnchecked(HIERARCHY_NODE_PATTERN, 1);
-		if (nodeToken == null) {
-			log(LogLevel.ERROR, "missing hierarchy node name at " + tokenStream);
-			return ParseOutcomes.createParseError(startPosition, "Expected a hierarchy node name", ErrorPriority.WRONG_PARSER);
-		}
-		String nodeName = nodeToken.getValue();
-		int endPosition = tokenStream.getPosition();
-
-		// check for code completion
-		if (nodeToken.isContainsCaret()) {
-			log(LogLevel.SUCCESS, "suggesting hierarchy nodes matching '" + nodeName + "'");
-			return parserToolbox.getObjectTreeNodeDataProvider().completeNode(nodeName, contextNode, startPosition, endPosition);
-		}
+	private ObjectParseResult parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+		String nodeName = tokenStream.readUntilCharacter(info -> suggestHierarchyNode(contextNode, expectation, info), HIERARCHY_SEPARATOR, HIERARCHY_END);
 
 		Iterable<? extends ObjectTreeNode> childNodes = contextNode.getChildNodes();
-		ObjectTreeNode firstChildNodeMatch = Iterables.getFirst(Iterables.filter(childNodes, node -> node.getName().equals(nodeName)), null);
+		ObjectTreeNode firstChildNodeMatch = Iterables.getFirst(Iterables.filter(childNodes, node -> Objects.equals(node.getName(), nodeName)), null);
 		if (firstChildNodeMatch == null) {
-			log(LogLevel.ERROR, "unknown hierarchy node '" + nodeName + "'");
-			return ParseOutcomes.createParseError(startPosition, "Unknown hierarchy node '" + nodeName + "'", ErrorPriority.RIGHT_PARSER);
+			throw new InternalParseException("Unknown hierarchy node '" + nodeName + "'");
 		}
 		log(LogLevel.SUCCESS, "detected hierarchy node '" + nodeName + "'");
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		Token characterToken = tokenStream.readCharacterUnchecked();
-		char character = characterToken == null ? (char) 0 : characterToken.toString().charAt(0);
-
-		if (character == HIERARCHY_SEPARATOR) {
-			return parseHierarchyNode(tokenStream, firstChildNodeMatch, expectation);
-		} else if (character == HIERARCHY_END) {
-			ObjectInfo userObject = firstChildNodeMatch.getUserObject();
-			int position = tokenStream.getPosition();
-			return isCompile()
-					? ParseOutcomes.createCompiledConstantObjectParseResult(position, userObject)
-					: ParseOutcomes.createObjectParseResult(position, userObject);
+		char nextChar = tokenStream.readCharacter(HIERARCHY_SEPARATOR, HIERARCHY_END);
+		switch (nextChar) {
+			case HIERARCHY_SEPARATOR:
+				return parseHierarchyNode(tokenStream, firstChildNodeMatch, expectation);
+			case HIERARCHY_END: {
+				ObjectInfo userObject = firstChildNodeMatch.getUserObject();
+				return isCompile()
+					? ParseResults.createCompiledConstantObjectParseResult(userObject)
+					: ParseResults.createObjectParseResult(userObject);
+			}
+			default:
+				throw new InternalErrorException(tokenStream.toString() + ": Expected '" + HIERARCHY_SEPARATOR + "' or '" + HIERARCHY_END + "', but found '" + nextChar + "'");
 		}
-
-		log(LogLevel.ERROR, "expected '" + HIERARCHY_SEPARATOR + "' or '" + HIERARCHY_END + "'");
-		return ParseOutcomes.createParseError(endPosition, "Expected hierarchy separator ('" + HIERARCHY_SEPARATOR + "') or hierarchy end character ('" + HIERARCHY_END + "')", ErrorPriority.RIGHT_PARSER);
 	}
 
-	private ParseOutcome compile(ParseOutcome tailParseOutcome, ObjectInfo userObjectInfo) {
-		if (!ParseOutcomes.isCompiledParseResult(tailParseOutcome)) {
-			return tailParseOutcome;
-		}
-		CompiledObjectParseResult compiledTailParseResult = (CompiledObjectParseResult) tailParseOutcome;
-		return new CompiledCustomHierarchyParseResult(compiledTailParseResult, userObjectInfo);
-	}
+	private CodeCompletions suggestHierarchyNode(ObjectTreeNode contextNode, ObjectParseResultExpectation expectation, CompletionInfo info) {
+		int insertionBegin = getInsertionBegin(info);
+		int insertionEnd = getInsertionEnd(info);
+		String nameToComplete = getTextToComplete(info);
 
-	private static class CompiledCustomHierarchyParseResult extends AbstractCompiledParseResult
-	{
-		private final CompiledObjectParseResult	compiledTailParseResult;
-		private final ObjectInfo							userObjectInfo;
+		log(LogLevel.SUCCESS, "suggesting hierarchy nodes matching '" + nameToComplete + "'");
 
-		CompiledCustomHierarchyParseResult(CompiledObjectParseResult compiledTailParseResult, ObjectInfo userObjectInfo) {
-			super(compiledTailParseResult.getPosition(), compiledTailParseResult.getObjectInfo());
-			this.compiledTailParseResult = compiledTailParseResult;
-			this.userObjectInfo = userObjectInfo;
-		}
-
-		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			return compiledTailParseResult.evaluate(thisInfo, userObjectInfo);
-		}
+		ObjectTreeNodeDataProvider objectTreeNodeDataProvider = parserToolbox.getObjectTreeNodeDataProvider();
+		return objectTreeNodeDataProvider.completeNode(nameToComplete, contextNode, expectation, insertionBegin, insertionEnd);
 	}
 }

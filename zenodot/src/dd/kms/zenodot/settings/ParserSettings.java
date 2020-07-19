@@ -12,6 +12,7 @@ import java.util.List;
  */
 public interface ParserSettings
 {
+	CompletionMode getCompletionMode();
 	Imports getImports();
 	List<Variable> getVariables();
 	AccessModifier getMinimumAccessLevel();

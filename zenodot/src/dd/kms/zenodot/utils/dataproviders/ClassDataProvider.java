@@ -164,12 +164,12 @@ public class ClassDataProvider
 			packageName -> CodeCompletionFactory.packageCompletion(packageName, insertionBegin, insertionEnd, ratePackage(packageName, subpackagePrefix))
 		);
 
-		return new CodeCompletions(insertionBegin, codeCompletions);
+		return new CodeCompletions(codeCompletions);
 	}
 	private static StringMatch ratePackageByName(String packageName, String expectedName) {
 		int lastDotIndex = packageName.lastIndexOf('.');
 		String subpackageName = packageName.substring(lastDotIndex + 1);
-		return MatchRatings.rateStringMatch(subpackageName, expectedName);
+		return MatchRatings.rateStringMatch(expectedName, subpackageName);
 	}
 
 	private static MatchRating ratePackage(String packageName, String expectedName) {
@@ -183,7 +183,7 @@ public class ClassDataProvider
 		String packageName = ClassUtils.getParentPath(classPrefixWithPackage);
 		if (packageName == null) {
 			// class is not fully qualified, so no match
-			return CodeCompletions.none(insertionEnd);
+			return CodeCompletions.NONE;
 		}
 		Set<ClassInfo> suggestedClasses = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
 		String classPrefix = ClassUtils.getLeafOfPath(classPrefixWithPackage);
@@ -193,7 +193,7 @@ public class ClassDataProvider
 			classInfo -> CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, false, rateClass(classInfo, classPrefix))
 		);
 
-		return new CodeCompletions(insertionBegin, codeCompletions);
+		return new CodeCompletions(codeCompletions);
 	}
 
 	public CodeCompletions completeClassName(int insertionBegin, int insertionEnd, String classPrefix, boolean considerAllClasses) {
@@ -212,7 +212,7 @@ public class ClassDataProvider
 			completionsBuilder.addAll(completeUnqualifiedClassNameToQualifiedClass(insertionBegin, insertionEnd, classPrefix, classesToIgnoreForQualifiedClasses));
 		}
 
-		return new CodeCompletions(insertionBegin, completionsBuilder.build());
+		return new CodeCompletions(completionsBuilder.build());
 	}
 
 	private static List<CodeCompletion> completeUnqualifiedClass(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classes) {
@@ -232,7 +232,7 @@ public class ClassDataProvider
 		Set<ClassInfo> classInfosToConsider = Sets.difference(classInfos, classesToIgnore);
 		for (ClassInfo classInfo : classInfosToConsider) {
 			String unqualifiedName = classInfo.getUnqualifiedName();
-			StringMatch stringMatch = MatchRatings.rateStringMatch(unqualifiedName, classPrefix);
+			StringMatch stringMatch = MatchRatings.rateStringMatch(classPrefix, unqualifiedName);
 			if (stringMatch != StringMatch.NONE) {
 				MatchRating rating = MatchRatings.create(stringMatch, TypeMatch.NONE, false);
 				CodeCompletion codeCompletion = CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, true, rating);
@@ -250,11 +250,11 @@ public class ClassDataProvider
 			classesToConsider,
 			classInfo -> CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, false, rateClass(classInfo, expectedName))
 		);
-		return new CodeCompletions(insertionBegin, codeCompletions);
+		return new CodeCompletions(codeCompletions);
 	}
 
 	private static StringMatch rateClassByName(ClassInfo classInfo, String expectedSimpleClassName) {
-		return MatchRatings.rateStringMatch(classInfo.getUnqualifiedName(), expectedSimpleClassName);
+		return MatchRatings.rateStringMatch(expectedSimpleClassName, classInfo.getUnqualifiedName());
 	}
 
 	private static MatchRating rateClass(ClassInfo classInfo, String simpleClassName) {

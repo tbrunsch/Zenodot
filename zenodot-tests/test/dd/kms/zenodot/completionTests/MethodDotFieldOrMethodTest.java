@@ -1,6 +1,5 @@
 package dd.kms.zenodot.completionTests;
 
-import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
@@ -32,9 +31,8 @@ public class MethodDotFieldOrMethodTest extends CompletionTest
 			.addTest("getTestInterface().bas",							"base()");
 
 		testBuilder
-			.addTestWithError("getTestClazz().",								-1, ParseException.class)
-			.addTestWithError("getTestClazz().i",								-1, ParseException.class)
-			.addTestWithError("getTestClass().i.d",								-1, ParseException.class)
+			.addTestWithError("getTestClazz().",								-1, IllegalStateException.class)
+			.addTestWithError("getTestClazz().i",								-1, IllegalStateException.class)
 			.addTestWithError("getTestClass(c).getObject(getTestClass(c).d)",	-1, IllegalStateException.class);
 
 		return testBuilder.build();

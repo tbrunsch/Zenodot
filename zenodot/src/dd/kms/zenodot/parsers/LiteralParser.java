@@ -1,20 +1,26 @@
 package dd.kms.zenodot.parsers;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.debug.LogLevel;
+import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.*;
 import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
-import dd.kms.zenodot.tokenizer.Token;
+import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
-import static dd.kms.zenodot.result.ParseError.ErrorPriority;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Parses literals in the context of {@code this}. Supported types of literals are:
@@ -36,151 +42,142 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 	private static final ObjectInfo	TRUE_INFO	= InfoProvider.createObjectInfo(true, InfoProvider.createTypeInfo(boolean.class));
 	private static final ObjectInfo	FALSE_INFO	= InfoProvider.createObjectInfo(false, InfoProvider.createTypeInfo(boolean.class));
 
-	private final AbstractParser<ObjectInfo> intParser;
-	private final AbstractParser<ObjectInfo> longParser;
-	private final AbstractParser<ObjectInfo> floatParser;
-	private final AbstractParser<ObjectInfo> doubleParser;
+	private static final String		NULL_LITERAL	= "null";
+	private static final String		THIS_LITERAL	= "this";
+	private static final String		TRUE_LITERAL	= "true";
+	private static final String		FALSE_LITERAL	= "false";
+
+	private final List<AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation>>	numericParsers;
 
 	public LiteralParser(ParserToolbox parserToolbox) {
 		super(parserToolbox);
-		intParser 		= new NumericLiteralParser<>(parserToolbox, InfoProvider.createTypeInfo(int.class),		TokenStream::readIntegerLiteral,	Integer::parseInt,		"Invalid int literal");
-		longParser 		= new NumericLiteralParser<>(parserToolbox, InfoProvider.createTypeInfo(long.class),	TokenStream::readLongLiteral, 		Long::parseLong,		"Invalid long literal");
-		floatParser 	= new NumericLiteralParser<>(parserToolbox, InfoProvider.createTypeInfo(float.class),	TokenStream::readFloatLiteral,		Float::parseFloat,		"Invalid float literal");
-		doubleParser 	= new NumericLiteralParser<>(parserToolbox, InfoProvider.createTypeInfo(double.class),	TokenStream::readDoubleLiteral,		Double::parseDouble,	"Invalid double literal");
+		numericParsers = ImmutableList.of(
+			new NumericLiteralParser<>(parserToolbox, int.class,	TokenStream::readIntegerLiteral),
+			new NumericLiteralParser<>(parserToolbox, long.class,	TokenStream::readLongLiteral),
+			new NumericLiteralParser<>(parserToolbox, float.class,	TokenStream::readFloatLiteral),
+			new NumericLiteralParser<>(parserToolbox, double.class,	TokenStream::readDoubleLiteral)
+		);
 	}
 
 	@Override
-	ParseOutcome parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
-		if (!tokenStream.hasMore()) {
-			return ParseOutcomes.createParseError(tokenStream.getPosition(), "Expected a literal", ErrorPriority.WRONG_PARSER);
-		}
-		ParseOutcome parseOutcome = parseWithoutCompilingConstantLiterals(tokenStream, contextInfo);
-		boolean needsCompilation = isCompile()
-								&& ParseOutcomes.isParseResultOfType(parseOutcome, ParseResultType.OBJECT)
-								&& !ParseOutcomes.isCompiledParseResult(parseOutcome);
-		if (needsCompilation) {
-			ObjectParseResult parseResult = (ObjectParseResult) parseOutcome;
-			return ParseOutcomes.createCompiledConstantObjectParseResult(parseResult.getPosition(), parseResult.getObjectInfo());
-		}
-		return parseOutcome;
-	}
-
-	private ParseOutcome parseWithoutCompilingConstantLiterals(TokenStream tokenStream, ObjectInfo contextInfo) {
+	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException, AmbiguousParseResultException, InternalEvaluationException {
 		String characters = tokenStream.peekCharacters();
-		if (characters.startsWith("\"")) {
-			return parseStringLiteral(tokenStream);
-		} else if (characters.startsWith("'")) {
-			return parseCharacterLiteral(tokenStream);
-		} else if (characters.startsWith("tr")) {
-			return parseNamedLiteral(tokenStream, "true", TRUE_INFO);
-		} else if (characters.startsWith("f")) {
-			return parseNamedLiteral(tokenStream, "false", FALSE_INFO);
-		} else if (characters.startsWith("n")) {
-			return parseNamedLiteral(tokenStream, "null", InfoProvider.NULL_LITERAL);
-		} else if (characters.startsWith("th")) {
-			return parseNamedLiteral(tokenStream, "this", parserToolbox.getThisInfo());
-		} else {
-			return parseNumericLiteral(tokenStream, contextInfo);
+		if (characters.length() == 0) {
+			throw new InternalParseException("Expected a literal");
+		}
+		char firstCharacter = characters.charAt(0);
+		switch (firstCharacter) {
+			case '"':
+				return parseStringLiteral(tokenStream);
+			case '\'':
+				return parseCharacterLiteral(tokenStream);
+			case 'n':	// null
+			case 't':	// this, true
+			case 'f':	// false
+				return parseNamedLiteral(tokenStream, expectation);
+			case '+':
+			case '-':
+			case '.':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				return parseNumericLiteral(tokenStream, expectation);
+			default:
+				throw new InternalParseException("Expected a literal");
 		}
 	}
 
-	private ParseOutcome parseStringLiteral(TokenStream tokenStream) {
-		int startPosition = tokenStream.getPosition();
-		Token stringLiteralToken;
-		try {
-			stringLiteralToken = tokenStream.readStringLiteral();
-		} catch (TokenStream.JavaTokenParseException e) {
-			log(LogLevel.ERROR, "expected a string literal at " + tokenStream);
-			return ParseOutcomes.createParseError(startPosition, "Expected a string literal", ErrorPriority.RIGHT_PARSER);
-		}
-		if (stringLiteralToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no code completions available for string literals");
-			return CodeCompletions.none(tokenStream.getPosition());
-		}
-		String stringLiteralValue = stringLiteralToken.getValue();
-		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteralValue + "'");
+	private ObjectParseResult parseStringLiteral(TokenStream tokenStream) throws InternalParseException, CodeCompletionException, InternalErrorException {
+		String stringLiteral = tokenStream.readStringLiteral();
+		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteral + "'");
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		ObjectInfo stringLiteralInfo = InfoProvider.createObjectInfo(stringLiteralValue, InfoProvider.createTypeInfo(String.class));
-		return ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), stringLiteralInfo);
+		ObjectInfo stringLiteralInfo = InfoProvider.createObjectInfo(stringLiteral, InfoProvider.createTypeInfo(String.class));
+		return isCompile()
+				? ParseResults.createCompiledConstantObjectParseResult(stringLiteralInfo)
+				: ParseResults.createObjectParseResult(stringLiteralInfo);
 	}
 
-	private ParseOutcome parseCharacterLiteral(TokenStream tokenStream) {
-		int startPosition = tokenStream.getPosition();
-		Token characterLiteralToken;
-		try {
-			characterLiteralToken = tokenStream.readCharacterLiteral();
-		} catch (TokenStream.JavaTokenParseException e) {
-			log(LogLevel.ERROR, "expected a character literal at " + tokenStream);
-			return ParseOutcomes.createParseError(startPosition, "Expected a character literal", ErrorPriority.RIGHT_PARSER);
-		}
-		if (characterLiteralToken.isContainsCaret()) {
-			log(LogLevel.INFO, "no code completions available for character literals");
-			return CodeCompletions.none(tokenStream.getPosition());
-		}
-		String characterLiteralValue = characterLiteralToken.getValue();
-		if (characterLiteralValue.length() != 1) {
-			throw new IllegalStateException("Internal error parsing character literals. It should represent exactly 1 character, but it represents " + characterLiteralValue.length());
-		}
-		log(LogLevel.SUCCESS, "detected character literal '" + characterLiteralValue + "'");
+	private ObjectParseResult parseCharacterLiteral(TokenStream tokenStream) throws InternalParseException, CodeCompletionException, InternalErrorException {
+		char characterLiteral = tokenStream.readCharacterLiteral();
+		log(LogLevel.SUCCESS, "detected character literal '" + characterLiteral + "'");
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		ObjectInfo characterLiteralInfo = InfoProvider.createObjectInfo(characterLiteralValue.charAt(0), InfoProvider.createTypeInfo(char.class));
-		return ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), characterLiteralInfo);
+		ObjectInfo characterLiteralInfo = InfoProvider.createObjectInfo(characterLiteral, InfoProvider.createTypeInfo(char.class));
+		return isCompile()
+				? ParseResults.createCompiledConstantObjectParseResult(characterLiteralInfo)
+				: ParseResults.createObjectParseResult(characterLiteralInfo);
 	}
 
-	private ParseOutcome parseNamedLiteral(TokenStream tokenStream, String literalName, ObjectInfo literalInfo) {
-		int startPosition = tokenStream.getPosition();
-		Token literalToken = tokenStream.readKeyWordUnchecked();
-		if (literalToken == null) {
-			log(LogLevel.ERROR, "expected literal '" + literalName + "'");
-			return ParseOutcomes.createParseError(startPosition, "Expected '" + literalName + "'", ErrorPriority.WRONG_PARSER);
+	private ObjectParseResult parseNamedLiteral(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+		String literal = tokenStream.readKeyword(info -> suggestNamedLiteral(info, expectation), "Expected a named literal");
+		Map<String, ObjectInfo> namedLiteralMap = createNamedLiteralMap();
+		ObjectInfo literalInfo = namedLiteralMap.get(literal);
+		if (literalInfo == null) {
+			throw new InternalParseException("Unknown literal '" + literal + "'");
 		}
-		if (literalToken.isContainsCaret()) {
-			if (literalName.startsWith(literalToken.getValue())) {
-				MatchRating rating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, false);
-				CodeCompletion codeCompletion = CodeCompletionFactory.keywordCompletion(literalName, startPosition, tokenStream.getPosition(), rating);
-				log(LogLevel.INFO, "suggesting literal '" + literalName + "'...");
-				return CodeCompletions.of(codeCompletion);
+		log(LogLevel.SUCCESS, "detected literal '" + literal + "'");
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-			} else {
-				log(LogLevel.INFO, "no code completions available");
-				return CodeCompletions.none(tokenStream.getPosition());
+		if (!isCompile()) {
+			return ParseResults.createObjectParseResult(literalInfo);
+		}
+		// "this" is not a constant literal, but depends on the context
+		return THIS_LITERAL.equals(literal)
+				? new CompiledThisParseResult(literalInfo)
+				: ParseResults.createCompiledConstantObjectParseResult(literalInfo);
+	}
+
+	private CodeCompletions suggestNamedLiteral(CompletionInfo info, ObjectParseResultExpectation expectation) {
+		int insertionBegin = getInsertionBegin(info);
+		int insertionEnd = getInsertionEnd(info);
+		String nameToComplete = getTextToComplete(info);
+
+		log(LogLevel.SUCCESS, "suggesting named literals");
+
+		Map<String, ObjectInfo> literalMap = createNamedLiteralMap();
+		ImmutableList.Builder<CodeCompletion> completionsBuilder = ImmutableList.builder();
+		for (String literal : literalMap.keySet()) {
+			if (!literal.startsWith(nameToComplete)) {
+				continue;
 			}
+			ObjectInfo literalInfo = literalMap.get(literal);
+			TypeInfo literalType = parserToolbox.getObjectInfoProvider().getType(literalInfo);
+			StringMatch stringMatch = MatchRatings.rateStringMatch(literal, nameToComplete);
+			TypeMatch typeMatch = expectation.rateTypeMatch(literalType);
+			MatchRating matchRating = MatchRatings.create(stringMatch, typeMatch, false);
+			CodeCompletion completion = CodeCompletionFactory.keywordCompletion(literal, insertionBegin, insertionEnd, matchRating);
+			completionsBuilder.add(completion);
 		}
-		if (!literalToken.getValue().equals(literalName)) {
-			log(LogLevel.ERROR, "expected literal '" + literalName + "'");
-			return ParseOutcomes.createParseError(startPosition, "Expected '" + literalName + "'", ErrorPriority.WRONG_PARSER);
-		}
-		log(LogLevel.SUCCESS, "detected literal '" + literalName + "'");
-		int position = tokenStream.getPosition();
-		return isCompile() && "this".equals(literalName)
-				? new CompiledThisParseResult(position, literalInfo)
-				: ParseOutcomes.createObjectParseResult(position, literalInfo);
+		return new CodeCompletions(completionsBuilder.build());
 	}
 
-	private ParseOutcome parseNumericLiteral(TokenStream tokenStream, ObjectInfo contextInfo) {
-		int startPosition = tokenStream.getPosition();
-		char c = tokenStream.peekCharacter();
-		if (!"+-.0123456789".contains(String.valueOf(c))) {
-			log(LogLevel.ERROR, "expected a numeric literal");
-			return ParseOutcomes.createParseError(startPosition, "Expected a literal", ErrorPriority.WRONG_PARSER);
-		}
+	private Map<String, ObjectInfo> createNamedLiteralMap() {
+		return ImmutableMap.of(
+			NULL_LITERAL,	InfoProvider.NULL_LITERAL,
+			FALSE_LITERAL,	FALSE_INFO,
+			TRUE_LITERAL,	TRUE_INFO,
+			THIS_LITERAL,	parserToolbox.getThisInfo()
+		);
+	}
 
-		AbstractParser[] parsers = { longParser, intParser, floatParser, doubleParser };
-		for (AbstractParser parser : parsers) {
-			ParseOutcome parseOutcome = parser.parse(tokenStream, contextInfo, ParseExpectation.OBJECT);
-
-			if (parseOutcome.getOutcomeType() != ParseOutcomeType.ERROR) {
-				return parseOutcome;
-			}
-		}
-		log(LogLevel.ERROR, "expected a numeric literal");
-		return ParseOutcomes.createParseError(startPosition, "Expected a numeric literal", ErrorPriority.WRONG_PARSER);
+	private ObjectParseResult parseNumericLiteral(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws CodeCompletionException, InternalErrorException, AmbiguousParseResultException, InternalParseException, InternalEvaluationException {
+		ObjectParseResult parseResult = ParseUtils.parse(tokenStream, null, expectation, numericParsers);
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
+		return parseResult;
 	}
 
 	private static class CompiledThisParseResult extends AbstractCompiledParseResult
 	{
-		CompiledThisParseResult(int position, ObjectInfo thisInfo) {
-			super(position, thisInfo);
+		CompiledThisParseResult(ObjectInfo thisInfo) {
+			super(thisInfo);
 		}
 
 		@Override
@@ -189,58 +186,32 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 	}
 
-	private static class NumericLiteralParser<T> extends AbstractParser<ObjectInfo>
+	private static class NumericLiteralParser<V> extends AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation>
 	{
 		private final TypeInfo				numericType;
-		private final NumericTokenReader	tokenReader;
-		private final NumericValueParser<T>	valueParser;
-		private final String				wrongTypeError;
+		private final NumericTokenReader<V>	tokenReader;
 
-		NumericLiteralParser(ParserToolbox parserToolbox, TypeInfo numericType, NumericTokenReader tokenReader, NumericValueParser<T> valueParser, String wrongTypeError) {
+		NumericLiteralParser(ParserToolbox parserToolbox, Class<?> numericType, NumericTokenReader<V> tokenReader) {
 			super(parserToolbox);
-			this.numericType = numericType;
+			this.numericType = InfoProvider.createTypeInfo(numericType);
 			this.tokenReader = tokenReader;
-			this.valueParser = valueParser;
-			this.wrongTypeError = wrongTypeError;
 		}
 
 		@Override
-		ParseOutcome doParse(TokenStream tokenStream, ObjectInfo contextInfo, ParseExpectation expectation) {
-			int startPosition = tokenStream.getPosition();
-			Token token;
-			try {
-				token = tokenReader.read(tokenStream);
-			} catch (TokenStream.JavaTokenParseException e) {
-				return ParseOutcomes.createParseError(startPosition, wrongTypeError, ErrorPriority.WRONG_PARSER);
-			}
-			if (token.isContainsCaret()) {
-				log(LogLevel.INFO, "no code completions available");
-				return CodeCompletions.none(tokenStream.getPosition());
-			}
-
-			T literalValue;
-			try {
-				literalValue = valueParser.parse(token.getValue());
-				log(LogLevel.SUCCESS, "detected numeric literal '" + token.getValue() + "'");
-			} catch (NumberFormatException e) {
-				log(LogLevel.ERROR, "number format exception: " + e.getMessage());
-				return ParseOutcomes.createParseError(startPosition, wrongTypeError, ErrorPriority.WRONG_PARSER);
-			}
-
+		ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+			V literalValue = tokenReader.read(tokenStream);
+			log(LogLevel.SUCCESS, "detected numeric literal '" + literalValue + "'");
+			increaseConfidence(ParserConfidence.RIGHT_PARSER);
 			ObjectInfo literalInfo = InfoProvider.createObjectInfo(literalValue, numericType);
-			return ParseOutcomes.createObjectParseResult(tokenStream.getPosition(), literalInfo);
+			return isCompile()
+					? ParseResults.createCompiledConstantObjectParseResult(literalInfo)
+					: ParseResults.createObjectParseResult(literalInfo);
 		}
 	}
 
 	@FunctionalInterface
-	private interface NumericTokenReader
+	private interface NumericTokenReader<T>
 	{
-		Token read(TokenStream tokenStream) throws TokenStream.JavaTokenParseException;
-	}
-
-	@FunctionalInterface
-	private interface NumericValueParser<T>
-	{
-		T parse(String s) throws NumberFormatException;
+		T read(TokenStream tokenStream) throws InternalParseException, CodeCompletionException;
 	}
 }

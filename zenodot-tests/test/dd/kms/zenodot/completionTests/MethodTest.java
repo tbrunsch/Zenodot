@@ -34,7 +34,6 @@ public class MethodTest extends CompletionTest
 
 		testBuilder
 			.addTestWithError("other()",	-1,	IllegalStateException.class)
-			.addTestWithError("bla",		-1,	ParseException.class)
 			.addTestWithError("other(),",		ParseException.class);
 
 		return testBuilder.build();

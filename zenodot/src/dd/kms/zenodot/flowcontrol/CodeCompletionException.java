@@ -7,11 +7,11 @@ import dd.kms.zenodot.result.CodeCompletions;
  * parsing process. To model this alternate control flow, we use Java's
  * exception mechanism.
  */
-public class InternalCodeCompletionException extends Exception
+public class CodeCompletionException extends Exception
 {
 	private final CodeCompletions completions;
 
-	public InternalCodeCompletionException(CodeCompletions completions) {
+	public CodeCompletionException(CodeCompletions completions) {
 		this.completions = completions;
 	}
 

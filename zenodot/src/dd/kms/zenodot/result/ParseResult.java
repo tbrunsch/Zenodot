@@ -1,6 +1,5 @@
 package dd.kms.zenodot.result;
 
-public interface ParseResult extends ParseOutcome
+public interface ParseResult
 {
-	ParseResultType getResultType();
 }

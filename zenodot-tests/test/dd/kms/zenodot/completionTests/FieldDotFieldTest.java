@@ -1,6 +1,5 @@
 package dd.kms.zenodot.completionTests;
 
-import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
@@ -35,9 +34,7 @@ public class FieldDotFieldTest extends CompletionTest
 			.addTest("member.otherMember.DER",	"DERIVED", "BASE");
 
 		testBuilder
-			.addTestWithError("membeR.",		-1, ParseException.class)
-			.addTestWithError("MEMBER.xy",		-1, ParseException.class)
-			.addTestWithError("member.xy.XY",	-1, ParseException.class)
+			.addTestWithError("member.xy.XY",	-1, IllegalStateException.class)
 			.addTestWithError("member.xy",		-1, IllegalStateException.class);
 
 		return testBuilder.build();

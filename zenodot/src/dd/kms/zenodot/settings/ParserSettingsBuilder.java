@@ -16,6 +16,12 @@ import java.util.List;
 public interface ParserSettingsBuilder
 {
 	/**
+	 * Configure which text should be completed and which text should be overwritten by
+	 * the selected completion.
+	 */
+	ParserSettingsBuilder completionMode(CompletionMode completionMode);
+
+	/**
 	 * When you import a class, then you can directly reference that class by its simple name.
 	 */
 	ParserSettingsBuilder importClasses(Iterable<ClassInfo> classes);

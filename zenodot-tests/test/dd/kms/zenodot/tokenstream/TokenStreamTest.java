@@ -1,11 +1,10 @@
 package dd.kms.zenodot.tokenstream;
 
-import dd.kms.zenodot.flowcontrol.InternalCodeCompletionException;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.flowcontrol.InternalParseException;
 import dd.kms.zenodot.result.CodeCompletions;
-import dd.kms.zenodot.result.ParseError;
 import dd.kms.zenodot.tokenizer.CompletionGenerator;
-import dd.kms.zenodot.tokenizer.ParseExceptionGenerator;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,30 +58,26 @@ public class TokenStreamTest
 	}
 
 	@Test
-	public void testReadTokens() throws InternalParseException, InternalCodeCompletionException {
+	public void testReadTokens() throws InternalParseException, CodeCompletionException, InternalErrorException {
 		String expression = tokenDescriptions.stream().map(TokenDescription::toString).collect(Collectors.joining());
 		TokenStream tokenStream = new TokenStream(expression, -1);
-		CompletionGenerator completionGenerator = info -> new InternalCodeCompletionException(CodeCompletions.none(info.getTokenStartPosition()));
-		ParseExceptionGenerator exceptionGenerator = info -> new InternalParseException(info.getPosition(), "Unexpected parse exception when parsing '" + expression + "'", ParseError.ErrorPriority.WRONG_PARSER);
 		for (TokenDescription tokenDescription : tokenDescriptions) {
 			if (tokenDescription instanceof CharacterTokenDescription) {
 				CharacterTokenDescription description = (CharacterTokenDescription) tokenDescription;
-				char c = tokenStream.readCharacter(ParseError.ErrorPriority.INTERNAL_ERROR, description.getCharacter());
+				char c = tokenStream.readCharacter(description.getCharacter());
 				Assert.assertEquals("Deviating characters", description.getCharacter(), c);
 			} else {
 				IdentifierTokenDescription description = (IdentifierTokenDescription) tokenDescription;
-				String identifier = tokenStream.readIdentifier(completionGenerator, exceptionGenerator);
+				String identifier = tokenStream.readIdentifier(TokenStream.NO_COMPLETIONS, "Unexpected parse exception when parsing '" + expression + "'");
 				Assert.assertEquals("Deviating identifiers", description.getIdentifier(), identifier);
 			}
 		}
 	}
 
 	@Test
-	public void testException() throws InternalParseException, InternalCodeCompletionException {
+	public void testException() throws InternalParseException, CodeCompletionException, InternalErrorException {
 		String expression = tokenDescriptions.stream().map(TokenDescription::toString).collect(Collectors.joining());
 		TokenStream tokenStream = new TokenStream(expression, -1);
-		CompletionGenerator completionGenerator = info -> new InternalCodeCompletionException(CodeCompletions.none(info.getTokenStartPosition()));
-		ParseExceptionGenerator exceptionGenerator = info -> new InternalParseException(info.getPosition(), "Unexpected parse exception when parsing '" + expression + "'", ParseError.ErrorPriority.WRONG_PARSER);
 
 		// Read all but last token correctly
 		int numTokens = tokenDescriptions.size();
@@ -90,26 +85,25 @@ public class TokenStreamTest
 			TokenDescription tokenDescription = tokenDescriptions.get(i);
 			if (tokenDescription instanceof CharacterTokenDescription) {
 				CharacterTokenDescription description = (CharacterTokenDescription) tokenDescription;
-				tokenStream.readCharacter(ParseError.ErrorPriority.INTERNAL_ERROR, description.getCharacter());
+				tokenStream.readCharacter(description.getCharacter());
 			} else {
-				tokenStream.readIdentifier(completionGenerator, exceptionGenerator);
+				tokenStream.readIdentifier(TokenStream.NO_COMPLETIONS, "Unexpected parse exception when parsing '" + expression + "'");
 			}
 		}
 
 		// Pretend to expect something different for the last token
-		exceptionGenerator = info -> new InternalParseException(info.getPosition(), "Expected parse exception when parsing '" + expression + "'", ParseError.ErrorPriority.RIGHT_PARSER);
 		TokenDescription tokenDescription = tokenDescriptions.get(numTokens - 1);
 		int errorPos = getTokenEndPosition(tokenDescriptions.subList(0, tokenDescriptions.size()-1)) + tokenDescription.getNumSpacesBefore();
 		try {
 			if (tokenDescription instanceof CharacterTokenDescription) {
-				tokenStream.readIdentifier(completionGenerator, exceptionGenerator);
+				tokenStream.readIdentifier(TokenStream.NO_COMPLETIONS, "Expected parse exception when parsing '" + expression + "'");
 			} else {
-				tokenStream.readCharacter(ParseError.ErrorPriority.POTENTIALLY_RIGHT_PARSER, '(');
+				tokenStream.readCharacter('(');
 			}
 		} catch (InternalParseException e) {
-			Assert.assertEquals("Deviating parse error positions", errorPos, e.getPosition());
+			Assert.assertEquals("Deviating parse error positions", errorPos, tokenStream.getPosition());
 			return;
-		} catch (InternalCodeCompletionException e) {
+		} catch (CodeCompletionException e) {
 			Assert.fail("Unexpected code completion");
 		}
 		Assert.fail("Expected a parse exception");
@@ -145,9 +139,11 @@ public class TokenStreamTest
 					// Character token: No completions expected
 					CharacterTokenDescription description = (CharacterTokenDescription) tokenDescription;
 					try {
-						tokenStream.readCharacter(ParseError.ErrorPriority.INTERNAL_ERROR, description.getCharacter());
-					} catch (InternalCodeCompletionException e) {
+						tokenStream.readCharacter(description.getCharacter());
+					} catch (CodeCompletionException e) {
 						Assert.fail("Unexpected code completion for " + context + ": " + e.getMessage());
+					} catch (InternalErrorException e) {
+						Assert.fail(e.getMessage());
 					}
 					prevTokenWasIdentifierToken = false;
 				} else {
@@ -177,12 +173,11 @@ public class TokenStreamTest
 						} else {
 							Assert.fail("Unexpected code completion for caret position " + capturedCaretPos);
 						}
-						return new InternalCodeCompletionException(CodeCompletions.none(info.getTokenStartPosition()));
+						return CodeCompletions.NONE;
 					};
-					ParseExceptionGenerator exceptionGenerator = info -> new InternalParseException(info.getPosition(), "Unexpected parse exception for " + context, ParseError.ErrorPriority.WRONG_PARSER);
 					try {
-						tokenStream.readIdentifier(completionGenerator, exceptionGenerator);
-					} catch (InternalCodeCompletionException e) {
+						tokenStream.readIdentifier(completionGenerator, "Unexpected parse exception for " + context);
+					} catch (CodeCompletionException e) {
 						Assert.assertTrue("Unexpected code completion for " + context + ": " + e.getMessage(), expectCodeCompletion);
 						return;
 					}
@@ -210,9 +205,11 @@ public class TokenStreamTest
 				CharacterTokenDescription description = (CharacterTokenDescription) lastTokenDescription;
 				boolean caretWithinWhitespacesBeforeLastToken = caretPos <=  tokenDescriptionStartPos + lastTokenDescription.getNumSpacesBefore();
 				try {
-					tokenStream.readCharacter(ParseError.ErrorPriority.INTERNAL_ERROR, description.getCharacter());
-				} catch (InternalCodeCompletionException e) {
+					tokenStream.readCharacter(description.getCharacter());
+				} catch (CodeCompletionException e) {
 					Assert.assertTrue("Unexpected code completion for " + context + ": " + e.getMessage(), caretWithinWhitespacesBeforeLastToken);
+				} catch (InternalErrorException e) {
+					Assert.fail(e.getMessage());
 				}
 			} else {
 				// Identifier token: Completions expected
@@ -229,12 +226,11 @@ public class TokenStreamTest
 					Assert.assertEquals("Deviating text start positions for " + context,	textStartPos,	info.getTokenTextStartPosition());
 					Assert.assertEquals("Deviating text end positions for " + context,		textEndPos,		info.getTokenTextEndPosition());
 					Assert.assertEquals("Deviating token end positions for " + context,		endPos,			info.getTokenEndPosition());
-					return new InternalCodeCompletionException(CodeCompletions.none(info.getTokenStartPosition()));
+					return CodeCompletions.NONE;
 				};
-				ParseExceptionGenerator exceptionGenerator = info -> new InternalParseException(info.getPosition(), "Unexpected parse exception for " + context, ParseError.ErrorPriority.WRONG_PARSER);
 				try {
-					tokenStream.readIdentifier(completionGenerator, exceptionGenerator);
-				} catch (InternalCodeCompletionException e) {
+					tokenStream.readIdentifier(completionGenerator, "Unexpected parse exception for " + context);
+				} catch (CodeCompletionException e) {
 					return;
 				}
 				Assert.fail("Did not encounter a code completion for " + context);

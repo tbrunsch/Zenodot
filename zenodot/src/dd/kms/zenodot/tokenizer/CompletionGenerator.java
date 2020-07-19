@@ -1,12 +1,12 @@
 package dd.kms.zenodot.tokenizer;
 
-import dd.kms.zenodot.flowcontrol.InternalCodeCompletionException;
 import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.result.CodeCompletions;
 
 public interface CompletionGenerator
 {
 	/**
-	 * Create an {@link InternalCodeCompletionException} from {@link CompletionInfo}
+	 * Create {@link CodeCompletions} from {@link CompletionInfo}
 	 */
-	InternalCodeCompletionException generate(CompletionInfo completionSuggestionInfo) throws InternalParseException;
+	CodeCompletions generate(CompletionInfo completionInfo) throws InternalParseException;
 }

@@ -7,7 +7,7 @@ import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
-import dd.kms.zenodot.parsers.ParseExpectation;
+import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
@@ -30,7 +30,7 @@ public class FieldDataProvider
 		this.parserToolbox = parserToolbox;
 	}
 
-	public CodeCompletions completeField(String expectedName, Object contextObject, boolean contextIsStatic, List<FieldInfo> fieldInfos, ParseExpectation expectation, int insertionBegin, int insertionEnd) {
+	public CodeCompletions completeField(String expectedName, Object contextObject, boolean contextIsStatic, List<FieldInfo> fieldInfos, ObjectParseResultExpectation expectation, int insertionBegin, int insertionEnd) {
 		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 			fieldInfos,
 			fieldInfo -> CodeCompletionFactory.fieldCompletion(fieldInfo, insertionBegin, insertionEnd, rateField(fieldInfo, contextObject, contextIsStatic, expectedName, expectation))
@@ -41,31 +41,24 @@ public class FieldDataProvider
 			MatchRating rating = codeCompletion.getRating();
 			logger.log(ParserLoggers.createLogEntry(LogLevel.INFO, "FieldDataProvider", completionText + ": " + rating));
 		}
-		return new CodeCompletions(insertionBegin, codeCompletions);
+		return new CodeCompletions(codeCompletions);
 	}
 
 	private StringMatch rateFieldByName(FieldInfo fieldInfo, String expectedName) {
-		return MatchRatings.rateStringMatch(fieldInfo.getName(), expectedName);
+		return MatchRatings.rateStringMatch(expectedName, fieldInfo.getName());
 	}
 
-	private TypeMatch rateFieldByTypes(FieldInfo fieldInfo, Object contextObject, ParseExpectation expectation) {
-		List<TypeInfo> allowedTypes = expectation.getAllowedTypes();
-		if (allowedTypes == null) {
-			return TypeMatch.FULL;
-		}
-		if (allowedTypes.isEmpty()) {
-			return TypeMatch.NONE;
-		}
+	private TypeMatch rateFieldByTypes(FieldInfo fieldInfo, Object contextObject, ObjectParseResultExpectation expectation) {
 		ObjectInfo fieldValueInfo = parserToolbox.getObjectInfoProvider().getFieldValueInfo(contextObject, fieldInfo);
 		TypeInfo type = parserToolbox.getObjectInfoProvider().getType(fieldValueInfo);
-		return allowedTypes.stream().map(allowedType -> MatchRatings.rateTypeMatch(type, allowedType)).min(TypeMatch::compareTo).get();
+		return expectation.rateTypeMatch(type);
 	}
 
 	private boolean isFieldAccessDiscouraged(FieldInfo fieldInfo, boolean contextIsStatic) {
 		return fieldInfo.isStatic() && !contextIsStatic;
 	}
 
-	private MatchRating rateField(FieldInfo fieldInfo, Object contextObject, boolean contextIsStatic, String expectedName, ParseExpectation expectation) {
+	private MatchRating rateField(FieldInfo fieldInfo, Object contextObject, boolean contextIsStatic, String expectedName, ObjectParseResultExpectation expectation) {
 		return MatchRatings.create(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), isFieldAccessDiscouraged(fieldInfo, contextIsStatic));
 	}
 }

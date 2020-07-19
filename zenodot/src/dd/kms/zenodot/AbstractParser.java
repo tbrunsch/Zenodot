@@ -2,12 +2,15 @@ package dd.kms.zenodot;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLoggers;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.ParseResult;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseMode;
 
-abstract class AbstractParser
+abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpectation<T>>
 {
 	final String			text;
 	final ParserSettings	settings;
@@ -17,51 +20,40 @@ abstract class AbstractParser
 		this.settings = settings;
 	}
 
-	abstract ParseOutcome doParse(TokenStream tokenStream, ParseMode parseMode);
+	abstract T doParse(TokenStream tokenStream, ParseMode parseMode, S parseResultExpectation) throws AmbiguousParseResultException, CodeCompletionException, InternalErrorException, InternalEvaluationException, InternalParseException;
 
-	CodeCompletions getCodeCompletions(int caretPosition) throws ParseException {
-		ParseOutcome parseOutcome = parse(ParseMode.CODE_COMPLETION, caretPosition);
-
-		switch (parseOutcome.getOutcomeType()) {
-			case RESULT: {
-				if (parseOutcome.getPosition() != text.length()) {
-					throw new ParseException(parseOutcome.getPosition(), "Unexpected character");
-				} else if (caretPosition >= 0) {
-					return CodeCompletions.none(caretPosition);
-				} else {
-					throw new IllegalStateException("Internal error: No completions available");
-				}
-			}
-			case ERROR: {
-				ParseError error = (ParseError) parseOutcome;
-				throw new ParseException(error.getPosition(), error.getMessage());
-			}
-			case AMBIGUOUS_RESULT: {
-				AmbiguousParseResult result = (AmbiguousParseResult) parseOutcome;
-				throw new ParseException(result.getPosition(), result.getMessage());
-			}
-			case CODE_COMPLETIONS: {
-				return (CodeCompletions) parseOutcome;
-			}
-			default:
-				throw new IllegalStateException("Unsupported parse outcome type: " + parseOutcome.getOutcomeType());
+	CodeCompletions getCodeCompletions(int caretPosition, S parseResultExpectation) throws ParseException {
+		if (caretPosition < 0 || caretPosition > text.length()) {
+			throw new IllegalStateException("Invalid caret position");
+		}
+		TokenStream tokenStream = new TokenStream(text, caretPosition);
+		try {
+			parse(tokenStream, ParseMode.CODE_COMPLETION, parseResultExpectation);
+			String parsedString = tokenStream.toString();
+			tokenStream.readRemainingWhitespaces(TokenStream.NO_COMPLETIONS, "Unexpected characters after " + parsedString);
+			throw new InternalErrorException("Missed caret position for suggesting code completions");
+		} catch (CodeCompletionException e) {
+			return e.getCompletions();
+		} catch (AmbiguousParseResultException | InternalErrorException | InternalEvaluationException | InternalParseException e) {
+			throw new ParseException(tokenStream.getPosition(), e.getMessage());
 		}
 	}
 
-	ParseOutcome parse(ParseMode parseMode, int caretPosition) {
-		TokenStream tokenStream = new TokenStream(text, caretPosition);
+	T parse(TokenStream tokenStream, ParseMode parseMode, S parseResultExpectation) throws AmbiguousParseResultException, CodeCompletionException, InternalEvaluationException, InternalParseException, InternalErrorException {
 		try {
-			return doParse(tokenStream, parseMode);
-		} catch (Exception e) {
-			String exceptionClassName = e.getClass().getSimpleName();
-			String exceptionMessage = e.getMessage();
+			return doParse(tokenStream, parseMode, parseResultExpectation);
+		} catch (AmbiguousParseResultException | CodeCompletionException | InternalErrorException | InternalEvaluationException | InternalParseException e) {
+			throw e;
+		} catch (Throwable t) {
+			String exceptionClassName = t.getClass().getSimpleName();
+			String exceptionMessage = t.getMessage();
 
 			StringBuilder logMessageBuilder = new StringBuilder();
 			logMessageBuilder.append(exceptionClassName);
 			if (exceptionMessage != null) {
 				logMessageBuilder.append(": ").append(exceptionMessage);
 			}
-			for (StackTraceElement element : e.getStackTrace()) {
+			for (StackTraceElement element : t.getStackTrace()) {
 				logMessageBuilder.append("\n").append(element);
 			}
 			settings.getLogger().log(ParserLoggers.createLogEntry(LogLevel.ERROR, AbstractParser.class.getSimpleName(), logMessageBuilder.toString()));
@@ -70,36 +62,7 @@ abstract class AbstractParser
 			if (exceptionMessage != null) {
 				message += ("\n" + exceptionMessage);
 			}
-			return ParseOutcomes.createParseError(-1, message, ParseError.ErrorPriority.EVALUATION_EXCEPTION, e);
-		}
-	}
-
-	void checkParsedWholeText(ParseOutcome parseOutcome) throws ParseException {
-		if (parseOutcome.getPosition() != text.length()) {
-			throw new ParseException(parseOutcome.getPosition(), "Unexpected character");
-		}
-	}
-
-	ParseException createInvalidResultTypeException(ParseOutcome parseOutcome) {
-		ParseOutcomeType outcomeType = parseOutcome.getOutcomeType();
-		switch (outcomeType) {
-			case RESULT: {
-				ParseResult parseResult = (ParseResult) parseOutcome;
-				throw new IllegalStateException("Internal error: Unexpected parse result type: '" + parseResult.getResultType() + "'");
-			}
-			case ERROR: {
-				ParseError error = (ParseError) parseOutcome;
-				return new ParseException(error.getPosition(), error.getMessage(), error.getThrowable());
-			}
-			case AMBIGUOUS_RESULT: {
-				AmbiguousParseResult result = (AmbiguousParseResult) parseOutcome;
-				return new ParseException(result.getPosition(), result.getMessage());
-			}
-			case CODE_COMPLETIONS: {
-				throw new IllegalStateException("Internal error: Unexpected code completion");
-			}
-			default:
-				throw new IllegalStateException("Unsupported parse outcome type: " + outcomeType);
+			throw new InternalEvaluationException(message, t);
 		}
 	}
 }

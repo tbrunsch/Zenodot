@@ -1,11 +1,17 @@
 package dd.kms.zenodot.utils;
 
-import com.google.common.collect.Iterables;
+import dd.kms.zenodot.debug.LogLevel;
+import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.parsers.AbstractParser;
-import dd.kms.zenodot.parsers.ParseExpectation;
+import dd.kms.zenodot.parsers.ParserConfidence;
+import dd.kms.zenodot.parsers.RootpackageParser;
+import dd.kms.zenodot.parsers.UnqualifiedClassParser;
+import dd.kms.zenodot.parsers.expectations.ClassParseResultExpectation;
+import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.result.ParseError.ErrorPriority;
+import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
 import java.util.*;
 import java.util.function.Function;
@@ -19,128 +25,40 @@ public class ParseUtils
 	/*
 	 * Parsing
 	 */
-	public static ParseOutcome parseClass(TokenStream tokenStream, ParserToolbox parserToolbox) {
-		ParseOutcome classParseOutcome = parse(tokenStream, null, ParseExpectation.CLASS,
-			parserToolbox.getUnqualifiedClassParser(),
-			parserToolbox.getRootpackageParser()
+	public static ClassParseResult parseClass(TokenStream tokenStream, ParserToolbox parserToolbox) throws InternalParseException, InternalErrorException, CodeCompletionException, AmbiguousParseResultException, InternalEvaluationException {
+		List<AbstractParser<ObjectInfo, ClassParseResult, ClassParseResultExpectation>> parsers = Arrays.asList(
+			parserToolbox.createParser(UnqualifiedClassParser.class),
+			parserToolbox.createParser(RootpackageParser.class)
 		);
-		return checkExpectedParseResultType(classParseOutcome, ParseExpectation.CLASS);
+		// possible ambiguities: imported class name identical to class name in default package => imported class wins
+		return parse(tokenStream, null, new ClassParseResultExpectation(), parsers);
 	}
 
 	/**
 	 * Tries to parse a subexpression with the specified parsers. The result is obtained from merging the result
 	 * of each of the specified parsers.
 	 */
-	public static <C> ParseOutcome parse(TokenStream tokenStream, C context, ParseExpectation expectation, AbstractParser<? super C>... parsers) {
-		List<ParseOutcome> parseOutcomes = Arrays.stream(parsers)
-			.map(parser -> parser.parse(tokenStream, context, expectation))
-			.collect(Collectors.toList());
-		return parseOutcomes.size() == 1 ? Iterables.getOnlyElement(parseOutcomes) : mergeParseOutcomes(parseOutcomes);
-	}
-
-	private static ParseOutcome mergeParseOutcomes(List<ParseOutcome> parseOutcomes) {
-		if (parseOutcomes.isEmpty()) {
-			throw new IllegalArgumentException("Internal error: Cannot merge 0 parse outcomes");
+	public static <C, T extends ParseResult, S extends ParseResultExpectation<T>> T parse(TokenStream tokenStream, C context, S expectation, List<? extends AbstractParser<? super C, T, S>> parsers) throws InternalParseException, InternalEvaluationException, AmbiguousParseResultException, InternalErrorException, CodeCompletionException {
+		if (parsers.isEmpty()) {
+			throw new InternalErrorException(tokenStream.toString() + ": No parsers specified");
 		}
-
-		List<AmbiguousParseResult> ambiguousResults = filterParseOutcomes(parseOutcomes, AmbiguousParseResult.class);
-		List<CodeCompletions> codeCompletions = filterParseOutcomes(parseOutcomes, CodeCompletions.class);
-		List<ParseError> errors = filterParseOutcomes(parseOutcomes, ParseError.class);
-		List<ParseOutcome> results = new ArrayList<>();
-		results.addAll(filterParseOutcomes(parseOutcomes, ObjectParseResult.class));
-		results.addAll(filterParseOutcomes(parseOutcomes, ClassParseResult.class));
-
-		if (!codeCompletions.isEmpty()) {
-			return mergeCodeCompletions(codeCompletions);
-		}
-
-		boolean ambiguous = !ambiguousResults.isEmpty() || results.size() > 1;
-		if (ambiguous) {
-			return mergeResults(ambiguousResults, results);
-		}
-
-		if (results.size() == 1) {
-			return results.get(0);
-		}
-
-		if (errors.size() > 1) {
-			return mergeParseErrors(errors);
-		} else {
-			return errors.get(0);
-		}
-	}
-
-	private static <T> List<T> filterParseOutcomes(List<ParseOutcome> parseResults, Class<T> filterClass) {
-		return parseResults.stream().filter(filterClass::isInstance).map(filterClass::cast).collect(Collectors.toList());
-	}
-
-	private static ParseOutcome mergeCodeCompletions(List<CodeCompletions> allCodeCompletions) {
-		List<CodeCompletion> mergedCodeCompletions = new ArrayList<>();
-		int position = Integer.MAX_VALUE;
-		Optional<ExecutableArgumentInfo> methodArgumentInfo	= Optional.empty();
-		for (CodeCompletions codeCompletions : allCodeCompletions) {
-			position = Math.min(position, codeCompletions.getPosition());
-			if (!methodArgumentInfo.isPresent()) {
-				methodArgumentInfo = codeCompletions.getExecutableArgumentInfo();
+		InternalLogger logger = parsers.get(0).getLogger();
+		logger.log(ParseUtils.class, LogLevel.INFO, "Merging results of multiple parsers...");
+		ParseResultMerger<C, T, S> merger = new ParseResultMerger<>(tokenStream, context, expectation);
+		try {
+			for (AbstractParser<? super C, T, S> parser : parsers) {
+				merger.parse(parser);
 			}
-			mergedCodeCompletions.addAll(codeCompletions.getCompletions());
+			T mergedResult = merger.merge();
+			logger.log(ParseUtils.class, LogLevel.SUCCESS, "obtained result");
+			return mergedResult;
+		} catch (CodeCompletionException e) {
+			logger.log(ParseUtils.class, LogLevel.SUCCESS, "merged completions");
+			throw e;
+		} catch (InternalErrorException | AmbiguousParseResultException | InternalEvaluationException | InternalParseException e) {
+			logger.log(ParseUtils.class, e, true);
+			throw e;
 		}
-		return new CodeCompletions(position, mergedCodeCompletions, methodArgumentInfo);
-	}
-
-	private static ParseOutcome mergeResults(List<AmbiguousParseResult> ambiguousResults, List<ParseOutcome> results) {
-		int position = ambiguousResults.isEmpty() ? results.get(0).getPosition() : ambiguousResults.get(0).getPosition();
-		StringBuilder builder = new StringBuilder("Ambiguous expression:");
-		for (AmbiguousParseResult ambiguousResult : ambiguousResults) {
-			builder.append("\n").append(ambiguousResult.getMessage());
-		}
-		for (ParseOutcome result : results) {
-			if (result instanceof ObjectParseResult) {
-				builder.append("Expression can be evaluated to object of type ").append(((ObjectParseResult) result).getObjectInfo().getDeclaredType());
-			} else if (result instanceof ClassParseResult) {
-				builder.append("Expression can be evaluated to type ").append(((ClassParseResult) result).getType());
-			} else if (result instanceof PackageParseResult) {
-				builder.append("Expression can be evaluated to package ").append(((PackageParseResult) result).getPackage());
-			} else {
-				throw new IllegalArgumentException("Internal error: Expected an object or a class as parse result, but found " + result.getClass().getSimpleName());
-			}
-		}
-		return ParseOutcomes.createAmbiguousParseResult(position, builder.toString());
-	}
-
-	private static ParseError mergeParseErrors(List<ParseError> errors) {
-		for (ErrorPriority errorType : ErrorPriority.values()) {
-			List<ParseError> errorsOfCurrentType = errors.stream().filter(error -> error.getErrorType() == errorType).collect(Collectors.toList());
-			if (errorsOfCurrentType.isEmpty()) {
-				continue;
-			}
-			if (errorsOfCurrentType.size() == 1) {
-				return errorsOfCurrentType.get(0);
-			}
-			/*
-			 * Heuristic: Only consider errors with maximum position. These are probably
-			 *            errors of parsers that are most likely supposed to match.
-			 */
-			int maxPosition = errorsOfCurrentType.stream().mapToInt(ParseError::getPosition).max().getAsInt();
-			final String message;
-			if (errorType == ErrorPriority.WRONG_PARSER) {
-				message = "Invalid expression";
-			} else {
-				message = errorsOfCurrentType.stream()
-					.filter(error -> error.getPosition() == maxPosition)
-					.map(ParseError::getMessage)
-					.distinct()
-					.collect(Collectors.joining("\n"));
-			}
-
-			Optional<Throwable> firstException = errorsOfCurrentType.stream()
-				.map(ParseError::getThrowable)
-				.filter(Objects::nonNull)
-				.findFirst();
-
-			return ParseOutcomes.createParseError(maxPosition, message, errorType, firstException.orElse(null));
-		}
-		return ParseOutcomes.createParseError(-1, "Internal error: Failed merging parse errors", ErrorPriority.INTERNAL_ERROR);
 	}
 
 	/*
@@ -155,55 +73,150 @@ public class ParseUtils
 		return codeCompletions;
 	}
 
-	/**
-	 * Throws an IllegalArgumentException if the parse outcome is an object parse result when a class parse
-	 * result is expected or vice versa.
-	 *
-	 * Returns a non-empty {@link ParseOutcome} if the parse result is not of the expected type. This is the
-	 * case for code completions, errors, and ambiguous parse results. In this case, the parse result
-	 * shall be propagated immediately.
-	 *
-	 * In case of an error, the {@link ErrorPriority} is increased (i.e., given a higher priority) to
-	 * the specified level if its current error type has lower priority.
-	 *
-	 * If the parse result matches the expectations, then it shall not be propagated and the parser has to
-	 * continue parsing the expression. In that case, the returned {@link Optional} is empty.
-	 */
-	public static Optional<ParseOutcome> prepareParseOutcomeForPropagation(ParseOutcome parseOutcome, ParseExpectation expectation, ErrorPriority minimumErrorType) {
-		parseOutcome = checkExpectedParseResultType(parseOutcome, expectation);
-		ParseOutcomeType parseOutcomeType = parseOutcome.getOutcomeType();
-		if (parseOutcomeType == ParseOutcomeType.RESULT) {
-			// do not propagate valid result, but process it further
-			return Optional.empty();
+	private static class ParseState
+	{
+		private final int				position;
+		private final ParserConfidence	confidence;
+
+		private ParseState(int position, ParserConfidence confidence) {
+			this.position = position;
+			this.confidence = confidence;
 		}
-		if (parseOutcomeType != ParseOutcomeType.ERROR) {
-			// propagate non-errors as-is
-			return Optional.of(parseOutcome);
+
+		int getPosition() {
+			return position;
 		}
-		// errors need a priority justification
-		ParseError parseError = (ParseError) parseOutcome;
-		if (parseError.getErrorType().compareTo(minimumErrorType) <= 0) {
-			// error has already sufficient priority
-			return Optional.of(parseError);
+
+		ParserConfidence getConfidence() {
+			return confidence;
 		}
-		return Optional.of(ParseOutcomes.createParseError(parseError.getPosition(), parseError.getMessage(), minimumErrorType, parseError.getThrowable()));
 	}
 
-	public static ParseOutcome checkExpectedParseResultType(ParseOutcome parseOutcome, ParseExpectation expectation) {
-		ParseResultType expectedResultType = expectation.getResultType();
-		ParseOutcomeType parseOutcomeType = parseOutcome.getOutcomeType();
-		if (parseOutcomeType != ParseOutcomeType.RESULT) {
-			// only results have to be checked
-			return parseOutcome;
+	private static class ParseResultMerger<C, T extends ParseResult, S extends ParseResultExpectation<T>>
+	{
+		private final TokenStream					tokenStream;
+		private final int							position;
+		private final C								context;
+		private final S								expectation;
+
+		/**
+		 * May contain {@link InternalParseException}s and {@link CodeCompletionException}s, also mixed.
+		 */
+		private final Map<InternalParseException, ParseState> 	parseExceptions			= new HashMap<>();
+		private final Map<CodeCompletionException, ParseState>	completionExceptions	= new HashMap<>();
+
+		private T									mergedResult;
+		private boolean								foundResult;
+
+		private ParseResultMerger(TokenStream tokenStream, C context, S expectation) {
+			this.tokenStream = tokenStream;
+			this.position = tokenStream.getPosition();
+			this.context = context;
+			this.expectation = expectation;
 		}
-		ParseResult parseResult = (ParseResult) parseOutcome;
-		ParseResultType resultType = parseResult.getResultType();
-		if (resultType != expectedResultType) {
-			return ParseOutcomes.createParseError(
-					parseResult.getPosition(),
-					"The result is " + resultType.getDescription() + " and not " + expectedResultType.getDescription(),
-					ErrorPriority.RIGHT_PARSER);
+
+		void parse(AbstractParser<? super C, T, S> parser) throws InternalErrorException, AmbiguousParseResultException, InternalEvaluationException, InternalParseException {
+			if (foundResult) {
+				return;
+			}
+			try {
+				mergedResult = parser.parse(tokenStream, context, expectation);
+				foundResult = true;
+				if (parser.getConfidence() != ParserConfidence.RIGHT_PARSER) {
+					throw new InternalErrorException(parser.getClass().getSimpleName() + " returned result although it is not sure to be the right parser.");
+				}
+			} catch (InternalParseException e) {
+				ParserConfidence confidence = parser.getConfidence();
+				if (confidence == ParserConfidence.RIGHT_PARSER) {
+					throw e;
+				}
+				ParseState state = new ParseState(tokenStream.getPosition(), confidence);
+				parseExceptions.put(e, state);
+				tokenStream.setPosition(position);
+			} catch (CodeCompletionException e) {
+				ParserConfidence confidence = parser.getConfidence();
+				ParseState state = new ParseState(tokenStream.getPosition(), confidence);
+				completionExceptions.put(e, state);
+				tokenStream.setPosition(position);
+			}
 		}
-		return parseOutcome;
+
+		T merge() throws InternalParseException, CodeCompletionException, InternalErrorException {
+			if (foundResult) {
+				return mergedResult;
+			}
+
+			// Check code completions and results (must be mutual exclusive)
+			if (!completionExceptions.isEmpty()) {
+				setPositionFrom(completionExceptions.values());
+				throw mergeCodeCompletions(completionExceptions.keySet());
+			}
+
+			// Check exceptions from potentially right parsers
+			Map<InternalParseException, ParseState> potentiallyRightParseExceptions = filterParseExceptions(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
+			if (!potentiallyRightParseExceptions.isEmpty()) {
+				setPositionFrom(potentiallyRightParseExceptions.values());
+				throw mergeParseExceptions(potentiallyRightParseExceptions.keySet());
+			}
+
+			// Check other exceptions
+			Map<InternalParseException, ParseState> wrongParseExceptions = filterParseExceptions(ParserConfidence.WRONG_PARSER);
+			if (!wrongParseExceptions.isEmpty()) {
+				setPositionFrom(wrongParseExceptions.values());
+				throw mergeParseExceptions(wrongParseExceptions.keySet());
+			}
+			throw new InternalErrorException(tokenStream.toString() + ": Unexpected parse outcomes");
+		}
+
+		private CodeCompletionException mergeCodeCompletions(Collection<CodeCompletionException> completionExceptions) {
+			if (completionExceptions.size() == 1) {
+				return completionExceptions.iterator().next();
+			}
+			List<CodeCompletion> completions = new ArrayList<>();
+			Optional<ExecutableArgumentInfo> methodArgumentInfo	= Optional.empty();
+			for (CodeCompletionException codeCompletionException : completionExceptions) {
+				CodeCompletions codeCompletions = codeCompletionException.getCompletions();
+				if (!methodArgumentInfo.isPresent()) {
+					methodArgumentInfo = codeCompletions.getExecutableArgumentInfo();
+				}
+				completions.addAll(codeCompletions.getCompletions());
+			}
+			CodeCompletions codeCompletions = new CodeCompletions(completions, methodArgumentInfo.orElse(null));
+			return new CodeCompletionException(codeCompletions);
+		}
+
+		private static InternalParseException mergeParseExceptions(Collection<InternalParseException> parseExceptions) throws InternalErrorException {
+			if (parseExceptions.isEmpty()) {
+				throw new InternalErrorException("Trying to merge 0 parse exceptions");
+			}
+			if (parseExceptions.size() == 1) {
+				return parseExceptions.iterator().next();
+			}
+			List<String> messages = new ArrayList<>();
+			Throwable cause = null;
+			for (InternalParseException parseException : parseExceptions) {
+				String message = parseException.getMessage();
+				if (cause == null) {
+					cause = parseException.getCause();
+				}
+				messages.add(message);
+			}
+			String combinedMessage = String.join("\n", messages);
+			return new InternalParseException(combinedMessage, cause);
+		}
+
+		private void setPositionFrom(Collection<ParseState> parseStates) throws InternalErrorException {
+			if (parseStates.isEmpty()) {
+				throw new InternalErrorException("Trying to set position from empty list of states");
+			}
+			int position = parseStates.stream().mapToInt(ParseState::getPosition).max().getAsInt();
+			tokenStream.setPosition(position);
+		}
+
+		private Map<InternalParseException, ParseState> filterParseExceptions(ParserConfidence confidence) {
+			return parseExceptions.entrySet().stream()
+					.filter(entry -> entry.getValue().getConfidence() == confidence)
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		}
 	}
 }

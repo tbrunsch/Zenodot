@@ -1,45 +1,33 @@
 package dd.kms.zenodot.result;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
 /**
  * A collection of {@link CodeCompletion} including their ratings
  */
-public class CodeCompletions implements ParseOutcome
+public class CodeCompletions
 {
-	public static CodeCompletions none(int position) {
-		return new CodeCompletions(position, ImmutableList.of());
-	}
+	public static final CodeCompletions	NONE	= new CodeCompletions(ImmutableList.of());
 
 	public static CodeCompletions of(CodeCompletion codeCompletion) {
-		return new CodeCompletions(codeCompletion.getInsertionRange().getEnd(), ImmutableList.of(codeCompletion));
+		return new CodeCompletions(ImmutableList.of(codeCompletion));
 	}
 
-	private final int								position;
-	private final List<CodeCompletion>				completions;
-	private final Optional<ExecutableArgumentInfo>	executableArgumentInfo;
+	private final List<CodeCompletion>			completions;
+	private @Nullable ExecutableArgumentInfo	executableArgumentInfo;
 
-	public CodeCompletions(int position, List<CodeCompletion> completions) {
-		this(position, completions, Optional.empty());
+	public CodeCompletions(List<CodeCompletion> completions) {
+		this(completions, null);
 	}
 
-	public CodeCompletions(int position, List<CodeCompletion> completions, Optional<ExecutableArgumentInfo> executableArgumentInfo) {
-		this.position = position;
+	public CodeCompletions(List<CodeCompletion> completions, ExecutableArgumentInfo executableArgumentInfo) {
 		this.completions = completions;
 		this.executableArgumentInfo = executableArgumentInfo;
-	}
-
-	@Override
-	public ParseOutcomeType getOutcomeType() {
-		return ParseOutcomeType.CODE_COMPLETIONS;
-	}
-
-	@Override
-	public int getPosition() {
-		return position;
 	}
 
 	public List<CodeCompletion> getCompletions() {
@@ -47,6 +35,11 @@ public class CodeCompletions implements ParseOutcome
 	}
 
 	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo() {
-		return executableArgumentInfo;
+		return Optional.ofNullable(executableArgumentInfo);
+	}
+
+	public void setExecutableArgumentInfo(ExecutableArgumentInfo executableArgumentInfo) {
+		Preconditions.checkArgument(this.executableArgumentInfo == null, "Trying to overwrite executable argument info");
+		this.executableArgumentInfo = executableArgumentInfo;
 	}
 }

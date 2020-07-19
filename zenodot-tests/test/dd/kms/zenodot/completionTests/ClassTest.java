@@ -34,7 +34,6 @@ public class ClassTest extends CompletionTest
 
 		String packageName = ClassUtils.getParentPath(ClassTest.class.getPackage().getName()) + ".classesForTest";
 		testBuilder
-			.configurator(null)
 			.addTest(packageName + ".du",						"dummies", "DummyClass", "MyDummyClass", "moreDummies")
 			.addTest(packageName + ".Du",						"DummyClass", "dummies", "MyDummyClass", "moreDummies")
 			.addTest(packageName + ".m",						"moreDummies")

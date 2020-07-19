@@ -23,7 +23,7 @@ public class MatchRatings
 	/*
 	 * String Comparison
 	 */
-	public static StringMatch rateStringMatch(String actual, String expected) {
+	public static StringMatch rateStringMatch(String expected, String actual) {
 		if (actual.equals(expected)) {
 			return StringMatch.FULL;
 		} else if (expected.isEmpty()) {
@@ -60,7 +60,7 @@ public class MatchRatings
 		return m1.compareTo(m2) <= 0 ? m1 : m2;
 	}
 
-	public static TypeMatch rateTypeMatch(TypeInfo actual, TypeInfo expected) {
+	public static TypeMatch rateTypeMatch(TypeInfo expected, TypeInfo actual) {
 		if (actual == InfoProvider.UNKNOWN_TYPE) {
 			throw new IllegalArgumentException("Internal error: Cannot rate type match for unknown type");
 		}
@@ -111,7 +111,7 @@ public class MatchRatings
 	}
 
 	public static boolean isConvertibleTo(TypeInfo source, TypeInfo target) {
-		return rateTypeMatch(source, target) != TypeMatch.NONE;
+		return rateTypeMatch(target, source) != TypeMatch.NONE;
 	}
 
 	private static class WildcardPatternGenerator

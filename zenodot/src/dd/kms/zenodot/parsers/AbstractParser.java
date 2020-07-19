@@ -1,12 +1,14 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.debug.ParserLogger;
-import dd.kms.zenodot.debug.ParserLoggers;
-import dd.kms.zenodot.result.ParseOutcome;
+import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.settings.CompletionMode;
+import dd.kms.zenodot.settings.ParserSettings;
+import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.EvaluationMode;
-import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -66,14 +68,15 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
  *     </li>
  * </ol>
  */
-public abstract class AbstractParser<C>
+public abstract class AbstractParser<C, T extends ParseResult, S extends ParseResultExpectation<T>>
 {
 	final ParserToolbox			parserToolbox;
-	private final ParserLogger 	logger;
+
+	private boolean				parsed;
+	private ParserConfidence	confidence		= ParserConfidence.WRONG_PARSER;
 
 	AbstractParser(ParserToolbox parserToolbox) {
 		this.parserToolbox = parserToolbox;
-		logger = parserToolbox.getSettings().getLogger();
 	}
 
 	/**
@@ -83,60 +86,79 @@ public abstract class AbstractParser<C>
 	 * The implementations are given a dedicated copy of the token stream, so they can do with it
 	 * whatever they like.
 	 */
-	abstract ParseOutcome doParse(TokenStream tokenStream, C context, ParseExpectation expectation);
+	abstract ParseResult doParse(TokenStream tokenStream, C context, S expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalErrorException, InternalEvaluationException;
 
-	public final ParseOutcome parse(TokenStream tokenStream, C context, ParseExpectation expectation) {
+	public final T parse(TokenStream tokenStream, C context, S expectation) throws AmbiguousParseResultException, InternalParseException, CodeCompletionException, InternalErrorException, InternalEvaluationException {
+		InternalLogger logger = getLogger();
 		logger.beginChildScope();
 		log(LogLevel.INFO, "parsing at " + tokenStream);
 		try {
-			ParseOutcome parseOutcome = doParse(tokenStream.clone(), context, expectation);
-			log(LogLevel.INFO, "parse outcome: " + parseOutcome.getOutcomeType());
-			return checkExpectations(parseOutcome, expectation);
+			if (parsed) {
+				throw new InternalErrorException("Parsers must not be reused for parsing");
+			}
+			parsed = true;
+			ParseResult parseResult = doParse(tokenStream, context, expectation);
+			return expectation.check(tokenStream, parseResult, parserToolbox.getObjectInfoProvider());
+		} catch (InternalErrorException | AmbiguousParseResultException | InternalEvaluationException | InternalParseException e) {
+			logger.log(getClass(), e, false);
+			throw e;
 		} finally {
 			logger.endChildScope();
+ 		}
+	}
+
+	public InternalLogger getLogger() {
+		return parserToolbox.getLogger();
+	}
+
+	public ParserConfidence getConfidence() {
+		return confidence;
+	}
+
+	void log(LogLevel logLevel, String message) {
+		getLogger().log(getClass(), logLevel, message);
+	}
+
+	void increaseConfidence(ParserConfidence newConfidence) throws InternalErrorException {
+		if (confidence.compareTo(newConfidence) > 0) {
+			throw new InternalErrorException("Trying to increase confidence from " + confidence + " to lower confidence " + newConfidence);
 		}
+		confidence = newConfidence;
 	}
 
 	boolean isCompile() {
 		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED;
 	}
 
-	/**
-	 * Checks whether the parse outcome matches its expectations. In the basic version, only the
-	 * expected evaluation type (class or object) is checked. Only the {@link ExpressionParser}
-	 * overrides this method to check the allowed types additionally.<br/>
-	 * <br/>
-	 * The reason for this is that the expected types are sometimes not a hard restriction, but only a
-	 * help for code completion.<br/>
-	 * <br/>
-	 * <b>Example:</b> Consider the method {@code Double#parseDouble(String)}. After parsing {@code Double.parseDouble(},
-	 *          a String expression is expected. The expression {@code Double.parseDouble(0 + "1")} is
-	 *          perfectly valid. Technically, the {@link ExpressionParser} parses the method argument and ultimately
-	 *          verifies that the argument is a String. However, for parsing {@code 0} and {@code "1"} it uses the
-	 *          {@link SimpleExpressionParser}. To allow them to return good code completions,
-	 *          this parser is told to expect a String expression. However, parsing {@code 0} must not fail
-	 *          due to this expectation.
-	 */
-	ParseOutcome checkExpectations(ParseOutcome parseOutcome, ParseExpectation expectation) {
-		return ParseUtils.checkExpectedParseResultType(parseOutcome, expectation);
+	int getInsertionBegin(CompletionInfo info) {
+		return info.getTokenTextStartPosition();
 	}
 
-	/**
-	 * This method is intended to be called from any parser to inform the logger about the current parsing progress.
-	 */
-	void log(LogLevel logLevel, String message) {
-		final String suffix;
-		if (logger.ignoresLogMessages()) {
-			suffix = "";
-		} else {
-			StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-			if (stackTraceElements.length > 2) {
-				StackTraceElement element = stackTraceElements[2];
-				suffix = " (" + element.getClassName() + "." + element.getMethodName() + ":" + element.getLineNumber() + ")";
-			} else {
-				suffix = "";
-			}
+	int getInsertionEnd(CompletionInfo info) {
+		ParserSettings settings = parserToolbox.getSettings();
+		CompletionMode completionMode = settings.getCompletionMode();
+		switch (completionMode) {
+			case COMPLETE_AND_REPLACE_UNTIL_CARET:
+				return info.getCaretPosition();
+			case COMPLETE_UNTIL_CARET_REPLACE_WHOLE_WORDS:
+			case COMPLETE_AND_REPLACE_WHOLE_WORDS:
+				return info.getTokenTextEndPosition();
+			default:
+				throw new IllegalStateException("Unsupported completion mode: " + completionMode);
 		}
-		logger.log(ParserLoggers.createLogEntry(logLevel, getClass().getSimpleName(), message + suffix));
+	}
+
+	String getTextToComplete(CompletionInfo info) {
+		ParserSettings settings = parserToolbox.getSettings();
+		CompletionMode completionMode = settings.getCompletionMode();
+		switch (completionMode) {
+			case COMPLETE_AND_REPLACE_UNTIL_CARET:
+			case COMPLETE_UNTIL_CARET_REPLACE_WHOLE_WORDS:
+				return info.getTokenTextUntilCaret();
+			case COMPLETE_AND_REPLACE_WHOLE_WORDS:
+				return info.getTokenText();
+			default:
+				throw new IllegalStateException("Unsupported completion mode: " + completionMode);
+		}
 	}
 }
