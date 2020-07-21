@@ -200,7 +200,7 @@ public class OperatorResultProvider
 		if (primitiveClass != boolean.class) {
 			throw new OperatorException("Operator cannot be applied to '" + clazz + "'");
 		}
-		Object result = evaluationMode == EvaluationMode.NONE ? InfoProvider.INDETERMINATE_VALUE : !((boolean) objectInfo.getObject());
+		Object result = evaluationMode.isEvaluateValues() ? !((boolean) objectInfo.getObject()) : InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -283,7 +283,7 @@ public class OperatorResultProvider
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
 			return applyNumericComparisonOperator(lhs, rhs, BinaryOperator.EQUAL_TO);
 		}
-		Object result = evaluationMode == EvaluationMode.NONE ? InfoProvider.INDETERMINATE_VALUE : lhs.getObject() == rhs.getObject();
+		Object result = evaluationMode.isEvaluateValues() ? lhs.getObject() == rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -294,7 +294,7 @@ public class OperatorResultProvider
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
 			return applyNumericComparisonOperator(lhs, rhs, BinaryOperator.NOT_EQUAL_TO);
 		}
-		Object result = evaluationMode == EvaluationMode.NONE ? InfoProvider.INDETERMINATE_VALUE : lhs.getObject() != rhs.getObject();
+		Object result = evaluationMode.isEvaluateValues() ? lhs.getObject() != rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		return InfoProvider.createObjectInfo(result, resultType);
 	}

@@ -68,7 +68,7 @@ public class ObjectInfoProvider
 	}
 
 	public ObjectInfo getExecutableReturnInfo(Object contextObject, ExecutableInfo executableInfo, List<ObjectInfo> argumentInfos) throws InvocationTargetException, InstantiationException {
-		final Object methodReturnValue;
+		Object methodReturnValue = InfoProvider.INDETERMINATE_VALUE;
 		if (evaluationMode.isEvaluateValues()) {
 			Object[] arguments = executableInfo.createArgumentArray(argumentInfos);
 			try {
@@ -76,37 +76,30 @@ public class ObjectInfoProvider
 			} catch (IllegalAccessException e) {
 				throw new IllegalStateException("Internal error: Unexpected " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			}
-		} else {
-			methodReturnValue = InfoProvider.INDETERMINATE_VALUE;
 		}
 		TypeInfo methodReturnType = getType(methodReturnValue, executableInfo.getReturnType());
 		return InfoProvider.createObjectInfo(methodReturnValue, methodReturnType);
 	}
 
 	public ObjectInfo getArrayElementInfo(ObjectInfo arrayInfo, ObjectInfo indexInfo) {
-		final Object arrayElementValue;
-		final ObjectInfo.ValueSetter valueSetter;
+		Object arrayElementValue = InfoProvider.INDETERMINATE_VALUE;
+		ObjectInfo.ValueSetter valueSetter = null;
 		if (evaluationMode.isEvaluateValues()) {
 			Object arrayObject = arrayInfo.getObject();
 			Object indexObject = indexInfo.getObject();
 			int index = ReflectionUtils.convertTo(indexObject, int.class, false);
 			arrayElementValue = Array.get(arrayObject, index);
 			valueSetter = value -> Array.set(arrayObject, index, value);
-		} else {
-			arrayElementValue = InfoProvider.INDETERMINATE_VALUE;
-			valueSetter = null;
 		}
 		TypeInfo arrayElementType = getType(arrayElementValue, getType(arrayInfo).getComponentType());
 		return InfoProvider.createObjectInfo(arrayElementValue, arrayElementType, valueSetter);
 	}
 
 	public ObjectInfo getArrayInfo(TypeInfo componentType, ObjectInfo sizeInfo) {
-		final int size;
+		int size = 0;
 		if (evaluationMode.isEvaluateValues()) {
 			Object sizeObject = sizeInfo.getObject();
 			size = ReflectionUtils.convertTo(sizeObject, int.class, false);
-		} else {
-			size = 0;
 		}
 		return getArrayInfo(componentType, size);
 	}

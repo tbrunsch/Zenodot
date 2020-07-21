@@ -56,7 +56,7 @@ public enum EvaluationMode
 	DYNAMICALLY_TYPED(true),
 
 	/**
-	 * Like {@link #NONE}, but the result, if successfull, will be a {@link CompiledObjectParseResult}.<br/>
+	 * Like {@link #NONE}, but the result, if successful, will be a {@link CompiledObjectParseResult}.<br/>
 	 * <br/>
 	 * This ist the mode you should use when you want to evaluate an expression over and over for different values of {@code this}.
 	 */
