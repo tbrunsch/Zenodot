@@ -56,10 +56,6 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 
 		ObjectParseResult expressionParseResult = parserToolbox.createParser(SimpleExpressionParser.class).parse(tokenStream, contextInfo, expectation);
 
-		if (isCompile()) {
-			return new CompiledUnaryPrefixOperatorParseResult((CompiledObjectParseResult) expressionParseResult, operator);
-		}
-
 		ObjectInfo expressionInfo = expressionParseResult.getObjectInfo();
 		ObjectInfo operatorResult;
 		try {
@@ -68,7 +64,9 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 		} catch (OperatorException e) {
 			throw new InternalEvaluationException("Applying operator failed: " + e.getMessage(), e);
 		}
-		return ParseResults.createObjectParseResult(operatorResult);
+		return isCompile()
+				? new CompiledUnaryPrefixOperatorParseResult((CompiledObjectParseResult) expressionParseResult, operator, operatorResult)
+				: ParseResults.createObjectParseResult(operatorResult);
 	}
 
 	private ObjectInfo applyOperator(ObjectInfo objectInfo, UnaryOperator operator) throws OperatorException {
@@ -90,8 +88,8 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 		private final CompiledObjectParseResult expressionParseResult;
 		private final UnaryOperator				operator;
 
-		private CompiledUnaryPrefixOperatorParseResult(CompiledObjectParseResult expressionParseResult, UnaryOperator operator) {
-			super(expressionParseResult.getObjectInfo());
+		private CompiledUnaryPrefixOperatorParseResult(CompiledObjectParseResult expressionParseResult, UnaryOperator operator, ObjectInfo operatorResult) {
+			super(operatorResult);
 			this.expressionParseResult = expressionParseResult;
 			this.operator = operator;
 		}
