@@ -32,9 +32,14 @@ class ObjectInfoImpl implements ObjectInfo
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append(object == null ? "NULL" : object.toString());
+		String objectString =	object == null								? "NULL" :
+								object == InfoProvider.INDETERMINATE_VALUE	? "indeterminate value"
+																			: object.toString();
+		builder.append(objectString);
 		if (declaredType != InfoProvider.NO_TYPE) {
-			builder.append(" (").append(declaredType.toString()).append(")");
+			String typeString =	declaredType == InfoProvider.UNKNOWN_TYPE	? "unknown type"
+																			: declaredType.toString();
+			builder.append(" (").append(typeString).append(")");
 		}
 		return builder.toString();
 	}
