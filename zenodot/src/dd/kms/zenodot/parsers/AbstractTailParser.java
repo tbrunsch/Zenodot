@@ -18,7 +18,7 @@ abstract class AbstractTailParser<C, T extends ParseResult, S extends ParseResul
 
 	abstract ParseResult parseDot(TokenStream tokenStream, C context, S expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalEvaluationException, InternalErrorException;
 	abstract ParseResult parseOpeningSquareBracket(TokenStream tokenStream, C context, S expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalEvaluationException, InternalErrorException;
-	abstract ParseResult createParseResult(C context);
+	abstract ParseResult createParseResult(TokenStream tokenStream, C context);
 
 	@Override
 	ParseResult doParse(TokenStream tokenStream, C context, S expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
@@ -33,7 +33,7 @@ abstract class AbstractTailParser<C, T extends ParseResult, S extends ParseResul
 			increaseConfidence(ParserConfidence.RIGHT_PARSER);
 			return parseOpeningSquareBracket(tokenStream, context, expectation);
 		} else {
-			return createParseResult(context);
+			return createParseResult(tokenStream, context);
 		}
 	}
 }

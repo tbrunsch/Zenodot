@@ -14,11 +14,6 @@ public class ClassMethodParser extends AbstractMethodParser<TypeInfo>
 	}
 
 	@Override
-	boolean contextCausesNullPointerException(TypeInfo contextType) {
-		return false;
-	}
-
-	@Override
 	Object getContextObject(TypeInfo context) {
 		return null;
 	}

@@ -1,13 +1,12 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.ImmutableMap;
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.result.AbstractCompiledParseResult;
-import dd.kms.zenodot.result.CompiledObjectParseResult;
+import dd.kms.zenodot.result.AbstractObjectParseResult;
 import dd.kms.zenodot.result.ObjectParseResult;
-import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -64,9 +63,7 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 		} catch (OperatorException e) {
 			throw new InternalEvaluationException("Applying operator failed: " + e.getMessage(), e);
 		}
-		return isCompile()
-				? new CompiledUnaryPrefixOperatorParseResult((CompiledObjectParseResult) expressionParseResult, operator, operatorResult)
-				: ParseResults.createObjectParseResult(operatorResult);
+		return new UnaryPrefixOperatorParseResult(expressionParseResult, operator, operatorResult, tokenStream.getPosition());
 	}
 
 	private ObjectInfo applyOperator(ObjectInfo objectInfo, UnaryOperator operator) throws OperatorException {
@@ -83,21 +80,25 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 		ObjectInfo apply(OperatorResultProvider operatorResultProvider, ObjectInfo objectInfo) throws OperatorException;
 	}
 
-	private static class CompiledUnaryPrefixOperatorParseResult extends AbstractCompiledParseResult
+	private static class UnaryPrefixOperatorParseResult extends AbstractObjectParseResult
 	{
-		private final CompiledObjectParseResult expressionParseResult;
-		private final UnaryOperator				operator;
+		private final ObjectParseResult expressionParseResult;
+		private final UnaryOperator		operator;
 
-		private CompiledUnaryPrefixOperatorParseResult(CompiledObjectParseResult expressionParseResult, UnaryOperator operator, ObjectInfo operatorResult) {
-			super(operatorResult);
+		private UnaryPrefixOperatorParseResult(ObjectParseResult expressionParseResult, UnaryOperator operator, ObjectInfo operatorResult, int position) {
+			super(operatorResult, position);
 			this.expressionParseResult = expressionParseResult;
 			this.operator = operator;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
 			ObjectInfo expressionInfo = expressionParseResult.evaluate(thisInfo, contextInfo);
-			return applyOperator(expressionInfo, operator, OPERATOR_RESULT_PROVIDER);
+			try {
+				return applyOperator(expressionInfo, operator, OPERATOR_RESULT_PROVIDER);
+			} catch (OperatorException e) {
+				throw new ParseException(getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
+			}
 		}
 	}
 }

@@ -51,9 +51,7 @@ public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 		ObjectInfo variableInfo = variable.get().getValue();
 
-		return isCompile()
-				? ParseResults.createCompiledConstantObjectParseResult(variableInfo)
-				: ParseResults.createObjectParseResult(variableInfo);
+		return ParseResults.createCompiledConstantObjectParseResult(variableInfo, tokenStream.getPosition());
 	}
 
 	private CodeCompletions suggestVariables(ObjectParseResultExpectation expectation, CompletionInfo info) {

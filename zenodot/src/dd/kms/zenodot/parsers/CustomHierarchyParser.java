@@ -63,9 +63,7 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 				return parseHierarchyNode(tokenStream, firstChildNodeMatch, expectation);
 			case HIERARCHY_END: {
 				ObjectInfo userObject = firstChildNodeMatch.getUserObject();
-				return isCompile()
-					? ParseResults.createCompiledConstantObjectParseResult(userObject)
-					: ParseResults.createObjectParseResult(userObject);
+				return ParseResults.createCompiledConstantObjectParseResult(userObject, tokenStream.getPosition());
 			}
 			default:
 				throw new InternalErrorException(tokenStream.toString() + ": Expected '" + HIERARCHY_SEPARATOR + "' or '" + HIERARCHY_END + "', but found '" + nextChar + "'");

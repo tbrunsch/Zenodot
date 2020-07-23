@@ -62,6 +62,40 @@ public class ParseUtils
 	}
 
 	/*
+	 * Exception Formatting
+	 */
+	public static StringBuilder formatException(Throwable t, StringBuilder builder) {
+		String exceptionDescription = getExceptionDescription(t);
+		builder.append(exceptionDescription);
+		String message = t.getMessage();
+		if (message != null) {
+			builder.append(": ").append(message);
+		}
+		Throwable cause = t.getCause();
+		if (cause != null) {
+			builder.append("\n");
+			formatException(cause, builder);
+		}
+		return builder;
+	}
+
+	private static String getExceptionDescription(Throwable t) {
+		if (t instanceof CodeCompletionException) {
+			return "Code completions";
+		} else if (t instanceof InternalErrorException) {
+			return "Internal error";
+		} else if (t instanceof InternalParseException) {
+			return "Parse exception";
+		} else if (t instanceof InternalEvaluationException) {
+			return "Evaluation exception";
+		} else if (t instanceof AmbiguousParseResultException) {
+			return "Ambiguous parse results";
+		} else {
+			return t.getClass().getSimpleName();
+		}
+	}
+
+	/*
 	 * Code Completions
 	 */
 	public static <T> List<CodeCompletion> createCodeCompletions(Iterable<? extends T> objects, Function<T, CodeCompletion> completionBuilder) {

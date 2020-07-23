@@ -8,7 +8,6 @@ import dd.kms.zenodot.common.ReflectionUtils;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.UnaryOperator;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -168,11 +167,11 @@ public class OperatorResultProvider
 	}
 
 	private final ObjectInfoProvider 	objectInfoProvider;
-	private final EvaluationMode		evaluationMode;
+	private final boolean				evaluate;
 
-	public OperatorResultProvider(ObjectInfoProvider objectInfoProvider, EvaluationMode evaluationMode) {
+	public OperatorResultProvider(ObjectInfoProvider objectInfoProvider, boolean evaluate) {
 		this.objectInfoProvider = objectInfoProvider;
-		this.evaluationMode = evaluationMode;
+		this.evaluate = evaluate;
 	}
 
 	/*
@@ -200,7 +199,7 @@ public class OperatorResultProvider
 		if (primitiveClass != boolean.class) {
 			throw new OperatorException("Operator cannot be applied to '" + clazz + "'");
 		}
-		Object result = evaluationMode.isEvaluateValues() ? !((boolean) objectInfo.getObject()) : InfoProvider.INDETERMINATE_VALUE;
+		Object result = evaluate ? !((boolean) objectInfo.getObject()) : InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -213,7 +212,7 @@ public class OperatorResultProvider
 		}
 		TypeInfo resultType = primitiveClass == long.class ? InfoProvider.createTypeInfo(long.class) : InfoProvider.createTypeInfo(int.class);
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode.isEvaluateValues()) {
+		if (evaluate) {
 			Object object = objectInfo.getObject();
 			if (primitiveClass == long.class) {
 				result = ~ReflectionUtils.convertTo(object, long.class, false).longValue();
@@ -283,7 +282,7 @@ public class OperatorResultProvider
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
 			return applyNumericComparisonOperator(lhs, rhs, BinaryOperator.EQUAL_TO);
 		}
-		Object result = evaluationMode.isEvaluateValues() ? lhs.getObject() == rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
+		Object result = evaluate ? lhs.getObject() == rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -294,7 +293,7 @@ public class OperatorResultProvider
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
 			return applyNumericComparisonOperator(lhs, rhs, BinaryOperator.NOT_EQUAL_TO);
 		}
-		Object result = evaluationMode.isEvaluateValues() ? lhs.getObject() != rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
+		Object result = evaluate ? lhs.getObject() != rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -333,7 +332,7 @@ public class OperatorResultProvider
 		}
 		TypeInfo declaredResultType = declaredLhsType;
 		Object resultObject = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode.isEvaluateValues()) {
+		if (evaluate) {
 			try {
 				resultObject = rhs.getObject();
 				lhsValueSetter.setObject(resultObject);
@@ -396,7 +395,7 @@ public class OperatorResultProvider
 		}
 		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode.isEvaluateValues()) {
+		if (evaluate) {
 			Function<Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(objectInfo.getObject());
 		}
@@ -412,7 +411,7 @@ public class OperatorResultProvider
 		Class<?> primitiveClass = getPrimitiveClass(clazz);
 		UnaryOperatorInfo operatorInfo = UNARY_OPERATOR_WITH_ASSIGNMENT_INFO_BY_OPERATOR_AND_TYPE.get(operator, primitiveClass);
 		ObjectInfo operatorResult = applyUnaryOperatorInfo(objectInfo, operatorInfo);
-		if (evaluationMode.isEvaluateValues()) {
+		if (evaluate) {
 			try {
 				Object resultObject = operatorResult.getObject();
 				valueSetter.setObject(resultObject);
@@ -470,7 +469,7 @@ public class OperatorResultProvider
 		}
 		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode.isEvaluateValues()) {
+		if (evaluate) {
 			BiFunction<Object, Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(lhs.getObject(), rhs.getObject());
 		}
@@ -486,7 +485,7 @@ public class OperatorResultProvider
 	private ObjectInfo concat(ObjectInfo lhs, ObjectInfo rhs) {
 		TypeInfo resultType = InfoProvider.createTypeInfo(String.class);
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluationMode.isEvaluateValues()) {
+		if (evaluate) {
 			String lhsAsString = getStringRepresentation(lhs.getObject());
 			String rhsAsString = getStringRepresentation(rhs.getObject());
 			result = lhsAsString + rhsAsString;

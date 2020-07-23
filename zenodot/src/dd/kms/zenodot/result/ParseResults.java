@@ -1,12 +1,12 @@
 package dd.kms.zenodot.result;
 
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.parsers.AbstractParser;
 import dd.kms.zenodot.parsers.ClassTailParser;
 import dd.kms.zenodot.parsers.ObjectTailParser;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ExecutableInfo;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -25,16 +25,12 @@ public class ParseResults
 		return new PackageParseResultImpl(packageInfo);
 	}
 
-	public static ObjectParseResult createObjectParseResult(ObjectInfo objectInfo) {
-		return new ObjectParseResultImpl(objectInfo);
+	public static ObjectParseResult createCompiledIdentityObjectParseResult(ObjectInfo objectInfo, int position) {
+		return new IdentityObjectParseResult(objectInfo, position);
 	}
 
-	public static CompiledObjectParseResult createCompiledIdentityObjectParseResult(ObjectInfo objectInfo) {
-		return new CompiledIdentityObjectParseResult(objectInfo);
-	}
-
-	public static CompiledObjectParseResult createCompiledConstantObjectParseResult(ObjectInfo objectInfo) {
-		return new CompiledConstantObjectParseResult(objectInfo);
+	public static ObjectParseResult createCompiledConstantObjectParseResult(ObjectInfo objectInfo, int position) {
+		return new ConstantObjectParseResult(objectInfo, position);
 	}
 
 	public static ExecutableArgumentInfo createExecutableArgumentInfo(int currentArgumentIndex, Map<ExecutableInfo, Boolean> applicableExecutableOverloads) {
@@ -47,9 +43,7 @@ public class ParseResults
 			ObjectInfo objectInfo = objectParseResult.getObjectInfo();
 			AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation> objectTailParser = parserToolbox.createParser(ObjectTailParser.class);
 			ObjectParseResult tailParseResult = objectTailParser.parse(tokenStream, objectInfo, expectation);
-			return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED
-				? new CompiledParseResultWithTail((CompiledObjectParseResult) objectParseResult, (CompiledObjectParseResult) tailParseResult)
-				: tailParseResult;
+			return new ParseResultWithTail(objectParseResult, tailParseResult, tokenStream.getPosition());
 		} else if (parseResult instanceof ClassParseResult) {
 			ClassParseResult classParseResult = (ClassParseResult) parseResult;
 			TypeInfo type = classParseResult.getType();
@@ -60,43 +54,43 @@ public class ParseResults
 		}
 	}
 
-	private static class CompiledIdentityObjectParseResult extends AbstractCompiledParseResult
+	private static class IdentityObjectParseResult extends AbstractObjectParseResult
 	{
-		CompiledIdentityObjectParseResult(ObjectInfo objectInfo) {
-			super(objectInfo);
+		IdentityObjectParseResult(ObjectInfo objectInfo, int position) {
+			super(objectInfo, position);
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context) {
 			return context;
 		}
 	}
 
-	private static class CompiledConstantObjectParseResult extends AbstractCompiledParseResult
+	private static class ConstantObjectParseResult extends AbstractObjectParseResult
 	{
-		CompiledConstantObjectParseResult(ObjectInfo objectInfo) {
-			super(objectInfo);
+		ConstantObjectParseResult(ObjectInfo objectInfo, int position) {
+			super(objectInfo, position);
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context) {
 			return getObjectInfo();
 		}
 	}
 
-	private static class CompiledParseResultWithTail extends AbstractCompiledParseResult
+	private static class ParseResultWithTail extends AbstractObjectParseResult
 	{
-		private final CompiledObjectParseResult	parseResult;
-		private final CompiledObjectParseResult	tailParseResult;
+		private final ObjectParseResult parseResult;
+		private final ObjectParseResult tailParseResult;
 
-		CompiledParseResultWithTail(CompiledObjectParseResult parseResult, CompiledObjectParseResult tailParseResult) {
-			super(tailParseResult.getObjectInfo());
+		ParseResultWithTail(ObjectParseResult parseResult, ObjectParseResult tailParseResult, int position) {
+			super(tailParseResult.getObjectInfo(), position);
 			this.parseResult = parseResult;
 			this.tailParseResult = tailParseResult;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context) throws ParseException {
 			ObjectInfo nextObjectInfo = parseResult.evaluate(thisInfo, context);
 			return tailParseResult.evaluate(thisInfo, nextObjectInfo);
 		}

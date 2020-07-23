@@ -21,34 +21,34 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ParserToolbox
 {
-	private final ObjectInfo						thisInfo;
-	private final ParserSettings					settings;
-	private final EvaluationMode					evaluationMode;
+	private final ObjectInfo					thisInfo;
+	private final ParserSettings				settings;
 
-	private final InternalLogger					logger;
+	private final InternalLogger				logger;
 
-	private final ClassDataProvider					classDataProvider;
-	private final ExecutableDataProvider			executableDataProvider;
-	private final FieldDataProvider					fieldDataProvider;
-	private final ObjectInfoProvider				objectInfoProvider;
-	private final ObjectTreeNodeDataProvider		objectTreeNodeDataProvider;
-	private final OperatorResultProvider 			operatorResultProvider;
-	private final VariableDataProvider				variableDataProvider;
+	private final ClassDataProvider				classDataProvider;
+	private final ExecutableDataProvider		executableDataProvider;
+	private final FieldDataProvider				fieldDataProvider;
+	private final ObjectInfoProvider			objectInfoProvider;
+	private final ObjectTreeNodeDataProvider	objectTreeNodeDataProvider;
+	private final OperatorResultProvider 		operatorResultProvider;
+	private final VariableDataProvider			variableDataProvider;
 
-	public ParserToolbox(ObjectInfo thisInfo, ParserSettings settings, ParseMode parseMode) {
+	public ParserToolbox(ObjectInfo thisInfo, ParserSettings settings) {
 		this.thisInfo = thisInfo;
 		this.settings = settings;
-		this.evaluationMode = getEvaluationMode(settings, parseMode);
 
 		logger	= new InternalLogger(settings.getLogger());
 
-		objectInfoProvider				= new ObjectInfoProvider(evaluationMode);
+		boolean evaluate = settings.isEnableDynamicTyping();
+
+		objectInfoProvider				= new ObjectInfoProvider(evaluate);
 
 		classDataProvider				= new ClassDataProvider(this);
 		executableDataProvider			= new ExecutableDataProvider(this);
 		fieldDataProvider				= new FieldDataProvider(this);
 		objectTreeNodeDataProvider		= new ObjectTreeNodeDataProvider();
-		operatorResultProvider 			= new OperatorResultProvider(objectInfoProvider, evaluationMode);
+		operatorResultProvider 			= new OperatorResultProvider(objectInfoProvider, evaluate);
 		variableDataProvider			= new VariableDataProvider(settings.getVariables(), objectInfoProvider);
 	}
 
@@ -58,10 +58,6 @@ public class ParserToolbox
 
 	public ParserSettings getSettings() {
 		return settings;
-	}
-
-	public EvaluationMode getEvaluationMode() {
-		return evaluationMode;
 	}
 
 	public InternalLogger getLogger() {
@@ -117,20 +113,5 @@ public class ParserToolbox
 
 	public AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation> createExpressionParser(int maxOperatorPrecedenceLevelToConsider) {
 		return new ExpressionParser(this, maxOperatorPrecedenceLevelToConsider);
-	}
-
-	private static EvaluationMode getEvaluationMode(ParserSettings settings, ParseMode parseMode) {
-		switch (parseMode) {
-			case CODE_COMPLETION:
-				return settings.isEnableDynamicTyping() ? EvaluationMode.DYNAMICALLY_TYPED : EvaluationMode.NONE;
-			case EVALUATION:
-				return settings.isEnableDynamicTyping() ? EvaluationMode.DYNAMICALLY_TYPED : EvaluationMode.STATICALLY_TYPED;
-			case WITHOUT_EVALUATION:
-				return EvaluationMode.NONE;
-			case COMPILATION:
-				return EvaluationMode.COMPILED;
-			default:
-				throw new IllegalArgumentException("Unexpected parse mode: " + parseMode);
-		}
 	}
 }

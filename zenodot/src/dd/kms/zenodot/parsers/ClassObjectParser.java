@@ -9,7 +9,10 @@ import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
 import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.AbstractObjectParseResult;
+import dd.kms.zenodot.result.CodeCompletion;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -42,9 +45,7 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 		Class<?> classObject = contextType.getRawType();
 		ObjectInfo classObjectInfo = InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
 
-		return isCompile()
-				? new CompiledClassObjectParseResult(classObject, classObjectInfo)
-				: ParseResults.createObjectParseResult(classObjectInfo);
+		return new ClassObjectParseResult(classObject, classObjectInfo, tokenStream.getPosition());
 	}
 
 	private CodeCompletions suggestClassKeyword(CompletionInfo info) throws InternalParseException {
@@ -63,17 +64,17 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 		return CodeCompletions.of(completion);
 	}
 
-	private static class CompiledClassObjectParseResult extends AbstractCompiledParseResult
+	private static class ClassObjectParseResult extends AbstractObjectParseResult
 	{
 		private final Class<?>	classObject;
 
-		CompiledClassObjectParseResult(Class<?> classObject, ObjectInfo classObjectInfo) {
-			super(classObjectInfo);
+		ClassObjectParseResult(Class<?> classObject, ObjectInfo classObjectInfo, int position) {
+			super(classObjectInfo, position);
 			this.classObject = classObject;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) {
 			return InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
 		}
 	}

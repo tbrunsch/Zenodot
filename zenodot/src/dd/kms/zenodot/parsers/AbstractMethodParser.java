@@ -1,12 +1,15 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.Iterables;
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.MethodScanner;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.AbstractObjectParseResult;
+import dd.kms.zenodot.result.CodeCompletions;
+import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -16,6 +19,7 @@ import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,17 +33,12 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 		super(parserToolbox);
 	}
 
-	abstract boolean contextCausesNullPointerException(C context);
 	abstract Object getContextObject(C context);
 	abstract TypeInfo getContextType(C context);
 	abstract boolean isContextStatic();
 
 	@Override
 	ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalEvaluationException, InternalErrorException {
-		if (contextCausesNullPointerException(context)) {
-			throw new InternalParseException("Null pointer exception");
-		}
-
 		String methodName = tokenStream.readIdentifier(info -> suggestMethods(context, expectation, info), "Expected a method");
 		int positionAfterMethodName = tokenStream.getPosition();
 		tokenStream.readCharacter('(');
@@ -71,9 +70,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 				} catch (Exception e) {
 					throw new InternalEvaluationException("Exception when evaluating method '" + methodName + "'", e);
 				}
-				return isCompile()
-						? new CompiledMethodParseResult(bestMatchingMethod, (List) argumentResults, methodReturnInfo)
-						: ParseResults.createObjectParseResult(methodReturnInfo);
+				return new MethodParseResult(isContextStatic(), bestMatchingMethod, argumentResults, methodReturnInfo, tokenStream.getPosition());
 			}
 			default: {
 				String error = "Ambiguous method call. Possible candidates are:\n"
@@ -120,24 +117,26 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 		return InfoProvider.getMethodInfos(getContextType(context), methodScanner);
 	}
 
-	private class CompiledMethodParseResult extends AbstractCompiledParseResult
+	private static class MethodParseResult extends AbstractObjectParseResult
 	{
-		private final ExecutableInfo					method;
-		private final List<CompiledObjectParseResult>	compiledArguments;
+		private final ExecutableInfo			method;
+		private final List<ObjectParseResult>	arguments;
+		private final boolean					contextStatic;
 
-		CompiledMethodParseResult(ExecutableInfo method, List<CompiledObjectParseResult> compiledArguments, ObjectInfo methodReturnInfo) {
-			super(methodReturnInfo);
+		MethodParseResult(boolean contextStatic, ExecutableInfo method, List<ObjectParseResult> arguments, ObjectInfo methodReturnInfo, int position) {
+			super(methodReturnInfo, position);
+			this.contextStatic = contextStatic;
 			this.method = method;
-			this.compiledArguments = compiledArguments;
+			this.arguments = arguments;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			List<ObjectInfo> arguments = new ArrayList<>(compiledArguments.size());
-			for (CompiledObjectParseResult compiledArgument : compiledArguments) {
-				arguments.add(compiledArgument.evaluate(thisInfo, thisInfo));
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			Object contextObject = contextStatic ? null : contextInfo.getObject();
+			List<ObjectInfo> arguments = new ArrayList<>(this.arguments.size());
+			for (ObjectParseResult argument : this.arguments) {
+				arguments.add(argument.evaluate(thisInfo, thisInfo));
 			}
-			Object contextObject = isContextStatic() ? null : contextInfo.getObject();
 			return OBJECT_INFO_PROVIDER.getExecutableReturnInfo(contextObject, method, arguments);
 		}
 	}

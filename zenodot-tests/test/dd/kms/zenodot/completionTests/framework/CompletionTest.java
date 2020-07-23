@@ -57,7 +57,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 
 		try {
 			ObjectInfo thisInfo = InfoProvider.createObjectInfo(testInstance);
-			Parsers.createExpressionParser(expression, settings, thisInfo).getCompletions(caretPosition);
+			Parsers.createExpressionParser(expression, settings).getCompletions(thisInfo, caretPosition);
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			if (e.getClass() != expectedExceptionClass) {
@@ -74,7 +74,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		List<String> completions;
 		try {
 			ObjectInfo thisInfo = InfoProvider.createObjectInfo(testInstance);
-			completions = extractCompletions(Parsers.createExpressionParser(expression, settings, thisInfo).getCompletions(caretPosition));
+			completions = extractCompletions(Parsers.createExpressionParser(expression, settings).getCompletions(thisInfo, caretPosition));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				e.printStackTrace();

@@ -3,6 +3,7 @@ package dd.kms.zenodot.flowcontrol;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLogger;
 import dd.kms.zenodot.debug.ParserLoggers;
+import dd.kms.zenodot.utils.ParseUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,34 +35,7 @@ public class InternalLogger
 			return;
 		}
 		loggedExceptions.add(t);
-		StringBuilder builder = new StringBuilder();
-		formatException(t, builder);
-		logger.log(ParserLoggers.createLogEntry(LogLevel.ERROR, contextClass.getSimpleName(), builder.toString()));
-	}
-
-	private void formatException(Throwable t, StringBuilder builder) {
-		String exceptionDescription = getExceptionDescription(t);
-		builder.append(exceptionDescription).append(": ").append(t.getMessage());
-		Throwable cause = t.getCause();
-		if (cause != null) {
-			builder.append("\n");
-			formatException(cause, builder);
-		}
-	}
-
-	private String getExceptionDescription(Throwable t) {
-		if (t instanceof CodeCompletionException) {
-			return "Code completions";
-		} else if (t instanceof InternalErrorException) {
-			return "Internal error";
-		} else if (t instanceof InternalParseException) {
-			return "Parse exception";
-		} else if (t instanceof InternalEvaluationException) {
-			return "Evaluation exception";
-		} else if (t instanceof AmbiguousParseResultException) {
-			return "Ambiguous parse results";
-		} else {
-			return t.getClass().getSimpleName();
-		}
+		String error = ParseUtils.formatException(t, new StringBuilder()).toString();
+		logger.log(ParserLoggers.createLogEntry(LogLevel.ERROR, contextClass.getSimpleName(), error));
 	}
 }

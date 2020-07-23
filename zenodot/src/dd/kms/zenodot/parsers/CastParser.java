@@ -1,9 +1,12 @@
 package dd.kms.zenodot.parsers;
 
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.AbstractObjectParseResult;
+import dd.kms.zenodot.result.ClassParseResult;
+import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -44,28 +47,26 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 		try {
 			ObjectInfo castInfo = parserToolbox.getObjectInfoProvider().getCastInfo(objectInfo, targetType);
 			log(LogLevel.SUCCESS, "successfully casted object");
-			return isCompile()
-					? new CompiledCastParseResult((CompiledObjectParseResult) parseResult, targetType, castInfo)
-					: ParseResults.createObjectParseResult(castInfo);
+			return new CastParseResult(parseResult, targetType, castInfo, tokenStream.getPosition());
 		} catch (ClassCastException e) {
 			throw new InternalEvaluationException("Cannot cast expression to '" + targetType + "'", e);
 		}
 	}
 
-	private static class CompiledCastParseResult extends AbstractCompiledParseResult
+	private static class CastParseResult extends AbstractObjectParseResult
 	{
-		private final CompiledObjectParseResult	compiledObjectParseResult;
-		private final TypeInfo					targetType;
+		private final ObjectParseResult	parseResult;
+		private final TypeInfo			targetType;
 
-		CompiledCastParseResult(CompiledObjectParseResult compiledObjectParseResult, TypeInfo targetType, ObjectInfo castInfo) {
-			super(castInfo);
-			this.compiledObjectParseResult = compiledObjectParseResult;
+		CastParseResult(ObjectParseResult parseResult, TypeInfo targetType, ObjectInfo castInfo, int position) {
+			super(castInfo, position);
+			this.parseResult = parseResult;
 			this.targetType = targetType;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			ObjectInfo objectInfo = compiledObjectParseResult.evaluate(thisInfo, contextInfo);
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
+			ObjectInfo objectInfo = parseResult.evaluate(thisInfo, contextInfo);
 			return OBJECT_INFO_PROVIDER.getCastInfo(objectInfo, targetType);
 		}
 	}

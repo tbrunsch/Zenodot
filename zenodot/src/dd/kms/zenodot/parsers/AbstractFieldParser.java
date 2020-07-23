@@ -1,6 +1,7 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.Iterables;
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.FieldScanner;
 import dd.kms.zenodot.debug.LogLevel;
@@ -9,10 +10,9 @@ import dd.kms.zenodot.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.flowcontrol.InternalEvaluationException;
 import dd.kms.zenodot.flowcontrol.InternalParseException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.result.AbstractCompiledParseResult;
+import dd.kms.zenodot.result.AbstractObjectParseResult;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.ObjectParseResult;
-import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -33,17 +33,12 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		super(parserToolbox);
 	}
 
-	abstract boolean contextCausesNullPointerException(C context);
 	abstract Object getContextObject(C context);
 	abstract TypeInfo getContextType(C context);
 	abstract boolean isContextStatic();
 
 	@Override
 	ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException, InternalEvaluationException {
-		if (contextCausesNullPointerException(context)) {
-			throw new InternalParseException("Null pointer exception");
-		}
-
 		String fieldName = tokenStream.readIdentifier(info -> suggestFields(context, expectation, info), "Expected a field");
 
 		if (tokenStream.peekCharacter() == '(') {
@@ -62,9 +57,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		Object contextObject = getContextObject(context);
 		ObjectInfo matchingFieldInfo = parserToolbox.getObjectInfoProvider().getFieldValueInfo(contextObject, fieldInfo);
 
-		return isCompile()
-				? compile(fieldInfo, matchingFieldInfo)
-				: ParseResults.createObjectParseResult(matchingFieldInfo);
+		return new FieldParseResult(isContextStatic(), fieldInfo, matchingFieldInfo, tokenStream.getPosition());
 	}
 
 	private CodeCompletions suggestFields(C context, ObjectParseResultExpectation expectation, CompletionInfo info) {
@@ -105,22 +98,20 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		return InfoProvider.getFieldInfos(getContextType(context), fieldScanner);
 	}
 
-	private ObjectParseResult compile(FieldInfo fieldInfo, ObjectInfo objectInfo) {
-		return new CompiledFieldParseResult(fieldInfo, objectInfo);
-	}
-
-	private class CompiledFieldParseResult extends AbstractCompiledParseResult
+	private static class FieldParseResult extends AbstractObjectParseResult
 	{
 		private final FieldInfo	fieldInfo;
+		private final boolean	contextStatic;
 
-		CompiledFieldParseResult(FieldInfo fieldInfo, ObjectInfo objectInfo) {
-			super(objectInfo);
+		FieldParseResult(boolean contextStatic, FieldInfo fieldInfo, ObjectInfo objectInfo, int position) {
+			super(objectInfo, position);
 			this.fieldInfo = fieldInfo;
+			this.contextStatic = contextStatic;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			Object contextObject = isContextStatic() ? null : contextInfo.getObject();
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
+			Object contextObject = contextStatic ? null : contextInfo.getObject();
 			return OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
 		}
 	}

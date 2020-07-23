@@ -1,5 +1,7 @@
 package dd.kms.zenodot.evaluationTests.framework;
 
+import dd.kms.zenodot.CompiledExpression;
+import dd.kms.zenodot.ExpressionParser;
 import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.Parsers;
 import dd.kms.zenodot.common.AbstractTest;
@@ -22,7 +24,9 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 {
-	private final TestExecutor testExecutor;
+	private final TestExecutor	testExecutor;
+
+	private boolean				testCompilation	= true;
 
 	protected EvaluationTest(TestData testData) {
 		super(testData.getTestInstance());
@@ -33,6 +37,10 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		this.testExecutor = testData.getTestExecutor();
 	}
 
+	protected void skipCompilationTest() {
+		this.testCompilation = false;
+	}
+
 	@Test
 	public void testEvaluation() {
 		testExecutor.executeTest(this, false);
@@ -40,7 +48,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 	@Test
 	public void testCompilation() {
-		Assume.assumeFalse("Skipped test. Reason: Compiling expressions cannot be combined with dynamic typing", settingsBuilder.build().isEnableDynamicTyping());
+		Assume.assumeTrue("The compilation test has been excluded for this class", testCompilation);
 		testExecutor.executeTest(this, true);
 	}
 
@@ -61,12 +69,12 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		Class<? extends Exception> expectedExceptionClass = ParseException.class;
 		try {
 			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
+			ExpressionParser expressionParser = Parsers.createExpressionParser(expression, settings);
 			if (compile) {
-				Class<?> testInstanceClass = testInstance == null ? Object.class : testInstance.getClass();
-				TypeInfo thisType = InfoProvider.createTypeInfo(testInstanceClass);
-				Parsers.createExpressionCompiler(expression, settings, thisType).compile().evaluate(thisValue).getObject();
+				CompiledExpression compiledExpression = expressionParser.compile(thisValue);
+				compiledExpression.evaluate(thisValue).getObject();
 			} else {
-				Parsers.createExpressionParser(expression, settings, thisValue).evaluate().getObject();
+				expressionParser.evaluate(thisValue).getObject();
 			}
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
@@ -85,12 +93,14 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		try {
 			final Object actualValue;
 			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
+			Class<?> testClass = testInstance == null ? null : testInstance.getClass();
+			TypeInfo thisType = InfoProvider.createTypeInfo(testClass);
+			ExpressionParser expressionParser = Parsers.createExpressionParser(expression, settings);
 			if (compile) {
-				Class<?> testInstanceClass = testInstance == null ? Object.class : testInstance.getClass();
-				TypeInfo thisType = InfoProvider.createTypeInfo(testInstanceClass);
-				actualValue = Parsers.createExpressionCompiler(expression, settings, thisType).compile().evaluate(thisValue).getObject();
+				CompiledExpression compiledExpression = expressionParser.compile(thisValue);
+				actualValue = compiledExpression.evaluate(thisValue).getObject();
 			} else {
-				actualValue = Parsers.createExpressionParser(expression, settings, thisValue).evaluate().getObject();
+				actualValue = expressionParser.evaluate(thisValue).getObject();
 			}
 			if (executeAssertions) {
 				assertEquals("Expression: " + expression, expectedValue, actualValue);

@@ -1,6 +1,7 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.ImmutableList;
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
@@ -33,6 +34,9 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 
 	@Override
 	ObjectParseResult parseDot(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws CodeCompletionException, InternalErrorException, AmbiguousParseResultException, InternalParseException, InternalEvaluationException {
+		if (contextInfo.getObject() == null) {
+			throw new NullPointerException();
+		}
 		List<AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation>> parsers = Arrays.asList(
 			parserToolbox.createParser(ObjectFieldParser.class),
 			parserToolbox.createParser(ObjectMethodParser.class)
@@ -42,6 +46,10 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 
 	@Override
 	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalEvaluationException, InternalErrorException {
+		if (contextInfo.getObject() == null) {
+			throw new NullPointerException();
+		}
+
 		// array access
 		TypeInfo currentContextType = parserToolbox.getObjectInfoProvider().getType(contextInfo);
 		TypeInfo elementType = currentContextType.getComponentType();
@@ -59,17 +67,13 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		} catch (ClassCastException | ArrayIndexOutOfBoundsException e) {
 			throw new InternalEvaluationException(e.getClass().getSimpleName() + " during array index evaluation", e);
 		}
-		ParseResult arrayParseResult = isCompile()
-										? new CompiledArrayParseResult((CompiledObjectParseResult) indexParseResult, elementInfo)
-										: ParseResults.createObjectParseResult(elementInfo);
+		ParseResult arrayParseResult = new ArrayParseResult(indexParseResult, elementInfo, tokenStream.getPosition());
 		return ParseResults.parseTail(tokenStream, arrayParseResult, parserToolbox, expectation);
 	}
 
 	@Override
-	ObjectParseResult createParseResult(ObjectInfo objectInfo) {
-		return isCompile()
-				? ParseResults.createCompiledIdentityObjectParseResult(objectInfo)
-				: ParseResults.createObjectParseResult(objectInfo);
+	ObjectParseResult createParseResult(TokenStream tokenStream, ObjectInfo objectInfo) {
+		return ParseResults.createCompiledIdentityObjectParseResult(objectInfo, tokenStream.getPosition());
 	}
 
 	private ObjectParseResult parseArrayIndex(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalErrorException, InternalEvaluationException {
@@ -80,17 +84,17 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		return indexParseResult;
 	}
 
-	private static class CompiledArrayParseResult extends AbstractCompiledParseResult
+	private static class ArrayParseResult extends AbstractObjectParseResult
 	{
-		private final CompiledObjectParseResult indexParseResult;
+		private final ObjectParseResult indexParseResult;
 
-		CompiledArrayParseResult(CompiledObjectParseResult indexParseResult, ObjectInfo elementInfo) {
-			super(elementInfo);
+		ArrayParseResult(ObjectParseResult indexParseResult, ObjectInfo elementInfo, int position) {
+			super(elementInfo, position);
 			this.indexParseResult = indexParseResult;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
 			ObjectInfo indexInfo = indexParseResult.evaluate(thisInfo, thisInfo);
 			return OBJECT_INFO_PROVIDER.getArrayElementInfo(contextInfo, indexInfo);
 		}

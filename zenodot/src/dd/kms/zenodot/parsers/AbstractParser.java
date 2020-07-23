@@ -8,7 +8,7 @@ import dd.kms.zenodot.settings.CompletionMode;
 import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.EvaluationMode;
+import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
@@ -102,6 +102,13 @@ public abstract class AbstractParser<C, T extends ParseResult, S extends ParseRe
 		} catch (InternalErrorException | AmbiguousParseResultException | InternalEvaluationException | InternalParseException e) {
 			logger.log(getClass(), e, false);
 			throw e;
+		} catch (CodeCompletionException e) {
+			throw e;
+		} catch (Throwable t) {
+			String error = ParseUtils.formatException(t, new StringBuilder()).toString();
+			InternalEvaluationException e = new InternalEvaluationException(error, t);
+			logger.log(getClass(), e, false);
+			throw e;
 		} finally {
 			logger.endChildScope();
  		}
@@ -124,10 +131,6 @@ public abstract class AbstractParser<C, T extends ParseResult, S extends ParseRe
 			throw new InternalErrorException("Trying to increase confidence from " + confidence + " to lower confidence " + newConfidence);
 		}
 		confidence = newConfidence;
-	}
-
-	boolean isCompile() {
-		return parserToolbox.getEvaluationMode() == EvaluationMode.COMPILED;
 	}
 
 	int getInsertionBegin(CompletionInfo info) {

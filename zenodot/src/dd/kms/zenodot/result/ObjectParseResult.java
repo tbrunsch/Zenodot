@@ -1,12 +1,11 @@
 package dd.kms.zenodot.result;
 
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
-/**
- * An instance of this interface is returned if the subexpression describes an object.
- */
 public interface ObjectParseResult extends ParseResult
 {
+	int getPosition();
 	ObjectInfo getObjectInfo();
-	boolean isCompiled();
+	ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws ParseException;
 }

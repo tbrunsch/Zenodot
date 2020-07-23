@@ -1,6 +1,5 @@
 package dd.kms.zenodot.evaluationTests;
 
-import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;
@@ -15,6 +14,12 @@ public class MethodOverloadTestSideEffects extends EvaluationTest
 {
 	public MethodOverloadTestSideEffects(TestData testData) {
 		super(testData);
+
+		/*
+		 * Since we trigger side effects, these tests will only work if each of them is only executed once.
+		 * Hence, we must either prevent the evaluation or the compilation test from running.
+		 */
+		skipCompilationTest();
 	}
 
 	/**
@@ -24,14 +29,8 @@ public class MethodOverloadTestSideEffects extends EvaluationTest
 	 */
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		/*
-		 * Since we trigger side effects, these tests will only work if each of them is only executed once.
-		 * Hence, we must either prevent the evaluation or the compilation test from running.
-		 * Hack: By enabling dynamic typing, we can avoid the compilation test to run.
-		 */
 		Object testInstance = new TestClass();
 		return new EvaluationTestBuilder()
-			.configurator(AbstractTest::enableDynamicTyping)
 			.testInstance(testInstance)
 			.addTest("f(getInt(), 1.0f)",		1)
 			.addTest("f(getInt(), \"Test2\")",	2)

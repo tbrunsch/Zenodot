@@ -14,11 +14,6 @@ public class ClassFieldParser extends AbstractFieldParser<TypeInfo>
 	}
 
 	@Override
-	boolean contextCausesNullPointerException(TypeInfo contextType) {
-		return false;
-	}
-
-	@Override
 	Object getContextObject(TypeInfo context) {
 		return null;
 	}

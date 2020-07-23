@@ -100,9 +100,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
 		ObjectInfo stringLiteralInfo = InfoProvider.createObjectInfo(stringLiteral, InfoProvider.createTypeInfo(String.class));
-		return isCompile()
-				? ParseResults.createCompiledConstantObjectParseResult(stringLiteralInfo)
-				: ParseResults.createObjectParseResult(stringLiteralInfo);
+		return ParseResults.createCompiledConstantObjectParseResult(stringLiteralInfo, tokenStream.getPosition());
 	}
 
 	private ObjectParseResult parseCharacterLiteral(TokenStream tokenStream) throws InternalParseException, CodeCompletionException, InternalErrorException {
@@ -111,9 +109,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
 		ObjectInfo characterLiteralInfo = InfoProvider.createObjectInfo(characterLiteral, InfoProvider.createTypeInfo(char.class));
-		return isCompile()
-				? ParseResults.createCompiledConstantObjectParseResult(characterLiteralInfo)
-				: ParseResults.createObjectParseResult(characterLiteralInfo);
+		return ParseResults.createCompiledConstantObjectParseResult(characterLiteralInfo, tokenStream.getPosition());
 	}
 
 	private ObjectParseResult parseNamedLiteral(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
@@ -126,13 +122,10 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		log(LogLevel.SUCCESS, "detected literal '" + literal + "'");
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		if (!isCompile()) {
-			return ParseResults.createObjectParseResult(literalInfo);
-		}
 		// "this" is not a constant literal, but depends on the context
 		return THIS_LITERAL.equals(literal)
-				? new CompiledThisParseResult(literalInfo)
-				: ParseResults.createCompiledConstantObjectParseResult(literalInfo);
+				? new ThisParseResult(literalInfo, tokenStream.getPosition())
+				: ParseResults.createCompiledConstantObjectParseResult(literalInfo, tokenStream.getPosition());
 	}
 
 	private CodeCompletions suggestNamedLiteral(CompletionInfo info, ObjectParseResultExpectation expectation) {
@@ -174,14 +167,14 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		return parseResult;
 	}
 
-	private static class CompiledThisParseResult extends AbstractCompiledParseResult
+	private static class ThisParseResult extends AbstractObjectParseResult
 	{
-		CompiledThisParseResult(ObjectInfo thisInfo) {
-			super(thisInfo);
+		ThisParseResult(ObjectInfo thisInfo, int position) {
+			super(thisInfo, position);
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) {
 			return thisInfo;
 		}
 	}
@@ -203,9 +196,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 			log(LogLevel.SUCCESS, "detected numeric literal '" + literalValue + "'");
 			increaseConfidence(ParserConfidence.RIGHT_PARSER);
 			ObjectInfo literalInfo = InfoProvider.createObjectInfo(literalValue, numericType);
-			return isCompile()
-					? ParseResults.createCompiledConstantObjectParseResult(literalInfo)
-					: ParseResults.createObjectParseResult(literalInfo);
+			return ParseResults.createCompiledConstantObjectParseResult(literalInfo, tokenStream.getPosition());
 		}
 	}
 

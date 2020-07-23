@@ -2,7 +2,10 @@ package dd.kms.zenodot;
 
 import dd.kms.zenodot.result.CodeCompletion;
 import dd.kms.zenodot.result.ExecutableArgumentInfo;
+import dd.kms.zenodot.settings.ParserSettings;
+import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,18 +24,31 @@ public interface ExpressionParser
 	 *
 	 * @throws ParseException
 	 */
-	List<CodeCompletion> getCompletions(int caretPosition) throws ParseException;
+	List<CodeCompletion> getCompletions(ObjectInfo thisValue, int caretPosition) throws ParseException;
 
 	/**
 	 * Returns optional information about the arguments of the current method or constructor {@link ExecutableArgumentInfo}.
 	 * The value will be present if the caret is inside of a method argument list.
 	 */
-	Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(int caretPosition) throws ParseException;
+	Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(ObjectInfo thisValue, int caretPosition) throws ParseException;
 
 	/**
 	 * Evaluates the expression in the context provided by {@code thisValue}.
 	 *
 	 * @throws ParseException
 	 */
-	 ObjectInfo evaluate() throws ParseException;
+	 ObjectInfo evaluate(ObjectInfo thisValue) throws ParseException;
+
+	/**
+	 * Compiles the expression in the context provided by {@code thisValue}.<br/>
+	 * <br/>
+	 * If dynamic typing is disabled (see {@link ParserSettings#isEnableDynamicTyping()}),
+	 * then a {@link TypeInfo} instead of an {@link ObjectInfo} would suffice as well.
+	 * To create an {@code ObjectInfo} from a {@link TypeInfo}, you can use the method
+	 * {@link InfoProvider#createObjectInfo(Object, TypeInfo)} for the object
+	 * {@link InfoProvider#INDETERMINATE_VALUE}.
+	 *
+	 * @throws ParseException
+	 */
+	CompiledExpression compile(ObjectInfo thisValue) throws ParseException;
 }

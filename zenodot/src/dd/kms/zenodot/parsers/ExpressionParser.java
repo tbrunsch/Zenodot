@@ -2,17 +2,17 @@ package dd.kms.zenodot.parsers;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.result.AbstractCompiledParseResult;
-import dd.kms.zenodot.result.CompiledObjectParseResult;
+import dd.kms.zenodot.result.AbstractObjectParseResult;
 import dd.kms.zenodot.result.ObjectParseResult;
-import dd.kms.zenodot.result.ParseResults;
+import dd.kms.zenodot.settings.ParserSettings;
 import dd.kms.zenodot.tokenizer.Associativity;
 import dd.kms.zenodot.tokenizer.BinaryOperator;
 import dd.kms.zenodot.tokenizer.TokenStream;
-import dd.kms.zenodot.utils.ParseMode;
+import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
 import dd.kms.zenodot.utils.dataproviders.OperatorResultProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
@@ -87,9 +87,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 					log(LogLevel.SUCCESS, "detected binary operator '" + operator + "' at " + tokenStream);
 				}
 
-				return isCompile()
-					? new CompiledExpressionParseResult((List) operands, operators, accumulatedResultInfo)
-					: ParseResults.createObjectParseResult(accumulatedResultInfo);
+				return new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream.getPosition());
 			}
 
 			tokenStream.readBinaryOperator();
@@ -130,23 +128,31 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 			} catch (OperatorException e) {
 				log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
 				throw new InternalParseException(e.getMessage());
+			} catch (Throwable t) {
+				StringBuilder builder = new StringBuilder("applying operator '" + operator + "' failed: ");
+				String error = ParseUtils.formatException(t, builder).toString();
+				log(LogLevel.ERROR, error);
+				throw new InternalParseException(error, t);
 			}
 		}
 	}
 
-	private ObjectInfo applyOperator(OperatorResultProvider operatorResultProvider, ObjectInfo lhs, ObjectInfo rhs, BinaryOperator operator) throws OperatorException {
+	private static ObjectInfo applyOperator(OperatorResultProvider operatorResultProvider, ObjectInfo lhs, ObjectInfo rhs, BinaryOperator operator) throws OperatorException {
 		return OPERATOR_IMPLEMENTATIONS.get(operator).apply(operatorResultProvider, lhs, rhs);
 	}
 
-	private boolean stopCircuitEvaluation(ObjectInfo objectInfo, BinaryOperator operator) {
+	private static boolean stopCircuitEvaluation(ObjectInfo objectInfo, BinaryOperator operator) {
 		return operator == BinaryOperator.LOGICAL_AND	&& Boolean.FALSE.equals(objectInfo.getObject())
 			|| operator == BinaryOperator.LOGICAL_OR	&& Boolean.TRUE.equals(objectInfo.getObject());
 	}
 
 	private ParserToolbox deriveToolboxWithoutEvaluation(ParserToolbox parserToolbox) {
-		return parserToolbox.getEvaluationMode().isEvaluateValues()
-				? new ParserToolbox(parserToolbox.getThisInfo(), parserToolbox.getSettings(), ParseMode.WITHOUT_EVALUATION)
-				: parserToolbox;
+		ParserSettings settings = parserToolbox.getSettings();
+		if (!settings.isEnableDynamicTyping()) {
+			return parserToolbox;
+		}
+		ParserSettings settingsWithoutEvaluation = settings.builder().enableDynamicTyping(false).build();
+		return new ParserToolbox(parserToolbox.getThisInfo(), settingsWithoutEvaluation);
 	}
 
 	@FunctionalInterface
@@ -155,13 +161,13 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		ObjectInfo apply(OperatorResultProvider operatorResultProvider, ObjectInfo lhs, ObjectInfo rhs) throws OperatorException;
 	}
 
-	private class CompiledExpressionParseResult extends AbstractCompiledParseResult
+	private static class ExpressionParseResult extends AbstractObjectParseResult
 	{
-		private final List<CompiledObjectParseResult>	operands;
-		private final List<BinaryOperator>				operators;
+		private final List<ObjectParseResult>	operands;
+		private final List<BinaryOperator>		operators;
 
-		CompiledExpressionParseResult(List<CompiledObjectParseResult> operands, List<BinaryOperator> operators, ObjectInfo expressionInfo) {
-			super(expressionInfo);
+		ExpressionParseResult(List<ObjectParseResult> operands, List<BinaryOperator> operators, ObjectInfo expressionInfo, int position) {
+			super(expressionInfo, position);
 
 			Preconditions.checkArgument(operands.size() == operators.size() + 1);
 
@@ -180,7 +186,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
 			// evaluate from left to right
 			ObjectInfo accumulatedResultInfo = operands.get(0).evaluate(thisInfo, contextInfo);
 			for (int i = 0; i < operators.size(); i++) {
@@ -188,9 +194,13 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 				if (stopCircuitEvaluation(accumulatedResultInfo, operator)) {
 					return accumulatedResultInfo;
 				}
-				CompiledObjectParseResult nextOperand = operands.get(i + 1);
+				ObjectParseResult nextOperand = operands.get(i + 1);
 				ObjectInfo nextOperandInfo = nextOperand.evaluate(thisInfo, contextInfo);
-				accumulatedResultInfo = applyOperator(OPERATOR_RESULT_PROVIDER, accumulatedResultInfo, nextOperandInfo, operator);
+				try {
+					accumulatedResultInfo = applyOperator(OPERATOR_RESULT_PROVIDER, accumulatedResultInfo, nextOperandInfo, operator);
+				} catch (OperatorException e) {
+					throw new ParseException(nextOperand.getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
+				}
 			}
 			return accumulatedResultInfo;
 		}

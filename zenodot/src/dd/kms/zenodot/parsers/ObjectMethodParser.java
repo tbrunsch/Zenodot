@@ -23,11 +23,6 @@ public class ObjectMethodParser extends AbstractMethodParser<ObjectInfo>
 	}
 
 	@Override
-	boolean contextCausesNullPointerException(ObjectInfo contextInfo) {
-		return contextInfo.getObject() == null;
-	}
-
-	@Override
 	Object getContextObject(ObjectInfo contextInfo) {
 		return contextInfo.getObject();
 	}

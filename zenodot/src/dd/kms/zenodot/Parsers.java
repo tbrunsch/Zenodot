@@ -9,12 +9,8 @@ import dd.kms.zenodot.utils.wrappers.TypeInfo;
  */
 public class Parsers
 {
-	public static ExpressionParser createExpressionParser(String text, ParserSettings settings, ObjectInfo thisValue) {
-		return new ExpressionParserImpl(text, settings, thisValue);
-	}
-
-	public static ExpressionCompiler createExpressionCompiler(String text, ParserSettings settings, TypeInfo thisType) {
-		return new ExpressionCompilerImpl(text, settings, thisType);
+	public static ExpressionParser createExpressionParser(String text, ParserSettings settings) {
+		return new ExpressionParserImpl(text, settings);
 	}
 
 	public static ClassParser createClassParser(String text, ParserSettings settings) {

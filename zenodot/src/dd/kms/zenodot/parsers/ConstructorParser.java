@@ -1,12 +1,15 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.ImmutableList;
+import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.ConstructorScanner;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.*;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.AbstractObjectParseResult;
+import dd.kms.zenodot.result.ClassParseResult;
+import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -88,9 +91,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				} catch (Exception e) {
 					throw new InternalEvaluationException("Error when trying to invoke constructor of '" + constructorClass.getSimpleName() + "': " + e.getMessage(), e);
 				}
-				return isCompile()
-						? new CompileObjectConstructorParseResult(bestMatchingConstructorInfo, (List) argumentResults, constructorReturnInfo)
-						: ParseResults.createObjectParseResult(constructorReturnInfo);
+				return new ObjectConstructorParseResult(bestMatchingConstructorInfo, argumentResults, constructorReturnInfo, tokenStream.getPosition());
 			}
 			default: {
 				String error = "Ambiguous constructor call. Possible candidates are:\n"
@@ -111,9 +112,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			List<ObjectInfo> elementInfos = elementParseResults.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
 			ObjectInfo arrayInfo = parserToolbox.getObjectInfoProvider().getArrayInfo(componentType, elementInfos);
 			log(LogLevel.SUCCESS, "detected valid array construction with initializer list");
-			return isCompile()
-					? new CompiledArrayConstructorWithInitializerListParseResult(componentType, (List) elementParseResults, arrayInfo)
-					: ParseResults.createObjectParseResult(arrayInfo);
+			return new ArrayConstructorWithInitializerListParseResult(componentType, elementParseResults, arrayInfo, tokenStream.getPosition());
 		} else {
 			// array constructor with default initialization (e.g., "new int[3]")
 			ObjectInfo arrayInfo;
@@ -125,9 +124,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				log(LogLevel.ERROR, "caught exception: " + e.getMessage());
 				throw new InternalEvaluationException("Exception during array construction: " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			}
-			return isCompile()
-					? new CompiledArrayConstructorWithDefaultInitializationParseResult(componentType, (CompiledObjectParseResult) arraySizeParseResult, arrayInfo)
-					: ParseResults.createObjectParseResult(arrayInfo);
+			return new ArrayConstructorWithDefaultInitializationParseResult(componentType, arraySizeParseResult, arrayInfo, tokenStream.getPosition());
 		}
 	}
 
@@ -146,9 +143,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 		tokenStream.readCharacter(']');
 
-		return isCompile()
-				? new CompiledArraySizeParseResult((CompiledObjectParseResult) arraySizeParseResult)
-				: ParseResults.createObjectParseResult(arraySizeParseResult.getObjectInfo());
+		return arraySizeParseResult;
 	}
 
 	private List<ObjectParseResult> parseArrayElements(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
@@ -187,79 +182,64 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				+ ")";
 	}
 
-	private static class CompileObjectConstructorParseResult extends AbstractCompiledParseResult
+	private static class ObjectConstructorParseResult extends AbstractObjectParseResult
 	{
-		private final ExecutableInfo					constructor;
-		private final List<CompiledObjectParseResult>	compiledArguments;
+		private final ExecutableInfo			constructor;
+		private final List<ObjectParseResult>	arguments;
 
-		CompileObjectConstructorParseResult(ExecutableInfo constructor, List<CompiledObjectParseResult> compiledArguments, ObjectInfo constructorReturnInfo) {
-			super(constructorReturnInfo);
+		ObjectConstructorParseResult(ExecutableInfo constructor, List<ObjectParseResult> arguments, ObjectInfo constructorReturnInfo, int position) {
+			super(constructorReturnInfo, position);
 			this.constructor = constructor;
-			this.compiledArguments = compiledArguments;
+			this.arguments = arguments;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			List<ObjectInfo> arguments = new ArrayList<>(compiledArguments.size());
-			for (CompiledObjectParseResult compiledArgument : compiledArguments) {
-				arguments.add(compiledArgument.evaluate(thisInfo, thisInfo));
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+			List<ObjectInfo> arguments = new ArrayList<>(this.arguments.size());
+			for (ObjectParseResult argument : this.arguments) {
+				arguments.add(argument.evaluate(thisInfo, thisInfo));
 			}
 			return OBJECT_INFO_PROVIDER.getExecutableReturnInfo(null, constructor, arguments);
 		}
 	}
 
-	private static class CompiledArrayConstructorWithInitializerListParseResult extends AbstractCompiledParseResult
+	private static class ArrayConstructorWithInitializerListParseResult extends AbstractObjectParseResult
 	{
-		private final TypeInfo							componentType;
-		private final List<CompiledObjectParseResult>	compiledElementParseResults;
+		private final TypeInfo					componentType;
+		private final List<ObjectParseResult>	elementParseResults;
 
-		CompiledArrayConstructorWithInitializerListParseResult(TypeInfo componentType, List<CompiledObjectParseResult> compiledElementParseResults, ObjectInfo arrayInfo) {
-			super(arrayInfo);
+		ArrayConstructorWithInitializerListParseResult(TypeInfo componentType, List<ObjectParseResult> elementParseResults, ObjectInfo arrayInfo, int position) {
+			super(arrayInfo, position);
 			this.componentType = componentType;
-			this.compiledElementParseResults = compiledElementParseResults;
+			this.elementParseResults = elementParseResults;
 		}
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			List<ObjectInfo> elementInfos = new ArrayList<>(compiledElementParseResults.size());
-			for (CompiledObjectParseResult elementParseResult : compiledElementParseResults) {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
+			List<ObjectInfo> elementInfos = new ArrayList<>(elementParseResults.size());
+			for (ObjectParseResult elementParseResult : elementParseResults) {
 				elementInfos.add(elementParseResult.evaluate(thisInfo, contextInfo));
 			}
 			return OBJECT_INFO_PROVIDER.getArrayInfo(componentType, elementInfos);
 		}
 	}
 
-	private static class CompiledArrayConstructorWithDefaultInitializationParseResult extends AbstractCompiledParseResult
+	private static class ArrayConstructorWithDefaultInitializationParseResult extends AbstractObjectParseResult
 	{
-		private final TypeInfo					componentType;
-		private final CompiledObjectParseResult	compiledSizeParseResult;
+		private final TypeInfo			componentType;
+		private final ObjectParseResult	sizeParseResult;
 
-		CompiledArrayConstructorWithDefaultInitializationParseResult(TypeInfo componentType, CompiledObjectParseResult compiledSizeParseResult, ObjectInfo arrayInfo) {
-			super(arrayInfo);
+		ArrayConstructorWithDefaultInitializationParseResult(TypeInfo componentType, ObjectParseResult sizeParseResult, ObjectInfo arrayInfo, int position) {
+			super(arrayInfo, position);
 			this.componentType = componentType;
-			this.compiledSizeParseResult = compiledSizeParseResult;
+			this.sizeParseResult = sizeParseResult;
 		}
 
 
 		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			ObjectInfo sizeInfo = compiledSizeParseResult.evaluate(thisInfo, contextInfo);
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
+			ObjectInfo sizeInfo = sizeParseResult.evaluate(thisInfo, contextInfo);
 			return OBJECT_INFO_PROVIDER.getArrayInfo(componentType, sizeInfo);
-		}
-	}
-
-	private static class CompiledArraySizeParseResult extends AbstractCompiledParseResult
-	{
-		private final CompiledObjectParseResult	compiledSizeParseResult;
-
-		CompiledArraySizeParseResult(CompiledObjectParseResult compiledSizeParseResult) {
-			super(compiledSizeParseResult.getObjectInfo());
-			this.compiledSizeParseResult = compiledSizeParseResult;
-		}
-
-		@Override
-		public ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
-			return compiledSizeParseResult.evaluate(thisInfo, contextInfo);
 		}
 	}
 }

@@ -58,11 +58,11 @@ public class ClassTailParser<T extends ParseResult, S extends ParseResultExpecta
 		 * know, in which circumstances this method is called, the caller must handle this
 		 * operator. Hence, we stop parsing here.
 		 */
-		return createParseResult(context);
+		return createParseResult(tokenStream, context);
 	}
 
 	@Override
-	ParseResult createParseResult(TypeInfo type) {
+	ParseResult createParseResult(TokenStream tokenStream, TypeInfo type) {
 		return ParseResults.createClassParseResult(type);
 	}
 }
