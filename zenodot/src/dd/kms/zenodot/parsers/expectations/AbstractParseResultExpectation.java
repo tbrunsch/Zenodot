@@ -1,7 +1,7 @@
 package dd.kms.zenodot.parsers.expectations;
 
 import dd.kms.zenodot.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.result.ClassParseResult;
 import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.result.PackageParseResult;
@@ -23,13 +23,13 @@ abstract class AbstractParseResultExpectation<T extends ParseResult> implements 
 		return parseWholeText;
 	}
 
-	void doCheck(T parseResult, ObjectInfoProvider objectInfoProvider) throws InternalParseException {}
+	void doCheck(T parseResult, ObjectInfoProvider objectInfoProvider) throws SyntaxException {}
 
 	@Override
-	public final T check(TokenStream tokenStream, ParseResult parseResult, ObjectInfoProvider objectInfoProvider) throws InternalErrorException, InternalParseException {
+	public final T check(TokenStream tokenStream, ParseResult parseResult, ObjectInfoProvider objectInfoProvider) throws InternalErrorException, SyntaxException {
 		if (!expectationClazz.isInstance(parseResult)) {
 			String error = "Expected " + getDescription(expectationClazz) + ", but obtained " + getDescription(parseResult.getClass());
-			throw new InternalParseException(error);
+			throw new SyntaxException(error);
 		}
 		T castedParseResult = expectationClazz.cast(parseResult);
 		doCheck(castedParseResult, objectInfoProvider);
@@ -37,7 +37,7 @@ abstract class AbstractParseResultExpectation<T extends ParseResult> implements 
 		if (parseWholeText) {
 			char c = tokenStream.peekCharacter();
 			if (c != TokenStream.EMPTY_CHARACTER) {
-				throw new InternalParseException("Unexpected character '" + c + "'");
+				throw new SyntaxException("Unexpected character '" + c + "'");
 			}
 		}
 

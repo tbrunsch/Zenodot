@@ -1,7 +1,10 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.ParseResult;
@@ -37,7 +40,7 @@ public class UnqualifiedClassParser<T extends ParseResult, S extends ParseResult
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, S expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+	ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, S expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		String className = tokenStream.readClass(this::suggestClasses);
 
 		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
@@ -46,7 +49,7 @@ public class UnqualifiedClassParser<T extends ParseResult, S extends ParseResult
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
 
 		if (importedClass == null) {
-			throw new InternalParseException("Unknown class '" + className + "'");
+			throw new SyntaxException("Unknown class '" + className + "'");
 		}
 
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);

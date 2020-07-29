@@ -3,7 +3,10 @@ package dd.kms.zenodot.parsers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
@@ -60,10 +63,10 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException, AmbiguousParseResultException, InternalEvaluationException {
+	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		String characters = tokenStream.peekCharacters();
 		if (characters.length() == 0) {
-			throw new InternalParseException("Expected a literal");
+			throw new SyntaxException("Expected a literal");
 		}
 		char firstCharacter = characters.charAt(0);
 		switch (firstCharacter) {
@@ -90,11 +93,11 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 			case '9':
 				return parseNumericLiteral(tokenStream, expectation);
 			default:
-				throw new InternalParseException("Expected a literal");
+				throw new SyntaxException("Expected a literal");
 		}
 	}
 
-	private ObjectParseResult parseStringLiteral(TokenStream tokenStream) throws InternalParseException, CodeCompletionException, InternalErrorException {
+	private ObjectParseResult parseStringLiteral(TokenStream tokenStream) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String stringLiteral = tokenStream.readStringLiteral();
 		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteral + "'");
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
@@ -103,7 +106,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		return ParseResults.createCompiledConstantObjectParseResult(stringLiteralInfo, tokenStream.getPosition());
 	}
 
-	private ObjectParseResult parseCharacterLiteral(TokenStream tokenStream) throws InternalParseException, CodeCompletionException, InternalErrorException {
+	private ObjectParseResult parseCharacterLiteral(TokenStream tokenStream) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		char characterLiteral = tokenStream.readCharacterLiteral();
 		log(LogLevel.SUCCESS, "detected character literal '" + characterLiteral + "'");
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
@@ -112,12 +115,12 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		return ParseResults.createCompiledConstantObjectParseResult(characterLiteralInfo, tokenStream.getPosition());
 	}
 
-	private ObjectParseResult parseNamedLiteral(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+	private ObjectParseResult parseNamedLiteral(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String literal = tokenStream.readKeyword(info -> suggestNamedLiteral(info, expectation), "Expected a named literal");
 		Map<String, ObjectInfo> namedLiteralMap = createNamedLiteralMap();
 		ObjectInfo literalInfo = namedLiteralMap.get(literal);
 		if (literalInfo == null) {
-			throw new InternalParseException("Unknown literal '" + literal + "'");
+			throw new SyntaxException("Unknown literal '" + literal + "'");
 		}
 		log(LogLevel.SUCCESS, "detected literal '" + literal + "'");
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
@@ -161,7 +164,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		);
 	}
 
-	private ObjectParseResult parseNumericLiteral(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws CodeCompletionException, InternalErrorException, AmbiguousParseResultException, InternalParseException, InternalEvaluationException {
+	private ObjectParseResult parseNumericLiteral(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws CodeCompletionException, InternalErrorException, SyntaxException, EvaluationException {
 		ObjectParseResult parseResult = ParseUtils.parse(tokenStream, null, expectation, numericParsers);
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 		return parseResult;
@@ -191,7 +194,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		@Override
-		ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+		ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 			V literalValue = tokenReader.read(tokenStream);
 			log(LogLevel.SUCCESS, "detected numeric literal '" + literalValue + "'");
 			increaseConfidence(ParserConfidence.RIGHT_PARSER);
@@ -203,6 +206,6 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 	@FunctionalInterface
 	private interface NumericTokenReader<T>
 	{
-		T read(TokenStream tokenStream) throws InternalParseException, CodeCompletionException;
+		T read(TokenStream tokenStream) throws SyntaxException, CodeCompletionException;
 	}
 }

@@ -3,7 +3,7 @@ package dd.kms.zenodot.parsers;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.ObjectParseResult;
@@ -30,11 +30,11 @@ public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String variableName = tokenStream.readIdentifier(info -> suggestVariables(expectation, info), "Expected a variable");
 
 		if (tokenStream.peekCharacter() == '(') {
-			throw new InternalParseException("Unexpected opening parenthesis '('");
+			throw new SyntaxException("Unexpected opening parenthesis '('");
 		}
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
@@ -43,7 +43,7 @@ public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 			.filter(v -> v.getName().equals(variableName))
 			.findFirst();
 		if (!variable.isPresent()) {
-			throw new InternalParseException("Unknown variable '" + variableName + "'");
+			throw new SyntaxException("Unknown variable '" + variableName + "'");
 		}
 		log(LogLevel.SUCCESS, "detected variable '" + variableName + "'");
 

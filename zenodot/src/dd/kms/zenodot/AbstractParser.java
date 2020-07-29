@@ -2,7 +2,10 @@ package dd.kms.zenodot;
 
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.debug.ParserLoggers;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.ParseResult;
@@ -21,7 +24,7 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 		this.settings = settings;
 	}
 
-	abstract T doParse(TokenStream tokenStream, ParserToolbox parserToolbox, S parseResultExpectation) throws AmbiguousParseResultException, CodeCompletionException, InternalErrorException, InternalEvaluationException, InternalParseException;
+	abstract T doParse(TokenStream tokenStream, ParserToolbox parserToolbox, S parseResultExpectation) throws CodeCompletionException, InternalErrorException, EvaluationException, SyntaxException;
 
 	CodeCompletions getCodeCompletions(ObjectInfo thisValue, int caretPosition, S parseResultExpectation) throws ParseException {
 		if (caretPosition < 0 || caretPosition > text.length()) {
@@ -35,16 +38,16 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 			throw new InternalErrorException("Missed caret position for suggesting code completions");
 		} catch (CodeCompletionException e) {
 			return e.getCompletions();
-		} catch (AmbiguousParseResultException | InternalErrorException | InternalEvaluationException | InternalParseException e) {
+		} catch (InternalErrorException | EvaluationException | SyntaxException e) {
 			throw new ParseException(tokenStream.getPosition(), e.getMessage());
 		}
 	}
 
-	T parse(TokenStream tokenStream, ObjectInfo thisValue, S parseResultExpectation) throws AmbiguousParseResultException, CodeCompletionException, InternalEvaluationException, InternalParseException, InternalErrorException {
+	T parse(TokenStream tokenStream, ObjectInfo thisValue, S parseResultExpectation) throws CodeCompletionException, EvaluationException, SyntaxException, InternalErrorException {
 		try {
 			ParserToolbox parserToolbox = new ParserToolbox(thisValue, settings);
 			return doParse(tokenStream, parserToolbox, parseResultExpectation);
-		} catch (AmbiguousParseResultException | CodeCompletionException | InternalErrorException | InternalEvaluationException | InternalParseException e) {
+		} catch (CodeCompletionException | InternalErrorException | EvaluationException | SyntaxException e) {
 			throw e;
 		} catch (Throwable t) {
 			String exceptionClassName = t.getClass().getSimpleName();
@@ -64,7 +67,7 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 			if (exceptionMessage != null) {
 				message += ("\n" + exceptionMessage);
 			}
-			throw new InternalEvaluationException(message, t);
+			throw new EvaluationException(message, t);
 		}
 	}
 }

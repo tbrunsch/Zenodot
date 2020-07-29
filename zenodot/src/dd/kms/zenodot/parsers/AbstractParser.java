@@ -86,9 +86,9 @@ public abstract class AbstractParser<C, T extends ParseResult, S extends ParseRe
 	 * The implementations are given a dedicated copy of the token stream, so they can do with it
 	 * whatever they like.
 	 */
-	abstract ParseResult doParse(TokenStream tokenStream, C context, S expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalErrorException, InternalEvaluationException;
+	abstract ParseResult doParse(TokenStream tokenStream, C context, S expectation) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException;
 
-	public final T parse(TokenStream tokenStream, C context, S expectation) throws AmbiguousParseResultException, InternalParseException, CodeCompletionException, InternalErrorException, InternalEvaluationException {
+	public final T parse(TokenStream tokenStream, C context, S expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		InternalLogger logger = getLogger();
 		logger.beginChildScope();
 		log(LogLevel.INFO, "parsing at " + tokenStream);
@@ -99,14 +99,14 @@ public abstract class AbstractParser<C, T extends ParseResult, S extends ParseRe
 			parsed = true;
 			ParseResult parseResult = doParse(tokenStream, context, expectation);
 			return expectation.check(tokenStream, parseResult, parserToolbox.getObjectInfoProvider());
-		} catch (InternalErrorException | AmbiguousParseResultException | InternalEvaluationException | InternalParseException e) {
+		} catch (InternalErrorException | EvaluationException | SyntaxException e) {
 			logger.log(getClass(), e, false);
 			throw e;
 		} catch (CodeCompletionException e) {
 			throw e;
 		} catch (Throwable t) {
 			String error = ParseUtils.formatException(t, new StringBuilder()).toString();
-			InternalEvaluationException e = new InternalEvaluationException(error, t);
+			EvaluationException e = new EvaluationException(error, t);
 			logger.log(getClass(), e, false);
 			throw e;
 		} finally {

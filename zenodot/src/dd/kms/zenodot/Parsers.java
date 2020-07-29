@@ -1,8 +1,6 @@
 package dd.kms.zenodot;
 
 import dd.kms.zenodot.settings.ParserSettings;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
-import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
 /**
  * API entry point of Zenodot

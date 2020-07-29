@@ -1,6 +1,9 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.result.ParseResult;
@@ -18,10 +21,10 @@ abstract class AbstractParserWithObjectTail<C> extends AbstractParser<C, ObjectP
 		super(parserToolbox);
 	}
 
-	abstract ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException;
+	abstract ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException;
 
 	@Override
-	final ObjectParseResult doParse(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalErrorException, InternalEvaluationException {
+	final ObjectParseResult doParse(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
 		ParseResult nextParseResult = parseNext(tokenStream, context, expectation);
 		return ParseResults.parseTail(tokenStream, nextParseResult, parserToolbox, expectation);
 	}

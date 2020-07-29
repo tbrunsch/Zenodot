@@ -23,7 +23,7 @@ public class ConstructorScanner
 	public List<Constructor<?>> getConstructors(Class<?> clazz) {
 		Predicate<Constructor<?>> filter = getFilter();
 		return Arrays.stream(clazz.getDeclaredConstructors())
-			.filter(filter::test)
+			.filter(filter)
 			.collect(Collectors.toList());
 	}
 

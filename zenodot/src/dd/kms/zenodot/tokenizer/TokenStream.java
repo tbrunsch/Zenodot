@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.common.RegexUtils;
 import dd.kms.zenodot.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.result.CodeCompletions;
 
 import javax.annotation.Nullable;
@@ -91,24 +91,24 @@ public class TokenStream
 	 */
 	private static <T> List<String> getOperators(T[] operatorValues, Function<T, String> operatorGetter) {
 		return Arrays.stream(operatorValues)
-			.map(operatorGetter::apply)
+			.map(operatorGetter)
 			.sorted(Comparator.comparingInt(String::length).reversed())
 			.collect(Collectors.toList());
 	}
 
-	private String unescapeCharacters(String s) throws InternalParseException {
+	private String unescapeCharacters(String s) throws SyntaxException {
 		StringBuffer unescapedString = new StringBuffer();
 		int pos = 0;
 		while (pos < s.length()) {
 			char c = s.charAt(pos);
 			if (c == '\\') {
 				if (pos + 1 == s.length()) {
-					throw new InternalParseException("The literal ends with a backslash '\\'");
+					throw new SyntaxException("The literal ends with a backslash '\\'");
 				}
 				char escapedChar = s.charAt(pos + 1);
 				Character interpretation = INTERPRETATION_OF_ESCAPED_CHARACTERS.get(escapedChar);
 				if (interpretation == null) {
-					throw new InternalParseException("The literal contains an unknown escape sequence: \\" + escapedChar);
+					throw new SyntaxException("The literal contains an unknown escape sequence: \\" + escapedChar);
 				}
 				unescapedString.append((char) interpretation);
 				pos += 2;
@@ -126,37 +126,33 @@ public class TokenStream
 	private int				position;
 
 	public TokenStream(String expression, int caretPosition) {
-		this(expression, caretPosition, 0);
-	}
-
-	private TokenStream(String expression, int caretPosition, int position) {
 		this.expression = expression;
 		this.caretPosition = caretPosition < 0 ? Integer.MAX_VALUE : caretPosition;
-		this.position = position;
+		this.position = 0;
 	}
 
-	public String readIdentifier(CompletionGenerator completionGenerator, String errorMessage) throws InternalParseException, CodeCompletionException {
+	public String readIdentifier(CompletionGenerator completionGenerator, String errorMessage) throws SyntaxException, CodeCompletionException {
 		return readRegex(IDENTIFIER_PATTERN, 2, completionGenerator, errorMessage, true);
 	}
 
-	public String readKeyword(CompletionGenerator completionGenerator, String errorMessage) throws InternalParseException, CodeCompletionException {
+	public String readKeyword(CompletionGenerator completionGenerator, String errorMessage) throws SyntaxException, CodeCompletionException {
 		return readRegex(KEYWORD_PATTERN, 2, completionGenerator, errorMessage, true);
 	}
 
-	public String readPackage(CompletionGenerator completionGenerator) throws InternalParseException, CodeCompletionException {
+	public String readPackage(CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException {
 		return readRegex(PACKAGE_NAME_PATTERN, 2, completionGenerator, "Expected a package name", true);
 	}
 
-	public String readClass(CompletionGenerator completionGenerator) throws InternalParseException, CodeCompletionException {
+	public String readClass(CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException {
 		return readRegex(CLASS_NAME_PATTERN, 2, completionGenerator, "Expected a class name", true);
 	}
 
-	public String readStringLiteral() throws InternalParseException, CodeCompletionException {
+	public String readStringLiteral() throws SyntaxException, CodeCompletionException {
 		String escapedStringLiteral = readRegex(STRING_LITERAL_PATTERN, 2, NO_COMPLETIONS, "No string literal found", true);
 		return unescapeCharacters(escapedStringLiteral);
 	}
 
-	public char readCharacterLiteral() throws InternalParseException, CodeCompletionException, InternalErrorException {
+	public char readCharacterLiteral() throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String escapedCharacterLiteral = readRegex(CHARACTER_LITERAL_PATTERN, 2, NO_COMPLETIONS, "No character literal found", true);
 		String characterLiteral = unescapeCharacters(escapedCharacterLiteral);
 		int length = characterLiteral.length();
@@ -168,43 +164,43 @@ public class TokenStream
 		return characterLiteral.charAt(0);
 	}
 
-	public int readIntegerLiteral() throws InternalParseException, CodeCompletionException {
+	public int readIntegerLiteral() throws SyntaxException, CodeCompletionException {
 		String integerLiteral = readRegex(INTEGER_LITERAL_PATTERN, 2, NO_COMPLETIONS, "Expected an integer literal", true);
 		try {
 			return Integer.parseInt(integerLiteral);
 		} catch (NumberFormatException e) {
-			throw new InternalParseException("'" + integerLiteral + "' is not a valid integer literal");
+			throw new SyntaxException("'" + integerLiteral + "' is not a valid integer literal");
 		}
 	}
 
-	public long readLongLiteral() throws InternalParseException, CodeCompletionException {
+	public long readLongLiteral() throws SyntaxException, CodeCompletionException {
 		String longLiteral = readRegex(LONG_LITERAL_PATTERN, 2, NO_COMPLETIONS, "Expected a long literal", true);
 		try {
 			return Long.parseLong(longLiteral);
 		} catch (NumberFormatException e) {
-			throw new InternalParseException("'" + longLiteral + "' is not a valid long literal");
+			throw new SyntaxException("'" + longLiteral + "' is not a valid long literal");
 		}
 	}
 
-	public float readFloatLiteral() throws InternalParseException, CodeCompletionException {
+	public float readFloatLiteral() throws SyntaxException, CodeCompletionException {
 		String floatLiteral = readRegex(FLOAT_LITERAL_PATTERN, 2, NO_COMPLETIONS, "Expected a float literal", true);
 		try {
 			return Float.parseFloat(floatLiteral);
 		} catch (NumberFormatException e) {
-			throw new InternalParseException("'" + floatLiteral + "' is not a valid float literal");
+			throw new SyntaxException("'" + floatLiteral + "' is not a valid float literal");
 		}
 	}
 
-	public double readDoubleLiteral() throws InternalParseException, CodeCompletionException {
+	public double readDoubleLiteral() throws SyntaxException, CodeCompletionException {
 		String doubleLiteral = readRegex(DOUBLE_LITERAL_PATTERN, 2, NO_COMPLETIONS, "Expected a double literal", true);
 		try {
 			return Double.parseDouble(doubleLiteral);
 		} catch (NumberFormatException e) {
-			throw new InternalParseException("'" + doubleLiteral + "' is not a valid double literal");
+			throw new SyntaxException("'" + doubleLiteral + "' is not a valid double literal");
 		}
 	}
 
-	public char readCharacter(char... expectedCharacters) throws InternalParseException, CodeCompletionException, InternalErrorException {
+	public char readCharacter(char... expectedCharacters) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		Pattern pattern = getOrCreateSingleCharacterPattern(expectedCharacters);
 		String s = readRegex(pattern, 2, NO_COMPLETIONS, "Expected " + joinCharacters(expectedCharacters), false);
 		if (s.length() > 1) {
@@ -241,14 +237,14 @@ public class TokenStream
 			try {
 				readCharacter(character);
 				return true;
-			} catch (InternalParseException e) {
+			} catch (SyntaxException e) {
 				throw new InternalErrorException(toString() + ": Unexpected parse exception: " + e.getMessage());
 			}
 		}
 		return false;
 	}
 
-	public String readUntilCharacter(CompletionGenerator completionGenerator, char... terminalCharacters) throws InternalParseException, CodeCompletionException {
+	public String readUntilCharacter(CompletionGenerator completionGenerator, char... terminalCharacters) throws SyntaxException, CodeCompletionException {
 		StringBuilder regex = new StringBuilder("^([^");
 		for (char terminalCharacter : terminalCharacters) {
 			regex.append(RegexUtils.escapeIfSpecial(terminalCharacter));
@@ -259,30 +255,30 @@ public class TokenStream
 	}
 
 	@Nullable
-	public UnaryOperator readUnaryOperator() throws InternalParseException, CodeCompletionException {
+	public UnaryOperator readUnaryOperator() throws SyntaxException, CodeCompletionException {
 		String operator = readOperator(UNARY_OPERATORS);
 		return UnaryOperator.getValue(operator);
 	}
 
 	@Nullable
-	public BinaryOperator readBinaryOperator() throws InternalParseException, CodeCompletionException {
+	public BinaryOperator readBinaryOperator() throws SyntaxException, CodeCompletionException {
 		String operator = readOperator(BINARY_OPERATORS);
 		return BinaryOperator.getValue(operator);
 	}
 
 	@Nullable
-	public BinaryOperator peekBinaryOperator() throws InternalParseException, CodeCompletionException {
+	public BinaryOperator peekBinaryOperator() throws SyntaxException, CodeCompletionException {
 		int curPos = position;
 		String operator = readOperator(BINARY_OPERATORS);
 		position = curPos;
 		return BinaryOperator.getValue(operator);
 	}
 
-	public String readRemainingWhitespaces(CompletionGenerator completionGenerator, String errorMessage) throws InternalParseException, CodeCompletionException {
+	public String readRemainingWhitespaces(CompletionGenerator completionGenerator, String errorMessage) throws SyntaxException, CodeCompletionException {
 		return readRegex(REMAINING_WHITESPACE_PATTERN, 1, completionGenerator, errorMessage, true);
 	}
 
-	private String readRegex(Pattern pattern, int groupIndexToExtract, CompletionGenerator completionGenerator, String errorMessage, boolean supportCompletionsInTrailingWhitespaces) throws InternalParseException, CodeCompletionException {
+	private String readRegex(Pattern pattern, int groupIndexToExtract, CompletionGenerator completionGenerator, String errorMessage, boolean supportCompletionsInTrailingWhitespaces) throws SyntaxException, CodeCompletionException {
 		if (caretPosition < position) {
 			throw new IllegalStateException("Internal error: Reading tokens after caret position");
 		}
@@ -306,7 +302,7 @@ public class TokenStream
 				throw new CodeCompletionException(completions);
 			}
 			// No completion requested, no match
-			throw new InternalParseException(errorMessage);
+			throw new SyntaxException(errorMessage);
 		}
 
 		String wholeToken = matcher.group(1);
@@ -334,7 +330,7 @@ public class TokenStream
 	}
 
 	@Nullable
-	private String readOperator(List<String> availableOperators) throws InternalParseException, CodeCompletionException {
+	private String readOperator(List<String> availableOperators) throws SyntaxException, CodeCompletionException {
 		if (caretPosition < position) {
 			throw new IllegalStateException("Internal error: Reading operator after caret position");
 		}

@@ -1,7 +1,10 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.ParseResult;
@@ -25,7 +28,7 @@ public class QualifiedClassParser<T extends ParseResult, S extends ParseResultEx
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, PackageInfo contextInfo, S expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+	ParseResult doParse(TokenStream tokenStream, PackageInfo contextInfo, S expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		String className = tokenStream.readIdentifier(info -> suggestQualifiedClasses(contextInfo, expectation, info), "Expected a class");
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
@@ -33,7 +36,7 @@ public class QualifiedClassParser<T extends ParseResult, S extends ParseResultEx
 		String qualifiedClassName = contextInfo.getPackageName() + "." + className;
 		Class<?> clazz = ClassUtils.getClassUnchecked(qualifiedClassName);
 		if (clazz == null) {
-			throw new InternalParseException("Unknown class '" + qualifiedClassName + "'");
+			throw new SyntaxException("Unknown class '" + qualifiedClassName + "'");
 		}
 		log(LogLevel.SUCCESS, "detected class '" + qualifiedClassName + "'");
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
@@ -50,7 +53,6 @@ public class QualifiedClassParser<T extends ParseResult, S extends ParseResultEx
 		log(LogLevel.SUCCESS, "suggesting classes matching '" + nameToComplete + "'");
 
 		String classPrefixWithPackage = contextInfo.getPackageName() + "." + nameToComplete;
-		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-		return classDataProvider.completeQualifiedClasses(insertionBegin, insertionEnd, classPrefixWithPackage);
+		return ClassDataProvider.completeQualifiedClasses(insertionBegin, insertionEnd, classPrefixWithPackage);
 	}
 }

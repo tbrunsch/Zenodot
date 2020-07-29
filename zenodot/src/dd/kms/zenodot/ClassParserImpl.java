@@ -1,6 +1,9 @@
 package dd.kms.zenodot;
 
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ClassParseResultExpectation;
 import dd.kms.zenodot.result.ClassParseResult;
 import dd.kms.zenodot.result.CodeCompletion;
@@ -41,7 +44,7 @@ class ClassParserImpl extends AbstractParser<ClassParseResult, ClassParseResultE
 	}
 
 	@Override
-	ClassParseResult doParse(TokenStream tokenStream, ParserToolbox parserToolbox, ClassParseResultExpectation parseResultExpectation) throws CodeCompletionException, InternalErrorException, AmbiguousParseResultException, InternalParseException, InternalEvaluationException {
+	ClassParseResult doParse(TokenStream tokenStream, ParserToolbox parserToolbox, ClassParseResultExpectation parseResultExpectation) throws CodeCompletionException, InternalErrorException, SyntaxException, EvaluationException {
 		return ParseUtils.parseClass(tokenStream, parserToolbox);
 	}
 }

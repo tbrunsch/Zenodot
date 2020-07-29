@@ -1,7 +1,10 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.PackageParseResultExpectation;
 import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.result.CodeCompletions;
@@ -31,7 +34,7 @@ abstract class AbstractPackageParser<C, T extends ParseResult, S extends ParseRe
 	abstract String getPackagePrefix(C context);
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, C context, S expectation) throws InternalParseException, CodeCompletionException, InternalErrorException, AmbiguousParseResultException, InternalEvaluationException {
+	ParseResult doParse(TokenStream tokenStream, C context, S expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		log(LogLevel.INFO, "parsing package");
 		PackageParseResult packageParseResult = readPackage(tokenStream, context);
 
@@ -53,12 +56,12 @@ abstract class AbstractPackageParser<C, T extends ParseResult, S extends ParseRe
 		return ParseUtils.parse(tokenStream, packageInfo, expectation, parsers);
 	}
 
-	private PackageParseResult readPackage(TokenStream tokenStream, C context) throws InternalParseException, CodeCompletionException {
+	private PackageParseResult readPackage(TokenStream tokenStream, C context) throws SyntaxException, CodeCompletionException {
 		String packagePrefix = getPackagePrefix(context);
 		String packageName = packagePrefix + tokenStream.readPackage(info -> suggestPackages(info, context));
 		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
 		if (!classDataProvider.packageExists(packageName)) {
-			throw new InternalParseException("Unknown package '" + packageName + "'");
+			throw new SyntaxException("Unknown package '" + packageName + "'");
 		}
 		return ParseResults.createPackageParseResult(InfoProvider.createPackageInfo(packageName));
 	}

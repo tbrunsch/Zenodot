@@ -4,7 +4,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.AbstractObjectParseResult;
 import dd.kms.zenodot.result.ObjectParseResult;
@@ -60,7 +63,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 	}
 
 	@Override
-	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalEvaluationException, InternalErrorException {
+	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
 		ObjectParseResultExpectation operandExpectation = expectation.parseWholeText(false).resultTypeMustMatch(false);
 
 		List<ObjectParseResult> operands = new ArrayList<>();
@@ -127,12 +130,12 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 				log(LogLevel.SUCCESS, "applied operator successfully");
 			} catch (OperatorException e) {
 				log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
-				throw new InternalParseException(e.getMessage());
+				throw new SyntaxException(e.getMessage());
 			} catch (Throwable t) {
 				StringBuilder builder = new StringBuilder("applying operator '" + operator + "' failed: ");
 				String error = ParseUtils.formatException(t, builder).toString();
 				log(LogLevel.ERROR, error);
-				throw new InternalParseException(error, t);
+				throw new SyntaxException(error, t);
 			}
 		}
 	}

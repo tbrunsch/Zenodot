@@ -4,7 +4,7 @@ import com.google.common.collect.Iterables;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.result.ObjectParseResult;
@@ -37,7 +37,7 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		tokenStream.readCharacter(HIERARCHY_BEGIN);
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
@@ -46,13 +46,13 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 		return parseHierarchyNode(tokenStream, hierarchyNode, expectation);
 	}
 
-	private ObjectParseResult parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+	private ObjectParseResult parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String nodeName = tokenStream.readUntilCharacter(info -> suggestHierarchyNode(contextNode, expectation, info), HIERARCHY_SEPARATOR, HIERARCHY_END);
 
 		Iterable<? extends ObjectTreeNode> childNodes = contextNode.getChildNodes();
 		ObjectTreeNode firstChildNodeMatch = Iterables.getFirst(Iterables.filter(childNodes, node -> Objects.equals(node.getName(), nodeName)), null);
 		if (firstChildNodeMatch == null) {
-			throw new InternalParseException("Unknown hierarchy node '" + nodeName + "'");
+			throw new SyntaxException("Unknown hierarchy node '" + nodeName + "'");
 		}
 		log(LogLevel.SUCCESS, "detected hierarchy node '" + nodeName + "'");
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);

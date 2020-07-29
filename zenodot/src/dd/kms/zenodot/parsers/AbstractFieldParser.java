@@ -6,9 +6,9 @@ import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.FieldScanner;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
 import dd.kms.zenodot.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.flowcontrol.InternalEvaluationException;
-import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.AbstractObjectParseResult;
 import dd.kms.zenodot.result.CodeCompletions;
@@ -38,11 +38,11 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException, InternalEvaluationException {
+	ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		String fieldName = tokenStream.readIdentifier(info -> suggestFields(context, expectation, info), "Expected a field");
 
 		if (tokenStream.peekCharacter() == '(') {
-			throw new InternalParseException("Unexpected opening parenthesis '('");
+			throw new SyntaxException("Unexpected opening parenthesis '('");
 		}
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
 
@@ -74,11 +74,11 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		return fieldDataProvider.completeField(nameToComplete, contextObject, contextIsStatic, fieldInfos, expectation, insertionBegin, insertionEnd);
 	}
 
-	private InternalParseException createFieldNotFoundException(C context, String fieldName) {
+	private SyntaxException createFieldNotFoundException(C context, String fieldName) {
 		// distinguish between "unknown field" and "field not visible"
 		List<FieldInfo> allFields = getFieldInfos(context, getFieldScanner(fieldName, false));
 		String error = allFields.isEmpty() ? "Unknown field '"+ fieldName + "'" : "Field '" + fieldName + "' is not visible";
-		return new InternalParseException(error);
+		return new SyntaxException(error);
 	}
 
 	private FieldScanner getFieldScanner() {

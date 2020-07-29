@@ -5,7 +5,10 @@ import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.ConstructorScanner;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.AbstractObjectParseResult;
 import dd.kms.zenodot.result.ClassParseResult;
@@ -44,10 +47,10 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		String keyword = tokenStream.readKeyword(TokenStream.NO_COMPLETIONS, ERROR_MESSAGE);
 		if (!NEW_KEYWORD.equals(keyword)) {
-			throw new InternalParseException(ERROR_MESSAGE);
+			throw new SyntaxException(ERROR_MESSAGE);
 		}
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
@@ -66,10 +69,10 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 	}
 
-	private ObjectParseResult parseObjectConstructor(TokenStream tokenStream, TypeInfo constructorType) throws InternalParseException, AmbiguousParseResultException, InternalErrorException, CodeCompletionException, InternalEvaluationException {
+	private ObjectParseResult parseObjectConstructor(TokenStream tokenStream, TypeInfo constructorType) throws SyntaxException, InternalErrorException, CodeCompletionException, EvaluationException {
 		Class<?> constructorClass = constructorType.getRawType();
 		if (constructorClass.getEnclosingClass() != null && !Modifier.isStatic(constructorClass.getModifiers())) {
-			throw new InternalParseException("Cannot instantiate non-static inner class '" + constructorClass.getName() + "'");
+			throw new SyntaxException("Cannot instantiate non-static inner class '" + constructorClass.getName() + "'");
 		}
 		List<ExecutableInfo> constructorInfos = getConstructorInfos(constructorType);
 
@@ -81,7 +84,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 		switch (bestMatchingConstructorInfos.size()) {
 			case 0:
-				throw new InternalParseException("No constructor matches the given arguments");
+				throw new SyntaxException("No constructor matches the given arguments");
 			case 1: {
 				ExecutableInfo bestMatchingConstructorInfo = bestMatchingConstructorInfos.get(0);
 				ObjectInfo constructorReturnInfo;
@@ -89,19 +92,19 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 					log(LogLevel.SUCCESS, "found unique matching constructor");
 					constructorReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(null, bestMatchingConstructorInfo, argumentInfos);
 				} catch (Exception e) {
-					throw new InternalEvaluationException("Error when trying to invoke constructor of '" + constructorClass.getSimpleName() + "': " + e.getMessage(), e);
+					throw new EvaluationException("Error when trying to invoke constructor of '" + constructorClass.getSimpleName() + "': " + e.getMessage(), e);
 				}
 				return new ObjectConstructorParseResult(bestMatchingConstructorInfo, argumentResults, constructorReturnInfo, tokenStream.getPosition());
 			}
 			default: {
 				String error = "Ambiguous constructor call. Possible candidates are:\n"
 								+ bestMatchingConstructorInfos.stream().map(ConstructorParser::formatConstructorInfo).collect(Collectors.joining("\n"));
-				throw new AmbiguousParseResultException(error);
+				throw new SyntaxException(error);
 			}
 		}
 	}
 
-	private ObjectParseResult parseArrayConstructor(TokenStream tokenStream, TypeInfo componentType) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+	private ObjectParseResult parseArrayConstructor(TokenStream tokenStream, TypeInfo componentType) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		// TODO: currently, only 1d arrays are supported
 		@Nullable ObjectParseResult arraySizeParseResult = parseArraySize(tokenStream);
 		if (arraySizeParseResult == null) {
@@ -122,14 +125,14 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				log(LogLevel.SUCCESS, "detected valid array construction with null initialization");
 			} catch (ClassCastException | NegativeArraySizeException e) {
 				log(LogLevel.ERROR, "caught exception: " + e.getMessage());
-				throw new InternalEvaluationException("Exception during array construction: " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+				throw new EvaluationException("Exception during array construction: " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			}
 			return new ArrayConstructorWithDefaultInitializationParseResult(componentType, arraySizeParseResult, arrayInfo, tokenStream.getPosition());
 		}
 	}
 
 	// returns null if no size is specified (e.g. in "new int[] { 1, 2, 3 }")
-	private @Nullable ObjectParseResult parseArraySize(TokenStream tokenStream) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalErrorException, InternalEvaluationException {
+	private @Nullable ObjectParseResult parseArraySize(TokenStream tokenStream) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
 		log(LogLevel.INFO, "parsing array size");
 
 		if (tokenStream.skipCharacter(']')) {
@@ -146,7 +149,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		return arraySizeParseResult;
 	}
 
-	private List<ObjectParseResult> parseArrayElements(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+	private List<ObjectParseResult> parseArrayElements(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		List<ObjectParseResult> elements = new ArrayList<>();
 
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);

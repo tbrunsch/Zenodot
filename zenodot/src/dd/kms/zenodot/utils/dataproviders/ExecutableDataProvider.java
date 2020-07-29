@@ -1,6 +1,9 @@
 package dd.kms.zenodot.utils.dataproviders;
 
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
@@ -48,7 +51,7 @@ public class ExecutableDataProvider
 	/**
 	 * Parses the arguments of executables including the final ')'
 	 */
-	public List<ObjectParseResult> parseArguments(TokenStream tokenStream, List<ExecutableInfo> executables) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+	public List<ObjectParseResult> parseArguments(TokenStream tokenStream, List<ExecutableInfo> executables) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		List<ObjectParseResult> arguments = new ArrayList<>();
 
 		boolean foundClosingParenthesis = false;
@@ -69,14 +72,14 @@ public class ExecutableDataProvider
 					 * no suggestions. Otherwise we throw a parse exception.
 					 */
 					tokenStream.readRemainingWhitespaces(TokenStream.NO_COMPLETIONS, "No further arguments expected");
-					throw new InternalParseException("Missing ')'");
+					throw new SyntaxException("Missing ')'");
 				} else {
 					/*
 					 * Scenario: method(arg_1, arg_2, ..., arg_n, XYZ for X != ')' and no method
 					 *           accepts more than n arguments.
 					 * => Throw a parse exception
 					 */
-					throw new InternalParseException("No further arguments expected");
+					throw new SyntaxException("No further arguments expected");
 				}
 			}
 

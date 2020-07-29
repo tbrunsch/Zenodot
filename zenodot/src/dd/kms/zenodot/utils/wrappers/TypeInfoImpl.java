@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 
 class TypeInfoImpl implements TypeInfo
 {
-	private static Pattern	SIMPLE_TYPE_NAME_EXTRACTION_PATTERN	= Pattern.compile("([\\w]+\\.)+([\\w]+)");
-	private static String	SIMPLE_TYPE_NAME_REPLACEMENT		= "$2";
+	private static final Pattern	SIMPLE_TYPE_NAME_EXTRACTION_PATTERN	= Pattern.compile("([\\w]+\\.)+([\\w]+)");
+	private static final String		SIMPLE_TYPE_NAME_REPLACEMENT		= "$2";
 
 	private final TypeToken<?> typeToken;
 
@@ -40,7 +40,7 @@ class TypeInfoImpl implements TypeInfo
 
 	@Override
 	public boolean isPrimitive() {
-		return typeToken == null ? false : typeToken.isPrimitive();
+		return typeToken != null && typeToken.isPrimitive();
 	}
 
 	@Override

@@ -1,7 +1,10 @@
 package dd.kms.zenodot.result;
 
 import dd.kms.zenodot.ParseException;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.AbstractParser;
 import dd.kms.zenodot.parsers.ClassTailParser;
 import dd.kms.zenodot.parsers.ObjectTailParser;
@@ -37,7 +40,7 @@ public class ParseResults
 		return new ExecutableArgumentInfoImpl(currentArgumentIndex, applicableExecutableOverloads);
 	}
 
-	public static ObjectParseResult parseTail(TokenStream tokenStream, ParseResult parseResult, ParserToolbox parserToolbox, ObjectParseResultExpectation expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalErrorException, InternalEvaluationException {
+	public static ObjectParseResult parseTail(TokenStream tokenStream, ParseResult parseResult, ParserToolbox parserToolbox, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
 		if (parseResult instanceof ObjectParseResult) {
 			ObjectParseResult objectParseResult = (ObjectParseResult) parseResult;
 			ObjectInfo objectInfo = objectParseResult.getObjectInfo();

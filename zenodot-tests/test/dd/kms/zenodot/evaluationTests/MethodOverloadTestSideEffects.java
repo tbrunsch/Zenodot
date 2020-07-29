@@ -43,8 +43,8 @@ public class MethodOverloadTestSideEffects extends EvaluationTest
 	{
 		private int count = 0;
 
-		int f(int i, float f) { return i; };
-		int f(int i, String s) { return i; };
+		int f(int i, float f) { return i; }
+		int f(int i, String s) { return i; }
 
 		int getInt() { return ++count; }
 	}

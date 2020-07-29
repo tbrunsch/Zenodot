@@ -2,7 +2,7 @@ package dd.kms.zenodot.tokenstream;
 
 import dd.kms.zenodot.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.result.CodeCompletions;
 import dd.kms.zenodot.tokenizer.CompletionGenerator;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -58,7 +58,7 @@ public class TokenStreamTest
 	}
 
 	@Test
-	public void testReadTokens() throws InternalParseException, CodeCompletionException, InternalErrorException {
+	public void testReadTokens() throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String expression = tokenDescriptions.stream().map(TokenDescription::toString).collect(Collectors.joining());
 		TokenStream tokenStream = new TokenStream(expression, -1);
 		for (TokenDescription tokenDescription : tokenDescriptions) {
@@ -75,7 +75,7 @@ public class TokenStreamTest
 	}
 
 	@Test
-	public void testException() throws InternalParseException, CodeCompletionException, InternalErrorException {
+	public void testException() throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String expression = tokenDescriptions.stream().map(TokenDescription::toString).collect(Collectors.joining());
 		TokenStream tokenStream = new TokenStream(expression, -1);
 
@@ -100,7 +100,7 @@ public class TokenStreamTest
 			} else {
 				tokenStream.readCharacter('(');
 			}
-		} catch (InternalParseException e) {
+		} catch (SyntaxException e) {
 			Assert.assertEquals("Deviating parse error positions", errorPos, tokenStream.getPosition());
 			return;
 		} catch (CodeCompletionException e) {
@@ -110,7 +110,7 @@ public class TokenStreamTest
 	}
 
 	@Test
-	public void testCompletion() throws InternalParseException {
+	public void testCompletion() throws SyntaxException {
 		String expression = tokenDescriptions.stream().map(TokenDescription::toString).collect(Collectors.joining());
 		final int numTokens = tokenDescriptions.size();
 		int lastTokenIndex = numTokens - 1;

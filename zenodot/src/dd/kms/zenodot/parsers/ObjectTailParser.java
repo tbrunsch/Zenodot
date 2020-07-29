@@ -3,9 +3,15 @@ package dd.kms.zenodot.parsers;
 import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.result.*;
+import dd.kms.zenodot.result.AbstractObjectParseResult;
+import dd.kms.zenodot.result.ObjectParseResult;
+import dd.kms.zenodot.result.ParseResult;
+import dd.kms.zenodot.result.ParseResults;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.ParseUtils;
 import dd.kms.zenodot.utils.ParserToolbox;
@@ -33,7 +39,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 	}
 
 	@Override
-	ObjectParseResult parseDot(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws CodeCompletionException, InternalErrorException, AmbiguousParseResultException, InternalParseException, InternalEvaluationException {
+	ObjectParseResult parseDot(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws CodeCompletionException, InternalErrorException, SyntaxException, EvaluationException {
 		if (contextInfo.getObject() == null) {
 			throw new NullPointerException();
 		}
@@ -45,7 +51,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 	}
 
 	@Override
-	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalEvaluationException, InternalErrorException {
+	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, EvaluationException, InternalErrorException {
 		if (contextInfo.getObject() == null) {
 			throw new NullPointerException();
 		}
@@ -54,7 +60,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		TypeInfo currentContextType = parserToolbox.getObjectInfoProvider().getType(contextInfo);
 		TypeInfo elementType = currentContextType.getComponentType();
 		if (elementType == InfoProvider.NO_TYPE) {
-			throw new InternalParseException("Cannot apply [] to non-array types");
+			throw new SyntaxException("Cannot apply [] to non-array types");
 		}
 
 		ObjectParseResultExpectation indexExpectation = new ObjectParseResultExpectation(ImmutableList.of(InfoProvider.createTypeInfo(int.class)), true);
@@ -65,7 +71,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 			elementInfo = parserToolbox.getObjectInfoProvider().getArrayElementInfo(contextInfo, indexInfo);
 			log(LogLevel.SUCCESS, "detected valid array access");
 		} catch (ClassCastException | ArrayIndexOutOfBoundsException e) {
-			throw new InternalEvaluationException(e.getClass().getSimpleName() + " during array index evaluation", e);
+			throw new EvaluationException(e.getClass().getSimpleName() + " during array index evaluation", e);
 		}
 		ParseResult arrayParseResult = new ArrayParseResult(indexParseResult, elementInfo, tokenStream.getPosition());
 		return ParseResults.parseTail(tokenStream, arrayParseResult, parserToolbox, expectation);
@@ -76,7 +82,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		return ParseResults.createCompiledIdentityObjectParseResult(objectInfo, tokenStream.getPosition());
 	}
 
-	private ObjectParseResult parseArrayIndex(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalErrorException, InternalEvaluationException {
+	private ObjectParseResult parseArrayIndex(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
 		tokenStream.readCharacter('[');
 		log(LogLevel.INFO, "parsing array index");
 		ObjectParseResult indexParseResult = parserToolbox.createExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), expectation);

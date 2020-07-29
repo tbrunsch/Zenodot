@@ -2,7 +2,10 @@ package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.AbstractObjectParseResult;
 import dd.kms.zenodot.result.ClassParseResult;
@@ -23,7 +26,7 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 	}
 
 	@Override
-	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		tokenStream.readCharacter('(');
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
@@ -39,7 +42,7 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 		return parseAndCast(tokenStream, targetType);
 	}
 
-	private ObjectParseResult parseAndCast(TokenStream tokenStream, TypeInfo targetType) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalEvaluationException, InternalErrorException {
+	private ObjectParseResult parseAndCast(TokenStream tokenStream, TypeInfo targetType) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
 		log(LogLevel.INFO, "parsing object to cast at " + tokenStream);
 		ObjectParseResult parseResult = parserToolbox.createParser(SimpleExpressionParser.class).parse(tokenStream, parserToolbox.getThisInfo(), new ObjectParseResultExpectation());
 		ObjectInfo objectInfo = parseResult.getObjectInfo();
@@ -49,7 +52,7 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 			log(LogLevel.SUCCESS, "successfully casted object");
 			return new CastParseResult(parseResult, targetType, castInfo, tokenStream.getPosition());
 		} catch (ClassCastException e) {
-			throw new InternalEvaluationException("Cannot cast expression to '" + targetType + "'", e);
+			throw new EvaluationException("Cannot cast expression to '" + targetType + "'", e);
 		}
 	}
 

@@ -9,7 +9,6 @@ import dd.kms.zenodot.parsers.UnqualifiedClassParser;
 import dd.kms.zenodot.parsers.expectations.ClassParseResultExpectation;
 import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.result.*;
-import dd.kms.zenodot.tokenizer.CompletionInfo;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 
@@ -25,7 +24,7 @@ public class ParseUtils
 	/*
 	 * Parsing
 	 */
-	public static ClassParseResult parseClass(TokenStream tokenStream, ParserToolbox parserToolbox) throws InternalParseException, InternalErrorException, CodeCompletionException, AmbiguousParseResultException, InternalEvaluationException {
+	public static ClassParseResult parseClass(TokenStream tokenStream, ParserToolbox parserToolbox) throws SyntaxException, InternalErrorException, CodeCompletionException, EvaluationException {
 		List<AbstractParser<ObjectInfo, ClassParseResult, ClassParseResultExpectation>> parsers = Arrays.asList(
 			parserToolbox.createParser(UnqualifiedClassParser.class),
 			parserToolbox.createParser(RootpackageParser.class)
@@ -38,7 +37,7 @@ public class ParseUtils
 	 * Tries to parse a subexpression with the specified parsers. The result is obtained from merging the result
 	 * of each of the specified parsers.
 	 */
-	public static <C, T extends ParseResult, S extends ParseResultExpectation<T>> T parse(TokenStream tokenStream, C context, S expectation, List<? extends AbstractParser<? super C, T, S>> parsers) throws InternalParseException, InternalEvaluationException, AmbiguousParseResultException, InternalErrorException, CodeCompletionException {
+	public static <C, T extends ParseResult, S extends ParseResultExpectation<T>> T parse(TokenStream tokenStream, C context, S expectation, List<? extends AbstractParser<? super C, T, S>> parsers) throws SyntaxException, EvaluationException, InternalErrorException, CodeCompletionException {
 		if (parsers.isEmpty()) {
 			throw new InternalErrorException(tokenStream.toString() + ": No parsers specified");
 		}
@@ -55,7 +54,7 @@ public class ParseUtils
 		} catch (CodeCompletionException e) {
 			logger.log(ParseUtils.class, LogLevel.SUCCESS, "merged completions");
 			throw e;
-		} catch (InternalErrorException | AmbiguousParseResultException | InternalEvaluationException | InternalParseException e) {
+		} catch (InternalErrorException | EvaluationException | SyntaxException e) {
 			logger.log(ParseUtils.class, e, true);
 			throw e;
 		}
@@ -84,12 +83,10 @@ public class ParseUtils
 			return "Code completions";
 		} else if (t instanceof InternalErrorException) {
 			return "Internal error";
-		} else if (t instanceof InternalParseException) {
-			return "Parse exception";
-		} else if (t instanceof InternalEvaluationException) {
+		} else if (t instanceof SyntaxException) {
+			return "Syntax exception";
+		} else if (t instanceof EvaluationException) {
 			return "Evaluation exception";
-		} else if (t instanceof AmbiguousParseResultException) {
-			return "Ambiguous parse results";
 		} else {
 			return t.getClass().getSimpleName();
 		}
@@ -134,9 +131,9 @@ public class ParseUtils
 		private final S								expectation;
 
 		/**
-		 * May contain {@link InternalParseException}s and {@link CodeCompletionException}s, also mixed.
+		 * May contain {@link SyntaxException}s and {@link CodeCompletionException}s, also mixed.
 		 */
-		private final Map<InternalParseException, ParseState> 	parseExceptions			= new HashMap<>();
+		private final Map<SyntaxException, ParseState> 	parseExceptions			= new HashMap<>();
 		private final Map<CodeCompletionException, ParseState>	completionExceptions	= new HashMap<>();
 
 		private T									mergedResult;
@@ -149,7 +146,7 @@ public class ParseUtils
 			this.expectation = expectation;
 		}
 
-		void parse(AbstractParser<? super C, T, S> parser) throws InternalErrorException, AmbiguousParseResultException, InternalEvaluationException, InternalParseException {
+		void parse(AbstractParser<? super C, T, S> parser) throws InternalErrorException, EvaluationException, SyntaxException {
 			if (foundResult) {
 				return;
 			}
@@ -159,7 +156,7 @@ public class ParseUtils
 				if (parser.getConfidence() != ParserConfidence.RIGHT_PARSER) {
 					throw new InternalErrorException(parser.getClass().getSimpleName() + " returned result although it is not sure to be the right parser.");
 				}
-			} catch (InternalParseException e) {
+			} catch (SyntaxException e) {
 				ParserConfidence confidence = parser.getConfidence();
 				if (confidence == ParserConfidence.RIGHT_PARSER) {
 					throw e;
@@ -175,7 +172,7 @@ public class ParseUtils
 			}
 		}
 
-		T merge() throws InternalParseException, CodeCompletionException, InternalErrorException {
+		T merge() throws SyntaxException, CodeCompletionException, InternalErrorException {
 			if (foundResult) {
 				return mergedResult;
 			}
@@ -187,14 +184,14 @@ public class ParseUtils
 			}
 
 			// Check exceptions from potentially right parsers
-			Map<InternalParseException, ParseState> potentiallyRightParseExceptions = filterParseExceptions(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
+			Map<SyntaxException, ParseState> potentiallyRightParseExceptions = filterParseExceptions(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
 			if (!potentiallyRightParseExceptions.isEmpty()) {
 				setPositionFrom(potentiallyRightParseExceptions.values());
 				throw mergeParseExceptions(potentiallyRightParseExceptions.keySet());
 			}
 
 			// Check other exceptions
-			Map<InternalParseException, ParseState> wrongParseExceptions = filterParseExceptions(ParserConfidence.WRONG_PARSER);
+			Map<SyntaxException, ParseState> wrongParseExceptions = filterParseExceptions(ParserConfidence.WRONG_PARSER);
 			if (!wrongParseExceptions.isEmpty()) {
 				setPositionFrom(wrongParseExceptions.values());
 				throw mergeParseExceptions(wrongParseExceptions.keySet());
@@ -219,7 +216,7 @@ public class ParseUtils
 			return new CodeCompletionException(codeCompletions);
 		}
 
-		private static InternalParseException mergeParseExceptions(Collection<InternalParseException> parseExceptions) throws InternalErrorException {
+		private static SyntaxException mergeParseExceptions(Collection<SyntaxException> parseExceptions) throws InternalErrorException {
 			if (parseExceptions.isEmpty()) {
 				throw new InternalErrorException("Trying to merge 0 parse exceptions");
 			}
@@ -228,7 +225,7 @@ public class ParseUtils
 			}
 			List<String> messages = new ArrayList<>();
 			Throwable cause = null;
-			for (InternalParseException parseException : parseExceptions) {
+			for (SyntaxException parseException : parseExceptions) {
 				String message = parseException.getMessage();
 				if (cause == null) {
 					cause = parseException.getCause();
@@ -236,7 +233,7 @@ public class ParseUtils
 				messages.add(message);
 			}
 			String combinedMessage = String.join("\n", messages);
-			return new InternalParseException(combinedMessage, cause);
+			return new SyntaxException(combinedMessage, cause);
 		}
 
 		private void setPositionFrom(Collection<ParseState> parseStates) throws InternalErrorException {
@@ -247,7 +244,7 @@ public class ParseUtils
 			tokenStream.setPosition(position);
 		}
 
-		private Map<InternalParseException, ParseState> filterParseExceptions(ParserConfidence confidence) {
+		private Map<SyntaxException, ParseState> filterParseExceptions(ParserConfidence confidence) {
 			return parseExceptions.entrySet().stream()
 					.filter(entry -> entry.getValue().getConfidence() == confidence)
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

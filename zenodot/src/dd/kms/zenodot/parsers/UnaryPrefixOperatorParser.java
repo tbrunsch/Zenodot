@@ -3,7 +3,10 @@ package dd.kms.zenodot.parsers;
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.AbstractObjectParseResult;
 import dd.kms.zenodot.result.ObjectParseResult;
@@ -45,10 +48,10 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 	}
 
 	@Override
-	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalEvaluationException, InternalErrorException {
+	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, EvaluationException, InternalErrorException {
 		UnaryOperator operator = tokenStream.readUnaryOperator();
 		if (operator == null) {
-			throw new InternalParseException("Expression does not start with an unary operator");
+			throw new SyntaxException("Expression does not start with an unary operator");
 		}
 
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
@@ -61,7 +64,7 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 			operatorResult = applyOperator(expressionInfo, operator);
 			log(LogLevel.SUCCESS, "applied operator successfully");
 		} catch (OperatorException e) {
-			throw new InternalEvaluationException("Applying operator failed: " + e.getMessage(), e);
+			throw new EvaluationException("Applying operator failed: " + e.getMessage(), e);
 		}
 		return new UnaryPrefixOperatorParseResult(expressionParseResult, operator, operatorResult, tokenStream.getPosition());
 	}

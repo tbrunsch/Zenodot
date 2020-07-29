@@ -1,6 +1,9 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ClassParseResultExpectation;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
@@ -33,7 +36,7 @@ public class ClassTailParser<T extends ParseResult, S extends ParseResultExpecta
 	}
 
 	@Override
-	ParseResult parseDot(TokenStream tokenStream, TypeInfo classType, S expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalEvaluationException, InternalErrorException {
+	ParseResult parseDot(TokenStream tokenStream, TypeInfo classType, S expectation) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
 		if (expectation instanceof ClassParseResultExpectation) {
 			InnerClassParser<ClassParseResult, ClassParseResultExpectation> innerClassParser = parserToolbox.createParser(InnerClassParser.class);
 			return innerClassParser.parse(tokenStream, classType, (ClassParseResultExpectation) expectation);

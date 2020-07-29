@@ -1,7 +1,10 @@
 package dd.kms.zenodot.parsers;
 
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.result.ClassParseResult;
 import dd.kms.zenodot.result.CodeCompletions;
@@ -27,14 +30,14 @@ public class InnerClassParser<T extends ParseResult, S extends ParseResultExpect
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, TypeInfo contextType, S expectation) throws AmbiguousParseResultException, CodeCompletionException, InternalParseException, InternalEvaluationException, InternalErrorException {
+	ParseResult doParse(TokenStream tokenStream, TypeInfo contextType, S expectation) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
 		ClassParseResult innerClassParseResult = readInnerClass(tokenStream, contextType);
 		TypeInfo innerClassType = innerClassParseResult.getType();
 
 		return parserToolbox.createParser(ClassTailParser.class).parse(tokenStream, innerClassType, expectation);
 	}
 
-	private ClassParseResult readInnerClass(TokenStream tokenStream, TypeInfo contextType) throws InternalParseException, CodeCompletionException, InternalErrorException {
+	private ClassParseResult readInnerClass(TokenStream tokenStream, TypeInfo contextType) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		Class<?> contextClass = contextType.getRawType();
 		String innerClassName = tokenStream.readIdentifier(info -> suggestInnerClasses(contextType, info), "Expected an inner class name");
 
@@ -44,7 +47,7 @@ public class InnerClassParser<T extends ParseResult, S extends ParseResultExpect
 			.filter(clazz -> clazz.getSimpleName().equals(innerClassName))
 			.findFirst();
 		if (!firstClassMatch.isPresent()) {
-			throw new InternalParseException("Unknown inner class '" + innerClassName + "'");
+			throw new SyntaxException("Unknown inner class '" + innerClassName + "'");
 		}
 
 		log(LogLevel.SUCCESS, "detected inner class '" + innerClassName + "'");

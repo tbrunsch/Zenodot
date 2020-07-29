@@ -1,11 +1,13 @@
 package dd.kms.zenodot.parsers;
 
 import com.google.common.collect.Iterables;
-import dd.kms.zenodot.ParseException;
 import dd.kms.zenodot.common.AccessModifier;
 import dd.kms.zenodot.common.MethodScanner;
 import dd.kms.zenodot.debug.LogLevel;
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.AbstractObjectParseResult;
 import dd.kms.zenodot.result.CodeCompletions;
@@ -19,7 +21,6 @@ import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import dd.kms.zenodot.utils.wrappers.ObjectInfo;
 import dd.kms.zenodot.utils.wrappers.TypeInfo;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalEvaluationException, InternalErrorException {
+	ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, EvaluationException, InternalErrorException {
 		String methodName = tokenStream.readIdentifier(info -> suggestMethods(context, expectation, info), "Expected a method");
 		int positionAfterMethodName = tokenStream.getPosition();
 		tokenStream.readCharacter('(');
@@ -60,7 +61,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 
 		switch (bestMatchingMethods.size()) {
 			case 0:
-				throw new InternalParseException("No method '" + methodName + "' matches the given arguments");
+				throw new SyntaxException("No method '" + methodName + "' matches the given arguments");
 			case 1: {
 				ExecutableInfo bestMatchingMethod = Iterables.getOnlyElement(bestMatchingMethods);
 				ObjectInfo methodReturnInfo;
@@ -68,14 +69,14 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 					log(LogLevel.SUCCESS, "Found unique matching method");
 					methodReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(getContextObject(context), bestMatchingMethod, arguments);
 				} catch (Exception e) {
-					throw new InternalEvaluationException("Exception when evaluating method '" + methodName + "'", e);
+					throw new EvaluationException("Exception when evaluating method '" + methodName + "'", e);
 				}
 				return new MethodParseResult(isContextStatic(), bestMatchingMethod, argumentResults, methodReturnInfo, tokenStream.getPosition());
 			}
 			default: {
 				String error = "Ambiguous method call. Possible candidates are:\n"
 								+ bestMatchingMethods.stream().map(Object::toString).collect(Collectors.joining("\n"));
-				throw new AmbiguousParseResultException(error);
+				throw new SyntaxException(error);
 			}
 		}
 	}
@@ -93,11 +94,11 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 		return executableDataProvider.completeMethod(methodInfos, contextIsStatic, nameToComplete, expectation, insertionBegin, insertionEnd);
 	}
 
-	private InternalParseException createMethodNotFoundException(C context, String methodName) {
+	private SyntaxException createMethodNotFoundException(C context, String methodName) {
 		// distinguish between "unknown method" and "method not visible"
 		List<ExecutableInfo> allMethods = getMethods(context, getMethodScanner(methodName, false));
 		String error = allMethods.isEmpty() ? "Unknown method '" + methodName + "'" : "Method '" + methodName + "' is not visible";
-		return new InternalParseException(error);
+		return new SyntaxException(error);
 	}
 
 	private MethodScanner getMethodScanner() {

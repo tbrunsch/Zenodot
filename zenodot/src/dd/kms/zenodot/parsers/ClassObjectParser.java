@@ -3,7 +3,7 @@ package dd.kms.zenodot.parsers;
 import dd.kms.zenodot.debug.LogLevel;
 import dd.kms.zenodot.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.matching.MatchRating;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.StringMatch;
@@ -35,10 +35,10 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, TypeInfo contextType, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, InternalErrorException {
+	ObjectParseResult parseNext(TokenStream tokenStream, TypeInfo contextType, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String keyword = tokenStream.readKeyword(this::suggestClassKeyword, ERROR_MESSAGE);
 		if (!CLASS_KEYWORD.equals(keyword)) {
-			throw new InternalParseException(ERROR_MESSAGE);
+			throw new SyntaxException(ERROR_MESSAGE);
 		}
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
@@ -48,7 +48,7 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 		return new ClassObjectParseResult(classObject, classObjectInfo, tokenStream.getPosition());
 	}
 
-	private CodeCompletions suggestClassKeyword(CompletionInfo info) throws InternalParseException {
+	private CodeCompletions suggestClassKeyword(CompletionInfo info) throws SyntaxException {
 		int insertionBegin = getInsertionBegin(info);
 		int insertionEnd = getInsertionEnd(info);
 		String nameToComplete = getTextToComplete(info);

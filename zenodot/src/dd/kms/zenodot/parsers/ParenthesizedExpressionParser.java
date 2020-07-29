@@ -1,6 +1,9 @@
 package dd.kms.zenodot.parsers;
 
-import dd.kms.zenodot.flowcontrol.*;
+import dd.kms.zenodot.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.flowcontrol.EvaluationException;
+import dd.kms.zenodot.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.result.ObjectParseResult;
 import dd.kms.zenodot.tokenizer.TokenStream;
@@ -17,7 +20,7 @@ public class ParenthesizedExpressionParser extends AbstractParserWithObjectTail<
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws InternalParseException, CodeCompletionException, AmbiguousParseResultException, InternalErrorException, InternalEvaluationException {
+	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		tokenStream.readCharacter('(');
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);

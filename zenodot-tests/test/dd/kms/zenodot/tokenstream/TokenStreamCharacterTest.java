@@ -2,7 +2,7 @@ package dd.kms.zenodot.tokenstream;
 
 import dd.kms.zenodot.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.tokenizer.TokenStream;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class TokenStreamCharacterTest
 	}
 
 	@Test
-	public void testReadOneOfMultipleCharacters() throws InternalParseException, CodeCompletionException, InternalErrorException {
+	public void testReadOneOfMultipleCharacters() throws SyntaxException, CodeCompletionException, InternalErrorException {
 		TokenStream tokenStream = new TokenStream(expression, -1);
 		tokenStream.readIdentifier(TokenStream.NO_COMPLETIONS, "Unexpected parse exception");
 

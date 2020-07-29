@@ -1,6 +1,6 @@
 package dd.kms.zenodot.parsers.expectations;
 
-import dd.kms.zenodot.flowcontrol.InternalParseException;
+import dd.kms.zenodot.flowcontrol.SyntaxException;
 import dd.kms.zenodot.matching.MatchRatings;
 import dd.kms.zenodot.matching.TypeMatch;
 import dd.kms.zenodot.result.ObjectParseResult;
@@ -54,7 +54,7 @@ public class ObjectParseResultExpectation extends AbstractParseResultExpectation
 	}
 
 	@Override
-	void doCheck(ObjectParseResult parseResult, ObjectInfoProvider objectInfoProvider) throws InternalParseException {
+	void doCheck(ObjectParseResult parseResult, ObjectInfoProvider objectInfoProvider) throws SyntaxException {
 		TypeInfo resultType = objectInfoProvider.getType(parseResult.getObjectInfo());
 		TypeMatch typeMatch = rateTypeMatch(resultType);
 		if (typeMatch == TypeMatch.NONE) {
@@ -64,7 +64,7 @@ public class ObjectParseResultExpectation extends AbstractParseResultExpectation
 				: "the expected class ";
 			String messageSuffix = "'" + expectedTypes.stream().map(Object::toString).collect(Collectors.joining("', '")) + "'";
 			String message = messagePrefix + messageMiddle + messageSuffix;
-			throw new InternalParseException(message);
+			throw new SyntaxException(message);
 		}
 	}
 }

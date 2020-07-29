@@ -66,7 +66,7 @@ public class ClassCastTest extends EvaluationTest
 			this.o2 = o2;
 		}
 
-		TestClass merge(TestClass o) { return new TestClass(i + o.i, d - o.d, (String) o2); };
+		TestClass merge(TestClass o) { return new TestClass(i + o.i, d - o.d, (String) o2); }
 
 		int getId(Object o) { return 1; }
 		int getId(String s) { return 2; }
