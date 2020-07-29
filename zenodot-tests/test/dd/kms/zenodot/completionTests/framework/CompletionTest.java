@@ -1,13 +1,13 @@
 package dd.kms.zenodot.completionTests.framework;
 
-import dd.kms.zenodot.ParseException;
-import dd.kms.zenodot.Parsers;
+import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.common.AbstractTest;
-import dd.kms.zenodot.debug.ParserLogger;
-import dd.kms.zenodot.result.CodeCompletion;
-import dd.kms.zenodot.settings.ParserSettings;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.api.result.CodeCompletion;
+import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.wrappers.InfoProvider;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

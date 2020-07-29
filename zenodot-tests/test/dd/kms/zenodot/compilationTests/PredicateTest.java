@@ -1,12 +1,12 @@
 package dd.kms.zenodot.compilationTests;
 
-import dd.kms.zenodot.CompiledExpression;
-import dd.kms.zenodot.ExpressionParser;
-import dd.kms.zenodot.ParseException;
-import dd.kms.zenodot.Parsers;
-import dd.kms.zenodot.settings.ParserSettings;
-import dd.kms.zenodot.settings.ParserSettingsUtils;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
+import dd.kms.zenodot.api.CompiledExpression;
+import dd.kms.zenodot.api.ExpressionParser;
+import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Parsers;
+import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.wrappers.InfoProvider;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -2,7 +2,6 @@
 
 ## TODO
 - refactor TypeToken-Handling: Check that it can easily be exchanged by GenericX; benefit from parameterized objects by providing good suggestions, but do not suffer from overly strict argument checks resulting from unresolved type parameters (List<String> expected, but known type is only List<T>) or missing type inference support (Arrays.asList())
-- refactor API
 - consider minimum access level also for classes
 - implement instanceof operator
 - extend Doc

@@ -1,11 +1,11 @@
 package dd.kms.zenodot.tokenstream;
 
-import dd.kms.zenodot.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.flowcontrol.SyntaxException;
-import dd.kms.zenodot.result.CodeCompletions;
-import dd.kms.zenodot.tokenizer.CompletionGenerator;
-import dd.kms.zenodot.tokenizer.TokenStream;
+import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
+import dd.kms.zenodot.impl.result.CodeCompletions;
+import dd.kms.zenodot.impl.tokenizer.CompletionGenerator;
+import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

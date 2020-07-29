@@ -1,6 +1,6 @@
 package dd.kms.zenodot.completionTests;
 
-import dd.kms.zenodot.ParseException;
+import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
