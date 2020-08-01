@@ -1,11 +1,11 @@
 package dd.kms.zenodot.impl.parsers.expectations;
 
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.impl.utils.dataproviders.ObjectInfoProvider;
 import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
+import dd.kms.zenodot.impl.matching.MatchRatings;
+import dd.kms.zenodot.impl.utils.dataproviders.ObjectInfoProvider;
 
 import javax.annotation.Nullable;
 import java.util.List;

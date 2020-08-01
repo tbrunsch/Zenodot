@@ -2,10 +2,10 @@ package dd.kms.zenodot.impl.result;
 
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.dataproviders.ObjectInfoProvider;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 public abstract class AbstractObjectParseResult implements ObjectParseResult
 {

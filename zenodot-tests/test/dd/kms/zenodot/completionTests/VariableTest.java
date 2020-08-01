@@ -1,10 +1,10 @@
 package dd.kms.zenodot.completionTests;
 
+import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
-import dd.kms.zenodot.api.settings.Variable;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;

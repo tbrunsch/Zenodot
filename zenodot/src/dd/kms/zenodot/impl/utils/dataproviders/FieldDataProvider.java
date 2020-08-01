@@ -2,20 +2,20 @@ package dd.kms.zenodot.impl.utils.dataproviders;
 
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.debug.ParserLogger;
-import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.api.matching.MatchRating;
-import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.api.result.CodeCompletion;
+import dd.kms.zenodot.api.wrappers.FieldInfo;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.debug.ParserLoggers;
+import dd.kms.zenodot.impl.matching.MatchRatings;
+import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.api.wrappers.FieldInfo;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 import java.util.List;
 

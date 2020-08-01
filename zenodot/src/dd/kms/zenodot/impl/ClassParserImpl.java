@@ -2,20 +2,20 @@ package dd.kms.zenodot.impl;
 
 import dd.kms.zenodot.api.ClassParser;
 import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.result.ClassParseResult;
+import dd.kms.zenodot.api.result.CodeCompletion;
+import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.wrappers.ClassInfo;
+import dd.kms.zenodot.api.wrappers.InfoProvider;
+import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.expectations.ClassParseResultExpectation;
-import dd.kms.zenodot.api.result.ClassParseResult;
-import dd.kms.zenodot.api.result.CodeCompletion;
-import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.api.wrappers.ClassInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 import java.util.List;
 

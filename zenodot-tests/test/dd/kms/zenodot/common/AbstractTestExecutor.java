@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserConsoleLogger;
 import dd.kms.zenodot.api.debug.ParserLogger;
-import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.settings.ParserSettingsUtils;
 import dd.kms.zenodot.api.settings.Variable;
+import dd.kms.zenodot.impl.debug.ParserLoggers;
 import org.junit.Assert;
 
 import java.util.Arrays;

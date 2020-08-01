@@ -1,10 +1,10 @@
 package dd.kms.zenodot.impl.result.codecompletions;
 
 import dd.kms.zenodot.api.matching.MatchRating;
-import dd.kms.zenodot.api.result.codecompletions.CodeCompletionMethod;
 import dd.kms.zenodot.api.result.CodeCompletionType;
-import dd.kms.zenodot.impl.utils.dataproviders.ExecutableDataProvider;
+import dd.kms.zenodot.api.result.codecompletions.CodeCompletionMethod;
 import dd.kms.zenodot.api.wrappers.ExecutableInfo;
+import dd.kms.zenodot.impl.utils.dataproviders.ExecutableDataProvider;
 
 import java.util.Objects;
 

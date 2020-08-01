@@ -1,6 +1,10 @@
 package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.debug.LogLevel;
+import dd.kms.zenodot.api.result.PackageParseResult;
+import dd.kms.zenodot.api.result.ParseResult;
+import dd.kms.zenodot.api.wrappers.InfoProvider;
+import dd.kms.zenodot.api.wrappers.PackageInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -8,16 +12,12 @@ import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.expectations.PackageParseResultExpectation;
 import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
-import dd.kms.zenodot.api.result.PackageParseResult;
-import dd.kms.zenodot.api.result.ParseResult;
 import dd.kms.zenodot.impl.result.ParseResults;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
 import dd.kms.zenodot.impl.utils.dataproviders.ClassDataProvider;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.PackageInfo;
 
 import java.util.ArrayList;
 import java.util.List;

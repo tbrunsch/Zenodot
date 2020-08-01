@@ -5,10 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.*;
-import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.api.wrappers.ClassInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.PackageInfo;
+import dd.kms.zenodot.impl.debug.ParserLoggers;
 
 import java.util.List;
 import java.util.Set;

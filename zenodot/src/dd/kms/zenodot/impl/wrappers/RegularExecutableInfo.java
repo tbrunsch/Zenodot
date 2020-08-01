@@ -1,10 +1,10 @@
 package dd.kms.zenodot.impl.wrappers;
 
 import dd.kms.zenodot.api.common.ReflectionUtils;
+import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
-import dd.kms.zenodot.api.matching.TypeMatch;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.Type;

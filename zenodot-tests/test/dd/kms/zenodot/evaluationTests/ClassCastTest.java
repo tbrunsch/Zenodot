@@ -1,9 +1,9 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;

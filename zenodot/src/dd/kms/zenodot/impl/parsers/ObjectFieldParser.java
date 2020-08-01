@@ -1,8 +1,8 @@
 package dd.kms.zenodot.impl.parsers;
 
-import dd.kms.zenodot.impl.utils.ParserToolbox;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.utils.ParserToolbox;
 
 /**
  * Parses

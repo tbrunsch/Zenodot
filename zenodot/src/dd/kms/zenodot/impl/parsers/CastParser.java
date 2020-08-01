@@ -2,19 +2,19 @@ package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
+import dd.kms.zenodot.api.result.ClassParseResult;
+import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
-import dd.kms.zenodot.api.result.ClassParseResult;
-import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 /**
  * Parses expressions of the form {@code (<class>) <expression>} in the context of {@code this}.

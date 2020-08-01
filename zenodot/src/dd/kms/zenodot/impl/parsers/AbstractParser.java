@@ -1,17 +1,17 @@
 package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.impl.flowcontrol.*;
-import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.api.result.ParseResult;
 import dd.kms.zenodot.api.settings.CompletionMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.flowcontrol.*;
+import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 /**
  * Base class of all parsers. Each parser assumes that it is called in a certain context. This is
