@@ -1,11 +1,11 @@
 package dd.kms.zenodot.completionTests;
 
 import dd.kms.zenodot.api.Parsers;
-import dd.kms.zenodot.common.AbstractTest;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.common.AbstractTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -38,7 +38,8 @@ public class NoExceptionTest extends AbstractTest
 			"new int[i]",
 			" new  int [ i ] ",
 			"new double[]{ d, i }",
-			" new  double [ ] {  d ,  i  } "
+			" new  double [ ] {  d ,  i  } ",
+			"\"String\" instanceof String"
 		);
 	}
 

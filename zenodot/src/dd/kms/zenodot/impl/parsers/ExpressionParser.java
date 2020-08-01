@@ -4,21 +4,31 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
+import dd.kms.zenodot.api.matching.MatchRating;
+import dd.kms.zenodot.api.matching.StringMatch;
+import dd.kms.zenodot.api.matching.TypeMatch;
+import dd.kms.zenodot.api.result.ClassParseResult;
+import dd.kms.zenodot.api.result.CodeCompletion;
+import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
+import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
-import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.impl.result.CodeCompletions;
+import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.tokenizer.Associativity;
 import dd.kms.zenodot.impl.tokenizer.BinaryOperator;
+import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,17 +93,34 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		ParserToolbox parserToolbox = this.parserToolbox;
 		boolean considerOperatorResult = true;
 		while (true) {
-			BinaryOperator operator = tokenStream.peekBinaryOperator();
+			int posBeforeOperator = tokenStream.getPosition();
+			BinaryOperator operator = tokenStream.readBinaryOperator(this::completeOperator);
+
 			if (operator == null || operator.getPrecedenceLevel() > maxOperatorPrecedenceLevelToConsider) {
 				// Example: parsed "+" in "a*b + c" => only evaluate "a*b" and let outer expression parser evaluate sum of a*b and c
-				if (operator != null) {
-					log(LogLevel.SUCCESS, "detected binary operator '" + operator + "' at " + tokenStream);
+				if (operator == BinaryOperator.INSTANCE_OF) {
+					throw new SyntaxException("Unexpected operator '" + operator + "'");
 				}
 
+				tokenStream.setPosition(posBeforeOperator);
 				return new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream.getPosition());
 			}
+			log(LogLevel.SUCCESS, "detected binary operator '" + operator + "' at " + tokenStream);
 
-			tokenStream.readBinaryOperator();
+			if (operator == BinaryOperator.INSTANCE_OF) {
+				ExpressionParseResult expressionParseResult = new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream.getPosition());
+				ClassParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
+				TypeInfo type = classParseResult.getType();
+				ObjectInfo instanceOfInfo;
+				try {
+					instanceOfInfo = parserToolbox.getOperatorResultProvider().getInstanceOfInfo(expressionParseResult.getObjectInfo(), type);
+				} catch (OperatorException e) {
+					log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
+					throw new SyntaxException(e.getMessage());
+				}
+				return new InstanceOfParseResult(expressionParseResult, type, instanceOfInfo, tokenStream.getPosition());
+			}
+
 			operators.add(operator);
 
 			/*
@@ -138,6 +165,20 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 				throw new SyntaxException(error, t);
 			}
 		}
+	}
+
+	private CodeCompletions completeOperator(CompletionInfo info) {
+		int insertionBegin = getInsertionBegin(info);
+		int insertionEnd = getInsertionEnd(info);
+		String nameToComplete = getTextToComplete(info);
+
+		String instanceOfOperator = BinaryOperator.INSTANCE_OF.getOperator();
+		if (instanceOfOperator.startsWith(nameToComplete)) {
+			MatchRating matchRating = MatchRatings.create(StringMatch.PREFIX, TypeMatch.NONE, false);
+			CodeCompletion codeCompletion = CodeCompletionFactory.keywordCompletion(instanceOfOperator, insertionBegin, insertionEnd, matchRating);
+			return CodeCompletions.of(codeCompletion);
+		}
+		return CodeCompletions.NONE;
 	}
 
 	private static ObjectInfo applyOperator(OperatorResultProvider operatorResultProvider, ObjectInfo lhs, ObjectInfo rhs, BinaryOperator operator) throws OperatorException {
@@ -206,6 +247,24 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 				}
 			}
 			return accumulatedResultInfo;
+		}
+	}
+
+	private static class InstanceOfParseResult extends AbstractObjectParseResult
+	{
+		private final ExpressionParseResult	expressionParseResult;
+		private final TypeInfo				type;
+
+		InstanceOfParseResult(ExpressionParseResult expressionParseResult, TypeInfo type, ObjectInfo instanceOfInfo, int position) {
+			super(instanceOfInfo, position);
+			this.expressionParseResult = expressionParseResult;
+			this.type = type;
+		}
+
+		@Override
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
+			ObjectInfo objectInfo = expressionParseResult.evaluate(thisInfo, context);
+			return OPERATOR_RESULT_PROVIDER.getInstanceOfInfo(objectInfo, type);
 		}
 	}
 }

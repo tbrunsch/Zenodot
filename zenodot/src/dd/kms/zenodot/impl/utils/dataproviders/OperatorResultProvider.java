@@ -360,6 +360,21 @@ public class OperatorResultProvider
 		return InfoProvider.createObjectInfo(resultObject, declaredResultType);
 	}
 
+	public ObjectInfo getInstanceOfInfo(ObjectInfo lhs, TypeInfo rhs) throws OperatorException {
+		Class<?> lhsClass = getClass(lhs);
+		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
+		if (lhsClass != null && lhsClass.isPrimitive()) {
+			throw new OperatorException("Cannot cast '" + lhsClass + "' to '" + rhs + "'");
+		}
+		Object result = InfoProvider.INDETERMINATE_VALUE;
+		if (evaluate) {
+			result = rhs.getRawType().isInstance(lhs.getObject());
+		} else if (lhsClass == null) {
+			result = false;
+		}
+		return InfoProvider.createObjectInfo(result, resultType);
+	}
+
 	/*
 	 * Utility Methods
 	 */

@@ -198,7 +198,6 @@ public class ParseUtils
 
 			// Check code completions and results (must be mutual exclusive)
 			if (!completionExceptions.isEmpty()) {
-				setPositionFrom(completionExceptions.values());
 				throw mergeCodeCompletions(completionExceptions.keySet());
 			}
 

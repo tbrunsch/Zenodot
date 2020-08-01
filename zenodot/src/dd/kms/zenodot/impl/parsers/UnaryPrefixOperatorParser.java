@@ -3,19 +3,19 @@ package dd.kms.zenodot.impl.parsers;
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
+import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
-import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.tokenizer.UnaryOperator;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider.OperatorException;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 import java.util.Map;
 
@@ -49,7 +49,7 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 
 	@Override
 	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, EvaluationException, InternalErrorException {
-		UnaryOperator operator = tokenStream.readUnaryOperator();
+		UnaryOperator operator = tokenStream.readUnaryOperator(TokenStream.NO_COMPLETIONS);
 		if (operator == null) {
 			throw new SyntaxException("Expression does not start with an unary operator");
 		}

@@ -1,7 +1,9 @@
 package dd.kms.zenodot.impl.tokenizer;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.common.RegexUtils;
+import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
@@ -15,7 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * View on a given Java expression in form of a stream of {@link Token}s. The {@code TokenStream}
+ * View on a given Java expression in form of a stream of tokens. The {@code TokenStream}
  * is not responsible for determining how the expression has to be split into tokens. It is the parsers'
  * responsibility to query the next token with the correct type. If a parser expects a token type
  * that is not available, then the parser is not the right one for parsing the current subexpression
@@ -255,22 +257,14 @@ public class TokenStream
 	}
 
 	@Nullable
-	public UnaryOperator readUnaryOperator() throws SyntaxException, CodeCompletionException {
-		String operator = readOperator(UNARY_OPERATORS);
+	public UnaryOperator readUnaryOperator(CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException, InternalErrorException {
+		String operator = readOperator(UNARY_OPERATORS, completionGenerator);
 		return UnaryOperator.getValue(operator);
 	}
 
 	@Nullable
-	public BinaryOperator readBinaryOperator() throws SyntaxException, CodeCompletionException {
-		String operator = readOperator(BINARY_OPERATORS);
-		return BinaryOperator.getValue(operator);
-	}
-
-	@Nullable
-	public BinaryOperator peekBinaryOperator() throws SyntaxException, CodeCompletionException {
-		int curPos = position;
-		String operator = readOperator(BINARY_OPERATORS);
-		position = curPos;
+	public BinaryOperator readBinaryOperator(CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException, InternalErrorException {
+		String operator = readOperator(BINARY_OPERATORS, completionGenerator);
 		return BinaryOperator.getValue(operator);
 	}
 
@@ -288,7 +282,7 @@ public class TokenStream
 
 		if (caretPosition < position) {
 			// Completion within leading white spaces
-			CompletionInfo completionSuggestionInfo = new CompletionSuggestionInfoImpl(startPos, caretPosition, caretPosition, caretPosition);
+			CompletionInfo completionSuggestionInfo = new CompletionInfoImpl(startPos, caretPosition, caretPosition, caretPosition);
 			CodeCompletions completions = completionGenerator.generate(completionSuggestionInfo);
 			throw new CodeCompletionException(completions);
 		}
@@ -297,7 +291,7 @@ public class TokenStream
 		if (!matcher.matches()) {
 			if (caretPosition == textStartPos) {
 				// Completion at beginning of non-white spaces
-				CompletionInfo completionSuggestionInfo = new CompletionSuggestionInfoImpl(startPos, textStartPos, textStartPos, textStartPos);
+				CompletionInfo completionSuggestionInfo = new CompletionInfoImpl(startPos, textStartPos, textStartPos, textStartPos);
 				CodeCompletions completions = completionGenerator.generate(completionSuggestionInfo);
 				throw new CodeCompletionException(completions);
 			}
@@ -313,8 +307,7 @@ public class TokenStream
 		if (caretPosition <= endPos) {
 			// Code completion
 			if (caretPosition < textEndPos || supportCompletionsInTrailingWhitespaces) {
-				position = endPos;
-				CompletionInfo completionSuggestionInfo = new CompletionSuggestionInfoImpl(startPos, endPos, textStartPos, textEndPos);
+				CompletionInfo completionSuggestionInfo = new CompletionInfoImpl(startPos, endPos, textStartPos, textEndPos);
 				CodeCompletions completions = completionGenerator.generate(completionSuggestionInfo);
 				throw new CodeCompletionException(completions);
 			}
@@ -330,10 +323,11 @@ public class TokenStream
 	}
 
 	@Nullable
-	private String readOperator(List<String> availableOperators) throws SyntaxException, CodeCompletionException {
+	private String readOperator(List<String> availableOperators, CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		if (caretPosition < position) {
 			throw new IllegalStateException("Internal error: Reading operator after caret position");
 		}
+		int startPos = position;
 		skipSpaces();
 		if (caretPosition < position) {
 			// Completion within leading white spaces
@@ -341,42 +335,57 @@ public class TokenStream
 		}
 		int expressionLength = expression.length();
 		String detectedOperator = null;
-		boolean requestedCodeCompletionInsideOperator = false;
+		List<CodeCompletion> completions = null;
 		for (String operator : availableOperators) {
-			int endIndex = position + operator.length();
-			if (endIndex <= expressionLength) {
-				if (operator.equals(expression.substring(position, endIndex))) {
-					detectedOperator = operator;
-					requestedCodeCompletionInsideOperator = caretPosition < endIndex;
+			int operatorPos = 0;
+			int expressionPos = position;
+			while (operatorPos < operator.length() && expressionPos < expressionLength) {
+				if (operator.charAt(operatorPos) != expression.charAt(expressionPos)) {
 					break;
 				}
-			} else if (operator.startsWith(expression.substring(position))) {
-				/*
-				 * Possible situation: operator == "&&", code completion requested at the end of
-				 * expression that ends with "&". We want to interpret this as operator "&" and
-				 * code completion for next argument instead of requested code completion for "&&".
-				 * => We cannot break here, but let the other branch, which is later executed for "&",
-				 * set requestedCodeCompletionInsideOperator to false.
-				 */
-				requestedCodeCompletionInsideOperator |= (caretPosition <= expressionLength);
+				operatorPos++;
+				expressionPos++;
+			}
+
+			if (operatorPos == operator.length()) {
+				// operator is a substring of expression at current position
+				detectedOperator = operator;
+				if (caretPosition < expressionPos) {
+					// code completion requested inside operator
+					CompletionInfo completionInfo = new CompletionInfoImpl(startPos, expressionPos, position, expressionPos);
+					completions = ImmutableList.copyOf(completionGenerator.generate(completionInfo).getCompletions());
+				} else {
+					completions = null;
+				}
+				break;
+			}
+
+			if (operatorPos == 0) {
+				// not even beginning of operator is a substring of expression at current position
+				continue;
+			}
+
+			if (caretPosition <= expressionPos) {
+				// requested code completion
+				if (completions == null) {
+					completions = new ArrayList<>();
+				}
+				CompletionInfo completionInfo = new CompletionInfoImpl(startPos, expressionPos, position, expressionPos);
+				completions.addAll(completionGenerator.generate(completionInfo).getCompletions());
 			}
 		}
 
-		if (requestedCodeCompletionInsideOperator) {
-			// Do not provide completions for operators
-			throw new CodeCompletionException(CodeCompletions.NONE);
+		if (completions != null) {
+			throw new CodeCompletionException(new CodeCompletions(completions));
 		}
 		if (detectedOperator == null) {
 			return null;
 		}
-		position += detectedOperator.length();
-		if (caretPosition < position) {
-			throw new IllegalStateException("Internal error: Skipped caret position");
-		}
+		setPosition(position + detectedOperator.length());
 		skipSpaces();
 		if (position > caretPosition) {
 			// We must not skip the caret
-			position = caretPosition;
+			setPosition(caretPosition);
 		}
 		return detectedOperator;
 	}
@@ -412,7 +421,10 @@ public class TokenStream
 		return position;
 	}
 
-	public void setPosition(int position) {
+	public void setPosition(int position) throws InternalErrorException {
+		if (caretPosition < position) {
+			throw new InternalErrorException("Skipped caret");
+		}
 		this.position = position;
 	}
 
@@ -423,14 +435,14 @@ public class TokenStream
 				+ expression.substring(position);
 	}
 
-	private class CompletionSuggestionInfoImpl implements CompletionInfo
+	private class CompletionInfoImpl implements CompletionInfo
 	{
 		private final int startPos;
 		private final int endPos;
 		private final int textStartPos;
 		private final int textEndPos;
 
-		private CompletionSuggestionInfoImpl(int startPos, int endPos, int textStartPos, int textEndPos) {
+		private CompletionInfoImpl(int startPos, int endPos, int textStartPos, int textEndPos) {
 			this.startPos = startPos;
 			this.endPos = endPos;
 			this.textStartPos = textStartPos;

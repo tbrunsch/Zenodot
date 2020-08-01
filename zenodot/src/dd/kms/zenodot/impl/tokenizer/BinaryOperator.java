@@ -1,5 +1,9 @@
 package dd.kms.zenodot.impl.tokenizer;
 
+/**
+ * Precedences according to <a href="https://cs-fundamentals.com/java-programming/java-operators-precedence-and-associativity">
+ * Java Operators: Precedence and Associativity</a>
+ */
 public enum BinaryOperator
 {
 	MULTIPLY				("*",			4,	Associativity.LEFT_TO_RIGHT),
@@ -14,6 +18,7 @@ public enum BinaryOperator
 	LESS_THAN_OR_EQUAL_TO	("<=",			7,	Associativity.LEFT_TO_RIGHT),
 	GREATER_THAN			(">",			7,	Associativity.LEFT_TO_RIGHT),
 	GREATER_THAN_OR_EQUAL_TO(">=",			7,	Associativity.LEFT_TO_RIGHT),
+	INSTANCE_OF				("instanceof ",	7,	Associativity.LEFT_TO_RIGHT),
 	EQUAL_TO				("==",			8,	Associativity.LEFT_TO_RIGHT),
 	NOT_EQUAL_TO			("!=",			8,	Associativity.LEFT_TO_RIGHT),
 	BITWISE_AND				("&",			9,	Associativity.LEFT_TO_RIGHT),
