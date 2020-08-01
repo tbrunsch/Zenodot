@@ -5,12 +5,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.api.common.ReflectionUtils;
-import dd.kms.zenodot.impl.matching.MatchRatings;
-import dd.kms.zenodot.impl.tokenizer.BinaryOperator;
-import dd.kms.zenodot.impl.tokenizer.UnaryOperator;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.matching.MatchRatings;
+import dd.kms.zenodot.impl.tokenizer.BinaryOperator;
+import dd.kms.zenodot.impl.tokenizer.UnaryOperator;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +36,7 @@ public class OperatorResultProvider
 	private static final Table<BinaryOperator, Class<?>, BinaryOperatorInfo> 	NUMERIC_OPERATOR_INFO_BY_OPERATOR_AND_TYPE 					= HashBasedTable.create();
 	private static final Table<BinaryOperator, Class<?>, BinaryOperatorInfo>	SHIFT_OPERATOR_INFO_BY_OPERATOR_AND_TYPE					= HashBasedTable.create();
 	private static final Table<BinaryOperator, Class<?>, BinaryOperatorInfo>	NUMERIC_COMPARISON_OPERATOR_INFO_BY_OPERATOR_AND_TYPE		= HashBasedTable.create();
+	private static final Table<BinaryOperator, Class<?>, BinaryOperatorInfo>	PRIMITIVE_COMPARISON_OPERATOR_INFO_BY_OPERATOR_AND_TYPE	= HashBasedTable.create();
 	private static final Table<BinaryOperator, Class<?>, BinaryOperatorInfo>	BIT_OPERATOR_INFO_BY_OPERATOR_AND_TYPE						= HashBasedTable.create();
 	private static final Map<BinaryOperator, BinaryOperatorInfo> 				LOGICAL_OPERATOR_INFO_BY_OPERATOR							= new HashMap<>();
 
@@ -112,6 +113,22 @@ public class OperatorResultProvider
 		addNumericComparisonImplementation(operator,	double.class,	doubleImpl);
 	}
 
+	private static <S> void addPrimitiveComparisonImplementation(BinaryOperator operator, Class<S> operandClass, BiFunction<S, S, Boolean> implementation) {
+		BiFunction<Object, Object, Object> wrappedImplementation = (o1, o2) -> implementation.apply(ReflectionUtils.convertTo(o1, operandClass, false), ReflectionUtils.convertTo(o2, operandClass, false));
+		PRIMITIVE_COMPARISON_OPERATOR_INFO_BY_OPERATOR_AND_TYPE.put(operator, operandClass, new BinaryOperatorInfo(boolean.class, wrappedImplementation));
+	}
+
+	private static void addPrimitiveComparisonImplementations(BinaryOperator operator, BiFunction<Boolean, Boolean, Boolean> booleanImpl, BiFunction<Character, Character, Boolean> charImpl, BiFunction<Byte, Byte, Boolean> byteImpl, BiFunction<Short, Short, Boolean> shortImpl, BiFunction<Integer, Integer, Boolean> intImpl, BiFunction<Long, Long, Boolean> longImpl, BiFunction<Float, Float, Boolean> floatImpl, BiFunction<Double, Double, Boolean> doubleImpl) {
+		addPrimitiveComparisonImplementation(operator,	boolean.class,	booleanImpl);
+		addPrimitiveComparisonImplementation(operator,	char.class,		charImpl);
+		addPrimitiveComparisonImplementation(operator,	byte.class,		byteImpl);
+		addPrimitiveComparisonImplementation(operator,	short.class,	shortImpl);
+		addPrimitiveComparisonImplementation(operator,	int.class,		intImpl);
+		addPrimitiveComparisonImplementation(operator,	long.class,		longImpl);
+		addPrimitiveComparisonImplementation(operator,	float.class,	floatImpl);
+		addPrimitiveComparisonImplementation(operator,	double.class,	doubleImpl);
+	}
+
 	private static <S, T> void addBitOperatorImplementation(BinaryOperator operator, Class<S> operandClass, Class<T> resultClass, BiFunction<S, S, T> implementation) {
 		BiFunction<Object, Object, Object> wrappedImplementation = (o1, o2) -> implementation.apply(ReflectionUtils.convertTo(o1, operandClass, false), ReflectionUtils.convertTo(o2, operandClass, false));
 		BIT_OPERATOR_INFO_BY_OPERATOR_AND_TYPE.put(operator, operandClass, new BinaryOperatorInfo(resultClass, wrappedImplementation));
@@ -153,8 +170,8 @@ public class OperatorResultProvider
 		addNumericComparisonImplementations(BinaryOperator.GREATER_THAN_OR_EQUAL_TO,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b,	(a, b) -> a >= b);
 
 		// For "==" and "!=" we must explicitly unbox to avoid comparison of references
-		addNumericComparisonImplementations(BinaryOperator.EQUAL_TO,		(a, b) -> a.charValue() == b.charValue(), (a, b) -> a.byteValue() == b.byteValue(), (a, b) -> a.shortValue() == b.shortValue(), (a, b) -> a.intValue() == b.intValue(), (a, b) -> a.longValue() == b.longValue(), (a, b) -> a.floatValue() == b.floatValue(), (a, b) -> a.doubleValue() == b.doubleValue());
-		addNumericComparisonImplementations(BinaryOperator.NOT_EQUAL_TO,	(a, b) -> a.charValue() != b.charValue(), (a, b) -> a.byteValue() != b.byteValue(), (a, b) -> a.shortValue() != b.shortValue(), (a, b) -> a.intValue() != b.intValue(), (a, b) -> a.longValue() != b.longValue(), (a, b) -> a.floatValue() != b.floatValue(), (a, b) -> a.doubleValue() != b.doubleValue());
+		addPrimitiveComparisonImplementations(BinaryOperator.EQUAL_TO,		(a, b) -> a.booleanValue() == b.booleanValue(), (a, b) -> a.charValue() == b.charValue(), (a, b) -> a.byteValue() == b.byteValue(), (a, b) -> a.shortValue() == b.shortValue(), (a, b) -> a.intValue() == b.intValue(), (a, b) -> a.longValue() == b.longValue(), (a, b) -> a.floatValue() == b.floatValue(), (a, b) -> a.doubleValue() == b.doubleValue());
+		addPrimitiveComparisonImplementations(BinaryOperator.NOT_EQUAL_TO,	(a, b) -> a.booleanValue() != b.booleanValue(), (a, b) -> a.charValue() != b.charValue(), (a, b) -> a.byteValue() != b.byteValue(), (a, b) -> a.shortValue() != b.shortValue(), (a, b) -> a.intValue() != b.intValue(), (a, b) -> a.longValue() != b.longValue(), (a, b) -> a.floatValue() != b.floatValue(), (a, b) -> a.doubleValue() != b.doubleValue());
 
 		addBitOperatorImplementations(char.class, 	int.class,		(a, b) -> a & b,	(a, b) -> a ^ b,	(a, b) -> a | b);
 		addBitOperatorImplementations(byte.class, 	int.class,		(a, b) -> a & b,	(a, b) -> a ^ b,	(a, b) -> a | b);
@@ -280,7 +297,7 @@ public class OperatorResultProvider
 		Class<?> lhsClass = getClass(lhs);
 		Class<?> rhsClass = getClass(rhs);
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
-			return applyNumericComparisonOperator(lhs, rhs, BinaryOperator.EQUAL_TO);
+			return applyPrimitiveComparisonOperator(lhs, rhs, BinaryOperator.EQUAL_TO);
 		}
 		Object result = evaluate ? lhs.getObject() == rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
@@ -291,7 +308,7 @@ public class OperatorResultProvider
 		Class<?> lhsClass = getClass(lhs);
 		Class<?> rhsClass = getClass(rhs);
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
-			return applyNumericComparisonOperator(lhs, rhs, BinaryOperator.NOT_EQUAL_TO);
+			return applyPrimitiveComparisonOperator(lhs, rhs, BinaryOperator.NOT_EQUAL_TO);
 		}
 		Object result = evaluate ? lhs.getObject() != rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
@@ -508,6 +525,12 @@ public class OperatorResultProvider
 	private ObjectInfo applyNumericComparisonOperator(ObjectInfo lhs, ObjectInfo rhs, BinaryOperator comparisonOperator) throws OperatorException {
 		Class<?> commonNumericPrimitiveClass = getCommonNumericPrimitiveClass(lhs, rhs);
 		BinaryOperatorInfo operatorInfo = NUMERIC_COMPARISON_OPERATOR_INFO_BY_OPERATOR_AND_TYPE.get(comparisonOperator, commonNumericPrimitiveClass);
+		return applyBinaryOperatorInfo(lhs, rhs, operatorInfo);
+	}
+
+	private ObjectInfo applyPrimitiveComparisonOperator(ObjectInfo lhs, ObjectInfo rhs, BinaryOperator comparisonOperator) throws OperatorException {
+		Class<?> commonPrimitiveClass = getCommonPrimitiveClass(getClass(lhs), getClass(rhs));
+		BinaryOperatorInfo operatorInfo = PRIMITIVE_COMPARISON_OPERATOR_INFO_BY_OPERATOR_AND_TYPE.get(comparisonOperator, commonPrimitiveClass);
 		return applyBinaryOperatorInfo(lhs, rhs, operatorInfo);
 	}
 
