@@ -25,6 +25,19 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public abstract class CompletionTest extends AbstractTest<CompletionTest>
 {
+	public static List<CodeCompletion> getSortedCompletions(List<CodeCompletion> completions) {
+		List<CodeCompletion> sortedCompletions = new ArrayList<>(completions);
+		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getType));
+		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getRating));
+		return sortedCompletions;
+	}
+
+	private static List<String> extractCompletions(List<CodeCompletion> completions) {
+		return getSortedCompletions(completions).stream()
+			.map(completion -> completion.getTextToInsert())
+			.collect(Collectors.toList());
+	}
+
 	private final TestExecutor	testExecutor;
 
 	protected CompletionTest(TestData testData) {
@@ -102,14 +115,5 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 			}
 		}
 		return true;
-	}
-
-	private static List<String> extractCompletions(List<CodeCompletion> codeCompletions) {
-		List<CodeCompletion> sortedCompletions = new ArrayList<>(codeCompletions);
-		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getType));
-		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getRating));
-		return sortedCompletions.stream()
-				.map(completion -> completion.getTextToInsert())
-				.collect(Collectors.toList());
 	}
 }
