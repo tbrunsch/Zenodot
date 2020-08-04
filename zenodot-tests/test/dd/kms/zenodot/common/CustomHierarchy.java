@@ -1,9 +1,9 @@
 package dd.kms.zenodot.common;
 
-import dd.kms.zenodot.settings.ObjectTreeNode;
-import dd.kms.zenodot.settings.ParserSettingsUtils;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.api.settings.ObjectTreeNode;
+import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.wrappers.InfoProvider;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 import java.util.Arrays;
 import java.util.Date;

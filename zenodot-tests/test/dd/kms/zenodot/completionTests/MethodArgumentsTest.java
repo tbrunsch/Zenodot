@@ -1,6 +1,6 @@
 package dd.kms.zenodot.completionTests;
 
-import dd.kms.zenodot.ParseException;
+import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
@@ -35,8 +35,7 @@ public class MethodArgumentsTest extends CompletionTest
 		testBuilder
 			.addTestWithError("prefixI(prefixD)",	-1,	IllegalStateException.class)
 			.addTestWithError("prefixD(prefixI)",		ParseException.class)
-			.addTestWithError("prefixC(prefixI,",		ParseException.class)
-			.addTestWithError("prefixI(prefixD))",	-1,	ParseException.class);
+			.addTestWithError("prefixC(prefixI,",		ParseException.class);
 
 		return testBuilder.build();
 	}

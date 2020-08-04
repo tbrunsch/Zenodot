@@ -1,6 +1,6 @@
 package dd.kms.zenodot.evaluationTests;
 
-import dd.kms.zenodot.common.AccessModifier;
+import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;

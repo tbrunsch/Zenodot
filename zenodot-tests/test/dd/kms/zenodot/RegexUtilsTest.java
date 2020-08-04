@@ -1,6 +1,6 @@
 package dd.kms.zenodot;
 
-import dd.kms.zenodot.common.RegexUtils;
+import dd.kms.zenodot.api.common.RegexUtils;
 import org.junit.Assert;
 import org.junit.Test;
 

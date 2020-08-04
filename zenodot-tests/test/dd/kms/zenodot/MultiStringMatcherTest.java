@@ -1,8 +1,8 @@
 package dd.kms.zenodot;
 
 import com.google.common.collect.Sets;
-import dd.kms.zenodot.common.RegexUtils;
-import dd.kms.zenodot.common.multistringmatching.MultiStringMatcher;
+import dd.kms.zenodot.api.common.RegexUtils;
+import dd.kms.zenodot.api.common.multistringmatching.MultiStringMatcher;
 import org.junit.Assert;
 import org.junit.Test;
 

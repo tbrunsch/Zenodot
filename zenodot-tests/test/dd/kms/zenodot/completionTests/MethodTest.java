@@ -1,6 +1,6 @@
 package dd.kms.zenodot.completionTests;
 
-import dd.kms.zenodot.ParseException;
+import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
@@ -34,7 +34,6 @@ public class MethodTest extends CompletionTest
 
 		testBuilder
 			.addTestWithError("other()",	-1,	IllegalStateException.class)
-			.addTestWithError("bla",		-1,	ParseException.class)
 			.addTestWithError("other(),",		ParseException.class);
 
 		return testBuilder.build();

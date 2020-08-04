@@ -1,9 +1,9 @@
 package dd.kms.zenodot.evaluationTests;
 
+import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.evaluationTests.framework.TestData;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -66,7 +66,7 @@ public class ClassCastTest extends EvaluationTest
 			this.o2 = o2;
 		}
 
-		TestClass merge(TestClass o) { return new TestClass(i + o.i, d - o.d, (String) o2); };
+		TestClass merge(TestClass o) { return new TestClass(i + o.i, d - o.d, (String) o2); }
 
 		int getId(Object o) { return 1; }
 		int getId(String s) { return 2; }

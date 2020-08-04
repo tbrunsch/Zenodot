@@ -1,7 +1,7 @@
 package dd.kms.zenodot;
 
-import dd.kms.zenodot.common.FieldScanner;
-import dd.kms.zenodot.common.MethodScanner;
+import dd.kms.zenodot.api.common.FieldScanner;
+import dd.kms.zenodot.api.common.MethodScanner;
 import org.junit.Test;
 
 import java.lang.reflect.Field;

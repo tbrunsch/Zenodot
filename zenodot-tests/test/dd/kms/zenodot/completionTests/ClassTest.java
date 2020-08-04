@@ -1,10 +1,10 @@
 package dd.kms.zenodot.completionTests;
 
-import dd.kms.zenodot.common.AccessModifier;
+import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.completionTests.framework.TestData;
-import dd.kms.zenodot.utils.ClassUtils;
+import dd.kms.zenodot.impl.utils.ClassUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -34,7 +34,6 @@ public class ClassTest extends CompletionTest
 
 		String packageName = ClassUtils.getParentPath(ClassTest.class.getPackage().getName()) + ".classesForTest";
 		testBuilder
-			.configurator(null)
 			.addTest(packageName + ".du",						"dummies", "DummyClass", "MyDummyClass", "moreDummies")
 			.addTest(packageName + ".Du",						"DummyClass", "dummies", "MyDummyClass", "moreDummies")
 			.addTest(packageName + ".m",						"moreDummies")

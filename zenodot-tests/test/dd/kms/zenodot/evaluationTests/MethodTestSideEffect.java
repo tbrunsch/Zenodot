@@ -1,11 +1,11 @@
 package dd.kms.zenodot.evaluationTests;
 
-import dd.kms.zenodot.ParseException;
-import dd.kms.zenodot.Parsers;
-import dd.kms.zenodot.settings.ParserSettings;
-import dd.kms.zenodot.settings.ParserSettingsUtils;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Parsers;
+import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.wrappers.InfoProvider;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class MethodTestSideEffect
 		ParserSettings parserSettings = ParserSettingsUtils.createBuilder().enableDynamicTyping(false).build();
 		try {
 			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
-			Parsers.createExpressionParser(expression, parserSettings, thisValue).evaluate();
+			Parsers.createExpressionParser(expression, parserSettings).evaluate(thisValue);
 			Assert.fail("Expected ParseException");
 		} catch (ParseException ignored) {
 			/* expected */

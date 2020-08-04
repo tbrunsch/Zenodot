@@ -1,13 +1,14 @@
 package dd.kms.zenodot.completionTests.framework;
 
-import dd.kms.zenodot.ParseException;
-import dd.kms.zenodot.Parsers;
+import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Parsers;
+import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.api.result.CodeCompletion;
+import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.wrappers.InfoProvider;
+import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.common.AbstractTest;
-import dd.kms.zenodot.debug.ParserLogger;
-import dd.kms.zenodot.result.CodeCompletion;
-import dd.kms.zenodot.settings.ParserSettings;
-import dd.kms.zenodot.utils.wrappers.InfoProvider;
-import dd.kms.zenodot.utils.wrappers.ObjectInfo;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -24,6 +25,19 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public abstract class CompletionTest extends AbstractTest<CompletionTest>
 {
+	public static List<CodeCompletion> getSortedCompletions(List<CodeCompletion> completions) {
+		List<CodeCompletion> sortedCompletions = new ArrayList<>(completions);
+		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getType));
+		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getRating));
+		return sortedCompletions;
+	}
+
+	private static List<String> extractCompletions(List<CodeCompletion> completions) {
+		return getSortedCompletions(completions).stream()
+			.map(completion -> completion.getTextToInsert())
+			.collect(Collectors.toList());
+	}
+
 	private final TestExecutor	testExecutor;
 
 	protected CompletionTest(TestData testData) {
@@ -56,10 +70,13 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 
 		try {
 			ObjectInfo thisInfo = InfoProvider.createObjectInfo(testInstance);
-			Parsers.createExpressionParser(expression, settings, thisInfo).getCompletions(caretPosition);
+			Parsers.createExpressionParser(expression, settings).getCompletions(thisInfo, caretPosition);
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
-			assertEquals(expectedExceptionClass, e.getClass());
+			if (e.getClass() != expectedExceptionClass) {
+				e.printStackTrace();
+				Assert.assertEquals(expectedExceptionClass, e.getClass());
+			}
 		}
 	}
 
@@ -70,7 +87,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		List<String> completions;
 		try {
 			ObjectInfo thisInfo = InfoProvider.createObjectInfo(testInstance);
-			completions = extractCompletions(Parsers.createExpressionParser(expression, settings, thisInfo).getCompletions(caretPosition));
+			completions = extractCompletions(Parsers.createExpressionParser(expression, settings).getCompletions(thisInfo, caretPosition));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				e.printStackTrace();
@@ -98,14 +115,5 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 			}
 		}
 		return true;
-	}
-
-	private static List<String> extractCompletions(List<CodeCompletion> codeCompletions) {
-		List<CodeCompletion> sortedCompletions = new ArrayList<>(codeCompletions);
-		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getType));
-		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getRating));
-		return sortedCompletions.stream()
-				.map(completion -> completion.getTextToInsert())
-				.collect(Collectors.toList());
 	}
 }
