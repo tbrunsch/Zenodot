@@ -68,6 +68,6 @@ public class InnerClassParser<T extends ParseResult, S extends ParseResultExpect
 
 		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
 		Class<?> contextClass = contextType.getRawType();
-		return classDataProvider.completeInnerClass("", contextClass, insertionBegin, insertionEnd);
+		return classDataProvider.completeInnerClass(nameToComplete, contextClass, insertionBegin, insertionEnd);
 	}
 }
