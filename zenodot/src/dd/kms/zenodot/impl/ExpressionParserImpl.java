@@ -24,23 +24,23 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 {
 	private static final ObjectParseResultExpectation	PARSE_RESULT_EXPECTATION	= new ObjectParseResultExpectation().parseWholeText(true);
 
-	public ExpressionParserImpl(String text, ParserSettings settings) {
-		super(text, settings);
+	public ExpressionParserImpl(ParserSettings settings) {
+		super(settings);
 	}
 
 	@Override
-	public List<CodeCompletion> getCompletions(ObjectInfo thisValue, int caretPosition) throws ParseException {
-		return getCodeCompletions(thisValue, caretPosition, PARSE_RESULT_EXPECTATION).getCompletions();
+	public List<CodeCompletion> getCompletions(String text, int caretPosition, ObjectInfo thisValue) throws ParseException {
+		return getCodeCompletions(text, caretPosition, thisValue, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
-	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(ObjectInfo thisValue, int caretPosition) throws ParseException {
-		return getCodeCompletions(thisValue, caretPosition, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
+	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String text, int caretPosition, ObjectInfo thisValue) throws ParseException {
+		return getCodeCompletions(text, caretPosition, thisValue, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
 	}
 
 	@Override
-	public ObjectInfo evaluate(ObjectInfo thisValue) throws ParseException {
-		TokenStream tokenStream = new TokenStream(text, -1);
+	public ObjectInfo evaluate(String expression, ObjectInfo thisValue) throws ParseException {
+		TokenStream tokenStream = new TokenStream(expression, -1);
 		ObjectParseResult parseResult;
 		try {
 			parseResult = parse(tokenStream, thisValue, PARSE_RESULT_EXPECTATION);
@@ -53,8 +53,8 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 	}
 
 	@Override
-	public CompiledExpression compile(ObjectInfo thisValue) throws ParseException {
-		TokenStream tokenStream = new TokenStream(text, -1);
+	public CompiledExpression compile(String expression, ObjectInfo thisValue) throws ParseException {
+		TokenStream tokenStream = new TokenStream(expression, -1);
 		ObjectParseResult parseResult;
 		try {
 			parseResult = parse(tokenStream, thisValue, PARSE_RESULT_EXPECTATION);

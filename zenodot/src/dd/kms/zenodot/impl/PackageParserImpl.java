@@ -22,18 +22,18 @@ public class PackageParserImpl extends AbstractParser<PackageParseResult, Packag
 {
 	private static final PackageParseResultExpectation	PARSE_RESULT_EXPECTATION	= new PackageParseResultExpectation().parseWholeText(true);
 
-	public PackageParserImpl(String text, ParserSettings settings) {
-		super(text, settings);
+	public PackageParserImpl(ParserSettings settings) {
+		super(settings);
 	}
 
 	@Override
-	public List<CodeCompletion> getCompletions(int caretPosition) throws ParseException {
-		return getCodeCompletions(InfoProvider.NULL_LITERAL, caretPosition, PARSE_RESULT_EXPECTATION).getCompletions();
+	public List<CodeCompletion> getCompletions(String text, int caretPosition) throws ParseException {
+		return getCodeCompletions(text, caretPosition, InfoProvider.NULL_LITERAL, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
-	public PackageInfo evaluate() throws ParseException {
-		TokenStream tokenStream = new TokenStream(text, -1);
+	public PackageInfo evaluate(String packageName) throws ParseException {
+		TokenStream tokenStream = new TokenStream(packageName, -1);
 		PackageParseResult parseResult;
 		try {
 			parseResult = parse(tokenStream, InfoProvider.NULL_LITERAL, PARSE_RESULT_EXPECTATION);

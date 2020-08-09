@@ -17,17 +17,15 @@ import dd.kms.zenodot.impl.utils.ParserToolbox;
 
 abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpectation<T>>
 {
-	final String			text;
 	final ParserSettings	settings;
 
-	AbstractParser(String text, ParserSettings settings) {
-		this.text = text;
+	AbstractParser(ParserSettings settings) {
 		this.settings = settings;
 	}
 
 	abstract T doParse(TokenStream tokenStream, ParserToolbox parserToolbox, S parseResultExpectation) throws CodeCompletionException, InternalErrorException, EvaluationException, SyntaxException;
 
-	CodeCompletions getCodeCompletions(ObjectInfo thisValue, int caretPosition, S parseResultExpectation) throws ParseException {
+	CodeCompletions getCodeCompletions(String text, int caretPosition, ObjectInfo thisValue, S parseResultExpectation) throws ParseException {
 		if (caretPosition < 0 || caretPosition > text.length()) {
 			throw new IllegalStateException("Invalid caret position");
 		}

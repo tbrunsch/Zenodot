@@ -23,18 +23,18 @@ public class ClassParserImpl extends AbstractParser<ClassParseResult, ClassParse
 {
 	private static final ClassParseResultExpectation	PARSE_RESULT_EXPECTATION	= new ClassParseResultExpectation().parseWholeText(true);
 
-	public ClassParserImpl(String text, ParserSettings settings) {
-		super(text, settings);
+	public ClassParserImpl(ParserSettings settings) {
+		super(settings);
 	}
 
 	@Override
-	public List<CodeCompletion> getCompletions(int caretPosition) throws ParseException {
-		return getCodeCompletions(InfoProvider.NULL_LITERAL, caretPosition, PARSE_RESULT_EXPECTATION).getCompletions();
+	public List<CodeCompletion> getCompletions(String text, int caretPosition) throws ParseException {
+		return getCodeCompletions(text, caretPosition, InfoProvider.NULL_LITERAL, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
-	public ClassInfo evaluate() throws ParseException {
-		TokenStream tokenStream = new TokenStream(text, -1);
+	public ClassInfo evaluate(String className) throws ParseException {
+		TokenStream tokenStream = new TokenStream(className, -1);
 		ClassParseResult parseResult;
 		try {
 			parseResult = parse(tokenStream, InfoProvider.NULL_LITERAL, PARSE_RESULT_EXPECTATION);

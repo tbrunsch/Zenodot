@@ -15,14 +15,14 @@ import java.util.Set;
 
 public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
-	private CompletionMode completionMode;
+	private CompletionMode		completionMode;
 	private Set<ClassInfo>		importedClasses;
 	private Set<PackageInfo>	importedPackages;
 	private List<Variable>		variables;
 	private AccessModifier		minimumAccessLevel;
 	private boolean				enableDynamicTyping;
-	private boolean considerAllClassesForClassCompletions;
-	private ObjectTreeNode customHierarchyRoot;
+	private boolean				considerAllClassesForClassCompletions;
+	private ObjectTreeNode		customHierarchyRoot;
 	private ParserLogger		logger;
 
 	public ParserSettingsBuilderImpl() {

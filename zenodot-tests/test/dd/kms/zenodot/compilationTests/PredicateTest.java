@@ -48,8 +48,8 @@ public class PredicateTest
 	@Test
 	public void testCompiledPredicate() throws Exception {
 		String expression = "this != null && this > 0.5";
-		ExpressionParser expressionParser = Parsers.createExpressionParser(expression, PARSER_SETTINGS);
-		CompiledExpression compiledExpression = expressionParser.compile(InfoProvider.createObjectInfo(0.0));
+		ExpressionParser expressionParser = Parsers.createExpressionParser(PARSER_SETTINGS);
+		CompiledExpression compiledExpression = expressionParser.compile(expression, InfoProvider.createObjectInfo(0.0));
 		Predicate<Double> javaCompiledPredicate = d -> d != null && d > 0.5;
 		Predicate<Double> compiledPredicate = d -> {
 			try {
@@ -74,7 +74,7 @@ public class PredicateTest
 
 	private static Object evaluate(String expression, Object thisValue) {
 		try {
-			return Parsers.createExpressionParser(expression, PARSER_SETTINGS).evaluate(InfoProvider.createObjectInfo(thisValue)).getObject();
+			return Parsers.createExpressionParser(PARSER_SETTINGS).evaluate(expression, InfoProvider.createObjectInfo(thisValue)).getObject();
 		} catch (ParseException e) {
 			Assert.fail("ParseException: " + e.getMessage());
 			return null;

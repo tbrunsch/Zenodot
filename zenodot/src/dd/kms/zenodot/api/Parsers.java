@@ -7,15 +7,15 @@ import dd.kms.zenodot.api.settings.ParserSettings;
  */
 public class Parsers
 {
-	public static ExpressionParser createExpressionParser(String text, ParserSettings settings) {
-		return new dd.kms.zenodot.impl.ExpressionParserImpl(text, settings);
+	public static ExpressionParser createExpressionParser(ParserSettings settings) {
+		return new dd.kms.zenodot.impl.ExpressionParserImpl(settings);
 	}
 
-	public static ClassParser createClassParser(String text, ParserSettings settings) {
-		return new dd.kms.zenodot.impl.ClassParserImpl(text, settings);
+	public static ClassParser createClassParser(ParserSettings settings) {
+		return new dd.kms.zenodot.impl.ClassParserImpl(settings);
 	}
 
-	public static PackageParser createPackageParser(String text, ParserSettings settings) {
-		return new dd.kms.zenodot.impl.PackageParserImpl(text, settings);
+	public static PackageParser createPackageParser(ParserSettings settings) {
+		return new dd.kms.zenodot.impl.PackageParserImpl(settings);
 	}
 }

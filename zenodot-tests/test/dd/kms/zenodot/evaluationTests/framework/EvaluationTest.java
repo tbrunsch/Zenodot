@@ -69,12 +69,12 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		Class<? extends Exception> expectedExceptionClass = ParseException.class;
 		try {
 			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
-			ExpressionParser expressionParser = Parsers.createExpressionParser(expression, settings);
+			ExpressionParser expressionParser = Parsers.createExpressionParser(settings);
 			if (compile) {
-				CompiledExpression compiledExpression = expressionParser.compile(thisValue);
+				CompiledExpression compiledExpression = expressionParser.compile(expression, thisValue);
 				compiledExpression.evaluate(thisValue).getObject();
 			} else {
-				expressionParser.evaluate(thisValue).getObject();
+				expressionParser.evaluate(expression, thisValue).getObject();
 			}
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
@@ -95,12 +95,12 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
 			Class<?> testClass = testInstance == null ? null : testInstance.getClass();
 			TypeInfo thisType = InfoProvider.createTypeInfo(testClass);
-			ExpressionParser expressionParser = Parsers.createExpressionParser(expression, settings);
+			ExpressionParser expressionParser = Parsers.createExpressionParser(settings);
 			if (compile) {
-				CompiledExpression compiledExpression = expressionParser.compile(thisValue);
+				CompiledExpression compiledExpression = expressionParser.compile(expression, thisValue);
 				actualValue = compiledExpression.evaluate(thisValue).getObject();
 			} else {
-				actualValue = expressionParser.evaluate(thisValue).getObject();
+				actualValue = expressionParser.evaluate(expression, thisValue).getObject();
 			}
 			if (executeAssertions) {
 				assertEquals("Expression: " + expression, expectedValue, actualValue);

@@ -19,7 +19,7 @@ public class MethodTestSideEffect
 		ParserSettings settings = ParserSettingsUtils.createBuilder().enableDynamicTyping(false).build();
 		try {
 			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
-			Parsers.createExpressionParser(expression, settings).getCompletions(thisValue, caretPosition);
+			Parsers.createExpressionParser(settings).getCompletions(expression, caretPosition, thisValue);
 			Assert.fail("Expected ParseException");
 		} catch (ParseException ignored) {
 			/* expected */

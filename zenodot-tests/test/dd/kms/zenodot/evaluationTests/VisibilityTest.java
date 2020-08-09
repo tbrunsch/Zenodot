@@ -75,10 +75,10 @@ public class VisibilityTest
 
 		try {
 			if (innerType == EntityType.CLASS) {
-				ClassInfo classInfo = Parsers.createClassParser(expression, settings).evaluate();
+				ClassInfo classInfo = Parsers.createClassParser(settings).evaluate(expression);
 				Assert.assertTrue("Should not be able to access class '" + entityName + "'", entityAccessible);
 			} else {
-				ObjectInfo result = Parsers.createExpressionParser(expression, settings).evaluate(InfoProvider.NULL_LITERAL);
+				ObjectInfo result = Parsers.createExpressionParser(settings).evaluate(expression, InfoProvider.NULL_LITERAL);
 				Assert.assertTrue("Should not be able to access '" + expression + "'", entityAccessible);
 				Assert.assertEquals("Unexpected expression result of '" + expression + "'", innerModifier.toString(), result.getObject());
 			}

@@ -11,16 +11,16 @@ import java.util.List;
 public interface ClassParser
 {
 	/**
-	 * Returns rated code completions for the text at a given caret position taking the imports specified in the settings into account
+	 * Returns rated code completions for the given text at a given caret position taking the imports specified in the settings into account
 	 *
 	 * @throws ParseException
 	 */
-	List<CodeCompletion> getCompletions(int caretPosition) throws ParseException;
+	List<CodeCompletion> getCompletions(String text, int caretPosition) throws ParseException;
 
 	/**
 	 * Evaluates the specified class name as a class taking the imports specified in the settings into account
 	 *
 	 * @throws ParseException
 	 */
-	 ClassInfo evaluate() throws ParseException;
+	 ClassInfo evaluate(String className) throws ParseException;
 }

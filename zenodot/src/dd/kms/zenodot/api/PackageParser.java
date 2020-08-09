@@ -11,11 +11,11 @@ import java.util.List;
 public interface PackageParser
 {
 	/**
-	 * Returns rated code completions for the text at a given caret position
+	 * Returns rated code completions for the given text at a given caret position
 	 *
 	 * @throws ParseException
 	 */
-	List<CodeCompletion> getCompletions(int caretPosition) throws ParseException;
+	List<CodeCompletion> getCompletions(String text, int caretPosition) throws ParseException;
 
 	/**
 	 * Evaluates the specified package name. The result should be the same as {@link Package#getPackage(String)},
@@ -24,5 +24,5 @@ public interface PackageParser
 	 *
 	 * @throws ParseException
 	 */
-	 PackageInfo evaluate() throws ParseException;
+	 PackageInfo evaluate(String packageName) throws ParseException;
 }
