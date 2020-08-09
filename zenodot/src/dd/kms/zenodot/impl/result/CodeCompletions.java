@@ -21,8 +21,7 @@ public class CodeCompletions
 	}
 
 	private final List<CodeCompletion>			completions;
-	private @Nullable
-	ExecutableArgumentInfo executableArgumentInfo;
+	private @Nullable ExecutableArgumentInfo	executableArgumentInfo;
 
 	public CodeCompletions(List<CodeCompletion> completions) {
 		this(completions, null);

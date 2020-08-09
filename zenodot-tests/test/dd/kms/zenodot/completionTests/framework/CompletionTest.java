@@ -15,7 +15,6 @@ import org.junit.runners.Parameterized;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -27,8 +26,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 {
 	public static List<CodeCompletion> getSortedCompletions(List<CodeCompletion> completions) {
 		List<CodeCompletion> sortedCompletions = new ArrayList<>(completions);
-		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getType));
-		sortedCompletions.sort(Comparator.comparing(CodeCompletion::getRating));
+		sortedCompletions.sort(Parsers.COMPLETION_COMPARATOR);
 		return sortedCompletions;
 	}
 
