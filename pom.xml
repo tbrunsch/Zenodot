@@ -12,6 +12,7 @@
     <modules>
         <module>zenodot</module>
         <module>zenodot-tests</module>
+        <module>zenodot-samples</module>
     </modules>
 
     <properties>

@@ -9,7 +9,7 @@ import dd.kms.zenodot.api.wrappers.ObjectInfo;
  * by the {@link ParserSettings}. If you decide for a weak reference, then the framework
  * does not prolong the life time of the variable's value to allow for garbage collection.<br/>
  * <br/>
- * A new instance can be created via {@link ParserSettingsUtils#createVariable(String, ObjectInfo, boolean)}.
+ * A new instance can be created via {@link ParserSettingsUtils#createVariable(String, Object, boolean)}.
  */
 public interface Variable
 {
