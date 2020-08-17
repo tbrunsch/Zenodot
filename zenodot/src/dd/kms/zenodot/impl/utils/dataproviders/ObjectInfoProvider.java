@@ -25,10 +25,14 @@ public class ObjectInfoProvider
 			return InfoProvider.createTypeInfo(runtimeClass);
 		}
 
-		if (evaluate) {
-			return declaredType.isPrimitive() ? declaredType : declaredType.getSubtype(runtimeClass);
-		} else {
+		if (!evaluate || declaredType.isPrimitive()) {
 			return declaredType;
+		}
+
+		try {
+			return declaredType.getSubtype(runtimeClass);
+		} catch (Throwable t) {
+			return InfoProvider.createTypeInfo(runtimeClass);
 		}
 	}
 
