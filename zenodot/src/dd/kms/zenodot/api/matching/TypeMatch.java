@@ -46,11 +46,27 @@ public enum TypeMatch
 	BOXED_AND_CONVERSION,
 
 	/**
-	 * The type is primitive and its boxed class is a subclass of the expected type.<br/>
+	 * The type is primitive and its boxed class is a subtype of the expected type.<br/>
 	 * <br/>
 	 * <b>Example:</b> {@code actual = int}, {@code expected = Number}
 	 */
 	BOXED_AND_INHERITANCE,
+
+	/**
+	 * The type is a subtype of the expected type when only considering raw classes
+	 * without generic type parameters.<br/>
+	 * <br/>
+	 * <b>Example:</b> {@code actual = ArrayList}, {@code expected = List}
+	 */
+	INHERITANCE_RAW,
+
+	/**
+	 * The type is primitive and its boxed class is a subtype of the expected type
+	 * when only considering raw classes without generic type parameters.<br/>
+	 * <br/>
+	 * <b>Example:</b> {@code actual = int}, {@code expected = T extends Number}
+	 */
+	BOXED_AND_INHERITANCE_RAW,
 
 	/**
 	 * The type does not match the expected type in any of the supported senses.

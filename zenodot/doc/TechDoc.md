@@ -1,10 +1,5 @@
 # Technical Documentation
 
-## TODO
-- refactor TypeToken-Handling: Check that it can easily be exchanged by GenericX; benefit from parameterized objects by providing good suggestions, but do not suffer from overly strict argument checks resulting from unresolved type parameters (List<String> expected, but known type is only List<T>) or missing type inference support (Arrays.asList())
-- support Arrays.asList()
-- write PackageParser and ClassParser tests
-
 ## Preface
 
 This documentation is meant for developers that want to know the core ideas behind the architecture of Zenodot. It is not suitable for API users.

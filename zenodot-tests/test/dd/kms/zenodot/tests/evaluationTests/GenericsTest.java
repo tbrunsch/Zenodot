@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +27,6 @@ public class GenericsTest extends EvaluationTest
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
 		testBuilder
-			.configurator(null)
 			.addTest("testCollInt(collListInt)",		testInstance.collListInt)
 			.addTest("testCollInt(collSetInt)",			testInstance.collSetInt)
 			.addTest("testCollInt(listInt)",			testInstance.listInt)
@@ -37,47 +37,10 @@ public class GenericsTest extends EvaluationTest
 			.addTest("testListString(listString)",		testInstance.listString);
 
 		testBuilder
-			.configurator(null)
-			.addTestWithError("testCollInt(collListString)")
-			.addTestWithError("testCollInt(collSetString)")
-			.addTestWithError("testCollInt(listString)")
-
-			.addTestWithError("testCollString(collListInt)")
-			.addTestWithError("testCollString(collSetInt)")
-			.addTestWithError("testCollString(listInt)")
-
-			.addTestWithError("testListInt(collListInt)")
-			.addTestWithError("testListInt(collListString)")
-			.addTestWithError("testListInt(collSetInt)")
-			.addTestWithError("testListInt(collSetString)")
-			.addTestWithError("testListInt(listString)")
-
-			.addTestWithError("testListString(collListInt)")
-			.addTestWithError("testListString(collListString)")
-			.addTestWithError("testListString(collSetInt)")
-			.addTestWithError("testListString(collSetString)")
-			.addTestWithError("testListString(listInt)")
-
-			.addTestWithError("testSetInt(collListInt)")
-			.addTestWithError("testSetInt(collListString)")
-			.addTestWithError("testSetInt(collSetInt)")
-			.addTestWithError("testSetInt(collSetString)")
-			.addTestWithError("testSetInt(listInt)")
-			.addTestWithError("testSetInt(listString)")
-
-			.addTestWithError("testSetString(collListInt)")
-			.addTestWithError("testSetString(collListString)")
-			.addTestWithError("testSetString(collSetInt)")
-			.addTestWithError("testSetString(collSetString)")
-			.addTestWithError("testSetString(listInt)")
-			.addTestWithError("testSetString(listString)");
-
-		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
-			.addTest("testListInt(collListInt)",		testInstance.collListInt)
-			.addTest("testListString(collListString)",	testInstance.collListString)
-			.addTest("testSetInt(collSetInt)",			testInstance.collSetInt)
-			.addTest("testSetString(collSetString)",	testInstance.collSetString);
+			.configurator(test -> test.importPackages("java.util"))
+			.addTest("Arrays.asList(\"a\", \"b\", \"c\")", Arrays.asList("a", "b", "c"))
+			.addTest("Arrays.asList(1, 2, 3).get(1)", 2)
+			.addTest("Arrays.asList('a', \"b\", true, (byte) 3, (short) 4, 5, 6L, 7.f, 8.d).size()", 9);
 
 		return testBuilder.build();
 	}

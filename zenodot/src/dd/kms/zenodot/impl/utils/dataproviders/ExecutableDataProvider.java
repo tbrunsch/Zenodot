@@ -35,7 +35,9 @@ public class ExecutableDataProvider
 	private static final List<List<TypeMatch>>	ALLOWED_EXECUTABLE_RATINGS_BY_PHASE = Arrays.asList(
 		Arrays.asList(TypeMatch.FULL),
 		Arrays.asList(TypeMatch.INHERITANCE, TypeMatch.PRIMITIVE_CONVERSION),
-		Arrays.asList(TypeMatch.BOXED, TypeMatch.BOXED_AND_CONVERSION, TypeMatch.BOXED_AND_INHERITANCE)
+		Arrays.asList(TypeMatch.BOXED, TypeMatch.BOXED_AND_CONVERSION, TypeMatch.BOXED_AND_INHERITANCE),
+		Arrays.asList(TypeMatch.INHERITANCE_RAW),
+		Arrays.asList(TypeMatch.BOXED_AND_INHERITANCE_RAW)
 	);
 
 	private final ParserToolbox parserToolbox;

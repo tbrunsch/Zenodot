@@ -86,10 +86,10 @@ The generic handling is currently based on the [Reflection API](https://github.c
 
 However, there are some things that Zenodot can currently not do:
 
-  1. You can only cast objects to raw types, not parameterized types. A cast `(List)` is perfectly fine, but a cast `(List<Integer)` will not work.
-  1. You cannot call a method with a raw type if it expects a parameterized type. This is particularly unpleasent since you cannot cast to a parameterized type.
-  1. Zenodot cannot deduce types, so you cannot call parameterized constructors or methods whose types partially depend on the types of the arguments. For instance, you cannot call `Arrays.asList(1, 2, 3)` as Zenodot cannot deduce that it should substitute the parameter `T` of that method for `Integer`.
-
+  1. You can only cast objects to raw types, not parameterized types. A cast `(List)` is perfectly fine, but a cast `(List<Integer>)` will not work.
+  1. Zenodot cannot deduce types: Without dynamic typing, the expression `java.util.Arrays.asList("a", "b", "c").get(0).length()` does not compile since Zenodot cannot infer that the created `List` is a `List` of `String`s.
+  1. Zenodot allows calling a method that expects a `List` of `String`s with a `List` of `Integer`s. The reason is that, due to type erasure and the lack of type inference, Zenodot does not always have full generic type information. Since rejecting unresolved or only partially resolved types as method arguments will be wrong in some cases, we decided to ignore generic type parameters and only consider raw types when deciding whether a method may be called for a given list of arguments.  
+  
 ## Operators
 
 Zenodot implements most but not all unary and binary operators. The following operators are currently not supported:

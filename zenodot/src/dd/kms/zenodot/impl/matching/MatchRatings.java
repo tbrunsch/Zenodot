@@ -100,13 +100,16 @@ public class MatchRatings
 		} else {
 			if (actual.isPrimitive()) {
 				Class<?> actualBoxedClass = Primitives.wrap(actualClass);
-				return	actualBoxedClass == expectedClass					? TypeMatch.BOXED :					// int -> Integer
-						primitiveConvertible								? TypeMatch.BOXED_AND_CONVERSION :	// int -> Double
-						expectedClass.isAssignableFrom(actualBoxedClass)	? TypeMatch.BOXED_AND_INHERITANCE 	// int -> Number
-																			: TypeMatch.NONE;					// int -> String
+				return	actualBoxedClass == expectedClass					? TypeMatch.BOXED :						// int -> Integer
+						primitiveConvertible								? TypeMatch.BOXED_AND_CONVERSION :		// int -> Double
+						expected.isSupertypeOf(actual)						? TypeMatch.BOXED_AND_INHERITANCE : 	// int -> Number
+						expectedClass.isAssignableFrom(actualBoxedClass)	? TypeMatch.BOXED_AND_INHERITANCE_RAW 	// int -> T extends Number
+																			: TypeMatch.NONE;						// int -> String
 			} else {
-				return	expected.isSupertypeOf(actual)	? TypeMatch.INHERITANCE		// Integer -> Number
-														: TypeMatch.NONE;			// Integer -> Double
+
+				return	expected.isSupertypeOf(actual)				? TypeMatch.INHERITANCE	:		// Integer -> Number
+						expectedClass.isAssignableFrom(actualClass)	? TypeMatch.INHERITANCE_RAW		// ArrayList -> List
+																	: TypeMatch.NONE;				// Integer -> Double
 			}
 		}
 	}
