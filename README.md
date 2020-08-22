@@ -112,6 +112,17 @@ System.out.println("Result: " + parser.evaluate(expression, thisValue).getObject
 
 The expression "substring(4)" is evaluated using the string "Zenodot" as context. It is equivalent to the expression "this.substring(4)" and evaluates to "dot". 
 
+# Handling Code Completions
+
+Code completions are represented by the interface `CodeCompletion`. We will discuss some of its methods in detail:
+
+  - `getInsertionRange()` returns the range of the current text that should be replaced by the code completion.
+  - `getTextToInsert()` returns the text that should be used to replace the range of the current text specified by`getInsertionRange()`.  
+  - `getCaretPositionAfterInsertion()` returns the position of the caret after inserting the code completion. In many cases it will be the end of the insertion range. For methods, however, it is the position after the opening parenthesis.
+  - `toString()` returns the suggested text that should be displayed to the user. This is not always the same as the text returned by `getTextToInsert()`. For methods, for instance, it contains information about the argument types.
+
+If the interface `CodeCompletion` does not provide sufficient information because you need to handle different types of code completions differently, then you can cast them to one of the following specific interfaces: `CodeCompletionClass`, `CodeCompletionPackage`, `CodeCompletionField`, `CodeCompletionMethod`, `CodeCompletionKeyword`, `CodeCompletionVariable`, or `CodeCompletionObjectTreeNode`.   
+
 # Wrapper Classes
 
 Zenodot uses wrapper classes for all kinds of relevant entities. These wrapper classes carry additional information and allow future extensions without breaking the API. The following wrapper classes are most relevant:
