@@ -68,12 +68,8 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 	@Override
 	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
-		String characters = tokenStream.peekCharacters();
-		if (characters.length() == 0) {
-			throw new SyntaxException("Expected a literal");
-		}
-		char firstCharacter = characters.charAt(0);
-		switch (firstCharacter) {
+		char c = tokenStream.peekCharacter();
+		switch (c) {
 			case '"':
 				return parseStringLiteral(tokenStream);
 			case '\'':
@@ -102,18 +98,18 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 	}
 
 	private ObjectParseResult parseStringLiteral(TokenStream tokenStream) throws SyntaxException, CodeCompletionException, InternalErrorException {
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 		String stringLiteral = tokenStream.readStringLiteral();
 		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteral + "'");
-		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
 		ObjectInfo stringLiteralInfo = InfoProvider.createObjectInfo(stringLiteral, InfoProvider.createTypeInfo(String.class));
 		return ParseResults.createCompiledConstantObjectParseResult(stringLiteralInfo, tokenStream.getPosition());
 	}
 
 	private ObjectParseResult parseCharacterLiteral(TokenStream tokenStream) throws SyntaxException, CodeCompletionException, InternalErrorException {
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 		char characterLiteral = tokenStream.readCharacterLiteral();
 		log(LogLevel.SUCCESS, "detected character literal '" + characterLiteral + "'");
-		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
 		ObjectInfo characterLiteralInfo = InfoProvider.createObjectInfo(characterLiteral, InfoProvider.createTypeInfo(char.class));
 		return ParseResults.createCompiledConstantObjectParseResult(characterLiteralInfo, tokenStream.getPosition());

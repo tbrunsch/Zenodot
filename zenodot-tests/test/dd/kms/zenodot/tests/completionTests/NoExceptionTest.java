@@ -39,7 +39,11 @@ public class NoExceptionTest extends AbstractTest
 			" new  int [ i ] ",
 			"new double[]{ d, i }",
 			" new  double [ ] {  d ,  i  } ",
-			"\"String\" instanceof String"
+			"\"String\" instanceof String",
+			"\"String",
+			"'a",
+			"nul",
+			"t"
 		);
 	}
 

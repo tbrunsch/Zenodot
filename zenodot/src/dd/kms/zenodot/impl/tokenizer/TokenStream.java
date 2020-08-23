@@ -150,12 +150,38 @@ public class TokenStream
 	}
 
 	public String readStringLiteral() throws SyntaxException, CodeCompletionException {
-		String escapedStringLiteral = readRegex(STRING_LITERAL_PATTERN, 2, NO_COMPLETIONS, "No string literal found", true);
+		String errorMessage = "No string literal found";
+		if (peekCharacter() != '"') {
+			throw new SyntaxException(errorMessage);
+		}
+		String escapedStringLiteral;
+		try {
+			escapedStringLiteral = readRegex(STRING_LITERAL_PATTERN, 2, NO_COMPLETIONS, errorMessage, true);
+		} catch (SyntaxException e) {
+			if (position <= caretPosition && caretPosition <= expression.length()) {
+				// missing closing double quotes, but code completion requested
+				throw new CodeCompletionException(CodeCompletions.NONE);
+			}
+			throw e;
+		}
 		return unescapeCharacters(escapedStringLiteral);
 	}
 
 	public char readCharacterLiteral() throws SyntaxException, CodeCompletionException, InternalErrorException {
-		String escapedCharacterLiteral = readRegex(CHARACTER_LITERAL_PATTERN, 2, NO_COMPLETIONS, "No character literal found", true);
+		String errorMessage = "No character literal found";
+		if (peekCharacter() != '\'') {
+			throw new SyntaxException(errorMessage);
+		}
+		String escapedCharacterLiteral;
+		try {
+			escapedCharacterLiteral = readRegex(CHARACTER_LITERAL_PATTERN, 2, NO_COMPLETIONS, errorMessage, true);
+		} catch (SyntaxException e) {
+			if (position <= caretPosition && caretPosition <= expression.length()) {
+				// missing closing single quotes, but code completion requested
+				throw new CodeCompletionException(CodeCompletions.NONE);
+			}
+			throw e;
+		}
 		String characterLiteral = unescapeCharacters(escapedCharacterLiteral);
 		int length = characterLiteral.length();
 		if (length == 0) {
@@ -218,16 +244,12 @@ public class TokenStream
 	}
 
 	public char peekCharacter() {
-		String characters = peekCharacters();
-		return characters.isEmpty() ? EMPTY_CHARACTER : characters.charAt(0);
-	}
-
-	public String peekCharacters() {
 		Matcher matcher = match(CHARACTERS_PATTERN);
 		if (!matcher.matches()) {
 			throw new IllegalStateException("Internal Error: Characters pattern did not match");
 		}
-		return matcher.group(1);
+		String characters = matcher.group(1);
+		return characters.isEmpty() ? EMPTY_CHARACTER : characters.charAt(0);
 	}
 
 	/**
