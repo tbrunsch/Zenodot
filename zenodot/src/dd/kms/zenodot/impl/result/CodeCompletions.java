@@ -1,6 +1,5 @@
 package dd.kms.zenodot.impl.result;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
@@ -20,8 +19,8 @@ public class CodeCompletions
 		return new CodeCompletions(ImmutableList.of(codeCompletion));
 	}
 
-	private final List<CodeCompletion>			completions;
-	private @Nullable ExecutableArgumentInfo	executableArgumentInfo;
+	private final List<CodeCompletion>				completions;
+	private final @Nullable ExecutableArgumentInfo	executableArgumentInfo;
 
 	public CodeCompletions(List<CodeCompletion> completions) {
 		this(completions, null);
@@ -38,10 +37,5 @@ public class CodeCompletions
 
 	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo() {
 		return Optional.ofNullable(executableArgumentInfo);
-	}
-
-	public void setExecutableArgumentInfo(ExecutableArgumentInfo executableArgumentInfo) {
-		Preconditions.checkArgument(this.executableArgumentInfo == null, "Trying to overwrite executable argument info");
-		this.executableArgumentInfo = executableArgumentInfo;
 	}
 }

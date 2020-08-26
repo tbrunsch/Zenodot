@@ -61,8 +61,14 @@ public class ExecutableDataProvider
 		List<ObjectParseResult> arguments = new ArrayList<>();
 
 		boolean foundClosingParenthesis = false;
-		if (tokenStream.skipCharacter(')')) {
-			foundClosingParenthesis = true;
+		int initPosition = tokenStream.getPosition();
+		try {
+			if (tokenStream.skipCharacter(')')) {
+				foundClosingParenthesis = true;
+			}
+		} catch (CodeCompletionException e) {
+			// caret before ')' => show code completions for first argument
+			tokenStream.setPosition(initPosition);
 		}
 
 		// iterate over the argument list (i = argument index)
@@ -97,19 +103,20 @@ public class ExecutableDataProvider
 				argument_i = parserToolbox.createExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argExpectation);
 			} catch (CodeCompletionException e) {
 				CodeCompletions completions = e.getCompletions();
-				if (!completions.getExecutableArgumentInfo().isPresent()) {
-					/*
-					 * The code completion does not come from a cascaded method/constructor call
-					 * that already has an executable argument info => We can provide some for this
-					 * method call.
-					 */
-					List<ObjectInfo> argumentInfos = arguments.stream()
-						.map(ObjectParseResult::getObjectInfo)
-						.collect(Collectors.toList());
-					ExecutableArgumentInfo executableArgumentInfo = createExecutableArgumentInfo(executables, argumentInfos);
-					completions.setExecutableArgumentInfo(executableArgumentInfo);
+				if (completions.getExecutableArgumentInfo().isPresent()) {
+					throw e;
 				}
-				throw e;
+				/*
+				 * The code completion does not come from a cascaded method/constructor call
+				 * that already has an executable argument info => We can provide some for this
+				 * method call.
+				 */
+				List<ObjectInfo> argumentInfos = arguments.stream()
+					.map(ObjectParseResult::getObjectInfo)
+					.collect(Collectors.toList());
+				ExecutableArgumentInfo executableArgumentInfo = createExecutableArgumentInfo(executables, argumentInfos);
+				CodeCompletions completionsWithExecutableArgumentInfo = new CodeCompletions(completions.getCompletions(), executableArgumentInfo);
+				throw new CodeCompletionException(completionsWithExecutableArgumentInfo);
 			}
 			arguments.add(argument_i);
 
