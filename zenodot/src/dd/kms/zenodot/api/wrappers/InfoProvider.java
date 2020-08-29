@@ -28,7 +28,9 @@ public class InfoProvider
 
 	public static final ObjectInfo	NULL_LITERAL		= createObjectInfo(null, NO_TYPE);
 
-	public static List<ExecutableInfo> getAvailableExecutableInfos(TypeInfo declaringType, Executable executable) {
+	public static List<ExecutableInfo> getAvailableExecutableInfos(TypeInfo type, Executable executable) {
+		Class<?> declaringClass = executable.getDeclaringClass();
+		TypeInfo declaringType = type.resolveType(declaringClass);
 		return executable.isVarArgs()
 			? Arrays.asList(new dd.kms.zenodot.impl.wrappers.RegularExecutableInfo(declaringType, executable), new dd.kms.zenodot.impl.wrappers.VariadicExecutableInfo(declaringType, executable))
 			: Arrays.asList(new dd.kms.zenodot.impl.wrappers.RegularExecutableInfo(declaringType, executable));
@@ -62,27 +64,32 @@ public class InfoProvider
 		return new dd.kms.zenodot.impl.wrappers.FieldInfoImpl(declaringType, field);
 	}
 
-	public static List<FieldInfo> getFieldInfos(TypeInfo declaringType, FieldScanner fieldScanner) {
-		List<Field> fields = fieldScanner.getFields(declaringType.getRawType(), true);
-		return fields.stream()
-			.map(field -> createFieldInfo(declaringType, field))
-			.collect(Collectors.toList());
+	public static List<FieldInfo> getFieldInfos(TypeInfo type, FieldScanner fieldScanner) {
+		List<Field> fields = fieldScanner.getFields(type.getRawType(), true);
+		List<FieldInfo> fieldInfos = new ArrayList<>(fields.size());
+		for (Field field : fields) {
+			Class<?> declaringClass = field.getDeclaringClass();
+			TypeInfo declaringType = type.resolveType(declaringClass);
+			FieldInfo fieldInfo = createFieldInfo(declaringType, field);
+			fieldInfos.add(fieldInfo);
+		}
+		return fieldInfos;
 	}
 
-	public static List<ExecutableInfo> getMethodInfos(TypeInfo declaringType, MethodScanner methodScanner) {
-		List<Method> methods = methodScanner.getMethods(declaringType.getRawType());
+	public static List<ExecutableInfo> getMethodInfos(TypeInfo type, MethodScanner methodScanner) {
+		List<Method> methods = methodScanner.getMethods(type.getRawType());
 		List<ExecutableInfo> executableInfos = new ArrayList<>(methods.size());
 		for (Method method : methods) {
-			executableInfos.addAll(getAvailableExecutableInfos(declaringType, method));
+			executableInfos.addAll(getAvailableExecutableInfos(type, method));
 		}
 		return executableInfos;
 	}
 
-	public static List<ExecutableInfo> getConstructorInfos(TypeInfo declaringType, ConstructorScanner constructorScanner) {
-		List<Constructor<?>> constructors = constructorScanner.getConstructors(declaringType.getRawType());
+	public static List<ExecutableInfo> getConstructorInfos(TypeInfo type, ConstructorScanner constructorScanner) {
+		List<Constructor<?>> constructors = constructorScanner.getConstructors(type.getRawType());
 		List<ExecutableInfo> executableInfos = new ArrayList<>(constructors.size());
 		for (Constructor<?> constructor : constructors) {
-			executableInfos.addAll(getAvailableExecutableInfos(declaringType, constructor));
+			executableInfos.addAll(getAvailableExecutableInfos(type, constructor));
 		}
 		return executableInfos;
 	}

@@ -6,7 +6,7 @@
   - merged expression compiler and expression parser into one class
   - expression compilation is now also available with dynamic typing enabled
   - increased priority of wildcard matches for code completions
-  - MatchRating now provides a method to obtain an integer representation
+  - `MatchRating` now provides a method to obtain an integer representation
   - support calling generic methods like `Arrays.asList()`
   - support `instanceof` operator
   - extended documentation
