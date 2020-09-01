@@ -17,16 +17,16 @@ import java.util.stream.Collectors;
  */
 public class FieldScanner
 {
-	private Predicate<Field>	minimumAccessLevelFilter	= null;
+	private Predicate<Field>	minimumAccessModifierFilter	= null;
 	private Predicate<Field>	staticFilter				= null;
 	private Predicate<Field>	nameFilter					= null;
 
-	public FieldScanner minimumAccessLevel(AccessModifier minimumAccessLevel) {
-		if (minimumAccessLevel == AccessModifier.PRIVATE) {
-			minimumAccessLevelFilter = null;
+	public FieldScanner minimumAccessModifier(AccessModifier minimumAccessModifier) {
+		if (minimumAccessModifier == AccessModifier.PRIVATE) {
+			minimumAccessModifierFilter = null;
 		} else {
-			IntPredicate modifierFilter = ModifierFilters.createMinimumAccessLevelFilter(minimumAccessLevel);
-			minimumAccessLevelFilter = field -> modifierFilter.test(field.getModifiers());
+			IntPredicate modifierFilter = ModifierFilters.createMinimumAccessModifierFilter(minimumAccessModifier);
+			minimumAccessModifierFilter = field -> modifierFilter.test(field.getModifiers());
 		}
 		return this;
 	}
@@ -92,6 +92,6 @@ public class FieldScanner
 
 	private Predicate<Field> getFilter() {
 		Predicate<Field> specialClassFilter = field -> !field.getName().startsWith("this$");
-		return Filters.combine(minimumAccessLevelFilter, staticFilter, nameFilter, specialClassFilter);
+		return Filters.combine(minimumAccessModifierFilter, staticFilter, nameFilter, specialClassFilter);
 	}
 }

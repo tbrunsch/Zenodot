@@ -18,7 +18,7 @@ public class AbstractTestExecutor<T extends AbstractTestExecutor>
 	protected static final boolean	SKIP_UNSTABLE_TESTS	= "true".equalsIgnoreCase(System.getProperty("skipUnstableTests"));
 
 	protected final Object					testInstance;
-	protected final ParserSettingsBuilder	settingsBuilder			= ParserSettingsUtils.createBuilder().minimumAccessLevel(AccessModifier.PRIVATE);
+	protected final ParserSettingsBuilder	settingsBuilder			= ParserSettingsUtils.createBuilder().minimumAccessModifier(AccessModifier.PRIVATE);
 
 	private boolean							stopAtError				= false;
 	private boolean							printLogEntriesAtError	= false;
@@ -50,8 +50,8 @@ public class AbstractTestExecutor<T extends AbstractTestExecutor>
 		return getBuilder();
 	}
 
-	public T minimumAccessLevel(AccessModifier minimumAccessLevel) {
-		settingsBuilder.minimumAccessLevel(minimumAccessLevel);
+	public T minimumAccessModifier(AccessModifier minimumAccessModifier) {
+		settingsBuilder.minimumAccessModifier(minimumAccessModifier);
 		return getBuilder();
 	}
 

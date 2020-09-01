@@ -102,14 +102,14 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 	}
 
 	private MethodScanner getMethodScanner() {
-		AccessModifier minimumAccessLevel = parserToolbox.getSettings().getMinimumAccessLevel();
-		return new MethodScanner().staticOnly(isContextStatic()).minimumAccessLevel(minimumAccessLevel);
+		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
+		return new MethodScanner().staticOnly(isContextStatic()).minimumAccessModifier(minimumAccessModifier);
 	}
 
-	private MethodScanner getMethodScanner(String name, boolean considerMinimumAccessLevel) {
+	private MethodScanner getMethodScanner(String name, boolean considerMinimumAccessModifier) {
 		MethodScanner methodScanner = getMethodScanner().name(name);
-		if (!considerMinimumAccessLevel) {
-			methodScanner.minimumAccessLevel(AccessModifier.PRIVATE);
+		if (!considerMinimumAccessModifier) {
+			methodScanner.minimumAccessModifier(AccessModifier.PRIVATE);
 		}
 		return methodScanner;
 	}

@@ -15,7 +15,7 @@ public interface ParserSettings
 	CompletionMode getCompletionMode();
 	Imports getImports();
 	List<Variable> getVariables();
-	AccessModifier getMinimumAccessLevel();
+	AccessModifier getMinimumAccessModifier();
 	boolean isEnableDynamicTyping();
 	boolean isConsiderAllClassesForClassCompletions();
 	ObjectTreeNode getCustomHierarchyRoot();

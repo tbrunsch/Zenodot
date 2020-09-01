@@ -19,7 +19,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	private Set<ClassInfo>		importedClasses;
 	private Set<PackageInfo>	importedPackages;
 	private List<Variable>		variables;
-	private AccessModifier		minimumAccessLevel;
+	private AccessModifier		minimumAccessModifier;
 	private boolean				enableDynamicTyping;
 	private boolean				considerAllClassesForClassCompletions;
 	private ObjectTreeNode		customHierarchyRoot;
@@ -30,7 +30,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		importedClasses = ImmutableSet.of();
 		importedPackages = ImmutableSet.of();
 		variables = ImmutableList.of();
-		minimumAccessLevel = AccessModifier.PUBLIC;
+		minimumAccessModifier = AccessModifier.PUBLIC;
 		enableDynamicTyping = false;
 		considerAllClassesForClassCompletions = false;
 		customHierarchyRoot = ParserSettingsUtils.createEmptyLeafNode();
@@ -42,7 +42,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		importedClasses = ImmutableSet.copyOf(settings.getImports().getImportedClasses());
 		importedPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackages());
 		variables = ImmutableList.copyOf(settings.getVariables());
-		minimumAccessLevel = settings.getMinimumAccessLevel();
+		minimumAccessModifier = settings.getMinimumAccessModifier();
 		enableDynamicTyping = settings.isEnableDynamicTyping();
 		considerAllClassesForClassCompletions = settings.isConsiderAllClassesForClassCompletions();
 		customHierarchyRoot = settings.getCustomHierarchyRoot();
@@ -94,8 +94,8 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilderImpl minimumAccessLevel(AccessModifier minimumAccessLevel) {
-		this.minimumAccessLevel = minimumAccessLevel;
+	public ParserSettingsBuilderImpl minimumAccessModifier(AccessModifier minimumAccessModifier) {
+		this.minimumAccessModifier = minimumAccessModifier;
 		return this;
 	}
 
@@ -124,6 +124,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, variables, minimumAccessLevel, enableDynamicTyping, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
+		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, variables, minimumAccessModifier, enableDynamicTyping, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
 	}
 }

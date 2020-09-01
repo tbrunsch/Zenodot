@@ -5,8 +5,8 @@ import java.util.function.IntPredicate;
 
 class ModifierFilters
 {
-	static IntPredicate createMinimumAccessLevelFilter(AccessModifier minimumAccessLevel) {
-		switch (minimumAccessLevel) {
+	static IntPredicate createMinimumAccessModifierFilter(AccessModifier minimumAccessModifier) {
+		switch (minimumAccessModifier) {
 			case PUBLIC:
 				return modifiers -> Modifier.isPublic(modifiers);
 			case PROTECTED:
@@ -16,7 +16,7 @@ class ModifierFilters
 			case PRIVATE:
 				return modifiers -> true;
 			default:
-				throw new IllegalArgumentException("Unsupported access level " + minimumAccessLevel);
+				throw new IllegalArgumentException("Unsupported access modifier " + minimumAccessModifier);
 		}
 	}
 }

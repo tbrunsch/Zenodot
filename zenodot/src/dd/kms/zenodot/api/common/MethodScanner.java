@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
  */
 public class MethodScanner
 {
-	private Predicate<Method>	minimumAccessLevelFilter	= null;
+	private Predicate<Method>	minimumAccessModifierFilter	= null;
 	private Predicate<Method>	staticFilter				= null;
 	private Predicate<Method>	nameFilter					= null;
 
-	public MethodScanner minimumAccessLevel(AccessModifier minimumAccessLevel) {
-		IntPredicate modifierFilter = ModifierFilters.createMinimumAccessLevelFilter(minimumAccessLevel);
-		minimumAccessLevelFilter = method -> modifierFilter.test(method.getModifiers());
+	public MethodScanner minimumAccessModifier(AccessModifier minimumAccessModifier) {
+		IntPredicate modifierFilter = ModifierFilters.createMinimumAccessModifierFilter(minimumAccessModifier);
+		minimumAccessModifierFilter = method -> modifierFilter.test(method.getModifiers());
 		return this;
 	}
 
@@ -103,6 +103,6 @@ public class MethodScanner
 	}
 
 	private Predicate<Method> getFilter() {
-		return Filters.combine(minimumAccessLevelFilter, staticFilter, nameFilter);
+		return Filters.combine(minimumAccessModifierFilter, staticFilter, nameFilter);
 	}
 }

@@ -47,11 +47,11 @@ public interface ParserSettingsBuilder
 	ParserSettingsBuilder variables(List<Variable> variables);
 
 	/**
-	 * The minimum access level affects which fields and methods are suggested for code completion and
+	 * The minimum access modifier affects which fields and methods are suggested for code completion and
 	 * are accepted when evaluating expressions. When setting this to {@link AccessModifier#PRIVATE}, then
 	 * all fields and methods will be considered.
 	 */
-	ParserSettingsBuilder minimumAccessLevel(AccessModifier minimumAccessLevel);
+	ParserSettingsBuilder minimumAccessModifier(AccessModifier minimumAccessModifier);
 
 	/**
 	 * Enable dynamic typing to consider runtime types instead of declared types during code completion

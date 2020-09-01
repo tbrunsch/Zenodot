@@ -34,8 +34,8 @@ public class VisibilityTestUtils
 		for (AccessModifier outerClassModifier : Arrays.asList(AccessModifier.PUBLIC, AccessModifier.PACKAGE_PRIVATE)) {
 			for (AccessModifier innerModifier : AccessModifier.values()) {
 				for (EntityType innerType : EntityType.values()) {
-					for (AccessModifier minimumAccessLevel : AccessModifier.values()) {
-						Object[] parameters = { outerClassModifier, innerModifier, innerType, minimumAccessLevel };
+					for (AccessModifier minimumAccessModifier : AccessModifier.values()) {
+						Object[] parameters = { outerClassModifier, innerModifier, innerType, minimumAccessModifier };
 						testData.add(parameters);
 					}
 				}

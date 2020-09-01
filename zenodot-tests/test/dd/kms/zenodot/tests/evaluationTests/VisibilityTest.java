@@ -23,7 +23,7 @@ import java.util.Collection;
 @RunWith(Parameterized.class)
 public class VisibilityTest
 {
-	@Parameters(name = "{0} outer class, {1} {2}, minimum access level: {3}")
+	@Parameters(name = "{0} outer class, {1} {2}, minimum access modifier: {3}")
 	public static Collection<Object[]> getTestData() {
 		return VisibilityTestUtils.getTestData();
 	}
@@ -31,13 +31,13 @@ public class VisibilityTest
 	private final AccessModifier	outerClassModifier;
 	private final AccessModifier	innerModifier;
 	private final EntityType 		innerType;
-	private final AccessModifier	minimumAccessLevel;
+	private final AccessModifier	minimumAccessModifier;
 
-	public VisibilityTest(AccessModifier outerClassModifier, AccessModifier innerModifier, EntityType innerType, AccessModifier minimumAccessLevel) {
+	public VisibilityTest(AccessModifier outerClassModifier, AccessModifier innerModifier, EntityType innerType, AccessModifier minimumAccessModifier) {
 		this.outerClassModifier = outerClassModifier;
 		this.innerModifier = innerModifier;
 		this.innerType = innerType;
-		this.minimumAccessLevel = minimumAccessLevel;
+		this.minimumAccessModifier = minimumAccessModifier;
 	}
 
 	@Test
@@ -51,7 +51,7 @@ public class VisibilityTest
 	}
 
 	private void testVisibility(boolean useQualifiedClass) {
-		ParserSettingsBuilder builder = ParserSettingsUtils.createBuilder().minimumAccessLevel(minimumAccessLevel);
+		ParserSettingsBuilder builder = ParserSettingsUtils.createBuilder().minimumAccessModifier(minimumAccessModifier);
 		if (!useQualifiedClass) {
 			builder.importPackagesByName(Arrays.asList(VisibilityTestUtils.PACKAGE));
 		}
@@ -68,10 +68,10 @@ public class VisibilityTest
 		 * loading it. Since we do not want to load all classes on the class path and
 		 * there is not even an official way to determine whether a class has already
 		 * been loaded, access modifiers of classes are not checked against the minimum
-		 * access level.
+		 * access modifier.
 		 */
-		// boolean entityAccessible = outerClassModifier.compareTo(minimumAccessLevel) <= 0 && innerModifier.compareTo(minimumAccessLevel) <= 0;
-		boolean entityAccessible = innerType == EntityType.CLASS || innerModifier.compareTo(minimumAccessLevel) <= 0;
+		// boolean entityAccessible = outerClassModifier.compareTo(minimumAccessModifier) <= 0 && innerModifier.compareTo(minimumAccessModifier) <= 0;
+		boolean entityAccessible = innerType == EntityType.CLASS || innerModifier.compareTo(minimumAccessModifier) <= 0;
 
 		try {
 			if (innerType == EntityType.CLASS) {

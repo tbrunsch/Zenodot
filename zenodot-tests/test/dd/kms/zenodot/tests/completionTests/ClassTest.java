@@ -25,7 +25,7 @@ public class ClassTest extends CompletionTest
 
 		String className = ClassUtils.getRegularClassName(TestClass.class.getName());
 		testBuilder
-			.configurator(test -> test.minimumAccessLevel(AccessModifier.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumAccessModifier(AccessModifier.PACKAGE_PRIVATE))
 			.addTest(className + ".",				"f", "l", "getDouble()", "getInt()", "InnerClass")
 			.addTest(className + ".I",				"InnerClass")
 			.addTest(className + ".InnerClass.",	"test")
@@ -70,7 +70,7 @@ public class ClassTest extends CompletionTest
 			.addTest("InternalClassStage2.",	"i");
 
 		testBuilder
-			.configurator(test -> test.minimumAccessLevel(AccessModifier.PUBLIC))
+			.configurator(test -> test.minimumAccessModifier(AccessModifier.PUBLIC))
 			.addUnstableTest("Ma",		"Math")
 			.addUnstableTest("Math.p",	"pow(, )", "PI")
 			.addUnstableTest("Math.P",	"PI", "pow(, )");

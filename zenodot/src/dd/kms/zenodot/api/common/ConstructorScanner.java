@@ -8,15 +8,15 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Scans the constructors of a class optionally considering a minimum access level.
+ * Scans the constructors of a class optionally considering a minimum access modifier.
  */
 public class ConstructorScanner
 {
-	private Predicate<Constructor<?>>	minimumAccessLevelFilter	= null;
+	private Predicate<Constructor<?>>	minimumAccessModifierFilter	= null;
 
-	public ConstructorScanner minimumAccessLevel(AccessModifier minimumAccessLevel) {
-		IntPredicate modifierFilter = ModifierFilters.createMinimumAccessLevelFilter(minimumAccessLevel);
-		minimumAccessLevelFilter = constructor -> modifierFilter.test(constructor.getModifiers());
+	public ConstructorScanner minimumAccessModifier(AccessModifier minimumAccessModifier) {
+		IntPredicate modifierFilter = ModifierFilters.createMinimumAccessModifierFilter(minimumAccessModifier);
+		minimumAccessModifierFilter = constructor -> modifierFilter.test(constructor.getModifiers());
 		return this;
 	}
 
@@ -28,6 +28,6 @@ public class ConstructorScanner
 	}
 
 	private Predicate<Constructor<?>> getFilter() {
-		return Filters.nullToFilter(minimumAccessLevelFilter);
+		return Filters.nullToFilter(minimumAccessModifierFilter);
 	}
 }

@@ -82,14 +82,14 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 	}
 
 	private FieldScanner getFieldScanner() {
-		AccessModifier minimumAccessLevel = parserToolbox.getSettings().getMinimumAccessLevel();
-		return new FieldScanner().staticOnly(isContextStatic()).minimumAccessLevel(minimumAccessLevel);
+		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
+		return new FieldScanner().staticOnly(isContextStatic()).minimumAccessModifier(minimumAccessModifier);
 	}
 
-	private FieldScanner getFieldScanner(String name, boolean considerMinimumAccessLevel) {
+	private FieldScanner getFieldScanner(String name, boolean considerMinimumAccessModifier) {
 		FieldScanner fieldScanner = getFieldScanner().name(name);
-		if (!considerMinimumAccessLevel) {
-			fieldScanner.minimumAccessLevel(AccessModifier.PRIVATE);
+		if (!considerMinimumAccessModifier) {
+			fieldScanner.minimumAccessModifier(AccessModifier.PRIVATE);
 		}
 		return fieldScanner;
 	}

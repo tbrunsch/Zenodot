@@ -173,8 +173,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 	}
 
 	private List<ExecutableInfo> getConstructorInfos(TypeInfo constructorType) {
-		AccessModifier minimumAccessLevel = parserToolbox.getSettings().getMinimumAccessLevel();
-		ConstructorScanner constructorScanner = new ConstructorScanner().minimumAccessLevel(minimumAccessLevel);
+		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
+		ConstructorScanner constructorScanner = new ConstructorScanner().minimumAccessModifier(minimumAccessModifier);
 		return InfoProvider.getConstructorInfos(constructorType, constructorScanner);
 	}
 
