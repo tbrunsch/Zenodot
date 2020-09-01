@@ -17,18 +17,14 @@ public class ObjectInfoProvider
 
 	public TypeInfo getType(Object object, TypeInfo declaredType) {
 		if (object == null || object == InfoProvider.INDETERMINATE_VALUE) {
-			return declaredType == InfoProvider.UNKNOWN_TYPE ? InfoProvider.NO_TYPE : declaredType;
-		}
-
-		Class<?> runtimeClass = object.getClass();
-		if (declaredType == InfoProvider.UNKNOWN_TYPE) {
-			return InfoProvider.createTypeInfo(runtimeClass);
+			return declaredType;
 		}
 
 		if (!evaluate || declaredType.isPrimitive()) {
 			return declaredType;
 		}
 
+		Class<?> runtimeClass = object.getClass();
 		try {
 			return declaredType.getSubtype(runtimeClass);
 		} catch (Throwable t) {

@@ -15,16 +15,7 @@ public class InfoProvider
 {
 	public static final Object 		INDETERMINATE_VALUE = new Object();
 
-	/**
-	 * This field is only used for the {@link ObjectInfo} representing the null literal.
-	 */
 	public static final TypeInfo	NO_TYPE				= new dd.kms.zenodot.impl.wrappers.TypeInfoImpl(null);
-
-	/**
-	 * Use this field for creating an {@link ObjectInfo} for an object whose
-	 * declared type you do not know.
-	 */
-	public static final TypeInfo	UNKNOWN_TYPE		= new dd.kms.zenodot.impl.wrappers.TypeInfoImpl(null);
 
 	public static final ObjectInfo	NULL_LITERAL		= createObjectInfo(null, NO_TYPE);
 
@@ -49,7 +40,7 @@ public class InfoProvider
 	}
 
 	public static ObjectInfo createObjectInfo(Object object) {
-		return createObjectInfo(object, UNKNOWN_TYPE);
+		return createObjectInfo(object, object == null ? NO_TYPE : createTypeInfo(object.getClass()));
 	}
 
 	public static ObjectInfo createObjectInfo(Object object, TypeInfo declaredType) {

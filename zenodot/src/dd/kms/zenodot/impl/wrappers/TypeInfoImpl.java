@@ -88,9 +88,7 @@ public class TypeInfoImpl implements TypeInfo
 	@Override
 	public String toString() {
 		if (typeToken == null) {
-			return	this == InfoProvider.UNKNOWN_TYPE	? "unknown" :
-					this == InfoProvider.NO_TYPE		? "none"
-														: null;
+			return this == InfoProvider.NO_TYPE ? "none" : null;
 		}
 		return getName();
 	}

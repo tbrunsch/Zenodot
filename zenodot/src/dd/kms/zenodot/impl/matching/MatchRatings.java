@@ -62,13 +62,6 @@ public class MatchRatings
 	}
 
 	public static TypeMatch rateTypeMatch(TypeInfo expected, TypeInfo actual) {
-		if (actual == InfoProvider.UNKNOWN_TYPE) {
-			throw new IllegalArgumentException("Internal error: Cannot rate type match for unknown type");
-		}
-		if (expected == InfoProvider.UNKNOWN_TYPE) {
-			throw new IllegalArgumentException("Internal error: Cannot expect unknown type");
-		}
-
 		if (expected == InfoProvider.NO_TYPE) {
 			// no expectations
 			return TypeMatch.FULL;

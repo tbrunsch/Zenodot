@@ -344,7 +344,7 @@ public class OperatorResultProvider
 		TypeInfo rhsType = objectInfoProvider.getType(rhs);
 
 		// declared type of variables is unknown and we want be able to assign them a value
-		if (declaredLhsType != InfoProvider.UNKNOWN_TYPE && !MatchRatings.isConvertibleTo(rhsType, declaredLhsType)) {
+		if (!MatchRatings.isConvertibleTo(rhsType, declaredLhsType)) {
 			throw new OperatorException("Cannot assign value of type '" + rhsType + "' to left-hand side. Expected an instance of class '" + declaredLhsType + "'");
 		}
 		TypeInfo declaredResultType = declaredLhsType;

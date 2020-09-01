@@ -40,8 +40,7 @@ public class ObjectInfoImpl implements ObjectInfo
 																			: object.toString();
 		builder.append(objectString);
 		if (declaredType != InfoProvider.NO_TYPE) {
-			String typeString =	declaredType == InfoProvider.UNKNOWN_TYPE	? "unknown type"
-																			: declaredType.toString();
+			String typeString =	declaredType.toString();
 			builder.append(" (").append(typeString).append(")");
 		}
 		return builder.toString();
