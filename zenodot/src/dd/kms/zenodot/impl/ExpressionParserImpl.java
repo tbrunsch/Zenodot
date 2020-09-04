@@ -45,7 +45,7 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 		try {
 			parseResult = parse(tokenStream, thisValue, PARSE_RESULT_EXPECTATION);
 		} catch (Throwable t) {
-			throw new ParseException(tokenStream.getPosition(), t.getMessage(), t);
+			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
 		return settings.isEnableDynamicTyping()
 			? parseResult.getObjectInfo()
@@ -59,7 +59,7 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 		try {
 			parseResult = parse(tokenStream, thisValue, PARSE_RESULT_EXPECTATION);
 		} catch (Throwable t) {
-			throw new ParseException(tokenStream.getPosition(), t.getMessage(), t);
+			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
 		return createCompiledExpression(parseResult);
 	}

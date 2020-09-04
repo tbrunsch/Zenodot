@@ -66,7 +66,7 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 		} catch (OperatorException e) {
 			throw new EvaluationException("Applying operator failed: " + e.getMessage(), e);
 		}
-		return new UnaryPrefixOperatorParseResult(expressionParseResult, operator, operatorResult, tokenStream.getPosition());
+		return new UnaryPrefixOperatorParseResult(expressionParseResult, operator, operatorResult, tokenStream);
 	}
 
 	private ObjectInfo applyOperator(ObjectInfo objectInfo, UnaryOperator operator) throws OperatorException {
@@ -88,8 +88,8 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 		private final ObjectParseResult expressionParseResult;
 		private final UnaryOperator		operator;
 
-		private UnaryPrefixOperatorParseResult(ObjectParseResult expressionParseResult, UnaryOperator operator, ObjectInfo operatorResult, int position) {
-			super(operatorResult, position);
+		private UnaryPrefixOperatorParseResult(ObjectParseResult expressionParseResult, UnaryOperator operator, ObjectInfo operatorResult, TokenStream tokenStream) {
+			super(operatorResult, tokenStream);
 			this.expressionParseResult = expressionParseResult;
 			this.operator = operator;
 		}
@@ -100,7 +100,7 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 			try {
 				return applyOperator(expressionInfo, operator, OPERATOR_RESULT_PROVIDER);
 			} catch (OperatorException e) {
-				throw new ParseException(getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
+				throw new ParseException(getExpression(), getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
 			}
 		}
 	}

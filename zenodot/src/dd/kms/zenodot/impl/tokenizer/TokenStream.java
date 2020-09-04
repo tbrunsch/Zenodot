@@ -439,6 +439,10 @@ public class TokenStream
 		return pattern.matcher(expression.substring(position));
 	}
 
+	public String getExpression() {
+		return expression;
+	}
+
 	public int getPosition() {
 		return position;
 	}

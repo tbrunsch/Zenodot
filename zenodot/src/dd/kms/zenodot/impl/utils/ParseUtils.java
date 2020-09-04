@@ -112,7 +112,7 @@ public class ParseUtils
 			ObjectInfo objectInfo = objectParseResult.getObjectInfo();
 			AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation> objectTailParser = parserToolbox.createParser(ObjectTailParser.class);
 			ObjectParseResult tailParseResult = objectTailParser.parse(tokenStream, objectInfo, expectation);
-			return new ParseResultWithTail(objectParseResult, tailParseResult, tokenStream.getPosition());
+			return new ParseResultWithTail(objectParseResult, tailParseResult, tokenStream);
 		} else if (parseResult instanceof ClassParseResult) {
 			ClassParseResult classParseResult = (ClassParseResult) parseResult;
 			TypeInfo type = classParseResult.getType();
@@ -274,8 +274,8 @@ public class ParseUtils
 		private final ObjectParseResult parseResult;
 		private final ObjectParseResult tailParseResult;
 
-		ParseResultWithTail(ObjectParseResult parseResult, ObjectParseResult tailParseResult, int position) {
-			super(tailParseResult.getObjectInfo(), position);
+		ParseResultWithTail(ObjectParseResult parseResult, ObjectParseResult tailParseResult, TokenStream tokenStream) {
+			super(tailParseResult.getObjectInfo(), tokenStream);
 			this.parseResult = parseResult;
 			this.tailParseResult = tailParseResult;
 		}

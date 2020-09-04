@@ -3,6 +3,7 @@ package dd.kms.zenodot.impl.result;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.dataproviders.ObjectInfoProvider;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
@@ -13,14 +14,21 @@ public abstract class AbstractObjectParseResult implements ObjectParseResult
 	protected static final OperatorResultProvider	OPERATOR_RESULT_PROVIDER	= new OperatorResultProvider(OBJECT_INFO_PROVIDER, true);
 
 	private final ObjectInfo 	objectInfo;
+	private final String		expression;
 	private final int			position;
 
-	public AbstractObjectParseResult(ObjectInfo objectInfo, int position) {
+	public AbstractObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
 		this.objectInfo = objectInfo;
-		this.position = position;
+		this.expression = tokenStream.getExpression();
+		this.position = tokenStream.getPosition();
 	}
 
 	protected abstract ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception;
+
+	@Override
+	public String getExpression() {
+		return expression;
+	}
 
 	@Override
 	public int getPosition() {
@@ -40,7 +48,7 @@ public abstract class AbstractObjectParseResult implements ObjectParseResult
 			throw e;
 		} catch (Throwable t) {
 			String error = ParseUtils.formatException(t, new StringBuilder()).toString();
-			throw new ParseException(position, error, t);
+			throw new ParseException(expression, position, error, t);
 		}
 	}
 

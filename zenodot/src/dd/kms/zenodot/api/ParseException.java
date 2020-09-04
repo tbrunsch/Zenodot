@@ -4,15 +4,25 @@ import java.text.MessageFormat;
 
 public class ParseException extends Exception
 {
-	private final int position;
+	private final String	expression;
+	private final int		position;
 
-	public ParseException(int position, String message) {
-		this(position, message, null);
+	public ParseException(dd.kms.zenodot.impl.tokenizer.TokenStream tokenStream, String message) {
+		this(tokenStream, message, null);
 	}
 
-	public ParseException(int position, String message, Throwable cause) {
+	public ParseException(dd.kms.zenodot.impl.tokenizer.TokenStream tokenStream, String message, Throwable cause) {
+		this(tokenStream.getExpression(), tokenStream.getPosition(), message, cause);
+	}
+
+	public ParseException(String expression, int position, String message, Throwable cause) {
 		super(MessageFormat.format("Parse exception at position {0}: {1}", position, message), cause);
+		this.expression = expression;
 		this.position = position;
+	}
+
+	public String getExpression() {
+		return expression;
 	}
 
 	public int getPosition() {

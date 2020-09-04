@@ -39,7 +39,7 @@ public class ClassParserImpl extends AbstractParser<ClassParseResult, ClassParse
 		try {
 			parseResult = parse(tokenStream, InfoProvider.NULL_LITERAL, PARSE_RESULT_EXPECTATION);
 		} catch (Throwable t) {
-			throw new ParseException(tokenStream.getPosition(), t.getMessage(), t);
+			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
 		TypeInfo type = parseResult.getType();
 		return InfoProvider.createClassInfoUnchecked(type.getRawType().getName());

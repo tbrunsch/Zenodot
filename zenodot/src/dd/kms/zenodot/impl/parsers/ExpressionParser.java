@@ -103,12 +103,12 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 				}
 
 				tokenStream.setPosition(posBeforeOperator);
-				return new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream.getPosition());
+				return new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream);
 			}
 			log(LogLevel.SUCCESS, "detected binary operator '" + operator + "' at " + tokenStream);
 
 			if (operator == BinaryOperator.INSTANCE_OF) {
-				ExpressionParseResult expressionParseResult = new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream.getPosition());
+				ExpressionParseResult expressionParseResult = new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream);
 				ClassParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
 				TypeInfo type = classParseResult.getType();
 				ObjectInfo instanceOfInfo;
@@ -118,7 +118,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 					log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
 					throw new SyntaxException(e.getMessage());
 				}
-				return new InstanceOfParseResult(expressionParseResult, type, instanceOfInfo, tokenStream.getPosition());
+				return new InstanceOfParseResult(expressionParseResult, type, instanceOfInfo, tokenStream);
 			}
 
 			operators.add(operator);
@@ -210,8 +210,8 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		private final List<ObjectParseResult>	operands;
 		private final List<BinaryOperator>		operators;
 
-		ExpressionParseResult(List<ObjectParseResult> operands, List<BinaryOperator> operators, ObjectInfo expressionInfo, int position) {
-			super(expressionInfo, position);
+		ExpressionParseResult(List<ObjectParseResult> operands, List<BinaryOperator> operators, ObjectInfo expressionInfo, TokenStream tokenStream) {
+			super(expressionInfo, tokenStream);
 
 			Preconditions.checkArgument(operands.size() == operators.size() + 1);
 
@@ -243,7 +243,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 				try {
 					accumulatedResultInfo = applyOperator(OPERATOR_RESULT_PROVIDER, accumulatedResultInfo, nextOperandInfo, operator);
 				} catch (OperatorException e) {
-					throw new ParseException(nextOperand.getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
+					throw new ParseException(getExpression(), nextOperand.getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
 				}
 			}
 			return accumulatedResultInfo;
@@ -255,8 +255,8 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		private final ExpressionParseResult	expressionParseResult;
 		private final TypeInfo				type;
 
-		InstanceOfParseResult(ExpressionParseResult expressionParseResult, TypeInfo type, ObjectInfo instanceOfInfo, int position) {
-			super(instanceOfInfo, position);
+		InstanceOfParseResult(ExpressionParseResult expressionParseResult, TypeInfo type, ObjectInfo instanceOfInfo, TokenStream tokenStream) {
+			super(instanceOfInfo, tokenStream);
 			this.expressionParseResult = expressionParseResult;
 			this.type = type;
 		}

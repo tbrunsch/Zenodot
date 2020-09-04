@@ -38,7 +38,7 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 		} catch (CodeCompletionException e) {
 			return e.getCompletions();
 		} catch (InternalErrorException | EvaluationException | SyntaxException e) {
-			throw new ParseException(tokenStream.getPosition(), e.getMessage());
+			throw new ParseException(tokenStream, e.getMessage());
 		}
 	}
 

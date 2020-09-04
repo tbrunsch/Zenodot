@@ -103,7 +103,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteral + "'");
 
 		ObjectInfo stringLiteralInfo = InfoProvider.createObjectInfo(stringLiteral, InfoProvider.createTypeInfo(String.class));
-		return ParseResults.createCompiledConstantObjectParseResult(stringLiteralInfo, tokenStream.getPosition());
+		return ParseResults.createCompiledConstantObjectParseResult(stringLiteralInfo, tokenStream);
 	}
 
 	private ObjectParseResult parseCharacterLiteral(TokenStream tokenStream) throws SyntaxException, CodeCompletionException, InternalErrorException {
@@ -112,7 +112,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		log(LogLevel.SUCCESS, "detected character literal '" + characterLiteral + "'");
 
 		ObjectInfo characterLiteralInfo = InfoProvider.createObjectInfo(characterLiteral, InfoProvider.createTypeInfo(char.class));
-		return ParseResults.createCompiledConstantObjectParseResult(characterLiteralInfo, tokenStream.getPosition());
+		return ParseResults.createCompiledConstantObjectParseResult(characterLiteralInfo, tokenStream);
 	}
 
 	private ObjectParseResult parseNamedLiteral(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
@@ -127,8 +127,8 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 		// "this" is not a constant literal, but depends on the context
 		return THIS_LITERAL.equals(literal)
-				? new ThisParseResult(literalInfo, tokenStream.getPosition())
-				: ParseResults.createCompiledConstantObjectParseResult(literalInfo, tokenStream.getPosition());
+				? new ThisParseResult(literalInfo, tokenStream)
+				: ParseResults.createCompiledConstantObjectParseResult(literalInfo, tokenStream);
 	}
 
 	private CodeCompletions suggestNamedLiteral(CompletionInfo info, ObjectParseResultExpectation expectation) {
@@ -172,8 +172,8 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 	private static class ThisParseResult extends AbstractObjectParseResult
 	{
-		ThisParseResult(ObjectInfo thisInfo, int position) {
-			super(thisInfo, position);
+		ThisParseResult(ObjectInfo thisInfo, TokenStream tokenStream) {
+			super(thisInfo, tokenStream);
 		}
 
 		@Override
@@ -199,7 +199,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 			log(LogLevel.SUCCESS, "detected numeric literal '" + literalValue + "'");
 			increaseConfidence(ParserConfidence.RIGHT_PARSER);
 			ObjectInfo literalInfo = InfoProvider.createObjectInfo(literalValue, numericType);
-			return ParseResults.createCompiledConstantObjectParseResult(literalInfo, tokenStream.getPosition());
+			return ParseResults.createCompiledConstantObjectParseResult(literalInfo, tokenStream);
 		}
 	}
 

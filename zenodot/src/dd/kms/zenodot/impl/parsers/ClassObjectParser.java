@@ -45,7 +45,7 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 		Class<?> classObject = contextType.getRawType();
 		ObjectInfo classObjectInfo = InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
 
-		return new ClassObjectParseResult(classObject, classObjectInfo, tokenStream.getPosition());
+		return new ClassObjectParseResult(classObject, classObjectInfo, tokenStream);
 	}
 
 	private CodeCompletions suggestClassKeyword(CompletionInfo info) throws SyntaxException {
@@ -68,8 +68,8 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 	{
 		private final Class<?>	classObject;
 
-		ClassObjectParseResult(Class<?> classObject, ObjectInfo classObjectInfo, int position) {
-			super(classObjectInfo, position);
+		ClassObjectParseResult(Class<?> classObject, ObjectInfo classObjectInfo, TokenStream tokenStream) {
+			super(classObjectInfo, tokenStream);
 			this.classObject = classObject;
 		}
 

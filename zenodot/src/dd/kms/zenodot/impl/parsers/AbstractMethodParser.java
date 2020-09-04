@@ -71,7 +71,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 				} catch (Exception e) {
 					throw new EvaluationException("Exception when evaluating method '" + methodName + "'", e);
 				}
-				return new MethodParseResult(isContextStatic(), bestMatchingMethod, argumentResults, methodReturnInfo, tokenStream.getPosition());
+				return new MethodParseResult(isContextStatic(), bestMatchingMethod, argumentResults, methodReturnInfo, tokenStream);
 			}
 			default: {
 				String error = "Ambiguous method call. Possible candidates are:\n"
@@ -124,8 +124,8 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 		private final List<ObjectParseResult>	arguments;
 		private final boolean					contextStatic;
 
-		MethodParseResult(boolean contextStatic, ExecutableInfo method, List<ObjectParseResult> arguments, ObjectInfo methodReturnInfo, int position) {
-			super(methodReturnInfo, position);
+		MethodParseResult(boolean contextStatic, ExecutableInfo method, List<ObjectParseResult> arguments, ObjectInfo methodReturnInfo, TokenStream tokenStream) {
+			super(methodReturnInfo, tokenStream);
 			this.contextStatic = contextStatic;
 			this.method = method;
 			this.arguments = arguments;

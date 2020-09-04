@@ -57,7 +57,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		Object contextObject = getContextObject(context);
 		ObjectInfo matchingFieldInfo = parserToolbox.getObjectInfoProvider().getFieldValueInfo(contextObject, fieldInfo);
 
-		return new FieldParseResult(isContextStatic(), fieldInfo, matchingFieldInfo, tokenStream.getPosition());
+		return new FieldParseResult(isContextStatic(), fieldInfo, matchingFieldInfo, tokenStream);
 	}
 
 	private CodeCompletions suggestFields(C context, ObjectParseResultExpectation expectation, CompletionInfo info) {
@@ -103,8 +103,8 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		private final FieldInfo	fieldInfo;
 		private final boolean	contextStatic;
 
-		FieldParseResult(boolean contextStatic, FieldInfo fieldInfo, ObjectInfo objectInfo, int position) {
-			super(objectInfo, position);
+		FieldParseResult(boolean contextStatic, FieldInfo fieldInfo, ObjectInfo objectInfo, TokenStream tokenStream) {
+			super(objectInfo, tokenStream);
 			this.fieldInfo = fieldInfo;
 			this.contextStatic = contextStatic;
 		}

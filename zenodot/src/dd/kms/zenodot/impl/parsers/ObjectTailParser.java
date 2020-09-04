@@ -73,13 +73,13 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		} catch (ClassCastException | ArrayIndexOutOfBoundsException e) {
 			throw new EvaluationException(e.getClass().getSimpleName() + " during array index evaluation", e);
 		}
-		ParseResult arrayParseResult = new ArrayParseResult(indexParseResult, elementInfo, tokenStream.getPosition());
+		ParseResult arrayParseResult = new ArrayParseResult(indexParseResult, elementInfo, tokenStream);
 		return ParseUtils.parseTail(tokenStream, arrayParseResult, parserToolbox, expectation);
 	}
 
 	@Override
 	ObjectParseResult createParseResult(TokenStream tokenStream, ObjectInfo objectInfo) {
-		return ParseResults.createCompiledIdentityObjectParseResult(objectInfo, tokenStream.getPosition());
+		return ParseResults.createCompiledIdentityObjectParseResult(objectInfo, tokenStream);
 	}
 
 	private ObjectParseResult parseArrayIndex(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
@@ -94,8 +94,8 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 	{
 		private final ObjectParseResult indexParseResult;
 
-		ArrayParseResult(ObjectParseResult indexParseResult, ObjectInfo elementInfo, int position) {
-			super(elementInfo, position);
+		ArrayParseResult(ObjectParseResult indexParseResult, ObjectInfo elementInfo, TokenStream tokenStream) {
+			super(elementInfo, tokenStream);
 			this.indexParseResult = indexParseResult;
 		}
 

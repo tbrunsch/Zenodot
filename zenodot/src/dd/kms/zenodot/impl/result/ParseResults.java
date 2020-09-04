@@ -8,6 +8,7 @@ import dd.kms.zenodot.api.wrappers.ExecutableInfo;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.api.wrappers.PackageInfo;
 import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.tokenizer.TokenStream;
 
 import java.util.Map;
 
@@ -21,12 +22,12 @@ public class ParseResults
 		return new PackageParseResultImpl(packageInfo);
 	}
 
-	public static ObjectParseResult createCompiledIdentityObjectParseResult(ObjectInfo objectInfo, int position) {
-		return new IdentityObjectParseResult(objectInfo, position);
+	public static ObjectParseResult createCompiledIdentityObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
+		return new IdentityObjectParseResult(objectInfo, tokenStream);
 	}
 
-	public static ObjectParseResult createCompiledConstantObjectParseResult(ObjectInfo objectInfo, int position) {
-		return new ConstantObjectParseResult(objectInfo, position);
+	public static ObjectParseResult createCompiledConstantObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
+		return new ConstantObjectParseResult(objectInfo, tokenStream);
 	}
 
 	public static ExecutableArgumentInfo createExecutableArgumentInfo(int currentArgumentIndex, Map<ExecutableInfo, Boolean> applicableExecutableOverloads) {
@@ -35,8 +36,8 @@ public class ParseResults
 
 	private static class IdentityObjectParseResult extends AbstractObjectParseResult
 	{
-		IdentityObjectParseResult(ObjectInfo objectInfo, int position) {
-			super(objectInfo, position);
+		IdentityObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
+			super(objectInfo, tokenStream);
 		}
 
 		@Override
@@ -47,8 +48,8 @@ public class ParseResults
 
 	private static class ConstantObjectParseResult extends AbstractObjectParseResult
 	{
-		ConstantObjectParseResult(ObjectInfo objectInfo, int position) {
-			super(objectInfo, position);
+		ConstantObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
+			super(objectInfo, tokenStream);
 		}
 
 		@Override

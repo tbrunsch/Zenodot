@@ -50,7 +50,7 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 		try {
 			ObjectInfo castInfo = parserToolbox.getObjectInfoProvider().getCastInfo(objectInfo, targetType);
 			log(LogLevel.SUCCESS, "successfully casted object");
-			return new CastParseResult(parseResult, targetType, castInfo, tokenStream.getPosition());
+			return new CastParseResult(parseResult, targetType, castInfo, tokenStream);
 		} catch (ClassCastException e) {
 			throw new EvaluationException("Cannot cast expression to '" + targetType + "'", e);
 		}
@@ -61,8 +61,8 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 		private final ObjectParseResult	parseResult;
 		private final TypeInfo			targetType;
 
-		CastParseResult(ObjectParseResult parseResult, TypeInfo targetType, ObjectInfo castInfo, int position) {
-			super(castInfo, position);
+		CastParseResult(ObjectParseResult parseResult, TypeInfo targetType, ObjectInfo castInfo, TokenStream tokenStream) {
+			super(castInfo, tokenStream);
 			this.parseResult = parseResult;
 			this.targetType = targetType;
 		}

@@ -94,7 +94,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				} catch (Exception e) {
 					throw new EvaluationException("Error when trying to invoke constructor of '" + constructorClass.getSimpleName() + "': " + e.getMessage(), e);
 				}
-				return new ObjectConstructorParseResult(bestMatchingConstructorInfo, argumentResults, constructorReturnInfo, tokenStream.getPosition());
+				return new ObjectConstructorParseResult(bestMatchingConstructorInfo, argumentResults, constructorReturnInfo, tokenStream);
 			}
 			default: {
 				String error = "Ambiguous constructor call. Possible candidates are:\n"
@@ -115,7 +115,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			List<ObjectInfo> elementInfos = elementParseResults.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
 			ObjectInfo arrayInfo = parserToolbox.getObjectInfoProvider().getArrayInfo(componentType, elementInfos);
 			log(LogLevel.SUCCESS, "detected valid array construction with initializer list");
-			return new ArrayConstructorWithInitializerListParseResult(componentType, elementParseResults, arrayInfo, tokenStream.getPosition());
+			return new ArrayConstructorWithInitializerListParseResult(componentType, elementParseResults, arrayInfo, tokenStream);
 		} else {
 			// array constructor with default initialization (e.g., "new int[3]")
 			ObjectInfo arrayInfo;
@@ -127,7 +127,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				log(LogLevel.ERROR, "caught exception: " + e.getMessage());
 				throw new EvaluationException("Exception during array construction: " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			}
-			return new ArrayConstructorWithDefaultInitializationParseResult(componentType, arraySizeParseResult, arrayInfo, tokenStream.getPosition());
+			return new ArrayConstructorWithDefaultInitializationParseResult(componentType, arraySizeParseResult, arrayInfo, tokenStream);
 		}
 	}
 
@@ -190,8 +190,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		private final ExecutableInfo			constructor;
 		private final List<ObjectParseResult>	arguments;
 
-		ObjectConstructorParseResult(ExecutableInfo constructor, List<ObjectParseResult> arguments, ObjectInfo constructorReturnInfo, int position) {
-			super(constructorReturnInfo, position);
+		ObjectConstructorParseResult(ExecutableInfo constructor, List<ObjectParseResult> arguments, ObjectInfo constructorReturnInfo, TokenStream tokenStream) {
+			super(constructorReturnInfo, tokenStream);
 			this.constructor = constructor;
 			this.arguments = arguments;
 		}
@@ -211,8 +211,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		private final TypeInfo					componentType;
 		private final List<ObjectParseResult>	elementParseResults;
 
-		ArrayConstructorWithInitializerListParseResult(TypeInfo componentType, List<ObjectParseResult> elementParseResults, ObjectInfo arrayInfo, int position) {
-			super(arrayInfo, position);
+		ArrayConstructorWithInitializerListParseResult(TypeInfo componentType, List<ObjectParseResult> elementParseResults, ObjectInfo arrayInfo, TokenStream tokenStream) {
+			super(arrayInfo, tokenStream);
 			this.componentType = componentType;
 			this.elementParseResults = elementParseResults;
 		}
@@ -232,8 +232,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		private final TypeInfo			componentType;
 		private final ObjectParseResult	sizeParseResult;
 
-		ArrayConstructorWithDefaultInitializationParseResult(TypeInfo componentType, ObjectParseResult sizeParseResult, ObjectInfo arrayInfo, int position) {
-			super(arrayInfo, position);
+		ArrayConstructorWithDefaultInitializationParseResult(TypeInfo componentType, ObjectParseResult sizeParseResult, ObjectInfo arrayInfo, TokenStream tokenStream) {
+			super(arrayInfo, tokenStream);
 			this.componentType = componentType;
 			this.sizeParseResult = sizeParseResult;
 		}

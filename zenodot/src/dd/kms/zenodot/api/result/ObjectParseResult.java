@@ -5,6 +5,7 @@ import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 public interface ObjectParseResult extends ParseResult
 {
+	String getExpression();
 	int getPosition();
 	ObjectInfo getObjectInfo();
 	ObjectInfo evaluate(ObjectInfo thisInfo, ObjectInfo context) throws ParseException;

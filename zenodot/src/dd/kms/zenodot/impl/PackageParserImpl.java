@@ -38,7 +38,7 @@ public class PackageParserImpl extends AbstractParser<PackageParseResult, Packag
 		try {
 			parseResult = parse(tokenStream, InfoProvider.NULL_LITERAL, PARSE_RESULT_EXPECTATION);
 		} catch (Throwable t) {
-			throw new ParseException(tokenStream.getPosition(), t.getMessage(), t);
+			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
 		return parseResult.getPackage();
 	}
