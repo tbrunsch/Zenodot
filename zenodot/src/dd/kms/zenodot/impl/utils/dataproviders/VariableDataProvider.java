@@ -1,5 +1,6 @@
 package dd.kms.zenodot.impl.utils.dataproviders;
 
+import dd.kms.zenodot.api.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 public class VariableDataProvider
 {
 	private final List<Variable>		variables;
-	private final ObjectInfoProvider	objectInfoProvider;
+	private final ObjectInfoProvider objectInfoProvider;
 
 	public VariableDataProvider(List<Variable> variables, ObjectInfoProvider objectInfoProvider) {
 		this.variables = variables;

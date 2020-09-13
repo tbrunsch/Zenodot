@@ -1,6 +1,5 @@
-package dd.kms.zenodot.impl.utils.dataproviders;
+package dd.kms.zenodot.api.common;
 
-import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.wrappers.*;
 
 import java.lang.reflect.Array;

@@ -1,10 +1,10 @@
 package dd.kms.zenodot.tests.completionTests;
 
 import dd.kms.zenodot.api.common.AccessModifier;
+import dd.kms.zenodot.impl.utils.ClassUtils;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
-import dd.kms.zenodot.impl.utils.ClassUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 

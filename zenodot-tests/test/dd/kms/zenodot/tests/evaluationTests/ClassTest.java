@@ -1,10 +1,10 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
 import dd.kms.zenodot.api.common.AccessModifier;
+import dd.kms.zenodot.impl.utils.ClassUtils;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
-import dd.kms.zenodot.impl.utils.ClassUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;

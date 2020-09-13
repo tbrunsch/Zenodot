@@ -1,5 +1,6 @@
 package dd.kms.zenodot.impl.utils;
 
+import dd.kms.zenodot.api.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.result.ParseResult;
 import dd.kms.zenodot.api.settings.ParserSettings;
@@ -29,7 +30,7 @@ public class ParserToolbox
 	private final ClassDataProvider				classDataProvider;
 	private final ExecutableDataProvider		executableDataProvider;
 	private final FieldDataProvider				fieldDataProvider;
-	private final ObjectInfoProvider			objectInfoProvider;
+	private final ObjectInfoProvider objectInfoProvider;
 	private final ObjectTreeNodeDataProvider	objectTreeNodeDataProvider;
 	private final OperatorResultProvider 		operatorResultProvider;
 	private final VariableDataProvider			variableDataProvider;

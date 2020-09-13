@@ -4,6 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
+import dd.kms.zenodot.api.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
@@ -183,7 +184,7 @@ public class OperatorResultProvider
 		addLogicalOperator(BinaryOperator.LOGICAL_OR,	(a, b) -> a || b);
 	}
 
-	private final ObjectInfoProvider 	objectInfoProvider;
+	private final ObjectInfoProvider objectInfoProvider;
 	private final boolean				evaluate;
 
 	public OperatorResultProvider(ObjectInfoProvider objectInfoProvider, boolean evaluate) {
