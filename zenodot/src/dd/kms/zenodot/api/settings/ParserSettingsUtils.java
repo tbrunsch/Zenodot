@@ -7,10 +7,6 @@ public class ParserSettingsUtils
 {
 	private static final ObjectTreeNode EMPTY_LEAF_NODE	= new dd.kms.zenodot.impl.settings.LeafObjectTreeNode(null, null);
 
-	public static ParserSettingsBuilder createBuilder() {
-		return new dd.kms.zenodot.impl.settings.ParserSettingsBuilderImpl();
-	}
-
 	public static Variable createVariable(String name, Object value, boolean useHardReference) {
 		return new dd.kms.zenodot.impl.settings.VariableImpl(name, InfoProvider.createObjectInfo(value), useHardReference);
 	}

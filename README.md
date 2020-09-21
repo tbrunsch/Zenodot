@@ -38,7 +38,7 @@ You should not use Zenodot if at least one of the following applies to you:
 The following example, taken from **SimpleExpressionSample.java**, shows how to evaluate an expression in Zenodot:
 
 ```
-ParserSettings settings = ParserSettingsUtils.createBuilder().build();
+ParserSettings settings = ParserSettingsBuilder.create().build();
 ExpressionParser parser = Parsers.createExpressionParser(settings);
 String expression = "Math.max(new int[]{ 2+3, 123/3, 1 << 4 }[1], (int) Math.round(2.718E2))";
 System.out.println("Result: " + parser.evaluate(expression, InfoProvider.NULL_LITERAL).getObject());
@@ -103,7 +103,7 @@ Zenodot implements most but not all unary and binary operators. The following op
 Expressions are evaluated in a certain context, also referred to as `thisValue` in the API. This context describes within which instance we pretend to be when evaluating the expression. This instance can referred to by the literal `this` in an expression and it can be omitted when accessing its fields or methods. Consider the following code taken from **ExpressionContextSample.java**:
 
 ```
-ParserSettings settings = ParserSettingsUtils.createBuilder().build();
+ParserSettings settings = ParserSettingsBuilder.create().build();
 String expression = "substring(4)";
 ObjectInfo thisValue = InfoProvider.createObjectInfo("Zenodot");
 ExpressionParser parser = Parsers.createExpressionParser(settings);
@@ -150,7 +150,7 @@ and the following parser code:
 ```
 TestClass testInstance = new TestClass();
 
-ParserSettings settings = ParserSettingsUtils.createBuilder().build();
+ParserSettings settings = ParserSettingsBuilder.create().build();
 ExpressionParser parser = Parsers.createExpressionParser(settings);
 String text = "list.get(0).le";
 ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
@@ -180,7 +180,7 @@ and the following parser code:
 ```
 TestClass testInstance = new TestClass();
 
-ParserSettings settings = ParserSettingsUtils.createBuilder().build();
+ParserSettings settings = ParserSettingsBuilder.create().build();
 ExpressionParser parser = Parsers.createExpressionParser(settings);
 
 // First evaluation: Evaluate "this.test" for context testInstance
@@ -200,7 +200,7 @@ In the first evaluation, Zenodot evaluates the expression "this.test", which ref
 
 # Parser Settings
 
-It is obligatory to create an instance of `ParserSettings` in order to create a parser. This instance is created via a `ParserSettingsBuilder`, which is returned by the factory method `ParserSettingsUtils.createBuilder()`. Several options are available:
+It is obligatory to create an instance of `ParserSettings` in order to create a parser. This instance is created via a `ParserSettingsBuilder`, which is returned by the factory method `ParserSettingsBuilder.create()`. Several options are available:
 
   - Completion mode: With the completion mode you can configure how code completions are generated. You can specify whether the whole word or only the word until the caret is considered for suggesting completions and whether only the word until the caret or the whole word is proposed to be replaced. Example: Consider the text "text" and assume that the caret is between "te" and "xt". Furthermore, assume that there are two potential completions "test" and "texture".
     * `CompletionMode.COMPLETE_AND_REPLACE_UNTIL_CARET`: The text "te" is completed. Both completions, "test" and "texture", are matching completions of "te". The completions suggest to replace the text "te". The new text would therefore be "testxt" or "texturext", respectively.
@@ -241,7 +241,7 @@ and the following parser code:
 ```
 TestClass testInstance = new TestClass();
 
-ParserSettings settings = ParserSettingsUtils.createBuilder()
+ParserSettings settings = ParserSettingsBuilder.create()
     .enableDynamicTyping(true)
     .build();
 String expression = "getObject().length()";
@@ -316,7 +316,7 @@ In real-life applications such hierarchies will by dynamic, so you will not hard
 No consider the following parser code:
 
 ```
-ParserSettings settings = ParserSettingsUtils.createBuilder()
+ParserSettings settings = ParserSettingsBuilder.create()
     .customHierarchyRoot(root)
     .build();
 ExpressionParser parser = Parsers.createExpressionParser(settings);

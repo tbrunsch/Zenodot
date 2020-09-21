@@ -6,6 +6,7 @@ import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.settings.ParserSettingsUtils;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
@@ -64,7 +65,7 @@ public class CustomHierarchySample
 			)
 		);
 
-		ParserSettings settings = ParserSettingsUtils.createBuilder()
+		ParserSettings settings = ParserSettingsBuilder.create()
 			.customHierarchyRoot(root)
 			.build();
 		ExpressionParser parser = Parsers.createExpressionParser(settings);

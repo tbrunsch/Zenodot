@@ -3,7 +3,7 @@ package dd.kms.zenodot.tests.completionTests;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import org.junit.Assert;
@@ -16,7 +16,7 @@ public class MethodTestSideEffect
 		TestClass testInstance = new TestClass();
 		String expression = "f(g(), s)";
 		int caretPosition = expression.length();
-		ParserSettings settings = ParserSettingsUtils.createBuilder().enableDynamicTyping(false).build();
+		ParserSettings settings = ParserSettingsBuilder.create().enableDynamicTyping(false).build();
 		try {
 			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
 			Parsers.createExpressionParser(settings).getCompletions(expression, caretPosition, thisValue);

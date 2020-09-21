@@ -10,11 +10,15 @@ import java.util.List;
 /**
  * Builder for {@link ParserSettings}<br/>
  * <br/>
- * You can either create a new builder via {@link ParserSettingsUtils#createBuilder()} or derive
+ * You can either create a new builder via {@link #create()} or derive
  * one from existing settings via {@link ParserSettings#builder()}.
  */
 public interface ParserSettingsBuilder
 {
+	static ParserSettingsBuilder create() {
+		return new dd.kms.zenodot.impl.settings.ParserSettingsBuilderImpl();
+	}
+
 	/**
 	 * Configure which text should be completed and which text should be overwritten by
 	 * the selected completion.

@@ -4,7 +4,7 @@ import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
@@ -25,7 +25,7 @@ public class ObjectInfoSetterSample
 	public static void main(String[] args) throws ParseException {
 		TestClass testInstance = new TestClass();
 
-		ParserSettings settings = ParserSettingsUtils.createBuilder().build();
+		ParserSettings settings = ParserSettingsBuilder.create().build();
 		ExpressionParser parser = Parsers.createExpressionParser(settings);
 
 		// First evaluation: Evaluate "this.test" for context testInstance

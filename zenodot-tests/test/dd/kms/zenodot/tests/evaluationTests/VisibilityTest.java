@@ -5,7 +5,6 @@ import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
 import dd.kms.zenodot.api.wrappers.ClassInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
@@ -51,7 +50,7 @@ public class VisibilityTest
 	}
 
 	private void testVisibility(boolean useQualifiedClass) {
-		ParserSettingsBuilder builder = ParserSettingsUtils.createBuilder().minimumAccessModifier(minimumAccessModifier);
+		ParserSettingsBuilder builder = ParserSettingsBuilder.create().minimumAccessModifier(minimumAccessModifier);
 		if (!useQualifiedClass) {
 			builder.importPackagesByName(Arrays.asList(VisibilityTestUtils.PACKAGE));
 		}

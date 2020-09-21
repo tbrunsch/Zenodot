@@ -5,7 +5,7 @@ import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 @RunWith(Parameterized.class)
 public class PredicateTest
 {
-	private static final ParserSettings	PARSER_SETTINGS	= ParserSettingsUtils.createBuilder().build();
+	private static final ParserSettings	PARSER_SETTINGS	= ParserSettingsBuilder.create().build();
 
 	@Parameterized.Parameters(name = "{0}")
 	public static Collection<Object> getSizes() {

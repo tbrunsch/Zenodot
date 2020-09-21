@@ -5,7 +5,7 @@ import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
@@ -24,7 +24,7 @@ public class GenericParameterTrackingSample
 	public static void main(String[] args) throws ParseException {
 		TestClass testInstance = new TestClass();
 
-		ParserSettings settings = ParserSettingsUtils.createBuilder().build();
+		ParserSettings settings = ParserSettingsBuilder.create().build();
 		ExpressionParser parser = Parsers.createExpressionParser(settings);
 		String text = "list.get(0).le";
 		ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);

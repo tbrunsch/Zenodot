@@ -8,7 +8,6 @@ import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.CodeCompletionType;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.tests.classesForTest.visibility.VisibilityTestUtils;
 import dd.kms.zenodot.tests.classesForTest.visibility.VisibilityTestUtils.EntityType;
@@ -53,7 +52,7 @@ public class VisibilityTest
 	}
 
 	private void testVisibility(boolean useQualifiedClass) throws ParseException {
-		ParserSettingsBuilder builder = ParserSettingsUtils.createBuilder().minimumAccessModifier(minimumAccessModifier);
+		ParserSettingsBuilder builder = ParserSettingsBuilder.create().minimumAccessModifier(minimumAccessModifier);
 		if (!useQualifiedClass) {
 			builder.importPackagesByName(Arrays.asList(VisibilityTestUtils.PACKAGE));
 		}

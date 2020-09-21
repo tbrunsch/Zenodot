@@ -17,6 +17,7 @@
 API changes:
 
   - changed package structure: all API classes are now in the package `dd.kms.zenodot.api`
+  - `ParserSettingsBuilder`s are now created via the method `ParserSettingsBuilder.create()` 
   - renamed `CompletionSuggestion` to `CodeCompletion` (same for corresponding package)
   - `CodeCompletion`s now provide a method `getRating()` that returns their rating
   - replaced method `MatchRating.getAccessMatch()` by method `MatchRating.isAccessDiscouraged()`

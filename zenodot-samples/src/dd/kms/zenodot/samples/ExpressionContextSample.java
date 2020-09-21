@@ -4,7 +4,7 @@ import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
@@ -14,7 +14,7 @@ import dd.kms.zenodot.api.wrappers.ObjectInfo;
 public class ExpressionContextSample
 {
 	public static void main(String[] args) throws ParseException {
-		ParserSettings settings = ParserSettingsUtils.createBuilder().build();
+		ParserSettings settings = ParserSettingsBuilder.create().build();
 		String expression = "substring(4)";
 		ObjectInfo thisValue = InfoProvider.createObjectInfo("Zenodot");
 		ExpressionParser parser = Parsers.createExpressionParser(settings);
