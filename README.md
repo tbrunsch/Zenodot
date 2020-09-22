@@ -6,8 +6,31 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
   - Parsing of custom variables
   - Parsing of individual hierarchies that are not reflected by regular Java syntax
 
-<!-- START doctoc -->
-<!-- END doctoc -->
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+# Table of Contents
+
+- [Target](#target)
+- [When not to use Zenodot](#when-not-to-use-zenodot)
+- [Example](#example)
+- [Features and Short Comings](#features-and-short-comings)
+  - [Code Completion](#code-completion)
+  - [Dynamic Typing](#dynamic-typing)
+  - [Custom Variables](#custom-variables)
+  - [Custom Hierarchies](#custom-hierarchies)
+  - [Generics](#generics)
+  - [Operators](#operators)
+- [Evaluation Context](#evaluation-context)
+- [Handling Code Completions](#handling-code-completions)
+- [Wrapper Classes](#wrapper-classes)
+  - [Tracking Parameters of Generic Types](#tracking-parameters-of-generic-types)
+  - [Tracking Object Origins](#tracking-object-origins)
+- [Parser Settings](#parser-settings)
+  - [Dynamic Typing Example](#dynamic-typing-example)
+  - [Custom Hierarchy Example](#custom-hierarchy-example)
+- [Open Source License Acknowledgement](#open-source-license-acknowledgement)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Target
 Zenodot has been developed to complement the traditional IDE-based debugging. The traditional debugging steps are as follows:
