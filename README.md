@@ -6,6 +6,9 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
   - Parsing of custom variables
   - Parsing of individual hierarchies that are not reflected by regular Java syntax
 
+<!-- START doctoc -->
+<!-- END doctoc -->
+
 # Target
 Zenodot has been developed to complement the traditional IDE-based debugging. The traditional debugging steps are as follows:
 
