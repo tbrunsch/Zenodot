@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.common.ConstructorScanner;
+import dd.kms.zenodot.api.common.ConstructorScannerBuilder;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.ClassParseResult;
 import dd.kms.zenodot.api.result.ObjectParseResult;
@@ -174,8 +175,15 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 	private List<ExecutableInfo> getConstructorInfos(TypeInfo constructorType) {
 		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
-		ConstructorScanner constructorScanner = new ConstructorScanner().minimumAccessModifier(minimumAccessModifier);
+		ConstructorScanner constructorScanner = getConstructorScanner();
 		return InfoProvider.getConstructorInfos(constructorType, constructorScanner);
+	}
+
+	private ConstructorScanner getConstructorScanner() {
+		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
+		return ConstructorScannerBuilder.create()
+			.minimumAccessModifier(minimumAccessModifier)
+			.build();
 	}
 
 	private static String formatConstructorInfo(ExecutableInfo constructorInfo) {

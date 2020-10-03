@@ -1,4 +1,6 @@
-package dd.kms.zenodot.api.common;
+package dd.kms.zenodot.impl.common;
+
+import dd.kms.zenodot.api.common.AccessModifier;
 
 import java.lang.reflect.Modifier;
 import java.util.function.IntPredicate;

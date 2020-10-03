@@ -1,7 +1,9 @@
 package dd.kms.zenodot.tests;
 
 import dd.kms.zenodot.api.common.FieldScanner;
+import dd.kms.zenodot.api.common.FieldScannerBuilder;
 import dd.kms.zenodot.api.common.MethodScanner;
+import dd.kms.zenodot.api.common.MethodScannerBuilder;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -48,10 +50,13 @@ public class ReflectionUtilsTest
 			}
 		}
 
-		for (boolean filterShadowedFields : Arrays.asList(true, false)) {
-			List<Field> actualFields = new FieldScanner().getFields(DerivedClass.class, filterShadowedFields);
+		for (boolean ignoreShadowedFields : Arrays.asList(true, false)) {
+			List<Field> actualFields = FieldScannerBuilder.create()
+				.ignoreShadowedFields(ignoreShadowedFields)
+				.build()
+				.getFields(DerivedClass.class);
 			String[] expectedFieldNamesDerived = { "e", "h", "y" };
-			String[] expectedFieldNamesBase = filterShadowedFields ? new String[]{ "w", "x", "z" } : new String[] { "w", "x", "y", "z" };
+			String[] expectedFieldNamesBase = ignoreShadowedFields ? new String[]{ "w", "x", "z" } : new String[] { "w", "x", "y", "z" };
 			List<Field> expectedFields = Stream.concat(
 				new FieldGenerator(DerivedClass.class).get(expectedFieldNamesDerived),
 				new FieldGenerator(BaseClass.class).get(expectedFieldNamesBase)
@@ -103,9 +108,11 @@ public class ReflectionUtilsTest
 
 		// We do not want to consider the methods MyBaseClass inherits from Object. This may differ
 		// between different Java versions and makes the test less understandable.
-		List<Method> actualMethods = new MethodScanner().getMethods(MyDerivedClass.class).stream()
-										.filter(method -> method.getDeclaringClass().getSimpleName().startsWith("My"))
-										.collect(Collectors.toList());
+		List<Method> actualMethods = MethodScannerBuilder.create()
+			.build()
+			.getMethods(MyDerivedClass.class).stream()
+			.filter(method -> method.getDeclaringClass().getSimpleName().startsWith("My"))
+			.collect(Collectors.toList());
 		List<Method> expectedMethods = Stream.concat(
 				new MethodGenerator(MyDerivedClass.class).get("f2", "f3", "f5", "f6"),
 				new MethodGenerator(MyBaseClass.class).get("f1", "f4", "f5", "f6")

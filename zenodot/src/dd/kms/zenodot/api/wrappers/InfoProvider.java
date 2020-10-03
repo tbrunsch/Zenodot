@@ -55,7 +55,7 @@ public class InfoProvider
 	}
 
 	public static List<FieldInfo> getFieldInfos(TypeInfo type, FieldScanner fieldScanner) {
-		List<Field> fields = fieldScanner.getFields(type.getRawType(), true);
+		List<Field> fields = fieldScanner.getFields(type.getRawType());
 		List<FieldInfo> fieldInfos = new ArrayList<>(fields.size());
 		for (Field field : fields) {
 			Class<?> declaringClass = field.getDeclaringClass();

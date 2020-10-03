@@ -4,6 +4,8 @@ import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.common.FieldScanner;
+import dd.kms.zenodot.api.common.FieldScannerBuilder;
+import dd.kms.zenodot.api.common.StaticMode;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.wrappers.FieldInfo;
@@ -81,17 +83,24 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		return new SyntaxException(error);
 	}
 
-	private FieldScanner getFieldScanner() {
+	private FieldScannerBuilder getFieldScannerBuilder() {
+		StaticMode staticMode = isContextStatic() ? StaticMode.STATIC : StaticMode.BOTH;
 		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
-		return new FieldScanner().staticOnly(isContextStatic()).minimumAccessModifier(minimumAccessModifier);
+		return FieldScannerBuilder.create()
+			.staticMode(staticMode)
+			.minimumAccessModifier(minimumAccessModifier);
+	}
+
+	private FieldScanner getFieldScanner() {
+		return getFieldScannerBuilder().build();
 	}
 
 	private FieldScanner getFieldScanner(String name, boolean considerMinimumAccessModifier) {
-		FieldScanner fieldScanner = getFieldScanner().name(name);
+		FieldScannerBuilder builder = getFieldScannerBuilder().name(name);
 		if (!considerMinimumAccessModifier) {
-			fieldScanner.minimumAccessModifier(AccessModifier.PRIVATE);
+			builder.minimumAccessModifier(AccessModifier.PRIVATE);
 		}
-		return fieldScanner;
+		return builder.build();
 	}
 
 	private List<FieldInfo> getFieldInfos(C context, FieldScanner fieldScanner) {
