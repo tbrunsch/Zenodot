@@ -3,6 +3,8 @@ package dd.kms.zenodot.impl.parsers;
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.common.MethodScanner;
+import dd.kms.zenodot.api.common.MethodScannerBuilder;
+import dd.kms.zenodot.api.common.StaticMode;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.wrappers.ExecutableInfo;
@@ -101,17 +103,24 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 		return new SyntaxException(error);
 	}
 
-	private MethodScanner getMethodScanner() {
+	private MethodScannerBuilder getMethodScannerBuilder() {
+		StaticMode staticMode = isContextStatic() ? StaticMode.STATIC : StaticMode.BOTH;
 		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
-		return new MethodScanner().staticOnly(isContextStatic()).minimumAccessModifier(minimumAccessModifier);
+		return MethodScannerBuilder.create()
+			.staticMode(staticMode)
+			.minimumAccessModifier(minimumAccessModifier);
+	}
+
+	private MethodScanner getMethodScanner() {
+		return getMethodScannerBuilder().build();
 	}
 
 	private MethodScanner getMethodScanner(String name, boolean considerMinimumAccessModifier) {
-		MethodScanner methodScanner = getMethodScanner().name(name);
+		MethodScannerBuilder builder = getMethodScannerBuilder().name(name);
 		if (!considerMinimumAccessModifier) {
-			methodScanner.minimumAccessModifier(AccessModifier.PRIVATE);
+			builder.minimumAccessModifier(AccessModifier.PRIVATE);
 		}
-		return methodScanner;
+		return builder.build();
 	}
 
 	private List<ExecutableInfo> getMethods(C context, MethodScanner methodScanner) {

@@ -1,4 +1,4 @@
-package dd.kms.zenodot.api.common;
+package dd.kms.zenodot.impl.common;
 
 import java.lang.reflect.Member;
 import java.util.Comparator;
