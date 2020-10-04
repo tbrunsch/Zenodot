@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.1
+
+  - `FieldScanner` and `MethodScanner` now also support searching only non-static fields and methods
+  - `ConstructorScanner`, `FieldScanner`, and `MethodScanner` are now immutable and are created via builders
+
+API changes:
+
+  - `ConstructorScanner`, `FieldScanner`, and `MethodScanner` now have to be instantiated via builder classes `ConstructorScannerBuilder`, `FieldScannerBuilder`, and `MethodScannerBuilder`
+
 ## v0.2.0
 
   - refactored and simplified internal workflow to minimize boilerplate code
