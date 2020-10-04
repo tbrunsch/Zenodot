@@ -34,13 +34,13 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 	}
 
 	@Override
-	public int getNumberOfArguments() {
-		return executable.getParameterCount();
+	public boolean isStatic() {
+		return Modifier.isStatic(executable.getModifiers());
 	}
 
 	@Override
-	public boolean isVariadic() {
-		return executable.isVarArgs();
+	public boolean isFinal() {
+		return Modifier.isFinal(executable.getModifiers());
 	}
 
 	@Override
@@ -54,8 +54,13 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 	}
 
 	@Override
-	public boolean isStatic() {
-		return Modifier.isStatic(executable.getModifiers());
+	public int getNumberOfArguments() {
+		return executable.getParameterCount();
+	}
+
+	@Override
+	public boolean isVariadic() {
+		return executable.isVarArgs();
 	}
 
 	@Override

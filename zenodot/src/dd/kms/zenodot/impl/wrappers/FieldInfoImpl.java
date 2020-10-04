@@ -24,11 +24,6 @@ public class FieldInfoImpl implements FieldInfo
 	}
 
 	@Override
-	public TypeInfo getType() {
-		return declaringType.resolveType(field.getGenericType());
-	}
-
-	@Override
 	public boolean isStatic() {
 		return Modifier.isStatic(field.getModifiers());
 	}
@@ -46,6 +41,11 @@ public class FieldInfoImpl implements FieldInfo
 	@Override
 	public TypeInfo getDeclaringType() {
 		return declaringType;
+	}
+
+	@Override
+	public TypeInfo getType() {
+		return declaringType.resolveType(field.getGenericType());
 	}
 
 	@Override
