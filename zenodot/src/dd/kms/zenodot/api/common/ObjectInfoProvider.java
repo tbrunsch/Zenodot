@@ -1,13 +1,31 @@
 package dd.kms.zenodot.api.common;
 
-import dd.kms.zenodot.api.wrappers.*;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import dd.kms.zenodot.api.wrappers.*;
+
 public class ObjectInfoProvider
 {
+	public static TypeInfo getRuntimeType(Object object, TypeInfo declaredType) {
+		if (object == null || object == InfoProvider.INDETERMINATE_VALUE) {
+			return declaredType;
+		}
+		return getRuntimeType(object.getClass(), declaredType);
+	}
+
+	public static TypeInfo getRuntimeType(Class<?> runtimeClass, TypeInfo declaredType) {
+		if (declaredType.isPrimitive()) {
+			return declaredType;
+		}
+		try {
+			return declaredType.getSubtype(runtimeClass);
+		} catch (Throwable t) {
+			return InfoProvider.createTypeInfo(runtimeClass);
+		}
+	}
+
 	private final boolean evaluate;
 
 	public ObjectInfoProvider(boolean evaluate) {
@@ -15,20 +33,7 @@ public class ObjectInfoProvider
 	}
 
 	public TypeInfo getType(Object object, TypeInfo declaredType) {
-		if (object == null || object == InfoProvider.INDETERMINATE_VALUE) {
-			return declaredType;
-		}
-
-		if (!evaluate || declaredType.isPrimitive()) {
-			return declaredType;
-		}
-
-		Class<?> runtimeClass = object.getClass();
-		try {
-			return declaredType.getSubtype(runtimeClass);
-		} catch (Throwable t) {
-			return InfoProvider.createTypeInfo(runtimeClass);
-		}
+		return evaluate ? getRuntimeType(object, declaredType) : declaredType;
 	}
 
 	public TypeInfo getType(ObjectInfo objectInfo) {
