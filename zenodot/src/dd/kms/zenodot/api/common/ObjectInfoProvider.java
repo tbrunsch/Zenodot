@@ -42,7 +42,7 @@ public class ObjectInfoProvider
 
 	public ObjectInfo getFieldValueInfo(Object contextObject, FieldInfo fieldInfo) {
 		Object fieldValue = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluate) {
+		if (evaluate && contextObject != InfoProvider.INDETERMINATE_VALUE) {
 			try {
 				fieldValue = fieldInfo.get(contextObject);
 			} catch (IllegalAccessException e) {
@@ -68,7 +68,7 @@ public class ObjectInfoProvider
 
 	public ObjectInfo getExecutableReturnInfo(Object contextObject, ExecutableInfo executableInfo, List<ObjectInfo> argumentInfos) throws InvocationTargetException, InstantiationException {
 		Object methodReturnValue = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluate) {
+		if (evaluate && contextObject != InfoProvider.INDETERMINATE_VALUE) {
 			Object[] arguments = executableInfo.createArgumentArray(argumentInfos);
 			try {
 				methodReturnValue = executableInfo.invoke(contextObject, arguments);
@@ -83,9 +83,9 @@ public class ObjectInfoProvider
 	public ObjectInfo getArrayElementInfo(ObjectInfo arrayInfo, ObjectInfo indexInfo) {
 		Object arrayElementValue = InfoProvider.INDETERMINATE_VALUE;
 		ObjectInfo.ValueSetter valueSetter = null;
-		if (evaluate) {
-			Object arrayObject = arrayInfo.getObject();
-			Object indexObject = indexInfo.getObject();
+		Object arrayObject = arrayInfo.getObject();
+		Object indexObject = indexInfo.getObject();
+		if (evaluate && arrayObject != InfoProvider.INDETERMINATE_VALUE && indexInfo != InfoProvider.INDETERMINATE_VALUE) {
 			int index = ReflectionUtils.convertTo(indexObject, int.class, false);
 			arrayElementValue = Array.get(arrayObject, index);
 			valueSetter = value -> Array.set(arrayObject, index, value);
@@ -96,7 +96,7 @@ public class ObjectInfoProvider
 
 	public ObjectInfo getArrayInfo(TypeInfo componentType, ObjectInfo sizeInfo) {
 		int size = 0;
-		if (evaluate) {
+		if (evaluate && sizeInfo != InfoProvider.INDETERMINATE_VALUE) {
 			Object sizeObject = sizeInfo.getObject();
 			size = ReflectionUtils.convertTo(sizeObject, int.class, false);
 		}
@@ -128,8 +128,9 @@ public class ObjectInfoProvider
 	}
 
 	public ObjectInfo getCastInfo(ObjectInfo objectInfo, TypeInfo targetType) throws ClassCastException {
-		Object castedValue = evaluate
-								? ReflectionUtils.convertTo(objectInfo.getObject(), targetType.getRawType(), true)
+		Object object = objectInfo.getObject();
+		Object castedValue = evaluate && object != InfoProvider.INDETERMINATE_VALUE
+								? ReflectionUtils.convertTo(object, targetType.getRawType(), true)
 								: InfoProvider.INDETERMINATE_VALUE;
 		return InfoProvider.createObjectInfo(castedValue, targetType);
 	}
