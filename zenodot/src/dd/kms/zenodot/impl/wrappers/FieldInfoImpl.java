@@ -1,7 +1,9 @@
 package dd.kms.zenodot.impl.wrappers;
 
 import dd.kms.zenodot.api.common.AccessModifier;
+import dd.kms.zenodot.api.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.wrappers.FieldInfo;
+import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 import java.lang.reflect.Field;
@@ -50,6 +52,9 @@ public class FieldInfoImpl implements FieldInfo
 
 	@Override
 	public Object get(Object instance) throws IllegalAccessException {
+		if (instance == InfoProvider.INDETERMINATE_VALUE) {
+			return InfoProvider.INDETERMINATE_VALUE;
+		}
 		field.setAccessible(true);
 		return field.get(instance);
 	}

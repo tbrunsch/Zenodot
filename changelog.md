@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.2
+
+  - Fixed several problems when dynamic typing and expression compilation are combined
+  - ObjectInfoProvider now provides a method getRuntimeType() to determine the runtime type of an object given its declared type
+
 ## v0.2.1
 
   - `FieldScanner` and `MethodScanner` now also support searching only non-static fields and methods

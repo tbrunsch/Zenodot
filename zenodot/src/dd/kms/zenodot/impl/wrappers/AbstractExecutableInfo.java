@@ -92,6 +92,9 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 
 	@Override
 	public Object invoke(Object instance, Object[] arguments) throws InvocationTargetException, IllegalAccessException, InstantiationException {
+		if (instance == InfoProvider.INDETERMINATE_VALUE) {
+			return InfoProvider.INDETERMINATE_VALUE;
+		}
 		executable.setAccessible(true);
 		return	executable instanceof Method			? ((Method) executable).invoke(instance, arguments) :
 				executable instanceof Constructor<?>	? ((Constructor<?>) executable).newInstance(arguments)

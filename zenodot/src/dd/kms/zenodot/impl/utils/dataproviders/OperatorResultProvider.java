@@ -217,7 +217,8 @@ public class OperatorResultProvider
 		if (primitiveClass != boolean.class) {
 			throw new OperatorException("Operator cannot be applied to '" + clazz + "'");
 		}
-		Object result = evaluate ? !((boolean) objectInfo.getObject()) : InfoProvider.INDETERMINATE_VALUE;
+		Object object = objectInfo.getObject();
+		Object result = evaluate && object != InfoProvider.INDETERMINATE_VALUE ? !((boolean) object) : InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -230,8 +231,8 @@ public class OperatorResultProvider
 		}
 		TypeInfo resultType = primitiveClass == long.class ? InfoProvider.createTypeInfo(long.class) : InfoProvider.createTypeInfo(int.class);
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluate) {
-			Object object = objectInfo.getObject();
+		Object object = objectInfo.getObject();
+		if (evaluate && object != InfoProvider.INDETERMINATE_VALUE) {
 			if (primitiveClass == long.class) {
 				result = ~ReflectionUtils.convertTo(object, long.class, false).longValue();
 			} else {
@@ -300,7 +301,11 @@ public class OperatorResultProvider
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
 			return applyPrimitiveComparisonOperator(lhs, rhs, BinaryOperator.EQUAL_TO);
 		}
-		Object result = evaluate ? lhs.getObject() == rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
+		Object lhsObject = lhs.getObject();
+		Object rhsObject = rhs.getObject();
+		Object result = evaluate && lhsObject != InfoProvider.INDETERMINATE_VALUE && rhsObject != InfoProvider.INDETERMINATE_VALUE
+							? lhsObject == rhsObject
+							: InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -311,7 +316,11 @@ public class OperatorResultProvider
 		if (isPrimitive(lhsClass) || isPrimitive(rhsClass)) {
 			return applyPrimitiveComparisonOperator(lhs, rhs, BinaryOperator.NOT_EQUAL_TO);
 		}
-		Object result = evaluate ? lhs.getObject() != rhs.getObject() : InfoProvider.INDETERMINATE_VALUE;
+		Object lhsObject = lhs.getObject();
+		Object rhsObject = rhs.getObject();
+		Object result = evaluate && lhsObject != InfoProvider.INDETERMINATE_VALUE && rhsObject != InfoProvider.INDETERMINATE_VALUE
+							? lhsObject != rhsObject
+							: InfoProvider.INDETERMINATE_VALUE;
 		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -350,9 +359,10 @@ public class OperatorResultProvider
 		}
 		TypeInfo declaredResultType = declaredLhsType;
 		Object resultObject = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluate) {
+		Object rhsObject = rhs.getObject();
+		if (evaluate && rhsObject != InfoProvider.INDETERMINATE_VALUE) {
 			try {
-				resultObject = rhs.getObject();
+				resultObject = rhsObject;
 				lhsValueSetter.setObject(resultObject);
 			} catch (IllegalArgumentException e) {
 				throw new OperatorException("Could assign value of type '" + rhsType + "' to left-hand side.");
@@ -368,8 +378,9 @@ public class OperatorResultProvider
 			throw new OperatorException("Cannot cast '" + lhsClass + "' to '" + rhs + "'");
 		}
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluate) {
-			result = rhs.getRawType().isInstance(lhs.getObject());
+		Object lhsObject = lhs.getObject();
+		if (evaluate && lhsObject != InfoProvider.INDETERMINATE_VALUE) {
+			result = rhs.getRawType().isInstance(lhsObject);
 		} else if (lhsClass == null) {
 			result = false;
 		}
@@ -428,9 +439,10 @@ public class OperatorResultProvider
 		}
 		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluate) {
+		Object object = objectInfo.getObject();
+		if (evaluate && object != InfoProvider.INDETERMINATE_VALUE) {
 			Function<Object, Object> operation = operatorInfo.getOperation();
-			result = operation.apply(objectInfo.getObject());
+			result = operation.apply(object);
 		}
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -444,9 +456,10 @@ public class OperatorResultProvider
 		Class<?> primitiveClass = getPrimitiveClass(clazz);
 		UnaryOperatorInfo operatorInfo = UNARY_OPERATOR_WITH_ASSIGNMENT_INFO_BY_OPERATOR_AND_TYPE.get(operator, primitiveClass);
 		ObjectInfo operatorResult = applyUnaryOperatorInfo(objectInfo, operatorInfo);
-		if (evaluate) {
+		Object operatorResultObject = operatorResult.getObject();
+		if (evaluate && operatorResultObject != InfoProvider.INDETERMINATE_VALUE) {
 			try {
-				Object resultObject = operatorResult.getObject();
+				Object resultObject = operatorResultObject;
 				valueSetter.setObject(resultObject);
 			} catch (IllegalArgumentException e) {
 				throw new OperatorException("Illegal argument exception when applying operator: " + e.getMessage());
@@ -502,9 +515,11 @@ public class OperatorResultProvider
 		}
 		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluate) {
+		Object lhsObject = lhs.getObject();
+		Object rhsObject = rhs.getObject();
+		if (evaluate && lhsObject != InfoProvider.INDETERMINATE_VALUE && rhsObject != InfoProvider.INDETERMINATE_VALUE) {
 			BiFunction<Object, Object, Object> operation = operatorInfo.getOperation();
-			result = operation.apply(lhs.getObject(), rhs.getObject());
+			result = operation.apply(lhsObject, rhsObject);
 		}
 		return InfoProvider.createObjectInfo(result, resultType);
 	}
@@ -518,9 +533,11 @@ public class OperatorResultProvider
 	private ObjectInfo concat(ObjectInfo lhs, ObjectInfo rhs) {
 		TypeInfo resultType = InfoProvider.createTypeInfo(String.class);
 		Object result = InfoProvider.INDETERMINATE_VALUE;
-		if (evaluate) {
-			String lhsAsString = getStringRepresentation(lhs.getObject());
-			String rhsAsString = getStringRepresentation(rhs.getObject());
+		Object lhsObject = lhs.getObject();
+		Object rhsObject = rhs.getObject();
+		if (evaluate && lhsObject != InfoProvider.INDETERMINATE_VALUE && rhsObject != InfoProvider.INDETERMINATE_VALUE) {
+			String lhsAsString = getStringRepresentation(lhsObject);
+			String rhsAsString = getStringRepresentation(rhsObject);
 			result = lhsAsString + rhsAsString;
 		}
 		return InfoProvider.createObjectInfo(result, resultType);
