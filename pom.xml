@@ -7,7 +7,7 @@
     <groupId>dd.kms.zenodot</groupId>
     <artifactId>zenodot-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.2.1</version>
+    <version>0.2.2</version>
     <name>Zenodot Maven Parent</name>
     <modules>
         <module>zenodot</module>
