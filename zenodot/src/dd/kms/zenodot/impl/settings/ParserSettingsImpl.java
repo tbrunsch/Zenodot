@@ -15,17 +15,17 @@ class ParserSettingsImpl implements ParserSettings
 	private final Imports			imports;
 	private final VariablePool 		variablePool;
 	private final AccessModifier	minimumAccessModifier;
-	private final boolean			enableDynamicTyping;
+	private final EvaluationMode	evaluationMode;
 	private final boolean 			considerAllClassesForClassCompletions;
 	private final ObjectTreeNode	customHierarchyRoot;
 	private final ParserLogger 		logger;
 
-	ParserSettingsImpl(CompletionMode completionMode, Set<ClassInfo> importedClasses, Set<PackageInfo> importedPackages, List<Variable> variables, AccessModifier minimumAccessModifier, boolean enableDynamicTyping, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
+	ParserSettingsImpl(CompletionMode completionMode, Set<ClassInfo> importedClasses, Set<PackageInfo> importedPackages, List<Variable> variables, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
 		this.completionMode = completionMode;
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
 		this.variablePool = new VariablePool(variables);
 		this.minimumAccessModifier = minimumAccessModifier;
-		this.enableDynamicTyping = enableDynamicTyping;
+		this.evaluationMode = evaluationMode;
 		this.considerAllClassesForClassCompletions = considerAllClassesForClassCompletions;
 		this.customHierarchyRoot = customHierarchyRoot;
 		this.logger = logger;
@@ -52,8 +52,8 @@ class ParserSettingsImpl implements ParserSettings
 	}
 
 	@Override
-	public boolean isEnableDynamicTyping() {
-		return enableDynamicTyping;
+	public EvaluationMode getEvaluationMode() {
+		return evaluationMode;
 	}
 
 	@Override

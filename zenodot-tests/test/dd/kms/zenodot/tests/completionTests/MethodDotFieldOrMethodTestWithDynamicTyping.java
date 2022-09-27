@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.completionTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -31,7 +32,7 @@ public class MethodDotFieldOrMethodTestWithDynamicTyping extends CompletionTest
 			.addTest("getObject().get",		"getInt()", getClass, "x", "xyz");
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.DYNAMIC_TYPING))
 			.addTest("getObject().",		"xy", "x", "xyz", "getDouble()", "getInt()")
 			.addTest("getObject().x",		"x", "xy", "xyz", "getDouble()", "getInt()")
 			.addTest("getObject().xy",		"xy", "xyz", "x", "getDouble()", "getInt()")

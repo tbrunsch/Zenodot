@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -32,7 +33,7 @@ public class AmbiguityTest extends EvaluationTest
 			.addTest("get(o2)",	testInstance.get(testInstance.o2));
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
 			.addTest("get(o1)", testInstance.get(testInstance.o1))
 			.addTest("get(o2)", testInstance.get((Float) testInstance.o2));
 

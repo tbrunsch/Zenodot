@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserConsoleLogger;
 import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.settings.Variable;
@@ -59,8 +60,8 @@ public class AbstractTestExecutor<T extends AbstractTestExecutor>
 		return getBuilder();
 	}
 
-	public T enableDynamicTyping() {
-		settingsBuilder.enableDynamicTyping(true);
+	public T evaluationMode(EvaluationMode evaluationMode) {
+		settingsBuilder.evaluationMode(evaluationMode);
 		return getBuilder();
 	}
 

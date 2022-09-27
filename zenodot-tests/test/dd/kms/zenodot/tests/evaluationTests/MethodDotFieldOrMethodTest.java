@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -39,7 +40,7 @@ public class MethodDotFieldOrMethodTest extends EvaluationTest
 			.addTestWithError("getTestClassAsObject().getString()");
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.DYNAMIC_TYPING))
 			.addTest("getTestClassAsObject().i",			7)
 			.addTest("getTestClassAsObject().d",			1.2)
 			.addTest("getTestClassAsObject().getString()",	"xyz");

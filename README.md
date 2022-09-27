@@ -92,6 +92,8 @@ Note that the completions returned by the parsers are unsorted since it is the c
 
 When inspecting the internal state of an object returned by a method, you sometimes have to cast it to its runtime type to be able to access its methods because they are not published via the declared type. To avoid such casts, you can activate dynamic typing. If this option is selected, then both, code completion and expression evaluation, ignore the declared type and use the runtime type of an object instead (see [Dynamic Typing Example](#dynamic-typing-example) for an example). Although this can be handy in some cases, you should be aware of the risks. If you call a method with side effects, then this side effect will also be triggered when requesting code completions or when evalutating an expression with a syntax error. Furthermore, method overloads can be resolved differently with static and dynamic typing.
 
+Zenodot also provides a hybrid between static and dynamic typing that avoids such side effects but provides all benefits of dynamic typing except for determining the return type of a method. This mode is called `EvaluationMode.MIXED`.  
+
 ## Custom Variables
 
 Zenodot allows you to declare variables that can be set and accessed in expressions. This can save some typing when repeatedly evaluating expressions in a certain context.
@@ -113,7 +115,7 @@ The generic handling is currently based on the [Reflection API](https://github.c
 However, there are some things that Zenodot can currently not do:
 
   1. You can only cast objects to raw types, not parameterized types. A cast `(List)` is perfectly fine, but a cast `(List<Integer>)` will not work.
-  1. Zenodot cannot deduce types: Without dynamic typing, the expression `java.util.Arrays.asList("a", "b", "c").get(0).length()` does not compile since Zenodot cannot infer that the created `List` is a `List` of `String`s.
+  1. Zenodot cannot deduce types: With static typing, the expression `java.util.Arrays.asList("a", "b", "c").get(0).length()` does not compile since Zenodot cannot infer that the created `List` is a `List` of `String`s.
   1. Zenodot allows calling a method that expects a `List` of `String`s with a `List` of `Integer`s. The reason is that, due to type erasure and the lack of type inference, Zenodot does not always have full generic type information. Since rejecting unresolved or only partially resolved types as method arguments will be wrong in some cases, we decided to ignore generic type parameters and only consider raw types when deciding whether a method may be called for a given list of arguments.  
   
 ## Operators
@@ -243,7 +245,7 @@ It is obligatory to create an instance of `ParserSettings` in order to create a 
     * For the sake of simplicity we decided that the accessibility of fields, methods, and constructors is independent of context the expression is evaluated in. If the minimum access modifier is `AccessModifier.PUBLIC`, then you cannot access protected fields, even if they are fields of the context.
     * The minimum access modifier is not considered when accessing classes. The reason is that we want to avoid loading classes only for determining their access modifier.
 
-  - Dynamic typing: You can specify whether to enable or disable dynamic typing. By default, it is disabled. See [Dynamic Typing](#dynamic-typing) for details and [Dynamic Typing Example](#dynamic-typing-example) for an example.
+  - Evaluation mode: You can specify how expressions are evaluated: With static typing, with dynamic typing, or with a hybrid. By default, the hybrid is selected. See [Dynamic Typing](#dynamic-typing) for details and [Dynamic Typing Example](#dynamic-typing-example) for an example.
   
   - Consider all classes for class completions: You can specify whether all top-level classes are considered for class completions. By default, they are not. When this option is enabled, then you also get code completions for classes you have not imported even if you only enter their simple name. Note that this option may take some time because all top-level classes will be considered. Additionally, this option does not make importing classes obsolete:
     * Simple names of classes that have not been imported are not valid when evaluating expressions. They are just considered for code completions.

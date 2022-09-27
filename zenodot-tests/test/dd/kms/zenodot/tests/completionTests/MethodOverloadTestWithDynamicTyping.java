@@ -1,6 +1,7 @@
 package dd.kms.zenodot.tests.completionTests;
 
 import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -27,7 +28,7 @@ public class MethodOverloadTestWithDynamicTyping extends CompletionTest
 			.addTestWithError("getTestClass(getTestClass(i)).", ParseException.class);
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.DYNAMIC_TYPING))
 			.addTest("getTestClass(getTestClass(i)).", "myInt")
 			.addTest("getTestClass(getTestClass(j)).", "myString");
 

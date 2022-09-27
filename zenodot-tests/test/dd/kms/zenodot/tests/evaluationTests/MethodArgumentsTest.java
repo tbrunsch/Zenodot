@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -34,7 +35,7 @@ public class MethodArgumentsTest extends EvaluationTest
 			.addTestWithError("objectAdd(i,objectAdd(i,d))");
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.DYNAMIC_TYPING))
 			.addTest("objectAdd(i,objectAdd(i,d))", 8.5);
 
 		return testBuilder.build();

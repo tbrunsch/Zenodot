@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -36,7 +37,7 @@ public class FieldArrayTest extends EvaluationTest
 			.addTestWithError("o[i3]");
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
 			.addTest("o[i0]", 1)
 			.addTest("o[i1]", 4)
 			.addTest("o[i2]", 3)

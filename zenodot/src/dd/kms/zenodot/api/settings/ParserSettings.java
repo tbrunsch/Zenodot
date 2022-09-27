@@ -16,7 +16,7 @@ public interface ParserSettings
 	Imports getImports();
 	List<Variable> getVariables();
 	AccessModifier getMinimumAccessModifier();
-	boolean isEnableDynamicTyping();
+	EvaluationMode getEvaluationMode();
 	boolean isConsiderAllClassesForClassCompletions();
 	ObjectTreeNode getCustomHierarchyRoot();
 	ParserLogger getLogger();

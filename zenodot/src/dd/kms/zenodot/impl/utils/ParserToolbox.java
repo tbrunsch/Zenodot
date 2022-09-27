@@ -3,6 +3,7 @@ package dd.kms.zenodot.impl.utils;
 import dd.kms.zenodot.api.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.result.ParseResult;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -41,15 +42,15 @@ public class ParserToolbox
 
 		logger	= new InternalLogger(settings.getLogger());
 
-		boolean evaluate = settings.isEnableDynamicTyping();
+		EvaluationMode evaluationMode = settings.getEvaluationMode();
 
-		objectInfoProvider				= new ObjectInfoProvider(evaluate);
+		objectInfoProvider				= new ObjectInfoProvider(evaluationMode);
 
 		classDataProvider				= new ClassDataProvider(this);
 		executableDataProvider			= new ExecutableDataProvider(this);
 		fieldDataProvider				= new FieldDataProvider(this);
 		objectTreeNodeDataProvider		= new ObjectTreeNodeDataProvider();
-		operatorResultProvider 			= new OperatorResultProvider(objectInfoProvider, evaluate);
+		operatorResultProvider 			= new OperatorResultProvider(objectInfoProvider, evaluationMode);
 		variableDataProvider			= new VariableDataProvider(settings.getVariables(), objectInfoProvider);
 	}
 

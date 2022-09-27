@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.completionTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -31,7 +32,7 @@ public class GenericsTest extends CompletionTest
 			.addTest("testSetString(",		"collListInt", "collListString", "collSetInt", "collSetString", "listInt", "listString");	// no class match, so fields ordered lexicographically
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
 			.addTest("testCollInt(",		"collListInt", "collSetInt", "listInt")
 			.addTest("testCollString(",		"collListString", "collSetString", "listString")
 			.addTest("testListInt(",		"collListInt", "listInt")

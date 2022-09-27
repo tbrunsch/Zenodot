@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserConsoleLogger;
 import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.settings.Variable;
@@ -12,12 +13,18 @@ import org.junit.Assert;
 
 import java.util.Arrays;
 
+/**
+ * This test uses {@link EvaluationMode#STATIC_TYPING} by default.
+ */
 public class AbstractTest<T extends AbstractTest>
 {
 	public static final boolean	SKIP_UNSTABLE_TESTS	= "true".equalsIgnoreCase(System.getProperty("skipUnstableTests"));
 
 	protected final Object					testInstance;
-	protected final ParserSettingsBuilder	settingsBuilder			= ParserSettingsBuilder.create().minimumAccessModifier(AccessModifier.PRIVATE);
+	protected final ParserSettingsBuilder	settingsBuilder			= ParserSettingsBuilder.create()
+																			.minimumAccessModifier(AccessModifier.PRIVATE)
+																			.evaluationMode(EvaluationMode.STATIC_TYPING);
+
 
 	private boolean							stopAtError				= false;
 	private boolean							printLogEntriesAtError	= false;
@@ -50,8 +57,8 @@ public class AbstractTest<T extends AbstractTest>
 		settingsBuilder.customHierarchyRoot(root);
 	}
 
-	public void enableDynamicTyping() {
-		settingsBuilder.enableDynamicTyping(true);
+	public void evaluationMode(EvaluationMode evaluationMode) {
+		settingsBuilder.evaluationMode(evaluationMode);
 	}
 
 	public void enableConsideringAllClassesForClassCompletions() {

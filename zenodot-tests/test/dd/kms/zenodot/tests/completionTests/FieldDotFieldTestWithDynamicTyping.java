@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.completionTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -29,7 +30,7 @@ public class FieldDotFieldTestWithDynamicTyping extends CompletionTest
 			.addTest("member.xyz",	"xyz", "x");
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
 			.addTest("member.",		"xy", "x", "xyz")
 			.addTest("member.x",	"x", "xy", "xyz")
 			.addTest("member.xy",	"xy", "xyz", "x")

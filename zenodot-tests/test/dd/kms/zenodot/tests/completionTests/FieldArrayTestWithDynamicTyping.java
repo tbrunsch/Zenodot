@@ -1,6 +1,7 @@
 package dd.kms.zenodot.tests.completionTests;
 
 import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -27,13 +28,13 @@ public class FieldArrayTestWithDynamicTyping extends CompletionTest
 			.addTestWithError("array[", ParseException.class);
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
 			.addTest("array[",		"i0", "i1", "i2")
 			.addTest("array[i0].",	"value")
 			.addTest("array[i1].",	"index");
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
 			.addTestWithError("array[i2].",					ParseException.class)
 			.addTestWithError("array[array[i1].index].",	ParseException.class);
 

@@ -2,6 +2,7 @@ package dd.kms.zenodot.tests.completionTests;
 
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.common.AccessModifier;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -36,7 +37,7 @@ public class ExceptionTest extends CompletionTest
 			.addTestWithError("x = 2.0", ParseException.class);
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.DYNAMIC_TYPING))
 			.addTestWithError("doSomething(getInt(s), ",	ParseException.class)
 			.addTestWithError("doSomething(++i)",			ParseException.class)
 			.addTestWithError("new TestClass('c').",		ParseException.class);

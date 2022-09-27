@@ -6,6 +6,7 @@ import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
 import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.api.wrappers.TypeInfo;
@@ -47,8 +48,8 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 		} catch (Throwable t) {
 			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
-		return settings.isEnableDynamicTyping()
-			? parseResult.getObjectInfo()
+		return settings.getEvaluationMode() == EvaluationMode.DYNAMIC_TYPING
+			? parseResult.getObjectInfo()					// everything has already been evaluated
 			: parseResult.evaluate(thisValue, thisValue);
 	}
 

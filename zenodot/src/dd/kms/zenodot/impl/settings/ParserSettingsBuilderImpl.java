@@ -20,7 +20,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	private Set<PackageInfo>	importedPackages;
 	private List<Variable>		variables;
 	private AccessModifier		minimumAccessModifier;
-	private boolean				enableDynamicTyping;
+	private EvaluationMode		evaluationMode;
 	private boolean				considerAllClassesForClassCompletions;
 	private ObjectTreeNode		customHierarchyRoot;
 	private ParserLogger		logger;
@@ -31,7 +31,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		importedPackages = ImmutableSet.of();
 		variables = ImmutableList.of();
 		minimumAccessModifier = AccessModifier.PUBLIC;
-		enableDynamicTyping = false;
+		evaluationMode = EvaluationMode.MIXED;
 		considerAllClassesForClassCompletions = false;
 		customHierarchyRoot = ParserSettingsUtils.createEmptyLeafNode();
 		logger = ParserLoggers.createNullLogger();
@@ -43,7 +43,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		importedPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackages());
 		variables = ImmutableList.copyOf(settings.getVariables());
 		minimumAccessModifier = settings.getMinimumAccessModifier();
-		enableDynamicTyping = settings.isEnableDynamicTyping();
+		evaluationMode = settings.getEvaluationMode();
 		considerAllClassesForClassCompletions = settings.isConsiderAllClassesForClassCompletions();
 		customHierarchyRoot = settings.getCustomHierarchyRoot();
 		logger = settings.getLogger();
@@ -56,7 +56,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilderImpl importClasses(Iterable<ClassInfo> classes) {
+	public ParserSettingsBuilder importClasses(Iterable<ClassInfo> classes) {
 		importedClasses = ImmutableSet.copyOf(classes);
 		return this;
 	}
@@ -72,7 +72,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilderImpl importPackages(Iterable<PackageInfo> packages) {
+	public ParserSettingsBuilder importPackages(Iterable<PackageInfo> packages) {
 		importedPackages = ImmutableSet.copyOf(packages);
 		return this;
 	}
@@ -88,20 +88,20 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilderImpl variables(List<Variable> variables) {
+	public ParserSettingsBuilder variables(List<Variable> variables) {
 		this.variables = ImmutableList.copyOf(variables);
 		return this;
 	}
 
 	@Override
-	public ParserSettingsBuilderImpl minimumAccessModifier(AccessModifier minimumAccessModifier) {
+	public ParserSettingsBuilder minimumAccessModifier(AccessModifier minimumAccessModifier) {
 		this.minimumAccessModifier = minimumAccessModifier;
 		return this;
 	}
 
 	@Override
-	public ParserSettingsBuilderImpl enableDynamicTyping(boolean enableDynamicTyping) {
-		this.enableDynamicTyping = enableDynamicTyping;
+	public ParserSettingsBuilder evaluationMode(EvaluationMode evaluationMode) {
+		this.evaluationMode = evaluationMode;
 		return this;
 	}
 
@@ -112,18 +112,18 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilderImpl customHierarchyRoot(ObjectTreeNode customHierarchyRoot) {
+	public ParserSettingsBuilder customHierarchyRoot(ObjectTreeNode customHierarchyRoot) {
 		this.customHierarchyRoot = customHierarchyRoot;
 		return this;
 	}
 
 	@Override
-	public ParserSettingsBuilderImpl logger(ParserLogger logger) {
+	public ParserSettingsBuilder logger(ParserLogger logger) {
 		this.logger = logger;
 		return this;
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, variables, minimumAccessModifier, enableDynamicTyping, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
+		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, variables, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
 	}
 }

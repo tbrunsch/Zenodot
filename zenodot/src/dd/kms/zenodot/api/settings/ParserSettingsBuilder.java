@@ -58,13 +58,10 @@ public interface ParserSettingsBuilder
 	ParserSettingsBuilder minimumAccessModifier(AccessModifier minimumAccessModifier);
 
 	/**
-	 * Enable dynamic typing to consider runtime types instead of declared types during code completion
-	 * and expression evaluation.<br/>
-	 * <br/>
-	 * This can save cumbersome type casts at the risk of unintended side effects or method overload resolutions
-	 * deviating from those based on declared type.
+	 * Specify how expressions are evaluated, also during code completion. See the different values of
+	 * {@link EvaluationMode} for more details.
 	 */
-	ParserSettingsBuilder enableDynamicTyping(boolean enableDynamicTyping);
+	ParserSettingsBuilder evaluationMode(EvaluationMode evaluationMode);
 
 	/**
 	 * By default, when typing an unqualified class name, only classes you have imported or whose package is

@@ -10,6 +10,7 @@ import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.ClassParseResult;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.api.wrappers.TypeInfo;
@@ -140,7 +141,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 			int operatorPrecedenceLevelForNextOperand = operator.getPrecedenceLevel() - (associativity == Associativity.LEFT_TO_RIGHT ? 1 : 0);
 
 			if (considerOperatorResult && stopCircuitEvaluation(accumulatedResultInfo, operator)) {
-				parserToolbox = deriveToolboxWithoutEvaluation(parserToolbox);
+				parserToolbox = deriveToolboxWithoutSideEffects(parserToolbox);
 				considerOperatorResult = false;
 			}
 			log(LogLevel.INFO, "parsing next operand");
@@ -190,13 +191,15 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 			|| operator == BinaryOperator.LOGICAL_OR	&& Boolean.TRUE.equals(objectInfo.getObject());
 	}
 
-	private ParserToolbox deriveToolboxWithoutEvaluation(ParserToolbox parserToolbox) {
+	private ParserToolbox deriveToolboxWithoutSideEffects(ParserToolbox parserToolbox) {
 		ParserSettings settings = parserToolbox.getSettings();
-		if (!settings.isEnableDynamicTyping()) {
+		if (settings.getEvaluationMode() != EvaluationMode.DYNAMIC_TYPING) {
 			return parserToolbox;
 		}
-		ParserSettings settingsWithoutEvaluation = settings.builder().enableDynamicTyping(false).build();
-		return new ParserToolbox(parserToolbox.getThisInfo(), settingsWithoutEvaluation);
+		ParserSettings settingsWithoutSideEffects = settings.builder()
+			.evaluationMode(EvaluationMode.MIXED)
+			.build();
+		return new ParserToolbox(parserToolbox.getThisInfo(), settingsWithoutSideEffects);
 	}
 
 	@FunctionalInterface

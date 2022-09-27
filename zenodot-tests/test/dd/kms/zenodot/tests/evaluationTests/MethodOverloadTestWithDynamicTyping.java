@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -27,12 +28,12 @@ public class MethodOverloadTestWithDynamicTyping extends EvaluationTest
 			.addTestWithError("getTestClass(getTestClass(j)).myString");
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.DYNAMIC_TYPING))
 			.addTest("getTestClass(getTestClass(i)).myInt",		7)
 			.addTest("getTestClass(getTestClass(j)).myString",	"abc");
 
 		testBuilder
-			.configurator(test -> test.enableDynamicTyping())
+			.configurator(test -> test.evaluationMode(EvaluationMode.DYNAMIC_TYPING))
 			.addTestWithError("getTestClass(getTestClass(i)).myString")
 			.addTestWithError("getTestClass(getTestClass(j)).myInt");
 

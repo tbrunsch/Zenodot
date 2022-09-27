@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.0
+
+  - A new evaluation mode has been added that has some advantages of dynamic typing but prevents side effects during code completion and when the expression evaluation cannot be evaluated correctly. Instead of enabling/disabling dynamic typing via `ParserSettingsBuilder.enableDynamicTyping()`, you now specify the evalutation mode via `ParserSettingsBuilder.evaluationMode()`. The new evaluation mode is now the default.
+
 ## v0.2.2
 
   - Fixed several problems when dynamic typing and expression compilation are combined
