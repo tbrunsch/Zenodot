@@ -1,10 +1,8 @@
 package dd.kms.zenodot.impl.wrappers;
 
 import dd.kms.zenodot.api.common.AccessModifier;
-import dd.kms.zenodot.api.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.wrappers.FieldInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -12,11 +10,9 @@ import java.util.Objects;
 
 public class FieldInfoImpl implements FieldInfo
 {
-	private final TypeInfo declaringType;
 	private final Field		field;
 
-	public FieldInfoImpl(TypeInfo declaringType, Field field) {
-		this.declaringType = declaringType;
+	public FieldInfoImpl(Field field) {
 		this.field = field;
 	}
 
@@ -41,13 +37,13 @@ public class FieldInfoImpl implements FieldInfo
 	}
 
 	@Override
-	public TypeInfo getDeclaringType() {
-		return declaringType;
+	public Class<?> getDeclaringClass() {
+		return field.getDeclaringClass();
 	}
 
 	@Override
-	public TypeInfo getType() {
-		return declaringType.resolveType(field.getGenericType());
+	public Class<?> getType() {
+		return field.getType();
 	}
 
 	@Override
@@ -70,13 +66,12 @@ public class FieldInfoImpl implements FieldInfo
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		FieldInfoImpl fieldInfo = (FieldInfoImpl) o;
-		return Objects.equals(field, fieldInfo.field) &&
-				Objects.equals(declaringType, fieldInfo.declaringType);
+		return Objects.equals(field, fieldInfo.field);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(field, declaringType);
+		return Objects.hash(field);
 	}
 
 	@Override

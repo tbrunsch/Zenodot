@@ -35,9 +35,9 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
 # Target
 Zenodot has been developed to complement the traditional IDE-based debugging. The traditional debugging steps are as follows:
 
-  1. Set a break point at an appropriate position in the source code
-  1. Define a condition for that break point to reduce the number of irrelevant stops
-  1. Trigger an event in the application to make the debugger stop at that break point
+  1. Set a breakpoint at an appropriate position in the source code
+  1. Define a condition for that breakpoint to reduce the number of irrelevant stops
+  1. Trigger an event in the application to make the debugger stop at that breakpoint
   1. Evaluate an expression in the desired context
 
 While this kind of debugging is very powerful with a modern IDE, it can be a bit frustrating to perform all these steps just to recover the object in the debugging process one has already found in the application.
@@ -107,17 +107,7 @@ Zenodot extends the Java syntax to allow for parsing a custom hierarchy. The onl
 **Example:** Assume that you have a document viewer application that has loaded this document. It might store the content in a hierarchy with sections on the first level, subsections on the second level, and so one. Let us assume that we want to evaluate the object behind this section, i.e., the section "Features and Short Comings" -> "Custom Hierarchies". A classic approach would be to call `getSection(4).getSubsection(3)`. As you can imagine, handling the indices, which is only a technical detail, will become troublesome in large trees. However, if you have configured Zenodot correctly, then you can also write `{Features and Short Comings#Custom Hierarchies}` to reference the same node in your tree. This is much more readable and less error-prone. (Also note the spaces inside the node names.) Furthermore, you can, e.g., request code completion after typing `{Features and Short Comings#Custom`. The result will be `Custom Variables` and `Custom Hierarchies`.
 
 See [Custom Hierarchy Example](#custom-hierarchy-example) to see how to use custom hierarchies in Zenodot.
-
-## Generics
-
-The generic handling is currently based on the [Reflection API](https://github.com/google/guava/wiki/ReflectionExplained) of [Google Guava](https://github.com/google/guava). Due to type erasure, it is not possible to determine the parameters of parameterized types at runtime in general. However, it is possible to determine parameters when the declared type is known. If, e.g., it is known that an object is returned by a method that returns a `Collection<Integer>`, then the parameter `Integer` will be preserved. If the runtime type of the object is `ArrayList`, then Zenodot can even conclude that the actual type is `ArrayList<Integer>`. See [Tracking Parameters of Generic Types](#tracking-parameters-of-generic-types) for an example.
-
-However, there are some things that Zenodot can currently not do:
-
-  1. You can only cast objects to raw types, not parameterized types. A cast `(List)` is perfectly fine, but a cast `(List<Integer>)` will not work.
-  1. Zenodot cannot deduce types: With static typing, the expression `java.util.Arrays.asList("a", "b", "c").get(0).length()` does not compile since Zenodot cannot infer that the created `List` is a `List` of `String`s.
-  1. Zenodot allows calling a method that expects a `List` of `String`s with a `List` of `Integer`s. The reason is that, due to type erasure and the lack of type inference, Zenodot does not always have full generic type information. Since rejecting unresolved or only partially resolved types as method arguments will be wrong in some cases, we decided to ignore generic type parameters and only consider raw types when deciding whether a method may be called for a given list of arguments.  
-  
+ 
 ## Operators
 
 Zenodot implements most but not all unary and binary operators. The following operators are currently not supported:
@@ -155,42 +145,11 @@ If the interface `CodeCompletion` does not provide sufficient information becaus
 
 Zenodot uses wrapper classes for all kinds of relevant entities. These wrapper classes carry additional information and allow future extensions without breaking the API. The following wrapper classes are most relevant:
 
-  - `TypeInfo`: A `TypeInfo` is comparable to Guava's `TypeToken` (currently it simply wraps it). Due to type erasure, parameters of generic types are lost at runtime. However, parameters of declared types are still available at runtime. The `TypeInfo` class tracks as much information as possible about generic type parameters in order to improve the quality of code completions.
-  - `ObjectInfo`: An `ObjectInfo` does not only carry information about an object, but also about its declared type. From the declared type it is possible to derive parameters of generic runtime types to some extent. Additionally, an `ObjectInfo` carries information about where an object comes from. If it comes from a non-final field, it also carries a setter that allows modifying that field.
+  - `ObjectInfo`: An `ObjectInfo` does not only carry information about an object, but also about its declared type. Additionally, an `ObjectInfo` carries information about where an object comes from. If it comes from a non-final field, it also carries a setter that allows modifying that field.
   - `ClassInfo`: A `ClassInfo` is more or less a plain String describing a class. Zenodot uses this wrapper class instead of a `Class<?>` instance in order to prevent loading classes unnecessarily. Whenever the real class object is needed, it suffices to call `Class.forName()` for the normalized name stored in a `ClassInfo`.
   - `PackageInfo`: A `PackageInfo` simply wraps a String describing a package. Call `Package.getPackage()` for the package name stored in that wrapper to obtain the corresponding `Package` object.
 
 Whenever you need to create on of these wrapper classes, you have to use the utility class `InfoProvider`. Note that this class also contains some static constants. The constant `InfoProvider.NULL_LITERAL`, e.g., describes `null`.
-
-## Tracking Parameters of Generic Types
-
-**GenericParameterTrackingSample.java:** Consider the test class
-
-```
-static class TestClass
-{
-    public final List<String> list = Arrays.asList("This", "is", "a", "list", "of", "strings", ".");
-}
-```
-
-and the following parser code:
-
-```
-TestClass testInstance = new TestClass();
-
-ParserSettings settings = ParserSettingsBuilder.create().build();
-ExpressionParser parser = Parsers.createExpressionParser(settings);
-String text = "list.get(0).le";
-ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
-List<CodeCompletion> completions = new ArrayList<>(parser.getCompletions(text, text.length(), thisValue));
-Collections.sort(completions, Parsers.COMPLETION_COMPARATOR);
-
-System.out.println(completions.get(0).getTextToInsert());
-```
-
-An instance of `TestClass` is used as the context in which the expression "list.get(0).le" is parsed. Code completion is requested at the end of the expression. The completions are finally sorted according to Zenodot's default comparator for code completions and the best match is printed.
-
-This code prints "length()" to the console. This shows that Zenodot is tracking parameters of generic runtime types: The runtime type of "list", which refers to the field `list` of the context `testInstance`, is `Arrays.ArrayList`. Its parameter class `String` is lost due to type erasure. However, Zenodot can deduce this parameter from the declared type `List<String>` of the field `list`. This is the reason why Zenodot can deduce that "list.get(0)" is a `String` and not only an `Object` and, hence, suggests the code completion "length()". Note that this works without enabling dynamic typing.
 
 ## Tracking Object Origins
 

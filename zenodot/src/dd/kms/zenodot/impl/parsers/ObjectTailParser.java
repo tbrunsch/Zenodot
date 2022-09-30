@@ -7,7 +7,6 @@ import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.result.ParseResult;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -57,13 +56,13 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		}
 
 		// array access
-		TypeInfo currentContextType = parserToolbox.getObjectInfoProvider().getType(contextInfo);
-		TypeInfo elementType = currentContextType.getComponentType();
+		Class<?> currentContextType = parserToolbox.getObjectInfoProvider().getType(contextInfo);
+		Class<?> elementType = currentContextType.getComponentType();
 		if (elementType == InfoProvider.NO_TYPE) {
 			throw new SyntaxException("Cannot apply [] to non-array types");
 		}
 
-		ObjectParseResultExpectation indexExpectation = new ObjectParseResultExpectation(ImmutableList.of(InfoProvider.createTypeInfo(int.class)), true);
+		ObjectParseResultExpectation indexExpectation = new ObjectParseResultExpectation(ImmutableList.of(int.class), true);
 		ObjectParseResult indexParseResult = parseArrayIndex(tokenStream, indexExpectation);
 		ObjectInfo indexInfo = indexParseResult.getObjectInfo();
 		ObjectInfo elementInfo;

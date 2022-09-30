@@ -11,7 +11,6 @@ import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.wrappers.ExecutableInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -57,7 +56,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
 		ClassParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
-		TypeInfo type = classParseResult.getType();
+		Class<?> type = classParseResult.getType();
 
 		char nextChar = tokenStream.readCharacter('(', '[');
 		switch (nextChar) {
@@ -70,10 +69,9 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 	}
 
-	private ObjectParseResult parseObjectConstructor(TokenStream tokenStream, TypeInfo constructorType) throws SyntaxException, InternalErrorException, CodeCompletionException, EvaluationException {
-		Class<?> constructorClass = constructorType.getRawType();
-		if (constructorClass.getEnclosingClass() != null && !Modifier.isStatic(constructorClass.getModifiers())) {
-			throw new SyntaxException("Cannot instantiate non-static inner class '" + constructorClass.getName() + "'");
+	private ObjectParseResult parseObjectConstructor(TokenStream tokenStream, Class<?> constructorType) throws SyntaxException, InternalErrorException, CodeCompletionException, EvaluationException {
+		if (constructorType.getEnclosingClass() != null && !Modifier.isStatic(constructorType.getModifiers())) {
+			throw new SyntaxException("Cannot instantiate non-static inner class '" + constructorType.getName() + "'");
 		}
 		List<ExecutableInfo> constructorInfos = getConstructorInfos(constructorType);
 
@@ -93,7 +91,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 					log(LogLevel.SUCCESS, "found unique matching constructor");
 					constructorReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(null, bestMatchingConstructorInfo, argumentInfos);
 				} catch (Exception e) {
-					throw new EvaluationException("Error when trying to invoke constructor of '" + constructorClass.getSimpleName() + "': " + e.getMessage(), e);
+					throw new EvaluationException("Error when trying to invoke constructor of '" + constructorType.getSimpleName() + "': " + e.getMessage(), e);
 				}
 				return new ObjectConstructorParseResult(bestMatchingConstructorInfo, argumentResults, constructorReturnInfo, tokenStream);
 			}
@@ -105,7 +103,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 	}
 
-	private ObjectParseResult parseArrayConstructor(TokenStream tokenStream, TypeInfo componentType) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
+	private ObjectParseResult parseArrayConstructor(TokenStream tokenStream, Class<?> componentType) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		// TODO: currently, only 1d arrays are supported
 		@Nullable ObjectParseResult arraySizeParseResult = parseArraySize(tokenStream);
 		if (arraySizeParseResult == null) {
@@ -140,7 +138,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			return null;
 		}
 
-		ObjectParseResultExpectation sizeExpectation = new ObjectParseResultExpectation(ImmutableList.of(InfoProvider.createTypeInfo(int.class)), true);
+		ObjectParseResultExpectation sizeExpectation = new ObjectParseResultExpectation(ImmutableList.of(int.class), true);
 		ObjectParseResult arraySizeParseResult = parserToolbox.createExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), sizeExpectation);
 
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
@@ -173,7 +171,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		return elements;
 	}
 
-	private List<ExecutableInfo> getConstructorInfos(TypeInfo constructorType) {
+	private List<ExecutableInfo> getConstructorInfos(Class<?> constructorType) {
 		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
 		ConstructorScanner constructorScanner = getConstructorScanner();
 		return InfoProvider.getConstructorInfos(constructorType, constructorScanner);
@@ -216,10 +214,10 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 	private static class ArrayConstructorWithInitializerListParseResult extends AbstractObjectParseResult
 	{
-		private final TypeInfo					componentType;
+		private final Class<?>					componentType;
 		private final List<ObjectParseResult>	elementParseResults;
 
-		ArrayConstructorWithInitializerListParseResult(TypeInfo componentType, List<ObjectParseResult> elementParseResults, ObjectInfo arrayInfo, TokenStream tokenStream) {
+		ArrayConstructorWithInitializerListParseResult(Class<?> componentType, List<ObjectParseResult> elementParseResults, ObjectInfo arrayInfo, TokenStream tokenStream) {
 			super(arrayInfo, tokenStream);
 			this.componentType = componentType;
 			this.elementParseResults = elementParseResults;
@@ -237,10 +235,10 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 	private static class ArrayConstructorWithDefaultInitializationParseResult extends AbstractObjectParseResult
 	{
-		private final TypeInfo			componentType;
+		private final Class<?>			componentType;
 		private final ObjectParseResult	sizeParseResult;
 
-		ArrayConstructorWithDefaultInitializationParseResult(TypeInfo componentType, ObjectParseResult sizeParseResult, ObjectInfo arrayInfo, TokenStream tokenStream) {
+		ArrayConstructorWithDefaultInitializationParseResult(Class<?> componentType, ObjectParseResult sizeParseResult, ObjectInfo arrayInfo, TokenStream tokenStream) {
 			super(arrayInfo, tokenStream);
 			this.componentType = componentType;
 			this.sizeParseResult = sizeParseResult;

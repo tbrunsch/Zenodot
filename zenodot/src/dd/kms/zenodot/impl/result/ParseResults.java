@@ -7,14 +7,13 @@ import dd.kms.zenodot.api.result.PackageParseResult;
 import dd.kms.zenodot.api.wrappers.ExecutableInfo;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.api.wrappers.PackageInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 
 import java.util.Map;
 
 public class ParseResults
 {
-	public static ClassParseResult createClassParseResult(TypeInfo type) {
+	public static ClassParseResult createClassParseResult(Class<?> type) {
 		return new ClassParseResultImpl(type);
 	}
 

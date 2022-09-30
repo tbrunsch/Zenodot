@@ -1,7 +1,6 @@
 package dd.kms.zenodot.api.settings;
 
 import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 public class ParserSettingsUtils
 {
@@ -11,7 +10,7 @@ public class ParserSettingsUtils
 		return new dd.kms.zenodot.impl.settings.VariableImpl(name, InfoProvider.createObjectInfo(value), useHardReference);
 	}
 
-	public static Variable createVariable(String name, Object value, TypeInfo declaredType, boolean useHardReference) {
+	public static Variable createVariable(String name, Object value, Class<?> declaredType, boolean useHardReference) {
 		return new dd.kms.zenodot.impl.settings.VariableImpl(name, InfoProvider.createObjectInfo(value, declaredType), useHardReference);
 	}
 
@@ -23,7 +22,7 @@ public class ParserSettingsUtils
 		return new dd.kms.zenodot.impl.settings.LeafObjectTreeNode(name, InfoProvider.createObjectInfo(userObject));
 	}
 
-	public static ObjectTreeNode createLeafNode(String name, Object userObject, TypeInfo declaredType) {
+	public static ObjectTreeNode createLeafNode(String name, Object userObject, Class<?> declaredType) {
 		return new dd.kms.zenodot.impl.settings.LeafObjectTreeNode(name, InfoProvider.createObjectInfo(userObject, declaredType));
 	}
 }

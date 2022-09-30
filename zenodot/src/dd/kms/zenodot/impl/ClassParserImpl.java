@@ -7,7 +7,6 @@ import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.ClassInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -41,8 +40,8 @@ public class ClassParserImpl extends AbstractParser<ClassParseResult, ClassParse
 		} catch (Throwable t) {
 			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
-		TypeInfo type = parseResult.getType();
-		return InfoProvider.createClassInfoUnchecked(type.getRawType().getName());
+		Class<?> type = parseResult.getType();
+		return InfoProvider.createClassInfoUnchecked(type.getName());
 	}
 
 	@Override

@@ -11,7 +11,6 @@ import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.wrappers.FieldInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -36,7 +35,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 	}
 
 	abstract Object getContextObject(C context);
-	abstract TypeInfo getContextType(C context);
+	abstract Class<?> getContextType(C context);
 	abstract boolean isContextStatic();
 
 	@Override

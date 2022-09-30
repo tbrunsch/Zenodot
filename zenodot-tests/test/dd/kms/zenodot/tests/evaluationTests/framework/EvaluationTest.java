@@ -9,7 +9,6 @@ import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.tests.common.AbstractTest;
 import org.junit.Assume;
@@ -93,8 +92,6 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		try {
 			final Object actualValue;
 			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
-			Class<?> testClass = testInstance == null ? null : testInstance.getClass();
-			TypeInfo thisType = InfoProvider.createTypeInfo(testClass);
 			ExpressionParser expressionParser = Parsers.createExpressionParser(settings);
 			if (compile) {
 				CompiledExpression compiledExpression = expressionParser.compile(expression, thisValue);

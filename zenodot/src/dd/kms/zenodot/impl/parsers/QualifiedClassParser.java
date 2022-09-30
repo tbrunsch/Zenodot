@@ -2,9 +2,7 @@ package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.ParseResult;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.PackageInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -41,8 +39,7 @@ public class QualifiedClassParser<T extends ParseResult, S extends ParseResultEx
 		log(LogLevel.SUCCESS, "detected class '" + qualifiedClassName + "'");
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		TypeInfo typeInfo = InfoProvider.createTypeInfo(clazz);
-		return parserToolbox.createParser(ClassTailParser.class).parse(tokenStream, typeInfo, expectation);
+		return parserToolbox.createParser(ClassTailParser.class).parse(tokenStream, clazz, expectation);
 	}
 
 	private CodeCompletions suggestQualifiedClasses(PackageInfo contextInfo, S expectation, CompletionInfo info) {

@@ -9,7 +9,6 @@ import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -74,7 +73,7 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 		return new CompiledExpression()
 		{
 			@Override
-			public TypeInfo getResultType() {
+			public Class<?> getResultType() {
 				return compiledParseResult.getObjectInfo().getDeclaredType();
 			}
 

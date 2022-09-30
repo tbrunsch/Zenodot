@@ -3,7 +3,6 @@ package dd.kms.zenodot.impl.parsers;
 import dd.kms.zenodot.api.result.ClassParseResult;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.result.ParseResult;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -29,19 +28,19 @@ import java.util.List;
  * The class {@code <class>} is the context for the parser. If the subexpression does not start with a dot ({@code .}),
  * then {@code <class>} is returned as parse result.
  */
-public class ClassTailParser<T extends ParseResult, S extends ParseResultExpectation<T>> extends AbstractTailParser<TypeInfo, T, S>
+public class ClassTailParser<T extends ParseResult, S extends ParseResultExpectation<T>> extends AbstractTailParser<Class<?>, T, S>
 {
 	public ClassTailParser(ParserToolbox parserToolbox) {
 		super(parserToolbox);
 	}
 
 	@Override
-	ParseResult parseDot(TokenStream tokenStream, TypeInfo classType, S expectation) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
+	ParseResult parseDot(TokenStream tokenStream, Class<?> classType, S expectation) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
 		if (expectation instanceof ClassParseResultExpectation) {
 			InnerClassParser<ClassParseResult, ClassParseResultExpectation> innerClassParser = parserToolbox.createParser(InnerClassParser.class);
 			return innerClassParser.parse(tokenStream, classType, (ClassParseResultExpectation) expectation);
 		} else if (expectation instanceof ObjectParseResultExpectation) {
-			List<AbstractParser<TypeInfo, ObjectParseResult, ObjectParseResultExpectation>> parsers = Arrays.asList(
+			List<AbstractParser<Class<?>, ObjectParseResult, ObjectParseResultExpectation>> parsers = Arrays.asList(
 				parserToolbox.createParser(ClassFieldParser.class),
 				parserToolbox.createParser(ClassMethodParser.class),
 				parserToolbox.createParser(InnerClassParser.class),
@@ -55,7 +54,7 @@ public class ClassTailParser<T extends ParseResult, S extends ParseResultExpecta
 	}
 
 	@Override
-	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, TypeInfo context, S expectation) {
+	ParseResult parseOpeningSquareBracket(TokenStream tokenStream, Class<?> context, S expectation) {
 		/*
 		 * If called under ConstructorParser, then this is an array construction. As we do not
 		 * know, in which circumstances this method is called, the caller must handle this
@@ -65,7 +64,7 @@ public class ClassTailParser<T extends ParseResult, S extends ParseResultExpecta
 	}
 
 	@Override
-	ParseResult createParseResult(TokenStream tokenStream, TypeInfo type) {
+	ParseResult createParseResult(TokenStream tokenStream, Class<?> type) {
 		return ParseResults.createClassParseResult(type);
 	}
 }

@@ -3,17 +3,16 @@ package dd.kms.zenodot.impl.wrappers;
 import com.google.common.base.Preconditions;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 public class ObjectInfoImpl implements ObjectInfo
 {
 	private final Object		object;
-	private final TypeInfo declaredType;
+	private final Class<?>		declaredType;
 	private final ValueSetter	valueSetter;
 
-	public ObjectInfoImpl(Object object, TypeInfo declaredType, ValueSetter valueSetter) {
+	public ObjectInfoImpl(Object object, Class<?> declaredType, ValueSetter valueSetter) {
 		this.object = object;
-		this.declaredType = Preconditions.checkNotNull(declaredType);
+		this.declaredType = declaredType;
 		this.valueSetter = valueSetter;
 	}
 
@@ -23,7 +22,7 @@ public class ObjectInfoImpl implements ObjectInfo
 	}
 
 	@Override
-	public TypeInfo getDeclaredType() {
+	public Class<?> getDeclaredType() {
 		return declaredType;
 	}
 

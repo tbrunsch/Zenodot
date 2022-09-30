@@ -7,7 +7,6 @@ import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
@@ -46,7 +45,7 @@ public class VariableDataProvider
 
 	private TypeMatch rateVariableByTypes(Variable variable, ObjectParseResultExpectation expectation) {
 		ObjectInfo value = variable.getValue();
-		TypeInfo valueType = objectInfoProvider.getType(value);
+		Class<?> valueType = objectInfoProvider.getType(value);
 		return expectation.rateTypeMatch(valueType);
 	}
 

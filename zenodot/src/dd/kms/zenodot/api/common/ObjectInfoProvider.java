@@ -9,22 +9,10 @@ import dd.kms.zenodot.api.wrappers.*;
 
 public class ObjectInfoProvider
 {
-	public static TypeInfo getRuntimeType(Object object, TypeInfo declaredType) {
-		if (object == null || object == InfoProvider.INDETERMINATE_VALUE) {
-			return declaredType;
-		}
-		return getRuntimeType(object.getClass(), declaredType);
-	}
-
-	public static TypeInfo getRuntimeType(Class<?> runtimeClass, TypeInfo declaredType) {
-		if (declaredType.isPrimitive()) {
-			return declaredType;
-		}
-		try {
-			return declaredType.getSubtype(runtimeClass);
-		} catch (Throwable t) {
-			return InfoProvider.createTypeInfo(runtimeClass);
-		}
+	public static Class<?> getRuntimeType(Object object, Class<?> declaredType) {
+		return object == null || object == InfoProvider.INDETERMINATE_VALUE || (declaredType != null && declaredType.isPrimitive())
+			? declaredType
+			: object.getClass();
 	}
 
 	private final EvaluationMode evaluationMode;
@@ -41,11 +29,11 @@ public class ObjectInfoProvider
 		return evaluationMode == EvaluationMode.DYNAMIC_TYPING;
 	}
 
-	public TypeInfo getType(Object object, TypeInfo declaredType) {
+	public Class<?> getType(Object object, Class<?> declaredType) {
 		return isEvaluate() ? getRuntimeType(object, declaredType) : declaredType;
 	}
 
-	public TypeInfo getType(ObjectInfo objectInfo) {
+	public Class<?> getType(ObjectInfo objectInfo) {
 		return getType(objectInfo.getObject(), objectInfo.getDeclaredType());
 	}
 
@@ -85,7 +73,7 @@ public class ObjectInfoProvider
 				throw new IllegalStateException("Internal error: Unexpected " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
 			}
 		}
-		TypeInfo methodReturnType = getType(methodReturnValue, executableInfo.getReturnType());
+		Class<?> methodReturnType = getType(methodReturnValue, executableInfo.getReturnType());
 		return InfoProvider.createObjectInfo(methodReturnValue, methodReturnType);
 	}
 
@@ -99,11 +87,11 @@ public class ObjectInfoProvider
 			arrayElementValue = Array.get(arrayObject, index);
 			valueSetter = value -> Array.set(arrayObject, index, value);
 		}
-		TypeInfo arrayElementType = getType(arrayElementValue, getType(arrayInfo).getComponentType());
+		Class<?> arrayElementType = getType(arrayElementValue, getType(arrayInfo).getComponentType());
 		return InfoProvider.createObjectInfo(arrayElementValue, arrayElementType, valueSetter);
 	}
 
-	public ObjectInfo getArrayInfo(TypeInfo componentType, ObjectInfo sizeInfo) {
+	public ObjectInfo getArrayInfo(Class<?> componentType, ObjectInfo sizeInfo) {
 		int size = 0;
 		if (isEvaluate() && sizeInfo != InfoProvider.INDETERMINATE_VALUE) {
 			Object sizeObject = sizeInfo.getObject();
@@ -112,34 +100,31 @@ public class ObjectInfoProvider
 		return getArrayInfo(componentType, size);
 	}
 
-	public ObjectInfo getArrayInfo(TypeInfo componentType, List<ObjectInfo> elementInfos) {
+	public ObjectInfo getArrayInfo(Class<?> componentType, List<ObjectInfo> elementInfos) {
 		int size = elementInfos.size();
 		ObjectInfo arrayInfo = getArrayInfo(componentType, size);
 		if (isEvaluate()) {
-			Class<?> componentClass = componentType.getRawType();
 			Object arrayObject = arrayInfo.getObject();
 			for (int i = 0; i < size; i++) {
 				Object element = elementInfos.get(i).getObject();
-				Array.set(arrayObject, i, ReflectionUtils.convertTo(element, componentClass, false));
+				Array.set(arrayObject, i, ReflectionUtils.convertTo(element, componentType, false));
 			}
 		}
 		return arrayInfo;
 	}
 
-	private ObjectInfo getArrayInfo(TypeInfo componentType, int size) {
-		Class<?> componentClass = componentType.getRawType();
+	private ObjectInfo getArrayInfo(Class<?> componentType, int size) {
 		int sizeToAllocate = isEvaluate() ? size : 0;
-		Object array = Array.newInstance(componentClass, sizeToAllocate);
+		Object array = Array.newInstance(componentType, sizeToAllocate);
 		Class<?> arrayClass = array.getClass();
-		TypeInfo arrayType = InfoProvider.createTypeInfo(arrayClass);
 		Object arrayObject = isEvaluate() ? array : InfoProvider.INDETERMINATE_VALUE;
-		return InfoProvider.createObjectInfo(arrayObject, arrayType);
+		return InfoProvider.createObjectInfo(arrayObject, arrayClass);
 	}
 
-	public ObjectInfo getCastInfo(ObjectInfo objectInfo, TypeInfo targetType) throws ClassCastException {
+	public ObjectInfo getCastInfo(ObjectInfo objectInfo, Class<?> targetType) throws ClassCastException {
 		Object object = objectInfo.getObject();
 		Object castedValue = isEvaluate() && object != InfoProvider.INDETERMINATE_VALUE
-								? ReflectionUtils.convertTo(object, targetType.getRawType(), true)
+								? ReflectionUtils.convertTo(object, targetType, true)
 								: InfoProvider.INDETERMINATE_VALUE;
 		return InfoProvider.createObjectInfo(castedValue, targetType);
 	}

@@ -1,18 +1,17 @@
 package dd.kms.zenodot.impl.result;
 
 import dd.kms.zenodot.api.result.ClassParseResult;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 class ClassParseResultImpl implements ClassParseResult
 {
-	private final TypeInfo type;
+	private final Class<?> type;
 
-	ClassParseResultImpl(TypeInfo type) {
+	ClassParseResultImpl(Class<?> type) {
 		this.type = type;
 	}
 
 	@Override
-	public TypeInfo getType() {
+	public Class<?> getType() {
 		return type;
 	}
 

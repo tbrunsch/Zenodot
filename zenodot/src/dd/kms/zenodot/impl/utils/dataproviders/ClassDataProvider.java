@@ -70,8 +70,7 @@ public class ClassDataProvider
 	public ClassDataProvider(ParserToolbox parserToolbox) {
 		this.imports = parserToolbox.getSettings().getImports();
 		ObjectInfo thisInfo = parserToolbox.getThisInfo();
-		TypeInfo thisType = parserToolbox.getObjectInfoProvider().getType(thisInfo);
-		this.thisClass = thisType.getRawType();
+		this.thisClass = parserToolbox.getObjectInfoProvider().getType(thisInfo);
 	}
 
 	public boolean packageExists(String packageName) {

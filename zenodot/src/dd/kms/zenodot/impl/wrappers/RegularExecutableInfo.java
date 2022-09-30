@@ -3,11 +3,9 @@ package dd.kms.zenodot.impl.wrappers;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 
 import java.lang.reflect.Executable;
-import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -18,8 +16,8 @@ import java.util.List;
  */
 public class RegularExecutableInfo extends AbstractExecutableInfo
 {
-	public RegularExecutableInfo(TypeInfo declaringType, Executable executable) {
-		super(declaringType, executable);
+	public RegularExecutableInfo(Executable executable) {
+		super(executable);
 	}
 
 	@Override
@@ -28,15 +26,15 @@ public class RegularExecutableInfo extends AbstractExecutableInfo
 	}
 
 	@Override
-	Type doGetExpectedArgumentType(int argIndex) {
+	Class<?> doGetExpectedArgumentType(int argIndex) {
 		if (argIndex >= getNumberOfArguments()) {
 			throw new IndexOutOfBoundsException("Argument index " + argIndex + " is not in the range [0, " + getNumberOfArguments() + ")");
 		}
-		return executable.getGenericParameterTypes()[argIndex];
+		return executable.getParameterTypes()[argIndex];
 	}
 
 	@Override
-	TypeMatch doRateArgumentMatch(List<TypeInfo> argumentTypes) {
+	TypeMatch doRateArgumentMatch(List<Class<?>> argumentTypes) {
 		if (argumentTypes.size() != getNumberOfArguments()) {
 			return TypeMatch.NONE;
 		}
@@ -48,8 +46,8 @@ public class RegularExecutableInfo extends AbstractExecutableInfo
 		return worstArgumentClassMatchRating;
 	}
 
-	private TypeMatch rateArgumentTypeMatch(int argIndex, TypeInfo argumentType) {
-		TypeInfo expectedArgumentType = getExpectedArgumentType(argIndex);
+	private TypeMatch rateArgumentTypeMatch(int argIndex, Class<?> argumentType) {
+		Class<?> expectedArgumentType = getExpectedArgumentType(argIndex);
 		return MatchRatings.rateTypeMatch(expectedArgumentType, argumentType);
 	}
 
@@ -63,7 +61,7 @@ public class RegularExecutableInfo extends AbstractExecutableInfo
 		Object[] arguments = new Object[numArguments];
 		for (int i = 0; i < numArguments; i++) {
 			Object argument = argumentInfos.get(i).getObject();
-			arguments[i] = ReflectionUtils.convertTo(argument, getExpectedArgumentType(i).getRawType(), false);
+			arguments[i] = ReflectionUtils.convertTo(argument, getExpectedArgumentType(i), false);
 		}
 		return arguments;
 	}

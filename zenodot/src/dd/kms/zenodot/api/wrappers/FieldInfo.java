@@ -7,7 +7,7 @@ package dd.kms.zenodot.api.wrappers;
  */
 public interface FieldInfo extends MemberInfo
 {
-	TypeInfo getType();
+	Class<?> getType();
 	Object get(Object instance) throws IllegalAccessException;
 	void set(Object instance, Object value) throws IllegalAccessException;
 }

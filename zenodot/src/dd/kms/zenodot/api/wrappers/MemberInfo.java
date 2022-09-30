@@ -8,5 +8,5 @@ public interface MemberInfo
 	boolean isStatic();
 	boolean isFinal();
 	AccessModifier getAccessModifier();
-	TypeInfo getDeclaringType();
+	Class<?> getDeclaringClass();
 }

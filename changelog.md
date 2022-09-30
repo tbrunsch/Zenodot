@@ -3,6 +3,8 @@
 ## v0.3.0
 
   - A new evaluation mode has been added that has some advantages of dynamic typing but prevents side effects during code completion and when the expression evaluation cannot be evaluated correctly. Instead of enabling/disabling dynamic typing via `ParserSettingsBuilder.enableDynamicTyping()`, you now specify the evalutation mode via `ParserSettingsBuilder.evaluationMode()`. The new evaluation mode is now the default.
+  
+  - The limited support for generic type inference via Guava's `TypeToken` has been removed completely because the benefit turned out to be negligible and the feature made the code more complex. Particularly, the class `TypeInfo`, that essentially was a wrapper around `TypeToken`, has been removed and replaces by `Class<?>`.
 
 ## v0.2.2
 

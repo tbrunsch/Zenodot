@@ -13,7 +13,6 @@ import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -111,7 +110,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 			if (operator == BinaryOperator.INSTANCE_OF) {
 				ExpressionParseResult expressionParseResult = new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream);
 				ClassParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
-				TypeInfo type = classParseResult.getType();
+				Class<?> type = classParseResult.getType();
 				ObjectInfo instanceOfInfo;
 				try {
 					instanceOfInfo = parserToolbox.getOperatorResultProvider().getInstanceOfInfo(expressionParseResult.getObjectInfo(), type);
@@ -256,9 +255,9 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 	private static class InstanceOfParseResult extends AbstractObjectParseResult
 	{
 		private final ExpressionParseResult	expressionParseResult;
-		private final TypeInfo				type;
+		private final Class<?>				type;
 
-		InstanceOfParseResult(ExpressionParseResult expressionParseResult, TypeInfo type, ObjectInfo instanceOfInfo, TokenStream tokenStream) {
+		InstanceOfParseResult(ExpressionParseResult expressionParseResult, Class<?> type, ObjectInfo instanceOfInfo, TokenStream tokenStream) {
 			super(instanceOfInfo, tokenStream);
 			this.expressionParseResult = expressionParseResult;
 			this.type = type;

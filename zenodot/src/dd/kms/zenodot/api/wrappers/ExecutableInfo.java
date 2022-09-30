@@ -14,11 +14,11 @@ public interface ExecutableInfo extends MemberInfo
 {
 	int getNumberOfArguments();
 	boolean isVariadic();
-	TypeInfo getReturnType();
+	Class<?> getReturnType();
 
 	boolean isArgumentIndexValid(int argIndex);
-	TypeInfo getExpectedArgumentType(int argIndex);
-	TypeMatch rateArgumentMatch(List<TypeInfo> argumentTypes);
+	Class<?> getExpectedArgumentType(int argIndex);
+	TypeMatch rateArgumentMatch(List<Class<?>> argumentTypes);
 	Object[] createArgumentArray(List<ObjectInfo> argumentInfos);
 	Object invoke(Object instance, Object[] arguments) throws InvocationTargetException, IllegalAccessException, InstantiationException;
 	String formatArguments();

@@ -6,7 +6,6 @@ import dd.kms.zenodot.api.settings.ParserSettingsUtils;
 import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -44,7 +43,7 @@ class VariablePool
 	{
 		private final WeakReference<Object>	weakValueReference;
 		private final Object				hardValueReference;	// only set if user wants to save variables from being garbage collected
-		private final TypeInfo				declaredValueType;
+		private final Class<?>				declaredValueType;
 		private final boolean				valueIsNull;
 		private final boolean				useHardReference;
 

@@ -3,9 +3,7 @@ package dd.kms.zenodot.impl.parsers;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.ParseResult;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -54,8 +52,7 @@ public class UnqualifiedClassParser<T extends ParseResult, S extends ParseResult
 
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		TypeInfo type = InfoProvider.createTypeInfo(importedClass);
-		return parserToolbox.createParser(ClassTailParser.class).parse(tokenStream, type, expectation);
+		return parserToolbox.createParser(ClassTailParser.class).parse(tokenStream, importedClass, expectation);
 	}
 
 	private CodeCompletions suggestClasses(CompletionInfo info) {
