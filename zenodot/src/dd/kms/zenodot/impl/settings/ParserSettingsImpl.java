@@ -3,7 +3,6 @@ package dd.kms.zenodot.impl.settings;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.*;
-import dd.kms.zenodot.api.wrappers.ClassInfo;
 import dd.kms.zenodot.api.wrappers.PackageInfo;
 
 import java.util.List;
@@ -20,7 +19,7 @@ class ParserSettingsImpl implements ParserSettings
 	private final ObjectTreeNode	customHierarchyRoot;
 	private final ParserLogger 		logger;
 
-	ParserSettingsImpl(CompletionMode completionMode, Set<ClassInfo> importedClasses, Set<PackageInfo> importedPackages, List<Variable> variables, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
+	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<PackageInfo> importedPackages, List<Variable> variables, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
 		this.completionMode = completionMode;
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
 		this.variablePool = new VariablePool(variables);

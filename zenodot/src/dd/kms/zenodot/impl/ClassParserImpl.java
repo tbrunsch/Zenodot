@@ -5,7 +5,6 @@ import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.result.ClassParseResult;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.wrappers.ClassInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
@@ -32,7 +31,7 @@ public class ClassParserImpl extends AbstractParser<ClassParseResult, ClassParse
 	}
 
 	@Override
-	public ClassInfo evaluate(String className) throws ParseException {
+	public Class<?> evaluate(String className) throws ParseException {
 		TokenStream tokenStream = new TokenStream(className, -1);
 		ClassParseResult parseResult;
 		try {
@@ -40,8 +39,7 @@ public class ClassParserImpl extends AbstractParser<ClassParseResult, ClassParse
 		} catch (Throwable t) {
 			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
-		Class<?> type = parseResult.getType();
-		return InfoProvider.createClassInfoUnchecked(type.getName());
+		return parseResult.getType();
 	}
 
 	@Override

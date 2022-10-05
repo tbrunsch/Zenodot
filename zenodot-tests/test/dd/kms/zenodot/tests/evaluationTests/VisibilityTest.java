@@ -72,7 +72,7 @@ public class VisibilityTest
 
 		try {
 			if (innerType == EntityType.CLASS) {
-				ClassInfo classInfo = Parsers.createClassParser(settings).evaluate(expression);
+				Class<?> clazz = Parsers.createClassParser(settings).evaluate(expression);
 				Assert.assertTrue("Should not be able to access class '" + entityName + "'", entityAccessible);
 			} else {
 				Object result = Parsers.createExpressionParser(settings).evaluate(expression, null);

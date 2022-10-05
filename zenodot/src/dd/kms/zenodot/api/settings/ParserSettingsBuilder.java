@@ -2,7 +2,6 @@ package dd.kms.zenodot.api.settings;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
-import dd.kms.zenodot.api.wrappers.ClassInfo;
 import dd.kms.zenodot.api.wrappers.PackageInfo;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public interface ParserSettingsBuilder
 	/**
 	 * When you import a class, then you can directly reference that class by its simple name.
 	 */
-	ParserSettingsBuilder importClasses(Iterable<ClassInfo> classes);
+	ParserSettingsBuilder importClasses(Iterable<Class<?>> classes);
 
 	/**
 	 * see {@link #importClasses(Iterable)}

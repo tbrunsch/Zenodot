@@ -9,6 +9,7 @@ import dd.kms.zenodot.api.wrappers.ClassInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.PackageInfo;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
+import dd.kms.zenodot.impl.utils.ClassUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -16,7 +17,7 @@ import java.util.Set;
 public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
 	private CompletionMode		completionMode;
-	private Set<ClassInfo>		importedClasses;
+	private Set<Class<?>>		importedClasses;
 	private Set<PackageInfo>	importedPackages;
 	private List<Variable>		variables;
 	private AccessModifier		minimumAccessModifier;
@@ -56,17 +57,18 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilder importClasses(Iterable<ClassInfo> classes) {
+	public ParserSettingsBuilder importClasses(Iterable<Class<?>> classes) {
 		importedClasses = ImmutableSet.copyOf(classes);
 		return this;
 	}
 
 	@Override
 	public ParserSettingsBuilder importClassesByName(Iterable<String> classNames) throws ClassNotFoundException {
-		ImmutableSet.Builder<ClassInfo> builder = ImmutableSet.builder();
+		ImmutableSet.Builder<Class<?>> builder = ImmutableSet.builder();
 		for (String className : classNames) {
-			ClassInfo classInfo = InfoProvider.createClassInfo(className);
-			builder.add(classInfo);
+			String normalizedClassName = ClassUtils.normalizeClassName(className);
+			Class<?> clazz = Class.forName(normalizedClassName);
+			builder.add(clazz);
 		}
 		return importClasses(builder.build());
 	}

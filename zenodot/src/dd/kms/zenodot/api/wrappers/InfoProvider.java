@@ -26,6 +26,10 @@ public class InfoProvider
 			: Arrays.asList(new dd.kms.zenodot.impl.wrappers.RegularExecutableInfo(executable));
 	}
 
+	public static ClassInfo createClassInfo(Class<?> clazz) {
+		return createClassInfoUnchecked(clazz.getName());
+	}
+
 	public static ClassInfo createClassInfo(String qualifiedClassName) throws ClassNotFoundException {
 		return new dd.kms.zenodot.impl.wrappers.ClassInfoImpl(dd.kms.zenodot.impl.utils.ClassUtils.normalizeClassName(qualifiedClassName));
 	}
