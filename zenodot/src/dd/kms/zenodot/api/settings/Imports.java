@@ -1,7 +1,5 @@
 package dd.kms.zenodot.api.settings;
 
-import dd.kms.zenodot.api.wrappers.PackageInfo;
-
 import java.util.Set;
 
 /**
@@ -20,5 +18,5 @@ public interface Imports
 	/**
 	 * When you import a package, then you can directly reference any of its classes by their simple names.
 	 */
-	Set<PackageInfo> getImportedPackages();
+	Set<String> getImportedPackages();
 }

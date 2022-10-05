@@ -5,9 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.*;
-import dd.kms.zenodot.api.wrappers.ClassInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.PackageInfo;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.impl.utils.ClassUtils;
 
@@ -18,7 +15,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
 	private CompletionMode		completionMode;
 	private Set<Class<?>>		importedClasses;
-	private Set<PackageInfo>	importedPackages;
+	private Set<String>			importedPackages;
 	private List<Variable>		variables;
 	private AccessModifier		minimumAccessModifier;
 	private EvaluationMode		evaluationMode;
@@ -74,19 +71,9 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilder importPackages(Iterable<PackageInfo> packages) {
+	public ParserSettingsBuilder importPackages(Iterable<String> packages) {
 		importedPackages = ImmutableSet.copyOf(packages);
 		return this;
-	}
-
-	@Override
-	public ParserSettingsBuilder importPackagesByName(Iterable<String> packageNames) {
-		ImmutableSet.Builder<PackageInfo> builder = ImmutableSet.builder();
-		for (String packageName : packageNames) {
-			PackageInfo packageInfo = InfoProvider.createPackageInfo(packageName);
-			builder.add(packageInfo);
-		}
-		return importPackages(builder.build());
 	}
 
 	@Override

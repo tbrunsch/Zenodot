@@ -3,8 +3,6 @@ package dd.kms.zenodot.impl.parsers;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.PackageParseResult;
 import dd.kms.zenodot.api.result.ParseResult;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.PackageInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -45,15 +43,15 @@ abstract class AbstractPackageParser<C, T extends ParseResult, S extends ParseRe
 			return packageParseResult;
 		}
 
-		PackageInfo packageInfo = packageParseResult.getPackage();
+		String packageName = packageParseResult.getPackageName();
 
-		List<AbstractParser<PackageInfo, T, S>> parsers = new ArrayList<>();
+		List<AbstractParser<String, T, S>> parsers = new ArrayList<>();
 		if (!(expectation instanceof PackageParseResultExpectation)) {
 			parsers.add(parserToolbox.createParser(QualifiedClassParser.class));
 		}
 		parsers.add(parserToolbox.createParser(SubpackageParser.class));
 		// possible ambiguities: class name identical to subpackage in same package => class name wins
-		return ParseUtils.parse(tokenStream, packageInfo, expectation, parsers);
+		return ParseUtils.parse(tokenStream, packageName, expectation, parsers);
 	}
 
 	private PackageParseResult readPackage(TokenStream tokenStream, C context) throws SyntaxException, CodeCompletionException {
@@ -63,7 +61,7 @@ abstract class AbstractPackageParser<C, T extends ParseResult, S extends ParseRe
 		if (!classDataProvider.packageExists(packageName)) {
 			throw new SyntaxException("Unknown package '" + packageName + "'");
 		}
-		return ParseResults.createPackageParseResult(InfoProvider.createPackageInfo(packageName));
+		return ParseResults.createPackageParseResult(packageName);
 	}
 
 	private CodeCompletions suggestPackages(CompletionInfo info, C context) {

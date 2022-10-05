@@ -38,10 +38,6 @@ public class InfoProvider
 		return new dd.kms.zenodot.impl.wrappers.ClassInfoImpl(qualifiedClassName);
 	}
 
-	public static PackageInfo createPackageInfo(String packageName) {
-		return new dd.kms.zenodot.impl.wrappers.PackageInfoImpl(packageName);
-	}
-
 	public static ObjectInfo createObjectInfo(Object object) {
 		return createObjectInfo(object, object == null ? NO_TYPE : object.getClass());
 	}

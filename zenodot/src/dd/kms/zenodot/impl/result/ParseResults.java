@@ -7,7 +7,6 @@ import dd.kms.zenodot.api.result.PackageParseResult;
 import dd.kms.zenodot.api.wrappers.ExecutableInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.PackageInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 
 import java.util.Map;
@@ -18,8 +17,8 @@ public class ParseResults
 		return new ClassParseResultImpl(type);
 	}
 
-	public static PackageParseResult createPackageParseResult(PackageInfo packageInfo) {
-		return new PackageParseResultImpl(packageInfo);
+	public static PackageParseResult createPackageParseResult(String packageName) {
+		return new PackageParseResultImpl(packageName);
 	}
 
 	public static ObjectParseResult createCompiledIdentityObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {

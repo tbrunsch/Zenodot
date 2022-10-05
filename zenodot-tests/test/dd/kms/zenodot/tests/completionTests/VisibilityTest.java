@@ -53,7 +53,7 @@ public class VisibilityTest
 	private void testVisibility(boolean useQualifiedClass) throws ParseException {
 		ParserSettingsBuilder builder = ParserSettingsBuilder.create().minimumAccessModifier(minimumAccessModifier);
 		if (!useQualifiedClass) {
-			builder.importPackagesByName(Arrays.asList(VisibilityTestUtils.PACKAGE));
+			builder.importPackages(Arrays.asList(VisibilityTestUtils.PACKAGE));
 		}
 		ParserSettings settings = builder.build();
 

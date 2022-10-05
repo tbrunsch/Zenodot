@@ -6,7 +6,6 @@ import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.PackageParseResult;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.PackageInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -32,7 +31,7 @@ public class PackageParserImpl extends AbstractParser<PackageParseResult, Packag
 	}
 
 	@Override
-	public PackageInfo evaluate(String packageName) throws ParseException {
+	public String evaluate(String packageName) throws ParseException {
 		TokenStream tokenStream = new TokenStream(packageName, -1);
 		PackageParseResult parseResult;
 		try {
@@ -40,7 +39,7 @@ public class PackageParserImpl extends AbstractParser<PackageParseResult, Packag
 		} catch (Throwable t) {
 			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
-		return parseResult.getPackage();
+		return parseResult.getPackageName();
 	}
 
 	@Override

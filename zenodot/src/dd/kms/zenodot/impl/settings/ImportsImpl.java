@@ -2,16 +2,15 @@ package dd.kms.zenodot.impl.settings;
 
 import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.api.settings.Imports;
-import dd.kms.zenodot.api.wrappers.PackageInfo;
 
 import java.util.Set;
 
 class ImportsImpl implements Imports
 {
 	private final ImmutableSet<Class<?>>	importClasses;
-	private final ImmutableSet<PackageInfo> importPackages;
+	private final ImmutableSet<String> importPackages;
 
-	ImportsImpl(Set<Class<?>> importClasses, Set<PackageInfo> importPackages) {
+	ImportsImpl(Set<Class<?>> importClasses, Set<String> importPackages) {
 		this.importClasses = ImmutableSet.copyOf(importClasses);
 		this.importPackages = ImmutableSet.copyOf(importPackages);
 	}
@@ -22,7 +21,7 @@ class ImportsImpl implements Imports
 	}
 
 	@Override
-	public Set<PackageInfo> getImportedPackages() {
+	public Set<String> getImportedPackages() {
 		return importPackages;
 	}
 }

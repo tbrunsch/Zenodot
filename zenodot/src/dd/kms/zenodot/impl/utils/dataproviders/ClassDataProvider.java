@@ -12,7 +12,6 @@ import dd.kms.zenodot.api.settings.Imports;
 import dd.kms.zenodot.api.wrappers.ClassInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.PackageInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
@@ -118,24 +117,24 @@ public class ClassDataProvider
 		return importedClasses;
 	}
 
-	private Set<PackageInfo> getImportedPackages() {
-		Set<PackageInfo> importedPackages = new LinkedHashSet<>();
+	private Set<String> getImportedPackages() {
+		Set<String> importedPackages = new LinkedHashSet<>();
 		if (thisClass != null) {
 			Package pack = thisClass.getPackage();
 			// package is null for, e.g., arrays
 			if (pack != null) {
-				importedPackages.add(InfoProvider.createPackageInfo(pack.getName()));
+				importedPackages.add(pack.getName());
 			}
 		}
-		importedPackages.add(InfoProvider.createPackageInfo("java.lang"));
+		importedPackages.add("java.lang");
 		importedPackages.addAll(imports.getImportedPackages());
 		return importedPackages;
 	}
 
-	private static Set<ClassInfo> getTopLevelClassesInPackages(Collection<PackageInfo> packages) {
+	private static Set<ClassInfo> getTopLevelClassesInPackages(Collection<String> packageNames) {
 		Set<ClassInfo> classes = new HashSet<>();
-		for (PackageInfo pack : Iterables.filter(packages, Objects::nonNull)) {
-			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(pack.getPackageName());
+		for (String packageName : Iterables.filter(packageNames, Objects::nonNull)) {
+			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
 			classes.addAll(classInfos);
 		}
 		return classes;
