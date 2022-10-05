@@ -3,8 +3,6 @@ package dd.kms.zenodot.tests.completionTests;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettingsUtils;
 import dd.kms.zenodot.api.settings.Variable;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -65,8 +63,8 @@ public class ValidExpressionTest extends CompletionTest
 			}
 
 			@Override
-			public ObjectInfo getUserObject() {
-				return InfoProvider.NULL_LITERAL;
+			public Object getUserObject() {
+				return null;
 			}
 		};
 

@@ -5,6 +5,7 @@ import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.result.PackageParseResult;
 import dd.kms.zenodot.api.wrappers.ExecutableInfo;
+import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.api.wrappers.PackageInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
@@ -25,8 +26,8 @@ public class ParseResults
 		return new IdentityObjectParseResult(objectInfo, tokenStream);
 	}
 
-	public static ObjectParseResult createCompiledConstantObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
-		return new ConstantObjectParseResult(objectInfo, tokenStream);
+	public static ObjectParseResult createCompiledConstantObjectParseResult(Object object, TokenStream tokenStream) {
+		return new ConstantObjectParseResult(object, tokenStream);
 	}
 
 	public static ExecutableArgumentInfo createExecutableArgumentInfo(int currentArgumentIndex, Map<ExecutableInfo, Boolean> applicableExecutableOverloads) {
@@ -47,8 +48,8 @@ public class ParseResults
 
 	private static class ConstantObjectParseResult extends AbstractObjectParseResult
 	{
-		ConstantObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
-			super(objectInfo, tokenStream);
+		ConstantObjectParseResult(Object object, TokenStream tokenStream) {
+			super(InfoProvider.createObjectInfo(object), tokenStream);
 		}
 
 		@Override

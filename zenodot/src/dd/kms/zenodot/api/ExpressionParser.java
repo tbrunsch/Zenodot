@@ -2,8 +2,6 @@ package dd.kms.zenodot.api;
 
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,18 +18,23 @@ public interface ExpressionParser
 	/**
 	 * Returns rated code completions for the given text at a given caret position in the context provided by {@code thisValue}.
 	 */
-	List<CodeCompletion> getCompletions(String text, int caretPosition, ObjectInfo thisValue) throws ParseException;
+	List<CodeCompletion> getCompletions(String text, int caretPosition, Object thisValue) throws ParseException;
 
 	/**
 	 * Returns optional information about the arguments of the current method or constructor {@link ExecutableArgumentInfo}.
 	 * The value will be present if the caret is inside of a method argument list.
 	 */
-	Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String expression, int caretPosition, ObjectInfo thisValue) throws ParseException;
+	Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String expression, int caretPosition, Object thisValue) throws ParseException;
 
 	/**
 	 * Evaluates the expression in the context provided by {@code thisValue}.
 	 */
-	 ObjectInfo evaluate(String expression, ObjectInfo thisValue) throws ParseException;
+	 Object evaluate(String expression, Object thisValue) throws ParseException;
+
+	/**
+	 * Compiles the expression in the context provided by {@code thisType}.
+	 */
+	CompiledExpression compile(String expression, Class<?> thisType) throws ParseException;
 
 	/**
 	 * Compiles the expression in the context provided by {@code thisValue}.<br/>
@@ -40,8 +43,7 @@ public interface ExpressionParser
 	 * is that with {@link dd.kms.zenodot.api.settings.EvaluationMode#DYNAMIC_TYPING} or
 	 * {@link dd.kms.zenodot.api.settings.EvaluationMode#MIXED} also runtime type information
 	 * will be considered. If you want to compile an expression based on a class, then you
-	 * can call {@link InfoProvider#createObjectInfo(Object, Class)} for the object
-	 * {@link InfoProvider#INDETERMINATE_VALUE} and the class and use this as {@code thisValue}.
+	 * can call {@link #compile(String, Class)} instead.
 	 */
-	CompiledExpression compile(String expression, ObjectInfo thisValue) throws ParseException;
+	CompiledExpression compile(String expression, Object thisValue) throws ParseException;
 }

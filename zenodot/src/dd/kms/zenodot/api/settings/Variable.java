@@ -1,7 +1,5 @@
 package dd.kms.zenodot.api.settings;
 
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-
 /**
  * Describes a value that can be referenced in an expression by its name.<br/>
  * <br/>
@@ -14,6 +12,6 @@ import dd.kms.zenodot.api.wrappers.ObjectInfo;
 public interface Variable
 {
 	String getName();
-	ObjectInfo getValue();
+	Object getValue();
 	boolean isUseHardReference();
 }

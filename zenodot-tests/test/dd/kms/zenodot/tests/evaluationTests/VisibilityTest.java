@@ -6,8 +6,6 @@ import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.wrappers.ClassInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.tests.classesForTest.visibility.VisibilityTestUtils;
 import dd.kms.zenodot.tests.classesForTest.visibility.VisibilityTestUtils.EntityType;
 import org.junit.Assert;
@@ -77,9 +75,9 @@ public class VisibilityTest
 				ClassInfo classInfo = Parsers.createClassParser(settings).evaluate(expression);
 				Assert.assertTrue("Should not be able to access class '" + entityName + "'", entityAccessible);
 			} else {
-				ObjectInfo result = Parsers.createExpressionParser(settings).evaluate(expression, InfoProvider.NULL_LITERAL);
+				Object result = Parsers.createExpressionParser(settings).evaluate(expression, null);
 				Assert.assertTrue("Should not be able to access '" + expression + "'", entityAccessible);
-				Assert.assertEquals("Unexpected expression result of '" + expression + "'", innerModifier.toString(), result.getObject());
+				Assert.assertEquals("Unexpected expression result of '" + expression + "'", innerModifier.toString(), result);
 			}
 		} catch (ParseException e) {
 			Assert.assertFalse("Could not access '" + expression + "'", entityAccessible);

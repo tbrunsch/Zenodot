@@ -5,7 +5,6 @@ import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
 
 /**
  * This sample demonstrates how to evaluate the expression
@@ -17,6 +16,6 @@ public class SimpleExpressionSample
 		ParserSettings settings = ParserSettingsBuilder.create().build();
 		String expression = "Math.max(new int[]{ 2+3, 123/3, 1 << 4 }[1], (int) Math.round(2.718E2))";
 		ExpressionParser parser = Parsers.createExpressionParser(settings);
-		System.out.println("Result: " + parser.evaluate(expression, InfoProvider.NULL_LITERAL).getObject());
+		System.out.println("Result: " + parser.evaluate(expression, null));
 	}
 }

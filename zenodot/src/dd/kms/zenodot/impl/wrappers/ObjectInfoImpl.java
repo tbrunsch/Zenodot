@@ -1,6 +1,5 @@
 package dd.kms.zenodot.impl.wrappers;
 
-import com.google.common.base.Preconditions;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.api.wrappers.ObjectInfo;
 

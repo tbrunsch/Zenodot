@@ -62,7 +62,7 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 			case HIERARCHY_SEPARATOR:
 				return parseHierarchyNode(tokenStream, firstChildNodeMatch, expectation);
 			case HIERARCHY_END: {
-				ObjectInfo userObject = firstChildNodeMatch.getUserObject();
+				Object userObject = firstChildNodeMatch.getUserObject();
 				return ParseResults.createCompiledConstantObjectParseResult(userObject, tokenStream);
 			}
 			default:

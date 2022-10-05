@@ -2,8 +2,6 @@ package dd.kms.zenodot.tests.common;
 
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettingsUtils;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -46,8 +44,8 @@ public class CustomHierarchy
 																						}
 
 																						@Override
-																						public ObjectInfo getUserObject() {
-																							return InfoProvider.NULL_LITERAL;
+																						public Object getUserObject() {
+																							return null;
 																						}
 																					};
 
@@ -123,8 +121,8 @@ public class CustomHierarchy
 		}
 
 		@Override
-		public ObjectInfo getUserObject() {
-			return InfoProvider.createObjectInfo(component);
+		public Object getUserObject() {
+			return component;
 		}
 	}
 }

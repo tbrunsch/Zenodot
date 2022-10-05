@@ -8,7 +8,6 @@ import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.CodeCompletionType;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
 import dd.kms.zenodot.tests.classesForTest.visibility.VisibilityTestUtils;
 import dd.kms.zenodot.tests.classesForTest.visibility.VisibilityTestUtils.EntityType;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
@@ -76,7 +75,7 @@ public class VisibilityTest
 		// boolean suggestEntity = outerClassModifier.compareTo(minimumAccessModifier) <= 0 && innerModifier.compareTo(minimumAccessModifier) <= 0;
 		boolean suggestEntity = innerType == EntityType.CLASS || innerModifier.compareTo(minimumAccessModifier) <= 0;
 
-		List<CodeCompletion> completions = Parsers.createExpressionParser(settings).getCompletions(expression, expression.length(), InfoProvider.NULL_LITERAL);
+		List<CodeCompletion> completions = Parsers.createExpressionParser(settings).getCompletions(expression, expression.length(), null);
 		if (suggestEntity) {
 			List<CodeCompletion> sortedCompletions = CompletionTest.getSortedCompletions(completions);
 			CodeCompletion firstCompletion = Iterables.getFirst(sortedCompletions, null);

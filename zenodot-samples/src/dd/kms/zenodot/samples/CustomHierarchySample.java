@@ -8,8 +8,6 @@ import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.settings.ParserSettingsUtils;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,13 +68,13 @@ public class CustomHierarchySample
 			.build();
 		ExpressionParser parser = Parsers.createExpressionParser(settings);
 		String text = "{strings#long strings#ve";
-		List<CodeCompletion> completions = new ArrayList<>(parser.getCompletions(text, text.length(), InfoProvider.NULL_LITERAL));
+		List<CodeCompletion> completions = new ArrayList<>(parser.getCompletions(text, text.length(), null));
 		Collections.sort(completions, Parsers.COMPLETION_COMPARATOR);
 
 		System.out.println("Completion: " + completions.get(0).getTextToInsert());
 
 		String expression = "{numbers#e}";
-		Object result = parser.evaluate(expression, InfoProvider.NULL_LITERAL).getObject();
+		Object result = parser.evaluate(expression, null);
 
 		System.out.println("Result: " + result);
 	}
@@ -94,7 +92,7 @@ public class CustomHierarchySample
 			}
 
 			@Override
-			public ObjectInfo getUserObject() {
+			public Object getUserObject() {
 				return null;
 			}
 		};

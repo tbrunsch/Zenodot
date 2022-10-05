@@ -28,7 +28,7 @@ public class PackageParserImpl extends AbstractParser<PackageParseResult, Packag
 
 	@Override
 	public List<CodeCompletion> getCompletions(String text, int caretPosition) throws ParseException {
-		return getCodeCompletions(text, caretPosition, InfoProvider.NULL_LITERAL, PARSE_RESULT_EXPECTATION).getCompletions();
+		return getCodeCompletions(text, caretPosition, null, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
