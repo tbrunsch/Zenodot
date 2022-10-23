@@ -1,4 +1,4 @@
-package dd.kms.zenodot.api.wrappers;
+package dd.kms.zenodot.impl.wrappers;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 
@@ -8,5 +8,5 @@ public interface MemberInfo
 	boolean isStatic();
 	boolean isFinal();
 	AccessModifier getAccessModifier();
-	TypeInfo getDeclaringType();
+	Class<?> getDeclaringClass();
 }

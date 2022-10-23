@@ -2,14 +2,10 @@ package dd.kms.zenodot.impl.wrappers;
 
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Executable;
-import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -25,8 +21,8 @@ import java.util.List;
  */
 public class VariadicExecutableInfo extends AbstractExecutableInfo
 {
-	public VariadicExecutableInfo(TypeInfo declaringType, Executable executable) {
-		super(declaringType, executable);
+	public VariadicExecutableInfo(Executable executable) {
+		super(executable);
 
 		assert isVariadic() : "Cannot create VariadicExecutableInfo for non-variadic methods";
 	}
@@ -37,15 +33,15 @@ public class VariadicExecutableInfo extends AbstractExecutableInfo
 	}
 
 	@Override
-	Type doGetExpectedArgumentType(int argIndex) {
+	Class<?> doGetExpectedArgumentType(int argIndex) {
 		int lastIndex = getNumberOfArguments() - 1;
 		return argIndex < lastIndex
-				? executable.getGenericParameterTypes()[argIndex]
-				: InfoProvider.createTypeInfo(executable.getGenericParameterTypes()[lastIndex]).getComponentType().getType();
+				? executable.getParameterTypes()[argIndex]
+				: executable.getParameterTypes()[lastIndex].getComponentType();
 	}
 
 	@Override
-	TypeMatch doRateArgumentMatch(List<TypeInfo> argumentTypes) {
+	TypeMatch doRateArgumentMatch(List<Class<?>> argumentTypes) {
 		if (argumentTypes.size() < getNumberOfArguments() - 1) {
 			return TypeMatch.NONE;
 		}
@@ -57,7 +53,7 @@ public class VariadicExecutableInfo extends AbstractExecutableInfo
 		return worstArgumentClassMatchRating;
 	}
 
-	private TypeMatch rateArgumentTypeMatch(int argIndex, TypeInfo argumentType) {
+	private TypeMatch rateArgumentTypeMatch(int argIndex, Class<?> argumentType) {
 		int lastArgIndex = getNumberOfArguments() - 1;
 		if (argIndex == lastArgIndex && argumentType == InfoProvider.NO_TYPE) {
 			/*
@@ -66,7 +62,7 @@ public class VariadicExecutableInfo extends AbstractExecutableInfo
 			 */
 			return TypeMatch.NONE;
 		}
-		TypeInfo expectedArgumentType = getExpectedArgumentType(argIndex);
+		Class<?> expectedArgumentType = getExpectedArgumentType(argIndex);
 		return MatchRatings.rateTypeMatch(expectedArgumentType, argumentType);
 	}
 

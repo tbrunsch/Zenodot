@@ -5,11 +5,11 @@ import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
-import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -30,35 +30,63 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 	}
 
 	@Override
-	public List<CodeCompletion> getCompletions(String text, int caretPosition, ObjectInfo thisValue) throws ParseException {
-		return getCodeCompletions(text, caretPosition, thisValue, PARSE_RESULT_EXPECTATION).getCompletions();
+	public List<CodeCompletion> getCompletions(String text, int caretPosition, Class<?> thisType) throws ParseException {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, thisType);
+		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
-	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String text, int caretPosition, ObjectInfo thisValue) throws ParseException {
-		return getCodeCompletions(text, caretPosition, thisValue, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
+	public List<CodeCompletion> getCompletions(String text, int caretPosition, Object thisValue) throws ParseException {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
+		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
-	public ObjectInfo evaluate(String expression, ObjectInfo thisValue) throws ParseException {
+	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String text, int caretPosition, Class<?> thisType) throws ParseException {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, thisType);
+		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
+	}
+
+	@Override
+	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String text, int caretPosition, Object thisValue) throws ParseException {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
+		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
+	}
+
+	@Override
+	public Object evaluate(String expression, Object thisValue) throws ParseException {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
 		TokenStream tokenStream = new TokenStream(expression, -1);
 		ObjectParseResult parseResult;
 		try {
-			parseResult = parse(tokenStream, thisValue, PARSE_RESULT_EXPECTATION);
+			parseResult = parse(tokenStream, thisInfo, PARSE_RESULT_EXPECTATION);
 		} catch (Throwable t) {
 			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
-		return settings.getEvaluationMode() == EvaluationMode.DYNAMIC_TYPING
-			? parseResult.getObjectInfo()					// everything has already been evaluated
-			: parseResult.evaluate(thisValue, thisValue);
+		if (settings.getEvaluationMode() == EvaluationMode.DYNAMIC_TYPING) {
+			// everything has already been evaluated
+			return parseResult.getObjectInfo().getObject();
+		}
+		return parseResult.evaluate(thisInfo, thisInfo).getObject();
 	}
 
 	@Override
-	public CompiledExpression compile(String expression, ObjectInfo thisValue) throws ParseException {
+	public CompiledExpression compile(String expression, Class<?> thisClass) throws ParseException {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, thisClass);
+		return doCompile(expression, thisInfo);
+	}
+
+	@Override
+	public CompiledExpression compile(String expression, Object thisValue) throws ParseException {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
+		return doCompile(expression, thisInfo);
+	}
+
+	private CompiledExpression doCompile(String expression, ObjectInfo thisInfo) throws ParseException {
 		TokenStream tokenStream = new TokenStream(expression, -1);
 		ObjectParseResult parseResult;
 		try {
-			parseResult = parse(tokenStream, thisValue, PARSE_RESULT_EXPECTATION);
+			parseResult = parse(tokenStream, thisInfo, PARSE_RESULT_EXPECTATION);
 		} catch (Throwable t) {
 			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
@@ -74,13 +102,14 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 		return new CompiledExpression()
 		{
 			@Override
-			public TypeInfo getResultType() {
+			public Class<?> getResultType() {
 				return compiledParseResult.getObjectInfo().getDeclaredType();
 			}
 
 			@Override
-			public ObjectInfo evaluate(ObjectInfo thisValue) throws Exception {
-				return compiledParseResult.evaluate(thisValue, thisValue);
+			public Object evaluate(Object thisValue) throws Exception {
+				ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
+				return compiledParseResult.evaluate(thisInfo, thisInfo).getObject();
 			}
 		};
 	}

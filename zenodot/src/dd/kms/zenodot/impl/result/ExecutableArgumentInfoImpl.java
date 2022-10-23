@@ -2,16 +2,16 @@ package dd.kms.zenodot.impl.result;
 
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
-import dd.kms.zenodot.api.wrappers.ExecutableInfo;
 
+import java.lang.reflect.Executable;
 import java.util.Map;
 
 class ExecutableArgumentInfoImpl implements ExecutableArgumentInfo
 {
-	private final int									currentArgumentIndex;
-	private final Map<ExecutableInfo, Boolean>	applicableExecutableOverloads;
+	private final int						currentArgumentIndex;
+	private final Map<Executable, Boolean>	applicableExecutableOverloads;
 
-	ExecutableArgumentInfoImpl(int currentArgumentIndex, Map<ExecutableInfo, Boolean> applicableExecutableOverloads) {
+	ExecutableArgumentInfoImpl(int currentArgumentIndex, Map<Executable, Boolean> applicableExecutableOverloads) {
 		this.currentArgumentIndex = currentArgumentIndex;
 		this.applicableExecutableOverloads = ImmutableMap.copyOf(applicableExecutableOverloads);
 	}
@@ -22,7 +22,7 @@ class ExecutableArgumentInfoImpl implements ExecutableArgumentInfo
 	}
 
 	@Override
-	public Map<ExecutableInfo, Boolean> getApplicableExecutableOverloads() {
+	public Map<Executable, Boolean> getApplicableExecutableOverloads() {
 		return applicableExecutableOverloads;
 	}
 }

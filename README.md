@@ -18,13 +18,9 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
   - [Dynamic Typing](#dynamic-typing)
   - [Custom Variables](#custom-variables)
   - [Custom Hierarchies](#custom-hierarchies)
-  - [Generics](#generics)
   - [Operators](#operators)
 - [Evaluation Context](#evaluation-context)
 - [Handling Code Completions](#handling-code-completions)
-- [Wrapper Classes](#wrapper-classes)
-  - [Tracking Parameters of Generic Types](#tracking-parameters-of-generic-types)
-  - [Tracking Object Origins](#tracking-object-origins)
 - [Parser Settings](#parser-settings)
   - [Dynamic Typing Example](#dynamic-typing-example)
   - [Custom Hierarchy Example](#custom-hierarchy-example)
@@ -35,9 +31,9 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
 # Target
 Zenodot has been developed to complement the traditional IDE-based debugging. The traditional debugging steps are as follows:
 
-  1. Set a break point at an appropriate position in the source code
-  1. Define a condition for that break point to reduce the number of irrelevant stops
-  1. Trigger an event in the application to make the debugger stop at that break point
+  1. Set a breakpoint at an appropriate position in the source code
+  1. Define a condition for that breakpoint to reduce the number of irrelevant stops
+  1. Trigger an event in the application to make the debugger stop at that breakpoint
   1. Evaluate an expression in the desired context
 
 While this kind of debugging is very powerful with a modern IDE, it can be a bit frustrating to perform all these steps just to recover the object in the debugging process one has already found in the application.
@@ -65,9 +61,9 @@ The following example, taken from **SimpleExpressionSample.java**, shows how to 
 
 ```
 ParserSettings settings = ParserSettingsBuilder.create().build();
-ExpressionParser parser = Parsers.createExpressionParser(settings);
 String expression = "Math.max(new int[]{ 2+3, 123/3, 1 << 4 }[1], (int) Math.round(2.718E2))";
-System.out.println("Result: " + parser.evaluate(expression, InfoProvider.NULL_LITERAL).getObject());
+ExpressionParser parser = Parsers.createExpressionParser(settings);
+System.out.println("Result: " + parser.evaluate(expression, null));
 ```
 
 Let us have a closer look at all steps:
@@ -75,8 +71,7 @@ Let us have a closer look at all steps:
   1. Configure settings for the parser: There are various options to configure the parser. See [Parser Settings](#parser-settings) for details. In this simple example we rely on the default settings. 
   1. Create the expression parser: Parsers are created via the utility class `Parsers`. This class can also be used to create parsers for classes and packages. 
   1. Define which expression to evaluate: In most cases, the expression will be given by the user. In this example we hard-coded it.
-  1. Evaluate the expression in a certain context. This context describes within which instance we pretend to be when evaluating an expression. This is why the context is often referred to by `thisValue` in the API. If the context is the String "Zenodot", then the expressions "this.substring(4)" or simply "substring(4)" will return "dot" (cf. **ExpressionContextSample.java**). If the context was a list, then we would get a `ParseException` when evaluating this expression. Since the expression in the sample can be evaluated statically without any context, we specify the null literal as context. See [Evaluation Context](#evaluation-context) for details. Note that Zenodot operates on wrapper classes like `ObjectInfo` instead of pure `Object`s in order to track parameters of parameterized types and setters for fields. For more details see [Wrapper Classes](#wrapper-classes).
-  1. When evaluating the expression, the result is also returned as a wrapper class. The reason is that the result can be used as a new context for parsing new expressions and might contain additional information. If you are just interested in the instance itself, then you can simply unwrap the result by calling `ObjectInfo.getObject()` as done in this example.   
+  1. Evaluate the expression in a certain context. This context describes within which instance we pretend to be when evaluating an expression. This is why the context is often referred to by `thisValue` in the API. If the context is the String "Zenodot", then the expressions "this.substring(4)" or simply "substring(4)" will return "dot" (cf. **ExpressionContextSample.java**). If the context was a list, then we would get a `ParseException` when evaluating this expression. Since the expression in the sample can be evaluated statically without any context, we specify the null literal as context. See [Evaluation Context](#evaluation-context) for details.
 
 # Features and Short Comings
 
@@ -107,17 +102,7 @@ Zenodot extends the Java syntax to allow for parsing a custom hierarchy. The onl
 **Example:** Assume that you have a document viewer application that has loaded this document. It might store the content in a hierarchy with sections on the first level, subsections on the second level, and so one. Let us assume that we want to evaluate the object behind this section, i.e., the section "Features and Short Comings" -> "Custom Hierarchies". A classic approach would be to call `getSection(4).getSubsection(3)`. As you can imagine, handling the indices, which is only a technical detail, will become troublesome in large trees. However, if you have configured Zenodot correctly, then you can also write `{Features and Short Comings#Custom Hierarchies}` to reference the same node in your tree. This is much more readable and less error-prone. (Also note the spaces inside the node names.) Furthermore, you can, e.g., request code completion after typing `{Features and Short Comings#Custom`. The result will be `Custom Variables` and `Custom Hierarchies`.
 
 See [Custom Hierarchy Example](#custom-hierarchy-example) to see how to use custom hierarchies in Zenodot.
-
-## Generics
-
-The generic handling is currently based on the [Reflection API](https://github.com/google/guava/wiki/ReflectionExplained) of [Google Guava](https://github.com/google/guava). Due to type erasure, it is not possible to determine the parameters of parameterized types at runtime in general. However, it is possible to determine parameters when the declared type is known. If, e.g., it is known that an object is returned by a method that returns a `Collection<Integer>`, then the parameter `Integer` will be preserved. If the runtime type of the object is `ArrayList`, then Zenodot can even conclude that the actual type is `ArrayList<Integer>`. See [Tracking Parameters of Generic Types](#tracking-parameters-of-generic-types) for an example.
-
-However, there are some things that Zenodot can currently not do:
-
-  1. You can only cast objects to raw types, not parameterized types. A cast `(List)` is perfectly fine, but a cast `(List<Integer>)` will not work.
-  1. Zenodot cannot deduce types: With static typing, the expression `java.util.Arrays.asList("a", "b", "c").get(0).length()` does not compile since Zenodot cannot infer that the created `List` is a `List` of `String`s.
-  1. Zenodot allows calling a method that expects a `List` of `String`s with a `List` of `Integer`s. The reason is that, due to type erasure and the lack of type inference, Zenodot does not always have full generic type information. Since rejecting unresolved or only partially resolved types as method arguments will be wrong in some cases, we decided to ignore generic type parameters and only consider raw types when deciding whether a method may be called for a given list of arguments.  
-  
+ 
 ## Operators
 
 Zenodot implements most but not all unary and binary operators. The following operators are currently not supported:
@@ -133,9 +118,8 @@ Expressions are evaluated in a certain context, also referred to as `thisValue` 
 ```
 ParserSettings settings = ParserSettingsBuilder.create().build();
 String expression = "substring(4)";
-ObjectInfo thisValue = InfoProvider.createObjectInfo("Zenodot");
 ExpressionParser parser = Parsers.createExpressionParser(settings);
-System.out.println("Result: " + parser.evaluate(expression, thisValue).getObject());
+System.out.println("Result: " + parser.evaluate(expression, "Zenodot"));
 ``` 
 
 The expression "substring(4)" is evaluated using the string "Zenodot" as context. It is equivalent to the expression "this.substring(4)" and evaluates to "dot". 
@@ -150,81 +134,6 @@ Code completions are represented by the interface `CodeCompletion`. We will disc
   - `toString()` returns the suggested text that should be displayed to the user. This is not always the same as the text returned by `getTextToInsert()`. For methods, for instance, it contains information about the argument types.
 
 If the interface `CodeCompletion` does not provide sufficient information because you need to handle different types of code completions differently, then you can cast them to one of the following specific interfaces: `CodeCompletionClass`, `CodeCompletionPackage`, `CodeCompletionField`, `CodeCompletionMethod`, `CodeCompletionKeyword`, `CodeCompletionVariable`, or `CodeCompletionObjectTreeNode`.   
-
-# Wrapper Classes
-
-Zenodot uses wrapper classes for all kinds of relevant entities. These wrapper classes carry additional information and allow future extensions without breaking the API. The following wrapper classes are most relevant:
-
-  - `TypeInfo`: A `TypeInfo` is comparable to Guava's `TypeToken` (currently it simply wraps it). Due to type erasure, parameters of generic types are lost at runtime. However, parameters of declared types are still available at runtime. The `TypeInfo` class tracks as much information as possible about generic type parameters in order to improve the quality of code completions.
-  - `ObjectInfo`: An `ObjectInfo` does not only carry information about an object, but also about its declared type. From the declared type it is possible to derive parameters of generic runtime types to some extent. Additionally, an `ObjectInfo` carries information about where an object comes from. If it comes from a non-final field, it also carries a setter that allows modifying that field.
-  - `ClassInfo`: A `ClassInfo` is more or less a plain String describing a class. Zenodot uses this wrapper class instead of a `Class<?>` instance in order to prevent loading classes unnecessarily. Whenever the real class object is needed, it suffices to call `Class.forName()` for the normalized name stored in a `ClassInfo`.
-  - `PackageInfo`: A `PackageInfo` simply wraps a String describing a package. Call `Package.getPackage()` for the package name stored in that wrapper to obtain the corresponding `Package` object.
-
-Whenever you need to create on of these wrapper classes, you have to use the utility class `InfoProvider`. Note that this class also contains some static constants. The constant `InfoProvider.NULL_LITERAL`, e.g., describes `null`.
-
-## Tracking Parameters of Generic Types
-
-**GenericParameterTrackingSample.java:** Consider the test class
-
-```
-static class TestClass
-{
-    public final List<String> list = Arrays.asList("This", "is", "a", "list", "of", "strings", ".");
-}
-```
-
-and the following parser code:
-
-```
-TestClass testInstance = new TestClass();
-
-ParserSettings settings = ParserSettingsBuilder.create().build();
-ExpressionParser parser = Parsers.createExpressionParser(settings);
-String text = "list.get(0).le";
-ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
-List<CodeCompletion> completions = new ArrayList<>(parser.getCompletions(text, text.length(), thisValue));
-Collections.sort(completions, Parsers.COMPLETION_COMPARATOR);
-
-System.out.println(completions.get(0).getTextToInsert());
-```
-
-An instance of `TestClass` is used as the context in which the expression "list.get(0).le" is parsed. Code completion is requested at the end of the expression. The completions are finally sorted according to Zenodot's default comparator for code completions and the best match is printed.
-
-This code prints "length()" to the console. This shows that Zenodot is tracking parameters of generic runtime types: The runtime type of "list", which refers to the field `list` of the context `testInstance`, is `Arrays.ArrayList`. Its parameter class `String` is lost due to type erasure. However, Zenodot can deduce this parameter from the declared type `List<String>` of the field `list`. This is the reason why Zenodot can deduce that "list.get(0)" is a `String` and not only an `Object` and, hence, suggests the code completion "length()". Note that this works without enabling dynamic typing.
-
-## Tracking Object Origins
-
-**ObjectInfoSetterSample:** Consider the test class
-
-```
-static class TestClass
-{
-	public int test = 5;
-}
-```
-
-and the following parser code:
-
-```
-TestClass testInstance = new TestClass();
-
-ParserSettings settings = ParserSettingsBuilder.create().build();
-ExpressionParser parser = Parsers.createExpressionParser(settings);
-
-// First evaluation: Evaluate "this.test" for context testInstance
-String firstExpression = "this.test";
-ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
-ObjectInfo referenceToField = parser.evaluate(firstExpression, thisValue);
-
-// Second evaluation: Change value of testInstance.test to 7
-String secondExpression = "this = 7";
-parser.evaluate(secondExpression, referenceToField);
-
-// Value of testInstance.test should now be 7
-System.out.printf("Value of testInstance.test: " + testInstance.test);
-```
-
-In the first evaluation, Zenodot evaluates the expression "this.test", which refers to the field `test` of `testInstance`. At that time, the value of that field is 5. In the second evaluation, this `ObjectInfo` is used as context and this context is set to 7 by the expression "this = 7". This results in the field `test` of `testInstance` being set to 7. The reason for this is that an `ObjectInfo` does not only contain information about an object, but also about its origin. Hence, evaluating these two expressions has the same effect as evaluating the single expression "this.test = 7" when using `testInstance` as context.
 
 # Parser Settings
 
@@ -270,12 +179,11 @@ and the following parser code:
 TestClass testInstance = new TestClass();
 
 ParserSettings settings = ParserSettingsBuilder.create()
-    .enableDynamicTyping(true)
-    .build();
+	.evaluationMode(EvaluationMode.DYNAMIC_TYPING)
+	.build();
 String expression = "getObject().length()";
-ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
 ExpressionParser parser = Parsers.createExpressionParser(settings);
-System.out.println("Result: " + parser.evaluate(expression, thisValue).getObject());
+System.out.println("Result: " + parser.evaluate(expression, testInstance));
 ```
 
 Without dynamic typing, Zenodot would throw a `ParseException` when evaluating the expression "getObject().length()" because `getObject()` is declared to return an `Object`, which does not provide a method "length". With dynamic typing, Zenodot evaluates the subexpression "getObject()" and detects that the runtime type is `String`, which has a method "length". It then calls this method on the String "This is a string".
@@ -310,7 +218,7 @@ static ObjectTreeNode node(String name, ObjectTreeNode... childNodes) {
         }
 
         @Override
-        public ObjectInfo getUserObject() {
+        public Object getUserObject() {
             return null;
         }
     };
@@ -345,17 +253,17 @@ No consider the following parser code:
 
 ```
 ParserSettings settings = ParserSettingsBuilder.create()
-    .customHierarchyRoot(root)
-    .build();
+	.customHierarchyRoot(root)
+	.build();
 ExpressionParser parser = Parsers.createExpressionParser(settings);
 String text = "{strings#long strings#ve";
-List<CodeCompletion> completions = new ArrayList<>(parser.getCompletions(text, text.length(), InfoProvider.NULL_LITERAL));
+List<CodeCompletion> completions = new ArrayList<>(parser.getCompletions(text, text.length(), null));
 Collections.sort(completions, Parsers.COMPLETION_COMPARATOR);
 
 System.out.println("Completion: " + completions.get(0).getTextToInsert());
 
 String expression = "{numbers#e}";
-Object result = parser.evaluate(expression, InfoProvider.NULL_LITERAL).getObject();
+Object result = parser.evaluate(expression, null);
 
 System.out.println("Result: " + result);
 ```

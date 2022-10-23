@@ -17,7 +17,7 @@ abstract class AbstractSimpleCodeCompletion extends AbstractCodeCompletion
 
 	@Override
 	public final int getCaretPositionAfterInsertion() {
-		return getInsertionRange().getBegin() + getTextToInsert().length();
+		return getInsertionRange().lowerEndpoint() + getTextToInsert().length();
 	}
 
 	@Override

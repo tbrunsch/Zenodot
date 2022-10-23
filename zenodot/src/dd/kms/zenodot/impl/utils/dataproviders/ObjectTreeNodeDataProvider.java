@@ -5,7 +5,6 @@ import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
@@ -33,11 +32,11 @@ public class ObjectTreeNodeDataProvider
 	}
 
 	private TypeMatch rateNodeByTypes(ObjectTreeNode node, ObjectParseResultExpectation expectation) {
-		ObjectInfo userObject = node.getUserObject();
-		if (userObject.getObject() == null) {
+		Object userObject = node.getUserObject();
+		if (userObject == null) {
 			return TypeMatch.NONE;
 		}
-		return expectation.rateTypeMatch(userObject.getDeclaredType());
+		return expectation.rateTypeMatch(userObject.getClass());
 	}
 
 	private MatchRating rateNode(ObjectTreeNode node, String expectedName, ObjectParseResultExpectation expectation) {

@@ -2,9 +2,9 @@ package dd.kms.zenodot.impl;
 
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.result.ParseResult;
+import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
@@ -25,13 +25,13 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 
 	abstract T doParse(TokenStream tokenStream, ParserToolbox parserToolbox, S parseResultExpectation) throws CodeCompletionException, InternalErrorException, EvaluationException, SyntaxException;
 
-	CodeCompletions getCodeCompletions(String text, int caretPosition, ObjectInfo thisValue, S parseResultExpectation) throws ParseException {
+	CodeCompletions getCodeCompletions(String text, int caretPosition, ObjectInfo thisInfo, S parseResultExpectation) throws ParseException {
 		if (caretPosition < 0 || caretPosition > text.length()) {
 			throw new IllegalStateException("Invalid caret position");
 		}
 		TokenStream tokenStream = new TokenStream(text, caretPosition);
 		try {
-			parse(tokenStream, thisValue, parseResultExpectation);
+			parse(tokenStream, thisInfo, parseResultExpectation);
 			String parsedString = tokenStream.toString();
 			tokenStream.readRemainingWhitespaces(TokenStream.NO_COMPLETIONS, "Unexpected characters after " + parsedString);
 			throw new InternalErrorException("Missed caret position for suggesting code completions");
@@ -42,9 +42,9 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 		}
 	}
 
-	T parse(TokenStream tokenStream, ObjectInfo thisValue, S parseResultExpectation) throws CodeCompletionException, EvaluationException, SyntaxException, InternalErrorException {
+	T parse(TokenStream tokenStream, ObjectInfo thisInfo, S parseResultExpectation) throws CodeCompletionException, EvaluationException, SyntaxException, InternalErrorException {
 		try {
-			ParserToolbox parserToolbox = new ParserToolbox(thisValue, settings);
+			ParserToolbox parserToolbox = new ParserToolbox(thisInfo, settings);
 			return doParse(tokenStream, parserToolbox, parseResultExpectation);
 		} catch (CodeCompletionException | InternalErrorException | EvaluationException | SyntaxException e) {
 			throw e;

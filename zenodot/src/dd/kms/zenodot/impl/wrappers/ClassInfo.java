@@ -1,4 +1,4 @@
-package dd.kms.zenodot.api.wrappers;
+package dd.kms.zenodot.impl.wrappers;
 
 /**
  * References a class by its fully qualified (normalized) name. That way, a class does not have to be loaded

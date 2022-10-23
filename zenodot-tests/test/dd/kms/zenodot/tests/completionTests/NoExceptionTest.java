@@ -3,8 +3,6 @@ package dd.kms.zenodot.tests.completionTests;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.tests.common.AbstractTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,8 +67,7 @@ public class NoExceptionTest extends AbstractTest
 		ParserSettings settings = settingsBuilder.build();
 
 		try {
-			ObjectInfo thisInfo = InfoProvider.createObjectInfo(testInstance);
-			Parsers.createExpressionParser(settings).getCompletions(expression, caretPosition, thisInfo);
+			Parsers.createExpressionParser(settings).getCompletions(expression, caretPosition, testInstance);
 		} catch (Exception e) {
 			if (executeAssertions) {
 				fail("Exception during code completion for " + expression.substring(0, caretPosition) + "^" + expression.substring(caretPosition) + ": " + e.getMessage());

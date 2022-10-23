@@ -6,8 +6,7 @@ import dd.kms.zenodot.api.common.RegexUtils;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -61,26 +60,24 @@ public class MatchRatings
 		return m1.compareTo(m2) <= 0 ? m1 : m2;
 	}
 
-	public static TypeMatch rateTypeMatch(TypeInfo expected, TypeInfo actual) {
-		if (expected == InfoProvider.NO_TYPE) {
+	public static TypeMatch rateTypeMatch(Class<?> expectedClass, Class<?> actualClass) {
+		if (expectedClass == InfoProvider.NO_TYPE) {
 			// no expectations
 			return TypeMatch.FULL;
 		}
 
-		if (actual == InfoProvider.NO_TYPE) {
+		if (actualClass == InfoProvider.NO_TYPE) {
 			// null object (only object without class) is convertible to any non-primitive class
-			return expected.isPrimitive() ? TypeMatch.NONE : TypeMatch.FULL;
+			return expectedClass.isPrimitive() ? TypeMatch.NONE : TypeMatch.FULL;
 		}
 
-		if (actual.equals(expected)) {
+		if (actualClass.equals(expectedClass)) {
 			return TypeMatch.FULL;
 		}
 
-		Class<?> actualClass = actual.getRawType();
-		Class<?> expectedClass = expected.getRawType();
 		boolean primitiveConvertible = ReflectionUtils.isPrimitiveConvertibleTo(actualClass, expectedClass, false);
-		if (expected.isPrimitive()) {
-			if (actual.isPrimitive()) {
+		if (expectedClass.isPrimitive()) {
+			if (actualClass.isPrimitive()) {
 				return primitiveConvertible
 						? TypeMatch.PRIMITIVE_CONVERSION	// int -> double
 						: TypeMatch.NONE;					// int -> boolean
@@ -91,23 +88,20 @@ public class MatchRatings
 															: TypeMatch.NONE;					// Integer -> boolean
 			}
 		} else {
-			if (actual.isPrimitive()) {
+			if (actualClass.isPrimitive()) {
 				Class<?> actualBoxedClass = Primitives.wrap(actualClass);
-				return	actualBoxedClass == expectedClass					? TypeMatch.BOXED :						// int -> Integer
-						primitiveConvertible								? TypeMatch.BOXED_AND_CONVERSION :		// int -> Double
-						expected.isSupertypeOf(actual)						? TypeMatch.BOXED_AND_INHERITANCE : 	// int -> Number
-						expectedClass.isAssignableFrom(actualBoxedClass)	? TypeMatch.BOXED_AND_INHERITANCE_RAW 	// int -> T extends Number
-																			: TypeMatch.NONE;						// int -> String
+				return	actualBoxedClass == expectedClass					? TypeMatch.BOXED :					// int -> Integer
+						primitiveConvertible								? TypeMatch.BOXED_AND_CONVERSION :	// int -> Double
+						expectedClass.isAssignableFrom(actualBoxedClass)	? TypeMatch.BOXED_AND_INHERITANCE	// int -> Number
+																			: TypeMatch.NONE;					// int -> String
 			} else {
-
-				return	expected.isSupertypeOf(actual)				? TypeMatch.INHERITANCE	:		// Integer -> Number
-						expectedClass.isAssignableFrom(actualClass)	? TypeMatch.INHERITANCE_RAW		// ArrayList -> List
-																	: TypeMatch.NONE;				// Integer -> Double
+				return	expectedClass.isAssignableFrom(actualClass)	? TypeMatch.INHERITANCE		// ArrayList -> List
+																	: TypeMatch.NONE;			// Integer -> Double
 			}
 		}
 	}
 
-	public static boolean isConvertibleTo(TypeInfo source, TypeInfo target) {
+	public static boolean isConvertibleTo(Class<?> source, Class<?> target) {
 		return rateTypeMatch(target, source) != TypeMatch.NONE;
 	}
 

@@ -6,11 +6,10 @@ import dd.kms.zenodot.api.common.MethodScanner;
 import dd.kms.zenodot.api.common.MethodScannerBuilder;
 import dd.kms.zenodot.api.common.StaticMode;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.api.wrappers.ExecutableInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
+import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -37,7 +36,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 	}
 
 	abstract Object getContextObject(C context);
-	abstract TypeInfo getContextType(C context);
+	abstract Class<?> getContextType(C context);
 	abstract boolean isContextStatic();
 
 	@Override

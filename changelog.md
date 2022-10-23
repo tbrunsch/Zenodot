@@ -2,7 +2,19 @@
 
 ## v0.3.0
 
-  - A new evaluation mode has been added that has some advantages of dynamic typing but prevents side effects during code completion and when the expression evaluation cannot be evaluated correctly. Instead of enabling/disabling dynamic typing via `ParserSettingsBuilder.enableDynamicTyping()`, you now specify the evalutation mode via `ParserSettingsBuilder.evaluationMode()`. The new evaluation mode is now the default.
+  - A new evaluation mode has been added that has some advantages of dynamic typing but prevents side effects during code completion and when the expression evaluation cannot be evaluated correctly.
+  
+API changes:
+
+  - Dynamic typing is now not enabled/disabled via `ParserSettingsBuilder.enableDynamicTyping()`. Instead, you now specify the evaluation mode via `ParserSettingsBuilder.evaluationMode()`. The new evaluation mode is now the default.
+  
+  - The limited support for generic type inference via Guava's `TypeToken` has been removed completely because the benefit turned out to be negligible and the feature made the code more complex. Particularly, the class `TypeInfo`, that essentially was a wrapper around `TypeToken`, has been removed and replaces by `Class<?>`.
+  
+  - Since we removed generic support, the class `ObjectInfo` does not carry that much information anymore. Therefore we decided to remove this interface from the API and work with `Object` instead. This makes the API much easier to read and use. As a consequence, the result of an expression evaluation is always an rvalue. You cannot use it as context of a later expression evaluation and assign it a value there. We consider this a mild restriction because this is no important use case.
+  
+  - Together with `ObjectInfo` we have also abandoned all other wrapper classes from the API. This lead to a major simplification of the API.
+  
+  - We have replaced the custom interface `IntRange` by Guavas class `Range`.
 
 ## v0.2.2
 

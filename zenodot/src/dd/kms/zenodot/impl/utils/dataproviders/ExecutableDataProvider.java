@@ -1,15 +1,13 @@
 package dd.kms.zenodot.impl.utils.dataproviders;
 
-import dd.kms.zenodot.api.common.ObjectInfoProvider;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
-import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.api.wrappers.ExecutableInfo;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
+import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -22,6 +20,7 @@ import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,9 +35,7 @@ public class ExecutableDataProvider
 	private static final List<List<TypeMatch>>	ALLOWED_EXECUTABLE_RATINGS_BY_PHASE = Arrays.asList(
 		Arrays.asList(TypeMatch.FULL),
 		Arrays.asList(TypeMatch.INHERITANCE, TypeMatch.PRIMITIVE_CONVERSION),
-		Arrays.asList(TypeMatch.BOXED, TypeMatch.BOXED_AND_CONVERSION, TypeMatch.BOXED_AND_INHERITANCE),
-		Arrays.asList(TypeMatch.INHERITANCE_RAW),
-		Arrays.asList(TypeMatch.BOXED_AND_INHERITANCE_RAW)
+		Arrays.asList(TypeMatch.BOXED, TypeMatch.BOXED_AND_CONVERSION, TypeMatch.BOXED_AND_INHERITANCE)
 	);
 
 	private final ParserToolbox parserToolbox;
@@ -97,7 +94,7 @@ public class ExecutableDataProvider
 			}
 
 			// parse argument i
-			List<TypeInfo> expectedArgTypes_i = getExpectedArgumentTypes(executables, i);
+			List<Class<?>> expectedArgTypes_i = getExpectedArgumentTypes(executables, i);
 			ObjectParseResultExpectation argExpectation = new ObjectParseResultExpectation(expectedArgTypes_i, true);
 			ObjectParseResult argument_i;
 			try {
@@ -144,7 +141,7 @@ public class ExecutableDataProvider
 	}
 
 	// assumes that each of the executables accepts an argument for index argIndex
-	private List<TypeInfo> getExpectedArgumentTypes(List<ExecutableInfo> executables, int argIndex) {
+	private List<Class<?>> getExpectedArgumentTypes(List<ExecutableInfo> executables, int argIndex) {
 		return executables.stream()
 			.map(executable -> executable.getExpectedArgumentType(argIndex))
 			.distinct()
@@ -152,19 +149,19 @@ public class ExecutableDataProvider
 	}
 
 	private boolean acceptsArgument(ExecutableInfo executable, int argIndex, ObjectInfo arg) {
-		TypeInfo expectedArgType;
+		Class<?> expectedArgType;
 		try {
 			expectedArgType = executable.getExpectedArgumentType(argIndex);
 		} catch (IndexOutOfBoundsException e) {
 			return false;
 		}
-		TypeInfo argType = parserToolbox.getObjectInfoProvider().getType(arg);
+		Class<?> argType = parserToolbox.getObjectInfoProvider().getType(arg);
 		return MatchRatings.isConvertibleTo(argType, expectedArgType);
 	}
 
 	public List<ExecutableInfo> getBestMatchingExecutables(List<ExecutableInfo> availableExecutableInfos, List<ObjectInfo> argumentInfos) {
 		ObjectInfoProvider objectInfoProvider = parserToolbox.getObjectInfoProvider();
-		List<TypeInfo> argumentTypes = argumentInfos.stream().map(objectInfoProvider::getType).collect(Collectors.toList());
+		List<Class<?>> argumentTypes = argumentInfos.stream().map(objectInfoProvider::getType).collect(Collectors.toList());
 		Map<ExecutableInfo, TypeMatch> ratedExecutableInfos = availableExecutableInfos.stream()
 			.collect(Collectors.toMap(
 				executableInfo -> executableInfo,
@@ -225,20 +222,5 @@ public class ExecutableDataProvider
 
 	private MatchRating rateMethod(ExecutableInfo methodInfo, String methodName, boolean contextIsStatic, ObjectParseResultExpectation expectation) {
 		return MatchRatings.create(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), isMethodAccessDiscouraged(methodInfo, contextIsStatic));
-	}
-
-	public static String getMethodDisplayText(ExecutableInfo methodInfo) {
-		int numArguments = methodInfo.getNumberOfArguments();
-		final String argumentsAsString;
-		if (methodInfo.isVariadic()) {
-			int lastArgumentIndex = numArguments - 1;
-			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getRawType().getSimpleName() + (i == lastArgumentIndex ? "..." : "")).collect(Collectors.joining(", "));
-		} else {
-			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getRawType().getSimpleName()).collect(Collectors.joining(", "));
-		}
-		return methodInfo.getName()
-				+ "("
-				+ argumentsAsString
-				+ ")";
 	}
 }

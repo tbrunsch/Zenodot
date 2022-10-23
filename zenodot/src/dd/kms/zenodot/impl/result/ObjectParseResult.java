@@ -1,7 +1,7 @@
-package dd.kms.zenodot.api.result;
+package dd.kms.zenodot.impl.result;
 
 import dd.kms.zenodot.api.ParseException;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 public interface ObjectParseResult extends ParseResult
 {

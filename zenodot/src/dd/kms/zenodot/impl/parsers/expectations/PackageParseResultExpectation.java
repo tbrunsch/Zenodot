@@ -1,6 +1,6 @@
 package dd.kms.zenodot.impl.parsers.expectations;
 
-import dd.kms.zenodot.api.result.PackageParseResult;
+import dd.kms.zenodot.impl.result.PackageParseResult;
 
 public class PackageParseResultExpectation extends AbstractParseResultExpectation<PackageParseResult>
 {

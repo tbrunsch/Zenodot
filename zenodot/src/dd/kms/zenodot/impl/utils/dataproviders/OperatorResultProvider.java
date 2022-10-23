@@ -4,12 +4,11 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
-import dd.kms.zenodot.api.common.ObjectInfoProvider;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.settings.EvaluationMode;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.tokenizer.BinaryOperator;
 import dd.kms.zenodot.impl.tokenizer.UnaryOperator;
@@ -230,8 +229,7 @@ public class OperatorResultProvider
 		Object result = isEvaluate() && object != InfoProvider.INDETERMINATE_VALUE
 			? !((boolean) object)
 			: InfoProvider.INDETERMINATE_VALUE;
-		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
-		return InfoProvider.createObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, boolean.class);
 	}
 
 	public ObjectInfo getBitwiseNotInfo(ObjectInfo objectInfo) throws OperatorException {
@@ -240,14 +238,14 @@ public class OperatorResultProvider
 		if (!isIntegral(primitiveClass)) {
 			throw new OperatorException("Operator cannot be applied to '" + clazz + "'");
 		}
-		TypeInfo resultType = primitiveClass == long.class ? InfoProvider.createTypeInfo(long.class) : InfoProvider.createTypeInfo(int.class);
+		Class<?> resultType = primitiveClass == long.class ? long.class : int.class;
 		Object result = InfoProvider.INDETERMINATE_VALUE;
 		Object object = objectInfo.getObject();
 		if (isEvaluate() && object != InfoProvider.INDETERMINATE_VALUE) {
 			if (primitiveClass == long.class) {
-				result = ~ReflectionUtils.convertTo(object, long.class, false).longValue();
+				result = ~ReflectionUtils.convertTo(object, long.class, false);
 			} else {
-				result = ~ReflectionUtils.convertTo(object, int.class, false).intValue();
+				result = ~ReflectionUtils.convertTo(object, int.class, false);
 			}
 		}
 		return InfoProvider.createObjectInfo(result, resultType);
@@ -317,8 +315,7 @@ public class OperatorResultProvider
 		Object result = isEvaluate() && lhsObject != InfoProvider.INDETERMINATE_VALUE && rhsObject != InfoProvider.INDETERMINATE_VALUE
 							? lhsObject == rhsObject
 							: InfoProvider.INDETERMINATE_VALUE;
-		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
-		return InfoProvider.createObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, boolean.class);
 	}
 
 	public ObjectInfo getNotEqualToInfo(ObjectInfo lhs, ObjectInfo rhs) throws OperatorException {
@@ -332,8 +329,7 @@ public class OperatorResultProvider
 		Object result = isEvaluate() && lhsObject != InfoProvider.INDETERMINATE_VALUE && rhsObject != InfoProvider.INDETERMINATE_VALUE
 							? lhsObject != rhsObject
 							: InfoProvider.INDETERMINATE_VALUE;
-		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
-		return InfoProvider.createObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, boolean.class);
 	}
 
 	public ObjectInfo getBitwiseAndInfo(ObjectInfo lhs, ObjectInfo rhs) throws OperatorException {
@@ -361,14 +357,14 @@ public class OperatorResultProvider
 		if (lhsValueSetter == null) {
 			throw new OperatorException("Cannot assign values to non-lvalues or final fields");
 		}
-		TypeInfo declaredLhsType = lhs.getDeclaredType();
-		TypeInfo rhsType = objectInfoProvider.getType(rhs);
+		Class<?> declaredLhsType = lhs.getDeclaredType();
+		Class<?> rhsType = objectInfoProvider.getType(rhs);
 
 		// declared type of variables is unknown and we want be able to assign them a value
 		if (!MatchRatings.isConvertibleTo(rhsType, declaredLhsType)) {
 			throw new OperatorException("Cannot assign value of type '" + rhsType + "' to left-hand side. Expected an instance of class '" + declaredLhsType + "'");
 		}
-		TypeInfo declaredResultType = declaredLhsType;
+		Class<?> declaredResultType = declaredLhsType;
 		Object resultObject = InfoProvider.INDETERMINATE_VALUE;
 		Object rhsObject = rhs.getObject();
 		if (isEvaluateWithSideEffects() && rhsObject != InfoProvider.INDETERMINATE_VALUE) {
@@ -382,28 +378,26 @@ public class OperatorResultProvider
 		return InfoProvider.createObjectInfo(resultObject, declaredResultType);
 	}
 
-	public ObjectInfo getInstanceOfInfo(ObjectInfo lhs, TypeInfo rhs) throws OperatorException {
+	public ObjectInfo getInstanceOfInfo(ObjectInfo lhs, Class<?> rhs) throws OperatorException {
 		Class<?> lhsClass = getClass(lhs);
-		TypeInfo resultType = InfoProvider.createTypeInfo(boolean.class);
 		if (lhsClass != null && lhsClass.isPrimitive()) {
 			throw new OperatorException("Cannot cast '" + lhsClass + "' to '" + rhs + "'");
 		}
 		Object result = InfoProvider.INDETERMINATE_VALUE;
 		Object lhsObject = lhs.getObject();
 		if (isEvaluate() && lhsObject != InfoProvider.INDETERMINATE_VALUE) {
-			result = rhs.getRawType().isInstance(lhsObject);
+			result = rhs.isInstance(lhsObject);
 		} else if (lhsClass == null) {
 			result = false;
 		}
-		return InfoProvider.createObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, boolean.class);
 	}
 
 	/*
 	 * Utility Methods
 	 */
 	private Class<?> getClass(ObjectInfo objectInfo) {
-		TypeInfo type = objectInfoProvider.getType(objectInfo);
-		return type.getRawType();
+		return objectInfoProvider.getType(objectInfo);
 	}
 
 	private static boolean isIntegral(Class<?> primitiveClass) {
@@ -448,14 +442,13 @@ public class OperatorResultProvider
 		if (operatorInfo == null) {
 			throw new OperatorException("Operator not defined on '" + getClass(objectInfo) + "'");
 		}
-		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
 		Object result = InfoProvider.INDETERMINATE_VALUE;
 		Object object = objectInfo.getObject();
 		if (isEvaluate() && object != InfoProvider.INDETERMINATE_VALUE) {
 			Function<Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(object);
 		}
-		return InfoProvider.createObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, operatorInfo.getResultClass());
 	}
 
 	private ObjectInfo applyUnaryOperatorWithAssignment(ObjectInfo objectInfo, UnaryOperator operator) throws OperatorException {
@@ -524,7 +517,6 @@ public class OperatorResultProvider
 		if (operatorInfo == null) {
 			throw new OperatorException("Operator not defined on '" + getClass(lhs) + "' and '" + getClass(rhs) + "'");
 		}
-		TypeInfo resultType = InfoProvider.createTypeInfo(operatorInfo.getResultClass());
 		Object result = InfoProvider.INDETERMINATE_VALUE;
 		Object lhsObject = lhs.getObject();
 		Object rhsObject = rhs.getObject();
@@ -532,7 +524,7 @@ public class OperatorResultProvider
 			BiFunction<Object, Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(lhsObject, rhsObject);
 		}
-		return InfoProvider.createObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, operatorInfo.getResultClass());
 	}
 
 	private ObjectInfo applyNumericOperator(ObjectInfo lhs, ObjectInfo rhs, BinaryOperator numericOperator) throws OperatorException {
@@ -542,7 +534,6 @@ public class OperatorResultProvider
 	}
 
 	private ObjectInfo concat(ObjectInfo lhs, ObjectInfo rhs) {
-		TypeInfo resultType = InfoProvider.createTypeInfo(String.class);
 		Object result = InfoProvider.INDETERMINATE_VALUE;
 		Object lhsObject = lhs.getObject();
 		Object rhsObject = rhs.getObject();
@@ -551,7 +542,7 @@ public class OperatorResultProvider
 			String rhsAsString = getStringRepresentation(rhsObject);
 			result = lhsAsString + rhsAsString;
 		}
-		return InfoProvider.createObjectInfo(result, resultType);
+		return InfoProvider.createObjectInfo(result, String.class);
 	}
 
 	private ObjectInfo applyShiftOperator(ObjectInfo lhs, ObjectInfo rhs, BinaryOperator shiftOperator) throws OperatorException {

@@ -50,7 +50,7 @@ public class AbstractTest<T extends AbstractTest>
 	}
 
 	public void importPackages(String... packageNames) {
-		settingsBuilder.importPackagesByName(Arrays.asList(packageNames));
+		settingsBuilder.importPackages(Arrays.asList(packageNames));
 	}
 
 	public void customHierarchyRoot(ObjectTreeNode root) {

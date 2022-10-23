@@ -2,10 +2,11 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
@@ -62,8 +63,8 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 			case HIERARCHY_SEPARATOR:
 				return parseHierarchyNode(tokenStream, firstChildNodeMatch, expectation);
 			case HIERARCHY_END: {
-				ObjectInfo userObject = firstChildNodeMatch.getUserObject();
-				return ParseResults.createCompiledConstantObjectParseResult(userObject, tokenStream);
+				Object userObject = firstChildNodeMatch.getUserObject();
+				return ParseResults.createCompiledConstantObjectParseResult(InfoProvider.createObjectInfo(userObject), tokenStream);
 			}
 			default:
 				throw new InternalErrorException(tokenStream.toString() + ": Expected '" + HIERARCHY_SEPARATOR + "' or '" + HIERARCHY_END + "', but found '" + nextChar + "'");

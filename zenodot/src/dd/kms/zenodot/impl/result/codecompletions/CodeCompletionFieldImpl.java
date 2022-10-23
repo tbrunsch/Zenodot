@@ -3,27 +3,27 @@ package dd.kms.zenodot.impl.result.codecompletions;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletionType;
 import dd.kms.zenodot.api.result.codecompletions.CodeCompletionField;
-import dd.kms.zenodot.api.wrappers.FieldInfo;
 
+import java.lang.reflect.Field;
 import java.util.Objects;
 
 class CodeCompletionFieldImpl extends AbstractSimpleCodeCompletion implements CodeCompletionField
 {
-	private final FieldInfo	fieldInfo;
+	private final Field	field;
 
-	CodeCompletionFieldImpl(FieldInfo fieldInfo, int insertionBegin, int insertionEnd, MatchRating rating) {
+	CodeCompletionFieldImpl(Field field, int insertionBegin, int insertionEnd, MatchRating rating) {
 		super(CodeCompletionType.FIELD, insertionBegin, insertionEnd, rating);
-		this.fieldInfo = fieldInfo;
+		this.field = field;
 	}
 
 	@Override
-	public FieldInfo getFieldInfo() {
-		return fieldInfo;
+	public Field getField() {
+		return field;
 	}
 
 	@Override
 	public String toString() {
-		return fieldInfo.getName();
+		return field.getName();
 	}
 
 	@Override
@@ -32,11 +32,11 @@ class CodeCompletionFieldImpl extends AbstractSimpleCodeCompletion implements Co
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 		CodeCompletionFieldImpl that = (CodeCompletionFieldImpl) o;
-		return Objects.equals(fieldInfo, that.fieldInfo);
+		return Objects.equals(field, that.field);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), fieldInfo);
+		return Objects.hash(super.hashCode(), field);
 	}
 }

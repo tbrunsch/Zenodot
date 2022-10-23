@@ -2,12 +2,10 @@ package dd.kms.zenodot.impl;
 
 import dd.kms.zenodot.api.ClassParser;
 import dd.kms.zenodot.api.ParseException;
-import dd.kms.zenodot.api.result.ClassParseResult;
+import dd.kms.zenodot.impl.result.ClassParseResult;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.wrappers.ClassInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -29,11 +27,11 @@ public class ClassParserImpl extends AbstractParser<ClassParseResult, ClassParse
 
 	@Override
 	public List<CodeCompletion> getCompletions(String text, int caretPosition) throws ParseException {
-		return getCodeCompletions(text, caretPosition, InfoProvider.NULL_LITERAL, PARSE_RESULT_EXPECTATION).getCompletions();
+		return getCodeCompletions(text, caretPosition, null, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override
-	public ClassInfo evaluate(String className) throws ParseException {
+	public Class<?> evaluate(String className) throws ParseException {
 		TokenStream tokenStream = new TokenStream(className, -1);
 		ClassParseResult parseResult;
 		try {
@@ -41,8 +39,7 @@ public class ClassParserImpl extends AbstractParser<ClassParseResult, ClassParse
 		} catch (Throwable t) {
 			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
-		TypeInfo type = parseResult.getType();
-		return InfoProvider.createClassInfoUnchecked(type.getRawType().getName());
+		return parseResult.getType();
 	}
 
 	@Override

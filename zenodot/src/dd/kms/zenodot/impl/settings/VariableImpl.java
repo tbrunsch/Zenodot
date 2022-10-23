@@ -1,15 +1,14 @@
 package dd.kms.zenodot.impl.settings;
 
 import dd.kms.zenodot.api.settings.Variable;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 public class VariableImpl implements Variable
 {
-	private final String		name;
-	private final ObjectInfo	value;
-	private final boolean		useHardReference;
+	private final String	name;
+	private final Object	value;
+	private final boolean	useHardReference;
 
-	public VariableImpl(String name, ObjectInfo value, boolean useHardReference) {
+	public VariableImpl(String name, Object value, boolean useHardReference) {
 		this.name = name;
 		this.value = value;
 		this.useHardReference = useHardReference;
@@ -21,7 +20,7 @@ public class VariableImpl implements Variable
 	}
 
 	@Override
-	public ObjectInfo getValue() {
+	public Object getValue() {
 		return value;
 	}
 

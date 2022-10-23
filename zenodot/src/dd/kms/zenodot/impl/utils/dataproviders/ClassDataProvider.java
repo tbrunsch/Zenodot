@@ -9,7 +9,9 @@ import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.Imports;
-import dd.kms.zenodot.api.wrappers.*;
+import dd.kms.zenodot.impl.wrappers.ClassInfo;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
@@ -33,8 +35,6 @@ public class ClassDataProvider
 					clazz -> clazz
 				)
 		);
-	private static final List<ClassInfo>				PRIMITIVE_CLASS_INFOS					= PRIMITIVE_CLASSES_BY_NAME.keySet().stream().map(InfoProvider::createClassInfoUnchecked).collect(Collectors.toList());
-
 	private static final SetMultimap<String, ClassInfo> TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES;
 	private static final Set<String>					PACKAGE_NAMES;
 	private static final MultiStringMatcher<ClassInfo>	TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES;
@@ -70,8 +70,7 @@ public class ClassDataProvider
 	public ClassDataProvider(ParserToolbox parserToolbox) {
 		this.imports = parserToolbox.getSettings().getImports();
 		ObjectInfo thisInfo = parserToolbox.getThisInfo();
-		TypeInfo thisType = parserToolbox.getObjectInfoProvider().getType(thisInfo);
-		this.thisClass = thisType.getRawType();
+		this.thisClass = parserToolbox.getObjectInfoProvider().getType(thisInfo);
 	}
 
 	public boolean packageExists(String packageName) {
@@ -88,11 +87,11 @@ public class ClassDataProvider
 	}
 
 	private Class<?> getClassImportedViaClassName(String className) {
-		for (ClassInfo importedClass : getImportedClasses()) {
-			String unqualifiedName = importedClass.getUnqualifiedName();
+		for (Class<?> importedClass : getImportedClasses()) {
+			String unqualifiedName = importedClass.getSimpleName();
 			if (className.equals(unqualifiedName) || className.startsWith(unqualifiedName + ".")) {
 				// Replace simpleName by fully qualified imported name and replace '.' by '$' when separating inner classes
-				String fullyQualifiedClassName = importedClass.getNormalizedName()
+				String fullyQualifiedClassName = importedClass.getName()
 						+ className.substring(unqualifiedName.length()).replace('.', '$');
 				return ClassUtils.getClassUnchecked(fullyQualifiedClassName);
 			}
@@ -108,34 +107,34 @@ public class ClassDataProvider
 				.findFirst().orElse(null);
 	}
 
-	private Set<ClassInfo> getImportedClasses() {
-		Set<ClassInfo> importedClasses = new LinkedHashSet<>();
-		importedClasses.addAll(PRIMITIVE_CLASS_INFOS);
+	private Set<Class<?>> getImportedClasses() {
+		Set<Class<?>> importedClasses = new LinkedHashSet<>();
+		importedClasses.addAll(Primitives.allPrimitiveTypes());
 		if (thisClass != null) {
-			importedClasses.add(InfoProvider.createClassInfoUnchecked(thisClass.getName()));
+			importedClasses.add(thisClass);
 		}
 		importedClasses.addAll(imports.getImportedClasses());
 		return importedClasses;
 	}
 
-	private Set<PackageInfo> getImportedPackages() {
-		Set<PackageInfo> importedPackages = new LinkedHashSet<>();
+	private Set<String> getImportedPackages() {
+		Set<String> importedPackages = new LinkedHashSet<>();
 		if (thisClass != null) {
 			Package pack = thisClass.getPackage();
 			// package is null for, e.g., arrays
 			if (pack != null) {
-				importedPackages.add(InfoProvider.createPackageInfo(pack.getName()));
+				importedPackages.add(pack.getName());
 			}
 		}
-		importedPackages.add(InfoProvider.createPackageInfo("java.lang"));
+		importedPackages.add("java.lang");
 		importedPackages.addAll(imports.getImportedPackages());
 		return importedPackages;
 	}
 
-	private static Set<ClassInfo> getTopLevelClassesInPackages(Collection<PackageInfo> packages) {
+	private static Set<ClassInfo> getTopLevelClassesInPackages(Collection<String> packageNames) {
 		Set<ClassInfo> classes = new HashSet<>();
-		for (PackageInfo pack : Iterables.filter(packages, Objects::nonNull)) {
-			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(pack.getPackageName());
+		for (String packageName : Iterables.filter(packageNames, Objects::nonNull)) {
+			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
 			classes.addAll(classInfos);
 		}
 		return classes;
@@ -199,7 +198,7 @@ public class ClassDataProvider
 	public CodeCompletions completeClassName(int insertionBegin, int insertionEnd, String classPrefix, boolean considerAllClasses) {
 		ImmutableList.Builder<CodeCompletion> completionsBuilder = ImmutableList.builder();
 
-		Set<ClassInfo> importedClasses = getImportedClasses();
+		Set<ClassInfo> importedClasses = getImportedClasses().stream().map(InfoProvider::createClassInfo).collect(Collectors.toSet());
 		Set<ClassInfo> topLevelClassesInPackages = getTopLevelClassesInPackages(getImportedPackages());
 		Set<ClassInfo> additionalTopLevelClassesInPackage = Sets.difference(topLevelClassesInPackages, importedClasses);
 

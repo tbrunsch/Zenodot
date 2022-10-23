@@ -1,9 +1,8 @@
 package dd.kms.zenodot.impl.parsers.expectations;
 
-import dd.kms.zenodot.api.common.ObjectInfoProvider;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 
@@ -13,18 +12,18 @@ import java.util.stream.Collectors;
 
 public class ObjectParseResultExpectation extends AbstractParseResultExpectation<ObjectParseResult>
 {
-	private final @Nullable List<TypeInfo>	expectedTypes;
+	private final @Nullable List<Class<?>>	expectedTypes;
 	private final boolean					resultTypeMustMatch;
 
 	public ObjectParseResultExpectation() {
 		this(null, false);
 	}
 
-	public ObjectParseResultExpectation(@Nullable List<TypeInfo> expectedTypes, boolean resultTypeMustMatch) {
+	public ObjectParseResultExpectation(@Nullable List<Class<?>> expectedTypes, boolean resultTypeMustMatch) {
 		this(expectedTypes, resultTypeMustMatch, false);
 	}
 
-	private ObjectParseResultExpectation(@Nullable List<TypeInfo> expectedTypes, boolean resultTypeMustMatch, boolean parseWholeText) {
+	private ObjectParseResultExpectation(@Nullable List<Class<?>> expectedTypes, boolean resultTypeMustMatch, boolean parseWholeText) {
 		super(ObjectParseResult.class, parseWholeText);
 		this.expectedTypes = expectedTypes;
 		this.resultTypeMustMatch = resultTypeMustMatch;
@@ -43,7 +42,7 @@ public class ObjectParseResultExpectation extends AbstractParseResultExpectation
 			: new ObjectParseResultExpectation(expectedTypes, resultTypeMustMatch, isParseWholeText());
 	}
 
-	public TypeMatch rateTypeMatch(TypeInfo type) {
+	public TypeMatch rateTypeMatch(Class<?> type) {
 		if (expectedTypes == null) {
 			return TypeMatch.FULL;
 		}
@@ -55,7 +54,7 @@ public class ObjectParseResultExpectation extends AbstractParseResultExpectation
 
 	@Override
 	void doCheck(ObjectParseResult parseResult, ObjectInfoProvider objectInfoProvider) throws SyntaxException {
-		TypeInfo resultType = objectInfoProvider.getType(parseResult.getObjectInfo());
+		Class<?> resultType = objectInfoProvider.getType(parseResult.getObjectInfo());
 		TypeMatch typeMatch = rateTypeMatch(resultType);
 		if (typeMatch == TypeMatch.NONE) {
 			String messagePrefix = "The class '" + resultType + "' is not assignable to ";

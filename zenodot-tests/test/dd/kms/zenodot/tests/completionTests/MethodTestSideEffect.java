@@ -6,8 +6,6 @@ import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,8 +37,7 @@ public class MethodTestSideEffect
 			.build();
 		boolean encounteredParseException = false;
 		try {
-			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
-			Parsers.createExpressionParser(parserSettings).getCompletions(expression, caretPosition, thisValue);
+			Parsers.createExpressionParser(parserSettings).getCompletions(expression, caretPosition, testInstance);
 			Assert.fail("Expected ParseException");
 		} catch (ParseException ignored) {
 			encounteredParseException = true;

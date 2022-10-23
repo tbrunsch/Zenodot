@@ -5,10 +5,9 @@ import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
-import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
@@ -25,7 +24,7 @@ import dd.kms.zenodot.impl.utils.ParserToolbox;
  * Parses subexpressions {@code class} of expressions of the form {@code <class>.class}.
  * The class {@code <class>} is the context for the parser.
  */
-public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
+public class ClassObjectParser extends AbstractParserWithObjectTail<Class<?>>
 {
 	private static final String	CLASS_KEYWORD	= "class";
 	private static final String	ERROR_MESSAGE	= "Expected keyword '" + CLASS_KEYWORD + "'";
@@ -35,20 +34,19 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, TypeInfo contextType, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
+	ObjectParseResult parseNext(TokenStream tokenStream, Class<?> contextType, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String keyword = tokenStream.readKeyword(this::suggestClassKeyword, ERROR_MESSAGE);
 		if (!CLASS_KEYWORD.equals(keyword)) {
 			throw new SyntaxException(ERROR_MESSAGE);
 		}
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		Class<?> classObject = contextType.getRawType();
-		ObjectInfo classObjectInfo = InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
+		ObjectInfo classObjectInfo = InfoProvider.createObjectInfo(contextType, Class.class);
 
-		return new ClassObjectParseResult(classObject, classObjectInfo, tokenStream);
+		return new ClassObjectParseResult(contextType, classObjectInfo, tokenStream);
 	}
 
-	private CodeCompletions suggestClassKeyword(CompletionInfo info) throws SyntaxException {
+	private CodeCompletions suggestClassKeyword(CompletionInfo info) {
 		int insertionBegin = getInsertionBegin(info);
 		int insertionEnd = getInsertionEnd(info);
 		String nameToComplete = getTextToComplete(info);
@@ -75,7 +73,7 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<TypeInfo>
 
 		@Override
 		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) {
-			return InfoProvider.createObjectInfo(classObject, InfoProvider.createTypeInfo(Class.class));
+			return InfoProvider.createObjectInfo(classObject, Class.class);
 		}
 	}
 }

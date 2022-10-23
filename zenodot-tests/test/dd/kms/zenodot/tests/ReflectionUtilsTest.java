@@ -1,8 +1,6 @@
 package dd.kms.zenodot.tests;
 
-import dd.kms.zenodot.api.common.FieldScanner;
 import dd.kms.zenodot.api.common.FieldScannerBuilder;
-import dd.kms.zenodot.api.common.MethodScanner;
 import dd.kms.zenodot.api.common.MethodScannerBuilder;
 import org.junit.Test;
 

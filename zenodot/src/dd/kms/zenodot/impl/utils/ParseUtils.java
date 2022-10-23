@@ -3,15 +3,13 @@ package dd.kms.zenodot.impl.utils;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.*;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.result.*;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.*;
 import dd.kms.zenodot.impl.parsers.*;
 import dd.kms.zenodot.impl.parsers.expectations.ClassParseResultExpectation;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
-import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
-import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 
 import java.util.*;
@@ -115,8 +113,8 @@ public class ParseUtils
 			return new ParseResultWithTail(objectParseResult, tailParseResult, tokenStream);
 		} else if (parseResult instanceof ClassParseResult) {
 			ClassParseResult classParseResult = (ClassParseResult) parseResult;
-			TypeInfo type = classParseResult.getType();
-			AbstractParser<TypeInfo, ObjectParseResult, ObjectParseResultExpectation> classTailParser = parserToolbox.createParser(ClassTailParser.class);
+			Class<?> type = classParseResult.getType();
+			AbstractParser<Class<?>, ObjectParseResult, ObjectParseResultExpectation> classTailParser = parserToolbox.createParser(ClassTailParser.class);
 			return classTailParser.parse(tokenStream, type, expectation);
 		} else {
 			throw new InternalErrorException("Can only parse tails of objects and classes, but requested for " + parseResult.getClass().getSimpleName());

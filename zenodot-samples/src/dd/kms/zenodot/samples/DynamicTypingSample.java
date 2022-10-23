@@ -6,8 +6,6 @@ import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 /**
  * This sample demonstrates how dynamic typing can save casts because
@@ -23,9 +21,8 @@ public class DynamicTypingSample
 			.evaluationMode(EvaluationMode.DYNAMIC_TYPING)
 			.build();
 		String expression = "getObject().length()";
-		ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
 		ExpressionParser parser = Parsers.createExpressionParser(settings);
-		System.out.println("Result: " + parser.evaluate(expression, thisValue).getObject());
+		System.out.println("Result: " + parser.evaluate(expression, testInstance));
 	}
 
 	private static class TestClass

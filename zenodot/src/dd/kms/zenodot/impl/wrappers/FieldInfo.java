@@ -1,4 +1,6 @@
-package dd.kms.zenodot.api.wrappers;
+package dd.kms.zenodot.impl.wrappers;
+
+import java.lang.reflect.Field;
 
 /**
  * Wrapper for fields<br/>
@@ -7,7 +9,8 @@ package dd.kms.zenodot.api.wrappers;
  */
 public interface FieldInfo extends MemberInfo
 {
-	TypeInfo getType();
+	Field getField();
+	Class<?> getType();
 	Object get(Object instance) throws IllegalAccessException;
 	void set(Object instance, Object value) throws IllegalAccessException;
 }

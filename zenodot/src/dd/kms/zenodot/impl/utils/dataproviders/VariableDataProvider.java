@@ -1,13 +1,12 @@
 package dd.kms.zenodot.impl.utils.dataproviders;
 
-import dd.kms.zenodot.api.common.ObjectInfoProvider;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.Variable;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
@@ -45,8 +44,8 @@ public class VariableDataProvider
 	}
 
 	private TypeMatch rateVariableByTypes(Variable variable, ObjectParseResultExpectation expectation) {
-		ObjectInfo value = variable.getValue();
-		TypeInfo valueType = objectInfoProvider.getType(value);
+		Object value = variable.getValue();
+		Class<?> valueType = value != null ? value.getClass() : InfoProvider.NO_TYPE;
 		return expectation.rateTypeMatch(valueType);
 	}
 

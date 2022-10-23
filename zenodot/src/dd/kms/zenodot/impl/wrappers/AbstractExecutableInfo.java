@@ -3,10 +3,6 @@ package dd.kms.zenodot.impl.wrappers;
 import com.google.common.base.Joiner;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.api.wrappers.ExecutableInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -15,18 +11,21 @@ import java.util.Objects;
 
 abstract class AbstractExecutableInfo implements ExecutableInfo
 {
-	private final TypeInfo declaringType;
 	protected final Executable	executable;
 
-	AbstractExecutableInfo(TypeInfo declaringType, Executable executable) {
-		this.declaringType = declaringType;
+	AbstractExecutableInfo(Executable executable) {
 		this.executable = executable;
 	}
 
 	abstract boolean doIsArgumentIndexValid(int argIndex);
-	abstract Type doGetExpectedArgumentType(int argIndex);
-	abstract TypeMatch doRateArgumentMatch(List<TypeInfo> argumentTypes);
+	abstract Class<?> doGetExpectedArgumentType(int argIndex);
+	abstract TypeMatch doRateArgumentMatch(List<Class<?>> argumentTypes);
 	abstract Object[] doCreateArgumentArray(List<ObjectInfo> argumentInfos);
+
+	@Override
+	public Executable getExecutable() {
+		return executable;
+	}
 
 	@Override
 	public String getName() {
@@ -49,8 +48,8 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 	}
 
 	@Override
-	public TypeInfo getDeclaringType() {
-		return declaringType;
+	public Class<?> getDeclaringClass() {
+		return executable.getDeclaringClass();
 	}
 
 	@Override
@@ -64,10 +63,8 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 	}
 
 	@Override
-	public TypeInfo getReturnType() {
-		return	executable instanceof Method	? declaringType.resolveType(((Method) executable).getGenericReturnType()) :
-		executable instanceof Constructor<?> 	? declaringType
-												: InfoProvider.NO_TYPE;
+	public Class<?> getReturnType() {
+		return executable instanceof Method ? ((Method) executable).getReturnType() : executable.getDeclaringClass();
 	}
 
 	@Override
@@ -76,12 +73,12 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 	}
 
 	@Override
-	public final TypeInfo getExpectedArgumentType(int argIndex) {
-		return declaringType.resolveType(doGetExpectedArgumentType(argIndex));
+	public final Class<?> getExpectedArgumentType(int argIndex) {
+		return doGetExpectedArgumentType(argIndex);
 	}
 
 	@Override
-	public final TypeMatch rateArgumentMatch(List<TypeInfo> argumentTypes) {
+	public final TypeMatch rateArgumentMatch(List<Class<?>> argumentTypes) {
 		return doRateArgumentMatch(argumentTypes);
 	}
 
@@ -96,17 +93,17 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 			return InfoProvider.INDETERMINATE_VALUE;
 		}
 		executable.setAccessible(true);
-		return	executable instanceof Method			? ((Method) executable).invoke(instance, arguments) :
-				executable instanceof Constructor<?>	? ((Constructor<?>) executable).newInstance(arguments)
-														: null;
+		return executable instanceof Method	? ((Method) executable).invoke(instance, arguments)
+											: ((Constructor<?>) executable).newInstance(arguments);
 	}
 
 	@Override
 	public String formatArguments() {
 		int numArguments = getNumberOfArguments();
 		List<String> argumentTypeNames = new ArrayList<>(numArguments);
+		Class<?>[] parameterTypes = executable.getParameterTypes();
 		for (int i = 0; i < numArguments; i++) {
-			TypeInfo argumentType = declaringType.resolveType(executable.getGenericParameterTypes()[i]);
+			Class<?> argumentType = parameterTypes[i];
 			String argumentTypeName = i < numArguments - 1 || !isVariadic()
 										? argumentType.toString()
 										: argumentType.getComponentType().toString() + "...";
@@ -120,13 +117,12 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		AbstractExecutableInfo that = (AbstractExecutableInfo) o;
-		return Objects.equals(executable, that.executable) &&
-				Objects.equals(declaringType, that.declaringType);
+		return Objects.equals(executable, that.executable);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(executable, declaringType);
+		return Objects.hash(executable);
 	}
 
 	@Override

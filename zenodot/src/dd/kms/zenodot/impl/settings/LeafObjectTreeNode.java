@@ -1,7 +1,6 @@
 package dd.kms.zenodot.impl.settings;
 
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 import java.util.Collections;
 
@@ -10,10 +9,10 @@ import java.util.Collections;
  */
 public class LeafObjectTreeNode implements ObjectTreeNode
 {
-	private final String		name;
-	private final ObjectInfo	userObject;
+	private final String	name;
+	private final Object	userObject;
 
-	public LeafObjectTreeNode(String name, ObjectInfo userObject) {
+	public LeafObjectTreeNode(String name, Object userObject) {
 		this.name = name;
 		this.userObject = userObject;
 	}
@@ -29,7 +28,7 @@ public class LeafObjectTreeNode implements ObjectTreeNode
 	}
 
 	@Override
-	public ObjectInfo getUserObject() {
+	public Object getUserObject() {
 		return userObject;
 	}
 }

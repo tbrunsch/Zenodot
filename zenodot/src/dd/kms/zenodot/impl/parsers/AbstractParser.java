@@ -1,11 +1,10 @@
 package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.result.ParseResult;
+import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.api.settings.CompletionMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.*;
 import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
@@ -15,7 +14,7 @@ import dd.kms.zenodot.impl.utils.ParserToolbox;
 
 /**
  * Base class of all parsers. Each parser assumes that it is called in a certain context. This is
- * either an object (described by {@link ObjectInfo}) or a class (describes by {@link TypeInfo}).<br/>
+ * either an object (described by {@link ObjectInfo}) or a class (describes by {@link Class<?>}).<br/>
  * <br/>
  * <b>Example 1:</b> The {@link ExpressionParser} that is used to parse expressions is called in the
  * context of the object that can be referred to by {@code this}. It evaluates a field name to the value

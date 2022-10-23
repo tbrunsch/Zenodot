@@ -2,10 +2,9 @@ package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.result.ClassParseResult;
-import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
+import dd.kms.zenodot.impl.result.ClassParseResult;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -31,7 +30,7 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 
 		log(LogLevel.INFO, "parsing class at " + tokenStream);
 		ClassParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
-		TypeInfo targetType = classParseResult.getType();
+		Class<?> targetType = classParseResult.getType();
 
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
@@ -42,7 +41,7 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 		return parseAndCast(tokenStream, targetType);
 	}
 
-	private ObjectParseResult parseAndCast(TokenStream tokenStream, TypeInfo targetType) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
+	private ObjectParseResult parseAndCast(TokenStream tokenStream, Class<?> targetType) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
 		log(LogLevel.INFO, "parsing object to cast at " + tokenStream);
 		ObjectParseResult parseResult = parserToolbox.createParser(SimpleExpressionParser.class).parse(tokenStream, parserToolbox.getThisInfo(), new ObjectParseResultExpectation());
 		ObjectInfo objectInfo = parseResult.getObjectInfo();
@@ -59,9 +58,9 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 	private static class CastParseResult extends AbstractObjectParseResult
 	{
 		private final ObjectParseResult	parseResult;
-		private final TypeInfo			targetType;
+		private final Class<?>			targetType;
 
-		CastParseResult(ObjectParseResult parseResult, TypeInfo targetType, ObjectInfo castInfo, TokenStream tokenStream) {
+		CastParseResult(ObjectParseResult parseResult, Class<?> targetType, ObjectInfo castInfo, TokenStream tokenStream) {
 			super(castInfo, tokenStream);
 			this.parseResult = parseResult;
 			this.targetType = targetType;

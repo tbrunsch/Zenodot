@@ -7,9 +7,6 @@ import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
-import dd.kms.zenodot.api.wrappers.TypeInfo;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.tests.common.AbstractTest;
 import org.junit.Assume;
@@ -68,13 +65,12 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 		Class<? extends Exception> expectedExceptionClass = ParseException.class;
 		try {
-			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
 			ExpressionParser expressionParser = Parsers.createExpressionParser(settings);
 			if (compile) {
-				CompiledExpression compiledExpression = expressionParser.compile(expression, thisValue);
-				compiledExpression.evaluate(thisValue).getObject();
+				CompiledExpression compiledExpression = expressionParser.compile(expression, testInstance);
+				compiledExpression.evaluate(testInstance);
 			} else {
-				expressionParser.evaluate(expression, thisValue).getObject();
+				expressionParser.evaluate(expression, testInstance);
 			}
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
@@ -92,15 +88,12 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 		try {
 			final Object actualValue;
-			ObjectInfo thisValue = InfoProvider.createObjectInfo(testInstance);
-			Class<?> testClass = testInstance == null ? null : testInstance.getClass();
-			TypeInfo thisType = InfoProvider.createTypeInfo(testClass);
 			ExpressionParser expressionParser = Parsers.createExpressionParser(settings);
 			if (compile) {
-				CompiledExpression compiledExpression = expressionParser.compile(expression, thisValue);
-				actualValue = compiledExpression.evaluate(thisValue).getObject();
+				CompiledExpression compiledExpression = expressionParser.compile(expression, testInstance);
+				actualValue = compiledExpression.evaluate(testInstance);
 			} else {
-				actualValue = expressionParser.evaluate(expression, thisValue).getObject();
+				actualValue = expressionParser.evaluate(expression, testInstance);
 			}
 			if (executeAssertions) {
 				assertEquals("Expression: " + expression, expectedValue, actualValue);

@@ -1,7 +1,6 @@
 package dd.kms.zenodot.api;
 
 import dd.kms.zenodot.api.result.CodeCompletion;
-import dd.kms.zenodot.api.wrappers.PackageInfo;
 
 import java.util.List;
 
@@ -24,5 +23,5 @@ public interface PackageParser
 	 *
 	 * @throws ParseException
 	 */
-	 PackageInfo evaluate(String packageName) throws ParseException;
+	 String evaluate(String packageName) throws ParseException;
 }

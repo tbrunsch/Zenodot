@@ -1,7 +1,8 @@
-package dd.kms.zenodot.api.wrappers;
+package dd.kms.zenodot.impl.wrappers;
 
 import dd.kms.zenodot.api.matching.TypeMatch;
 
+import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -12,13 +13,14 @@ import java.util.List;
  */
 public interface ExecutableInfo extends MemberInfo
 {
+	Executable getExecutable();
 	int getNumberOfArguments();
 	boolean isVariadic();
-	TypeInfo getReturnType();
+	Class<?> getReturnType();
 
 	boolean isArgumentIndexValid(int argIndex);
-	TypeInfo getExpectedArgumentType(int argIndex);
-	TypeMatch rateArgumentMatch(List<TypeInfo> argumentTypes);
+	Class<?> getExpectedArgumentType(int argIndex);
+	TypeMatch rateArgumentMatch(List<Class<?>> argumentTypes);
 	Object[] createArgumentArray(List<ObjectInfo> argumentInfos);
 	Object invoke(Object instance, Object[] arguments) throws InvocationTargetException, IllegalAccessException, InstantiationException;
 	String formatArguments();
