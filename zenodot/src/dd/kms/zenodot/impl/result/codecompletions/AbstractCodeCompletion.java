@@ -1,10 +1,9 @@
 package dd.kms.zenodot.impl.result.codecompletions;
 
+import com.google.common.collect.Range;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.CodeCompletionType;
-import dd.kms.zenodot.api.result.IntRange;
-import dd.kms.zenodot.impl.result.IntRanges;
 
 import java.util.Objects;
 
@@ -28,8 +27,8 @@ abstract class AbstractCodeCompletion implements CodeCompletion
 	}
 
 	@Override
-	public final IntRange getInsertionRange() {
-		return IntRanges.create(insertionBegin, insertionEnd);
+	public final Range<Integer> getInsertionRange() {
+		return Range.openClosed(insertionBegin, insertionEnd);
 	}
 
 	@Override

@@ -26,7 +26,7 @@ class CodeCompletionMethodImpl extends AbstractCodeCompletion implements CodeCom
 	@Override
 	public int getCaretPositionAfterInsertion() {
 		boolean hasArguments = method.getParameterCount() > 0;
-		int insertionBegin = getInsertionRange().getBegin();
+		int insertionBegin = getInsertionRange().lowerEndpoint();
 		return insertionBegin + (hasArguments
 				? method.getName().length() + 1
 				: getTextToInsert().length());
