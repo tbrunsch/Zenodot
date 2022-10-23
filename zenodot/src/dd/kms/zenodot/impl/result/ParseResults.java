@@ -26,8 +26,8 @@ public class ParseResults
 		return new IdentityObjectParseResult(objectInfo, tokenStream);
 	}
 
-	public static ObjectParseResult createCompiledConstantObjectParseResult(Object object, TokenStream tokenStream) {
-		return new ConstantObjectParseResult(object, tokenStream);
+	public static ObjectParseResult createCompiledConstantObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
+		return new ConstantObjectParseResult(objectInfo, tokenStream);
 	}
 
 	public static ExecutableArgumentInfo createExecutableArgumentInfo(int currentArgumentIndex, Map<ExecutableInfo, Boolean> applicableExecutableOverloads) {
@@ -52,8 +52,8 @@ public class ParseResults
 
 	private static class ConstantObjectParseResult extends AbstractObjectParseResult
 	{
-		ConstantObjectParseResult(Object object, TokenStream tokenStream) {
-			super(InfoProvider.createObjectInfo(object), tokenStream);
+		ConstantObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
+			super(objectInfo, tokenStream);
 		}
 
 		@Override

@@ -1,6 +1,7 @@
 package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
@@ -101,7 +102,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		String stringLiteral = tokenStream.readStringLiteral();
 		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteral + "'");
 
-		return ParseResults.createCompiledConstantObjectParseResult(stringLiteral, tokenStream);
+		return ParseResults.createCompiledConstantObjectParseResult(InfoProvider.createObjectInfo(stringLiteral), tokenStream);
 	}
 
 	private ObjectParseResult parseCharacterLiteral(TokenStream tokenStream) throws SyntaxException, CodeCompletionException, InternalErrorException {
@@ -109,23 +110,23 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		char characterLiteral = tokenStream.readCharacterLiteral();
 		log(LogLevel.SUCCESS, "detected character literal '" + characterLiteral + "'");
 
-		return ParseResults.createCompiledConstantObjectParseResult(characterLiteral, tokenStream);
+		return ParseResults.createCompiledConstantObjectParseResult(InfoProvider.createObjectInfo(characterLiteral, char.class), tokenStream);
 	}
 
 	private ObjectParseResult parseNamedLiteral(TokenStream tokenStream, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		String literal = tokenStream.readKeyword(info -> suggestNamedLiteral(info, expectation), "Expected a named literal");
-		Map<String, Object> namedLiteralMap = createNamedLiteralMap();
+		Map<String, ObjectInfo> namedLiteralMap = createNamedLiteralMap();
 		if (!namedLiteralMap.containsKey(literal)) {
 			throw new SyntaxException("Unknown literal '" + literal + "'");
 		}
-		Object literalValue = namedLiteralMap.get(literal);
+		ObjectInfo literalValueInfo = namedLiteralMap.get(literal);
 		log(LogLevel.SUCCESS, "detected literal '" + literal + "'");
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
 		// "this" is not a constant literal, but depends on the context
 		return THIS_LITERAL.equals(literal)
-				? new ThisParseResult(literalValue, tokenStream)
-				: ParseResults.createCompiledConstantObjectParseResult(literalValue, tokenStream);
+				? new ThisParseResult(literalValueInfo, tokenStream)
+				: ParseResults.createCompiledConstantObjectParseResult(literalValueInfo, tokenStream);
 	}
 
 	private CodeCompletions suggestNamedLiteral(CompletionInfo info, ObjectParseResultExpectation expectation) {
@@ -135,14 +136,14 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 		log(LogLevel.SUCCESS, "suggesting named literals");
 
-		Map<String, Object> literalMap = createNamedLiteralMap();
+		Map<String, ObjectInfo> literalMap = createNamedLiteralMap();
 		ImmutableList.Builder<CodeCompletion> completionsBuilder = ImmutableList.builder();
 		for (String literal : literalMap.keySet()) {
 			if (!literal.startsWith(nameToComplete)) {
 				continue;
 			}
-			Object literalValue = literalMap.get(literal);
-			Class<?> literalType = literalValue != null ? literalValue.getClass() : InfoProvider.NO_TYPE;
+			ObjectInfo literalValueInfo = literalMap.get(literal);
+			Class<?> literalType = literalValueInfo.getDeclaredType();
 			StringMatch stringMatch = MatchRatings.rateStringMatch(literal, nameToComplete);
 			TypeMatch typeMatch = expectation.rateTypeMatch(literalType);
 			MatchRating matchRating = MatchRatings.create(stringMatch, typeMatch, false);
@@ -152,12 +153,12 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		return new CodeCompletions(completionsBuilder.build());
 	}
 
-	private Map<String, Object> createNamedLiteralMap() {
-		Map<String, Object> namedLiteralMap = new HashMap<>();
-		namedLiteralMap.put(NULL_LITERAL,	null);
-		namedLiteralMap.put(FALSE_LITERAL,	false);
-		namedLiteralMap.put(TRUE_LITERAL,	true);
-		namedLiteralMap.put(THIS_LITERAL,	parserToolbox.getThisInfo().getObject());
+	private Map<String, ObjectInfo> createNamedLiteralMap() {
+		Map<String, ObjectInfo> namedLiteralMap = new HashMap<>();
+		namedLiteralMap.put(NULL_LITERAL,	InfoProvider.NULL_LITERAL);
+		namedLiteralMap.put(FALSE_LITERAL,	InfoProvider.createObjectInfo(false, boolean.class));
+		namedLiteralMap.put(TRUE_LITERAL,	InfoProvider.createObjectInfo(true, boolean.class));
+		namedLiteralMap.put(THIS_LITERAL,	parserToolbox.getThisInfo());
 		return namedLiteralMap;
 	}
 
@@ -169,8 +170,8 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 	private static class ThisParseResult extends AbstractObjectParseResult
 	{
-		ThisParseResult(Object thisValue, TokenStream tokenStream) {
-			super(InfoProvider.createObjectInfo(thisValue), tokenStream);
+		ThisParseResult(ObjectInfo thisValueInfo, TokenStream tokenStream) {
+			super(thisValueInfo, tokenStream);
 		}
 
 		@Override
@@ -193,7 +194,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 			V literalValue = tokenReader.read(tokenStream);
 			log(LogLevel.SUCCESS, "detected numeric literal '" + literalValue + "'");
 			increaseConfidence(ParserConfidence.RIGHT_PARSER);
-			return ParseResults.createCompiledConstantObjectParseResult(literalValue, tokenStream);
+			return ParseResults.createCompiledConstantObjectParseResult(InfoProvider.createObjectInfo(literalValue, Primitives.unwrap(literalValue.getClass())), tokenStream);
 		}
 	}
 

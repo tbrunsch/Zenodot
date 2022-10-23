@@ -4,6 +4,7 @@ import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.settings.Variable;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -49,7 +50,7 @@ public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		return ParseResults.createCompiledConstantObjectParseResult(variable.get().getValue(), tokenStream);
+		return ParseResults.createCompiledConstantObjectParseResult(InfoProvider.createObjectInfo(variable.get().getValue()), tokenStream);
 	}
 
 	private CodeCompletions suggestVariables(ObjectParseResultExpectation expectation, CompletionInfo info) {
