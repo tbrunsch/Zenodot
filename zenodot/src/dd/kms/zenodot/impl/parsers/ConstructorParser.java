@@ -16,7 +16,6 @@ import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
@@ -191,7 +190,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				+ ")";
 	}
 
-	private static class ObjectConstructorParseResult extends AbstractObjectParseResult
+	private static class ObjectConstructorParseResult extends ObjectParseResult
 	{
 		private final ExecutableInfo			constructor;
 		private final List<ObjectParseResult>	arguments;
@@ -212,7 +211,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 	}
 
-	private static class ArrayConstructorWithInitializerListParseResult extends AbstractObjectParseResult
+	private static class ArrayConstructorWithInitializerListParseResult extends ObjectParseResult
 	{
 		private final Class<?>					componentType;
 		private final List<ObjectParseResult>	elementParseResults;
@@ -233,7 +232,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 	}
 
-	private static class ArrayConstructorWithDefaultInitializationParseResult extends AbstractObjectParseResult
+	private static class ArrayConstructorWithDefaultInitializationParseResult extends ObjectParseResult
 	{
 		private final Class<?>			componentType;
 		private final ObjectParseResult	sizeParseResult;

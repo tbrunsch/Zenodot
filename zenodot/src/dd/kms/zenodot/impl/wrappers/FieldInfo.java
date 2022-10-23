@@ -2,15 +2,35 @@ package dd.kms.zenodot.impl.wrappers;
 
 import java.lang.reflect.Field;
 
-/**
- * Wrapper for fields<br/>
- * <br/>
- * Handles parameterized types (Generics) to some extend and keeps track of substituted parameters.
- */
-public interface FieldInfo extends MemberInfo
+public class FieldInfo extends MemberInfo<Field>
 {
-	Field getField();
-	Class<?> getType();
-	Object get(Object instance) throws IllegalAccessException;
-	void set(Object instance, Object value) throws IllegalAccessException;
+	public FieldInfo(Field field) {
+		super(field);
+	}
+
+	public Field getField() {
+		return member;
+	}
+
+	public Class<?> getType() {
+		return member.getType();
+	}
+
+	public Object get(Object instance) throws IllegalAccessException {
+		if (instance == InfoProvider.INDETERMINATE_VALUE) {
+			return InfoProvider.INDETERMINATE_VALUE;
+		}
+		member.setAccessible(true);
+		return member.get(instance);
+	}
+
+	public void set(Object instance, Object value) throws IllegalAccessException {
+		member.setAccessible(true);
+		member.set(instance, value);
+	}
+
+	@Override
+	public String toString() {
+		return getName();
+	}
 }

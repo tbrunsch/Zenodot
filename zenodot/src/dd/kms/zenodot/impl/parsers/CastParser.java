@@ -10,7 +10,6 @@ import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
@@ -55,7 +54,7 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 		}
 	}
 
-	private static class CastParseResult extends AbstractObjectParseResult
+	private static class CastParseResult extends ObjectParseResult
 	{
 		private final ObjectParseResult	parseResult;
 		private final Class<?>			targetType;

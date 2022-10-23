@@ -12,7 +12,6 @@ import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
 import dd.kms.zenodot.impl.result.ParseResults;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
@@ -89,7 +88,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		return indexParseResult;
 	}
 
-	private static class ArrayParseResult extends AbstractObjectParseResult
+	private static class ArrayParseResult extends ObjectParseResult
 	{
 		private final ObjectParseResult indexParseResult;
 

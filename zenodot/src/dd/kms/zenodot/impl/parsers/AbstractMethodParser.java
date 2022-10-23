@@ -15,7 +15,6 @@ import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
@@ -126,7 +125,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 		return InfoProvider.getMethodInfos(getContextType(context), methodScanner);
 	}
 
-	private static class MethodParseResult extends AbstractObjectParseResult
+	private static class MethodParseResult extends ObjectParseResult
 	{
 		private final ExecutableInfo			method;
 		private final List<ObjectParseResult>	arguments;

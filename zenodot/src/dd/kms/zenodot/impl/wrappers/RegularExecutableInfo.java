@@ -13,7 +13,7 @@ import java.util.List;
  * underlying executable is non-variadic, treating the variadic part as a single array.
  * The other view on variadic methods is {@link VariadicExecutableInfo}.
  */
-public class RegularExecutableInfo extends AbstractExecutableInfo
+public class RegularExecutableInfo extends ExecutableInfo
 {
 	public RegularExecutableInfo(Executable executable) {
 		super(executable);
@@ -29,7 +29,7 @@ public class RegularExecutableInfo extends AbstractExecutableInfo
 		if (argIndex >= getNumberOfArguments()) {
 			throw new IndexOutOfBoundsException("Argument index " + argIndex + " is not in the range [0, " + getNumberOfArguments() + ")");
 		}
-		return executable.getParameterTypes()[argIndex];
+		return member.getParameterTypes()[argIndex];
 	}
 
 	@Override

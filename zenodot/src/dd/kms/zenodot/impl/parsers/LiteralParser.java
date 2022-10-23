@@ -16,7 +16,6 @@ import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.ParseResults;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
@@ -168,7 +167,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		return parseResult;
 	}
 
-	private static class ThisParseResult extends AbstractObjectParseResult
+	private static class ThisParseResult extends ObjectParseResult
 	{
 		ThisParseResult(ObjectInfo thisValueInfo, TokenStream tokenStream) {
 			super(thisValueInfo, tokenStream);

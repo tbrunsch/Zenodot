@@ -12,11 +12,11 @@ import java.util.Map;
 public class ParseResults
 {
 	public static ClassParseResult createClassParseResult(Class<?> type) {
-		return new ClassParseResultImpl(type);
+		return new ClassParseResult(type);
 	}
 
 	public static PackageParseResult createPackageParseResult(String packageName) {
-		return new PackageParseResultImpl(packageName);
+		return new PackageParseResult(packageName);
 	}
 
 	public static ObjectParseResult createCompiledIdentityObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
@@ -35,7 +35,7 @@ public class ParseResults
 		return new ExecutableArgumentInfoImpl(currentArgumentIndex, builder.build());
 	}
 
-	private static class IdentityObjectParseResult extends AbstractObjectParseResult
+	private static class IdentityObjectParseResult extends ObjectParseResult
 	{
 		IdentityObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
 			super(objectInfo, tokenStream);
@@ -47,7 +47,7 @@ public class ParseResults
 		}
 	}
 
-	private static class ConstantObjectParseResult extends AbstractObjectParseResult
+	private static class ConstantObjectParseResult extends ObjectParseResult
 	{
 		ConstantObjectParseResult(ObjectInfo objectInfo, TokenStream tokenStream) {
 			super(objectInfo, tokenStream);

@@ -267,7 +267,7 @@ public class ParseUtils
 		}
 	}
 
-	private static class ParseResultWithTail extends AbstractObjectParseResult
+	private static class ParseResultWithTail extends ObjectParseResult
 	{
 		private final ObjectParseResult parseResult;
 		private final ObjectParseResult tailParseResult;

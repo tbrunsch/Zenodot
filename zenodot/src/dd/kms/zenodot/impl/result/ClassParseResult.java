@@ -1,9 +1,22 @@
 package dd.kms.zenodot.impl.result;
 
 /**
- * An instance of this interface is returned if the subexpression describes a class.
+ * An instance of this class is returned if the subexpression describes a class.
  */
-public interface ClassParseResult extends ParseResult
+public class ClassParseResult implements ParseResult
 {
-	Class<?> getType();
+	private final Class<?> type;
+
+	ClassParseResult(Class<?> type) {
+		this.type = type;
+	}
+
+	public Class<?> getType() {
+		return type;
+	}
+
+	@Override
+	public String toString() {
+		return type.toString();
+	}
 }

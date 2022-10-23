@@ -16,7 +16,6 @@ import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
@@ -106,7 +105,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		return InfoProvider.getFieldInfos(getContextType(context), fieldScanner);
 	}
 
-	private static class FieldParseResult extends AbstractObjectParseResult
+	private static class FieldParseResult extends ObjectParseResult
 	{
 		private final FieldInfo	fieldInfo;
 		private final boolean	contextStatic;

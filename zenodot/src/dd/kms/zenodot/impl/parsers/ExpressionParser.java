@@ -19,7 +19,6 @@ import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.tokenizer.Associativity;
@@ -207,7 +206,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		ObjectInfo apply(OperatorResultProvider operatorResultProvider, ObjectInfo lhs, ObjectInfo rhs) throws OperatorException;
 	}
 
-	private static class ExpressionParseResult extends AbstractObjectParseResult
+	private static class ExpressionParseResult extends ObjectParseResult
 	{
 		private final List<ObjectParseResult>	operands;
 		private final List<BinaryOperator>		operators;
@@ -252,7 +251,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		}
 	}
 
-	private static class InstanceOfParseResult extends AbstractObjectParseResult
+	private static class InstanceOfParseResult extends ObjectParseResult
 	{
 		private final ExpressionParseResult	expressionParseResult;
 		private final Class<?>				type;

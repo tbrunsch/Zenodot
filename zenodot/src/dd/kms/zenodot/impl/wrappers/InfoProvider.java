@@ -31,11 +31,11 @@ public class InfoProvider
 	}
 
 	public static ClassInfo createClassInfo(String qualifiedClassName) throws ClassNotFoundException {
-		return new dd.kms.zenodot.impl.wrappers.ClassInfoImpl(dd.kms.zenodot.impl.utils.ClassUtils.normalizeClassName(qualifiedClassName));
+		return new ClassInfo(dd.kms.zenodot.impl.utils.ClassUtils.normalizeClassName(qualifiedClassName));
 	}
 
 	public static ClassInfo createClassInfoUnchecked(String qualifiedClassName) {
-		return new dd.kms.zenodot.impl.wrappers.ClassInfoImpl(qualifiedClassName);
+		return new ClassInfo(qualifiedClassName);
 	}
 
 	public static ObjectInfo createObjectInfo(Object object) {
@@ -47,11 +47,11 @@ public class InfoProvider
 	}
 
 	public static ObjectInfo createObjectInfo(Object object, Class<?> declaredType, ObjectInfo.ValueSetter valueSetter) {
-		return new dd.kms.zenodot.impl.wrappers.ObjectInfoImpl(object, declaredType, valueSetter);
+		return new ObjectInfo(object, declaredType, valueSetter);
 	}
 
 	public static FieldInfo createFieldInfo(Field field) {
-		return new dd.kms.zenodot.impl.wrappers.FieldInfoImpl(field);
+		return new FieldInfo(field);
 	}
 
 	public static List<FieldInfo> getFieldInfos(Class<?> type, FieldScanner fieldScanner) {

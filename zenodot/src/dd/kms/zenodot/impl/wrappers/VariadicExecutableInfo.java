@@ -19,7 +19,7 @@ import java.util.List;
  * we pretend that there are two available: a regular executable and a purely variadic executable.
  * Since overloaded methods had to be handled anyway, no extra code had to be written.
  */
-public class VariadicExecutableInfo extends AbstractExecutableInfo
+public class VariadicExecutableInfo extends ExecutableInfo
 {
 	public VariadicExecutableInfo(Executable executable) {
 		super(executable);
@@ -36,8 +36,8 @@ public class VariadicExecutableInfo extends AbstractExecutableInfo
 	Class<?> doGetExpectedArgumentType(int argIndex) {
 		int lastIndex = getNumberOfArguments() - 1;
 		return argIndex < lastIndex
-				? executable.getParameterTypes()[argIndex]
-				: executable.getParameterTypes()[lastIndex].getComponentType();
+				? member.getParameterTypes()[argIndex]
+				: member.getParameterTypes()[lastIndex].getComponentType();
 	}
 
 	@Override
@@ -78,12 +78,12 @@ public class VariadicExecutableInfo extends AbstractExecutableInfo
 		int variadicArgumentIndex = numArguments - 1;
 		for (int i = 0; i < variadicArgumentIndex; i++) {
 			Object argument = argumentInfos.get(i).getObject();
-			arguments[i] = ReflectionUtils.convertTo(argument, executable.getParameterTypes()[i], false);
+			arguments[i] = ReflectionUtils.convertTo(argument, member.getParameterTypes()[i], false);
 		}
 
 		// variadic arguments exist
 		int numVarArgs = realNumArguments - numArguments + 1;
-		Class<?> varArgComponentClass = executable.getParameterTypes()[variadicArgumentIndex].getComponentType();
+		Class<?> varArgComponentClass = member.getParameterTypes()[variadicArgumentIndex].getComponentType();
 		Object varArgArray = Array.newInstance(varArgComponentClass, numVarArgs);
 		for (int i = 0; i < numVarArgs; i++) {
 			Object argument = argumentInfos.get(variadicArgumentIndex + i).getObject();
