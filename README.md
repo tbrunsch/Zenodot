@@ -136,16 +136,6 @@ Code completions are represented by the interface `CodeCompletion`. We will disc
 
 If the interface `CodeCompletion` does not provide sufficient information because you need to handle different types of code completions differently, then you can cast them to one of the following specific interfaces: `CodeCompletionClass`, `CodeCompletionPackage`, `CodeCompletionField`, `CodeCompletionMethod`, `CodeCompletionKeyword`, `CodeCompletionVariable`, or `CodeCompletionObjectTreeNode`.   
 
-# Wrapper Classes
-
-Zenodot uses wrapper classes for all kinds of relevant entities. These wrapper classes carry additional information and allow future extensions without breaking the API. The following wrapper classes are most relevant:
-
-  - `ObjectInfo`: An `ObjectInfo` does not only carry information about an object, but also about its declared type. Additionally, an `ObjectInfo` carries information about where an object comes from. If it comes from a non-final field, it also carries a setter that allows modifying that field.
-  - `ClassInfo`: A `ClassInfo` is more or less a plain String describing a class. Zenodot uses this wrapper class instead of a `Class<?>` instance in order to prevent loading classes unnecessarily. Whenever the real class object is needed, it suffices to call `Class.forName()` for the normalized name stored in a `ClassInfo`.
-  - `PackageInfo`: A `PackageInfo` simply wraps a String describing a package. Call `Package.getPackage()` for the package name stored in that wrapper to obtain the corresponding `Package` object.
-
-Whenever you need to create on of these wrapper classes, you have to use the utility class `InfoProvider`. Note that this class also contains some static constants. The constant `InfoProvider.NULL_LITERAL`, e.g., describes `null`.
-
 # Parser Settings
 
 It is obligatory to create an instance of `ParserSettings` in order to create a parser. This instance is created via a `ParserSettingsBuilder`, which is returned by the factory method `ParserSettingsBuilder.create()`. Several options are available:
