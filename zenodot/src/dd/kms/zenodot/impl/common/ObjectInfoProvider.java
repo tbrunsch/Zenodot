@@ -1,5 +1,6 @@
-package dd.kms.zenodot.api.common;
+package dd.kms.zenodot.impl.common;
 
+import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.FieldInfo;
@@ -12,12 +13,6 @@ import java.util.List;
 
 public class ObjectInfoProvider
 {
-	public static Class<?> getRuntimeType(Object object, Class<?> declaredType) {
-		return object == null || object == InfoProvider.INDETERMINATE_VALUE || (declaredType != null && declaredType.isPrimitive())
-			? declaredType
-			: object.getClass();
-	}
-
 	private final EvaluationMode evaluationMode;
 
 	public ObjectInfoProvider(EvaluationMode evaluationMode) {
@@ -32,12 +27,17 @@ public class ObjectInfoProvider
 		return evaluationMode == EvaluationMode.DYNAMIC_TYPING;
 	}
 
-	public Class<?> getType(Object object, Class<?> declaredType) {
-		return isEvaluate() ? getRuntimeType(object, declaredType) : declaredType;
-	}
-
 	public Class<?> getType(ObjectInfo objectInfo) {
 		return getType(objectInfo.getObject(), objectInfo.getDeclaredType());
+	}
+
+	public Class<?> getType(Object object, Class<?> declaredType) {
+		if (!isEvaluate()) {
+			return declaredType;
+		}
+		return object == null || object == InfoProvider.INDETERMINATE_VALUE || (declaredType != null && declaredType.isPrimitive())
+			? declaredType
+			: object.getClass();
 	}
 
 	public ObjectInfo getFieldValueInfo(Object contextObject, FieldInfo fieldInfo) {

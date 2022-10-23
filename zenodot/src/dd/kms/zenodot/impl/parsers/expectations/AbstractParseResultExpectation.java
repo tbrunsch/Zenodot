@@ -1,6 +1,6 @@
 package dd.kms.zenodot.impl.parsers.expectations;
 
-import dd.kms.zenodot.api.common.ObjectInfoProvider;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.result.ClassParseResult;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.result.PackageParseResult;

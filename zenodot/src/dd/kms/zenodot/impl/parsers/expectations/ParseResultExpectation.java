@@ -1,6 +1,6 @@
 package dd.kms.zenodot.impl.parsers.expectations;
 
-import dd.kms.zenodot.api.common.ObjectInfoProvider;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.result.ParseResult;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;

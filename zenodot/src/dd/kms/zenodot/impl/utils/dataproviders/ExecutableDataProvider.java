@@ -1,6 +1,6 @@
 package dd.kms.zenodot.impl.utils.dataproviders;
 
-import dd.kms.zenodot.api.common.ObjectInfoProvider;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;

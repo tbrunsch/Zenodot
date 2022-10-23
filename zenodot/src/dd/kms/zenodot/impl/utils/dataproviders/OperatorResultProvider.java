@@ -4,7 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
-import dd.kms.zenodot.api.common.ObjectInfoProvider;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
