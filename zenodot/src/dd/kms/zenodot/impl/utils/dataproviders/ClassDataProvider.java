@@ -10,7 +10,7 @@ import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.Imports;
 import dd.kms.zenodot.impl.wrappers.ClassInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.result.CodeCompletions;

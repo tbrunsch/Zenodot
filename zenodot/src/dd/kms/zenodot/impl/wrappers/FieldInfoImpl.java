@@ -1,8 +1,6 @@
 package dd.kms.zenodot.impl.wrappers;
 
 import dd.kms.zenodot.api.common.AccessModifier;
-import dd.kms.zenodot.api.wrappers.FieldInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -14,6 +12,11 @@ public class FieldInfoImpl implements FieldInfo
 
 	public FieldInfoImpl(Field field) {
 		this.field = field;
+	}
+
+	@Override
+	public Field getField() {
+		return field;
 	}
 
 	@Override

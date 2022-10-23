@@ -7,7 +7,7 @@ import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.api.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.settings.EvaluationMode;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.tokenizer.BinaryOperator;

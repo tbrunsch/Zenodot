@@ -1,7 +1,5 @@
 package dd.kms.zenodot.impl.wrappers;
 
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-
 public class ObjectInfoImpl implements ObjectInfo
 {
 	private final Object		object;

@@ -1,8 +1,8 @@
-package dd.kms.zenodot.api.wrappers;
+package dd.kms.zenodot.impl.wrappers;
 
 import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
+import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -13,6 +13,7 @@ import java.util.List;
  */
 public interface ExecutableInfo extends MemberInfo
 {
+	Executable getExecutable();
 	int getNumberOfArguments();
 	boolean isVariadic();
 	Class<?> getReturnType();

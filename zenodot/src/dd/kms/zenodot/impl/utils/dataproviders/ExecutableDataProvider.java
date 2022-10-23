@@ -7,7 +7,7 @@ import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
 import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.api.wrappers.ExecutableInfo;
+import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -222,20 +222,5 @@ public class ExecutableDataProvider
 
 	private MatchRating rateMethod(ExecutableInfo methodInfo, String methodName, boolean contextIsStatic, ObjectParseResultExpectation expectation) {
 		return MatchRatings.create(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), isMethodAccessDiscouraged(methodInfo, contextIsStatic));
-	}
-
-	public static String getMethodDisplayText(ExecutableInfo methodInfo) {
-		int numArguments = methodInfo.getNumberOfArguments();
-		final String argumentsAsString;
-		if (methodInfo.isVariadic()) {
-			int lastArgumentIndex = numArguments - 1;
-			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getSimpleName() + (i == lastArgumentIndex ? "..." : "")).collect(Collectors.joining(", "));
-		} else {
-			argumentsAsString = IntStream.range(0, numArguments).mapToObj(i -> methodInfo.getExpectedArgumentType(i).getSimpleName()).collect(Collectors.joining(", "));
-		}
-		return methodInfo.getName()
-				+ "("
-				+ argumentsAsString
-				+ ")";
 	}
 }

@@ -1,7 +1,5 @@
 package dd.kms.zenodot.impl.wrappers;
 
-import dd.kms.zenodot.api.wrappers.InfoProvider;
-
 /**
  * Wrapper class for objects<br/>
  * <br/>

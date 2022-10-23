@@ -6,7 +6,7 @@ import dd.kms.zenodot.api.common.RegexUtils;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 
 import java.util.Objects;
 import java.util.regex.Pattern;

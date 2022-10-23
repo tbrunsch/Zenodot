@@ -3,42 +3,59 @@ package dd.kms.zenodot.impl.result.codecompletions;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletionType;
 import dd.kms.zenodot.api.result.codecompletions.CodeCompletionMethod;
-import dd.kms.zenodot.api.wrappers.ExecutableInfo;
-import dd.kms.zenodot.impl.utils.dataproviders.ExecutableDataProvider;
 
+import java.lang.reflect.Method;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class CodeCompletionMethodImpl extends AbstractCodeCompletion implements CodeCompletionMethod
 {
-	private final ExecutableInfo	methodInfo;
+	private final Method	method;
 
-	CodeCompletionMethodImpl(ExecutableInfo methodInfo, int insertionBegin, int insertionEnd, MatchRating rating) {
+	CodeCompletionMethodImpl(Method method, int insertionBegin, int insertionEnd, MatchRating rating) {
 		super(CodeCompletionType.METHOD, insertionBegin, insertionEnd, rating);
-		this.methodInfo = methodInfo;
+		this.method = method;
 	}
 
 	@Override
-	public ExecutableInfo getMethodInfo() {
-		return methodInfo;
+	public Method getMethod() {
+		return method;
 	}
 
 	@Override
 	public int getCaretPositionAfterInsertion() {
-		boolean hasArguments = methodInfo.getNumberOfArguments() > 0;
+		boolean hasArguments = method.getParameterCount() > 0;
 		int insertionBegin = getInsertionRange().getBegin();
 		return insertionBegin + (hasArguments
-				? methodInfo.getName().length() + 1
+				? method.getName().length() + 1
 				: getTextToInsert().length());
 	}
 
 	@Override
 	public String getTextToInsert() {
-		return methodInfo.getName() + "()";
+		return method.getName() + "()";
 	}
 
 	@Override
 	public String toString() {
-		return ExecutableDataProvider.getMethodDisplayText(methodInfo);
+		final String argumentsAsString;
+		Class<?>[] parameterTypes = method.getParameterTypes();
+		int numParameters = parameterTypes.length;
+		if (method.isVarArgs()) {
+			int lastArgumentIndex = numParameters - 1;
+			argumentsAsString = IntStream.range(0, numParameters)
+				.mapToObj(i -> parameterTypes[i].getSimpleName() + (i == lastArgumentIndex ? "..." : ""))
+				.collect(Collectors.joining(", "));
+		} else {
+			argumentsAsString = IntStream.range(0, numParameters)
+				.mapToObj(i -> parameterTypes[i].getSimpleName())
+				.collect(Collectors.joining(", "));
+		}
+		return method.getName()
+			+ "("
+			+ argumentsAsString
+			+ ")";
 	}
 
 	@Override
@@ -47,11 +64,11 @@ class CodeCompletionMethodImpl extends AbstractCodeCompletion implements CodeCom
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 		CodeCompletionMethodImpl that = (CodeCompletionMethodImpl) o;
-		return Objects.equals(methodInfo, that.methodInfo);
+		return Objects.equals(method, that.method);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), methodInfo);
+		return Objects.hash(super.hashCode(), method);
 	}
 }

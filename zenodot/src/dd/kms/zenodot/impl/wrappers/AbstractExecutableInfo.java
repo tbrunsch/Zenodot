@@ -3,8 +3,6 @@ package dd.kms.zenodot.impl.wrappers;
 import com.google.common.base.Joiner;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.api.wrappers.ExecutableInfo;
-import dd.kms.zenodot.api.wrappers.InfoProvider;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -23,6 +21,11 @@ abstract class AbstractExecutableInfo implements ExecutableInfo
 	abstract Class<?> doGetExpectedArgumentType(int argIndex);
 	abstract TypeMatch doRateArgumentMatch(List<Class<?>> argumentTypes);
 	abstract Object[] doCreateArgumentArray(List<ObjectInfo> argumentInfos);
+
+	@Override
+	public Executable getExecutable() {
+		return executable;
+	}
 
 	@Override
 	public String getName() {

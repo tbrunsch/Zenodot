@@ -5,8 +5,10 @@ import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.impl.wrappers.ClassInfo;
-import dd.kms.zenodot.api.wrappers.ExecutableInfo;
-import dd.kms.zenodot.api.wrappers.FieldInfo;
+import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
+import dd.kms.zenodot.impl.wrappers.FieldInfo;
+
+import java.lang.reflect.Method;
 
 public class CodeCompletionFactory
 {
@@ -15,7 +17,7 @@ public class CodeCompletionFactory
 	}
 
 	public static CodeCompletion fieldCompletion(FieldInfo fieldInfo, int insertionBegin, int insertionEnd, MatchRating rating) {
-		return new CodeCompletionFieldImpl(fieldInfo, insertionBegin, insertionEnd, rating);
+		return new CodeCompletionFieldImpl(fieldInfo.getField(), insertionBegin, insertionEnd, rating);
 	}
 
 	public static CodeCompletion keywordCompletion(String keyword, int insertionBegin, int insertionEnd, MatchRating rating) {
@@ -23,7 +25,7 @@ public class CodeCompletionFactory
 	}
 
 	public static CodeCompletion methodCompletion(ExecutableInfo methodInfo, int insertionBegin, int insertionEnd, MatchRating rating) {
-		return new CodeCompletionMethodImpl(methodInfo, insertionBegin, insertionEnd, rating);
+		return new CodeCompletionMethodImpl((Method) methodInfo.getExecutable(), insertionBegin, insertionEnd, rating);
 	}
 
 	public static CodeCompletion objectTreeNodeCompletion(ObjectTreeNode node, int insertionBegin, int insertionEnd, MatchRating rating) {
