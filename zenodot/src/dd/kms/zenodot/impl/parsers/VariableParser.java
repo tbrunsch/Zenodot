@@ -1,7 +1,7 @@
 package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;

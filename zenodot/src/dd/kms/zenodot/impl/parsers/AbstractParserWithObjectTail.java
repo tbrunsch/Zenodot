@@ -1,7 +1,7 @@
 package dd.kms.zenodot.impl.parsers;
 
-import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.api.result.ParseResult;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
+import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;

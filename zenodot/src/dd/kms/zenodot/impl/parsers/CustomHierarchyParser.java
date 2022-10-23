@@ -2,7 +2,7 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;

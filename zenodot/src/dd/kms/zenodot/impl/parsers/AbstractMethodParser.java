@@ -6,7 +6,7 @@ import dd.kms.zenodot.api.common.MethodScanner;
 import dd.kms.zenodot.api.common.MethodScannerBuilder;
 import dd.kms.zenodot.api.common.StaticMode;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;

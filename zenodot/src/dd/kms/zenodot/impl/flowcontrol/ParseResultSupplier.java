@@ -1,6 +1,6 @@
 package dd.kms.zenodot.impl.flowcontrol;
 
-import dd.kms.zenodot.api.result.ParseResult;
+import dd.kms.zenodot.impl.result.ParseResult;
 
 public interface ParseResultSupplier
 {

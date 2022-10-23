@@ -2,7 +2,6 @@ package dd.kms.zenodot.impl.result;
 
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.impl.common.ObjectInfoProvider;
-import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;

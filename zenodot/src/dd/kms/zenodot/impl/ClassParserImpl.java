@@ -2,7 +2,7 @@ package dd.kms.zenodot.impl;
 
 import dd.kms.zenodot.api.ClassParser;
 import dd.kms.zenodot.api.ParseException;
-import dd.kms.zenodot.api.result.ClassParseResult;
+import dd.kms.zenodot.impl.result.ClassParseResult;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;

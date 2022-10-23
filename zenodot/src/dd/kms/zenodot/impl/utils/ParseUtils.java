@@ -3,14 +3,13 @@ package dd.kms.zenodot.impl.utils;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.*;
+import dd.kms.zenodot.impl.result.*;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.*;
 import dd.kms.zenodot.impl.parsers.*;
 import dd.kms.zenodot.impl.parsers.expectations.ClassParseResultExpectation;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
-import dd.kms.zenodot.impl.result.AbstractObjectParseResult;
-import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 
 import java.util.*;

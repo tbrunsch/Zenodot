@@ -1,10 +1,7 @@
 package dd.kms.zenodot.impl.result;
 
 import com.google.common.collect.ImmutableMap;
-import dd.kms.zenodot.api.result.ClassParseResult;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
-import dd.kms.zenodot.api.result.ObjectParseResult;
-import dd.kms.zenodot.api.result.PackageParseResult;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;

@@ -1,4 +1,4 @@
-package dd.kms.zenodot.api.result;
+package dd.kms.zenodot.impl.result;
 
 /**
  * An instance of this interface is returned if the subexpression describes a package.

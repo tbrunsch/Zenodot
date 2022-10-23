@@ -7,7 +7,7 @@ import dd.kms.zenodot.api.common.FieldScanner;
 import dd.kms.zenodot.api.common.FieldScannerBuilder;
 import dd.kms.zenodot.api.common.StaticMode;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.result.ObjectParseResult;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.wrappers.FieldInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;

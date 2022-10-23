@@ -1,7 +1,5 @@
 package dd.kms.zenodot.impl.result;
 
-import dd.kms.zenodot.api.result.PackageParseResult;
-
 class PackageParseResultImpl implements PackageParseResult
 {
 	private final String	packageName;
