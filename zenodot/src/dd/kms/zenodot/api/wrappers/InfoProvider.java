@@ -3,6 +3,8 @@ package dd.kms.zenodot.api.wrappers;
 import dd.kms.zenodot.api.common.ConstructorScanner;
 import dd.kms.zenodot.api.common.FieldScanner;
 import dd.kms.zenodot.api.common.MethodScanner;
+import dd.kms.zenodot.impl.wrappers.ClassInfo;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;

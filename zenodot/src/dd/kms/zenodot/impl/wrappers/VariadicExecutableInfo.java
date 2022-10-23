@@ -3,7 +3,6 @@ package dd.kms.zenodot.impl.wrappers;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 
 import java.lang.reflect.Array;

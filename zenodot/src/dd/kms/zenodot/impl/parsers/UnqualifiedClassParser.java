@@ -3,7 +3,7 @@ package dd.kms.zenodot.impl.parsers;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.ParseResult;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;

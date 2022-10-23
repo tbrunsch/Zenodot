@@ -5,7 +5,7 @@ import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.ParseResult;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
@@ -26,11 +26,10 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 
 	abstract T doParse(TokenStream tokenStream, ParserToolbox parserToolbox, S parseResultExpectation) throws CodeCompletionException, InternalErrorException, EvaluationException, SyntaxException;
 
-	CodeCompletions getCodeCompletions(String text, int caretPosition, Object thisValue, S parseResultExpectation) throws ParseException {
+	CodeCompletions getCodeCompletions(String text, int caretPosition, ObjectInfo thisInfo, S parseResultExpectation) throws ParseException {
 		if (caretPosition < 0 || caretPosition > text.length()) {
 			throw new IllegalStateException("Invalid caret position");
 		}
-		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
 		TokenStream tokenStream = new TokenStream(text, caretPosition);
 		try {
 			parse(tokenStream, thisInfo, parseResultExpectation);

@@ -4,7 +4,7 @@ import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.settings.EvaluationMode;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;

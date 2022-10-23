@@ -1,6 +1,7 @@
 package dd.kms.zenodot.api.wrappers;
 
 import dd.kms.zenodot.api.matching.TypeMatch;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;

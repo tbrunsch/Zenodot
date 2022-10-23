@@ -4,7 +4,7 @@ import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.wrappers.ExecutableInfo;
 import dd.kms.zenodot.api.wrappers.FieldInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;

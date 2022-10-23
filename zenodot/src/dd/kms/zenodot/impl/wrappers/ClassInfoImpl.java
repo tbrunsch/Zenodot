@@ -1,6 +1,5 @@
 package dd.kms.zenodot.impl.wrappers;
 
-import dd.kms.zenodot.api.wrappers.ClassInfo;
 import dd.kms.zenodot.impl.utils.ClassUtils;
 
 import java.util.Objects;

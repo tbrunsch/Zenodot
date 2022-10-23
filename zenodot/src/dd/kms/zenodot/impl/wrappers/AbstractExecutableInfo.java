@@ -5,7 +5,6 @@ import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.wrappers.ExecutableInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;

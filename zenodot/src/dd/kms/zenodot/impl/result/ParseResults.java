@@ -6,8 +6,8 @@ import dd.kms.zenodot.api.result.ObjectParseResult;
 import dd.kms.zenodot.api.result.PackageParseResult;
 import dd.kms.zenodot.api.wrappers.ExecutableInfo;
 import dd.kms.zenodot.api.wrappers.InfoProvider;
-import dd.kms.zenodot.api.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.util.Map;
 
