@@ -1,7 +1,7 @@
 package dd.kms.zenodot.impl.parsers;
 
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 /**
  * Parses

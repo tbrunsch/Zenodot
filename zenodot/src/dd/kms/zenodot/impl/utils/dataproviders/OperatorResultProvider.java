@@ -4,14 +4,14 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
-import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.settings.EvaluationMode;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.tokenizer.BinaryOperator;
 import dd.kms.zenodot.impl.tokenizer.UnaryOperator;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.util.Arrays;
 import java.util.HashMap;

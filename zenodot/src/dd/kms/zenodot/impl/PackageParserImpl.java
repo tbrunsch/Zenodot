@@ -3,17 +3,17 @@ package dd.kms.zenodot.impl;
 import dd.kms.zenodot.api.PackageParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.result.CodeCompletion;
-import dd.kms.zenodot.impl.result.PackageParseResult;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.parsers.RootpackageParser;
 import dd.kms.zenodot.impl.parsers.expectations.PackageParseResultExpectation;
+import dd.kms.zenodot.impl.result.PackageParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 
 import java.util.List;
 

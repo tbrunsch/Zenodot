@@ -2,8 +2,8 @@ package dd.kms.zenodot.impl.result;
 
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
-import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
+import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.lang.reflect.Executable;

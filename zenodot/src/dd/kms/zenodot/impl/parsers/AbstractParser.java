@@ -1,33 +1,33 @@
 package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.api.settings.CompletionMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.*;
 import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 /**
  * Base class of all parsers. Each parser assumes that it is called in a certain context. This is
- * either an object (described by {@link ObjectInfo}) or a class (describes by {@link Class<?>}).<br/>
- * <br/>
+ * either an object (described by {@link ObjectInfo}) or a class (describes by {@link Class<?>}).<br>
+ * <br>
  * <b>Example 1:</b> The {@link ExpressionParser} that is used to parse expressions is called in the
  * context of the object that can be referred to by {@code this}. It evaluates a field name to the value
- * of the field of {@code this} with the specified name.<br/>
- * <br/>
+ * of the field of {@code this} with the specified name.<br>
+ * <br>
  * <b>Example 2:</b> The {@link ClassFieldParser} that is used to parse fields of a class is
  * called in the context of that class. It evaluates a field name to the value of the (static) field
- * of that class with the specified name.<br/>
- * <br/>
+ * of that class with the specified name.<br>
+ * <br>
  * Every parser is not only responsible for parsing a certain part of the expression, but it also
  * has to ensure that the parsing process continues after parsing that part. To do so, it delegates
- * the work to appropriate parsers.<br/>
- * <br/>
+ * the work to appropriate parsers.<br>
+ * <br>
  * <b>Example 3:</b> Consider the expression {@code String.valueOf(1.23).length()}. When we ignore
  * all the parsers that fail parsing certain subexpressions, we get the following sequence of steps:
  * <ol>
@@ -80,8 +80,8 @@ public abstract class AbstractParser<C, T extends ParseResult, S extends ParseRe
 
 	/**
 	 * Parser specific code to parse the (sub-) expression at the position of the token stream in
-	 * the given context.<br/>
-	 * <br/>
+	 * the given context.<br>
+	 * <br>
 	 * The implementations are given a dedicated copy of the token stream, so they can do with it
 	 * whatever they like.
 	 */

@@ -1,18 +1,18 @@
 package dd.kms.zenodot.impl.utils;
 
-import dd.kms.zenodot.impl.common.ObjectInfoProvider;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.InternalLogger;
 import dd.kms.zenodot.impl.parsers.AbstractParser;
 import dd.kms.zenodot.impl.parsers.ExpressionParser;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
+import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.utils.dataproviders.*;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

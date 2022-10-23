@@ -10,8 +10,8 @@ class MultiStringMatcherNode<T>
 {
 	/**
 	 * Values associated with that node. Values will be set for those nodes
-	 * that represent the last character of a registered key.<br/>
-	 * <br/>
+	 * that represent the last character of a registered key.<br>
+	 * <br>
 	 * Example: If the key "ArrayList" has been registered, then there will be
 	 * one node for each of the character indices of "ArrayList". The node that
 	 * is associated with the last index (corresponding to the letter "t") contains
@@ -23,8 +23,8 @@ class MultiStringMatcherNode<T>
 	/**
 	 * Stores the children of that node corresponding to the successor character.
 	 * For example, if the keys "ArrayList" and "ArrayBlockingQueue"
-	 * the child relation will look as follows:<br/>
-	 * <br/>
+	 * the child relation will look as follows:<br>
+	 * <br>
 	 * <pre>
 	 *     A-r-r-a-y-L-i-s-t
 	 *             |

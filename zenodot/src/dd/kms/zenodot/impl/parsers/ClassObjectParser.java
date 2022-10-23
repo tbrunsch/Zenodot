@@ -5,19 +5,19 @@ import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 /**
  * Parses subexpressions {@code class} of expressions of the form {@code <class>.class}.

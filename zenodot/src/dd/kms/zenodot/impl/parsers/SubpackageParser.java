@@ -1,7 +1,7 @@
 package dd.kms.zenodot.impl.parsers;
 
-import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
 
 /**

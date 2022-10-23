@@ -12,8 +12,8 @@ import java.util.List;
  * "Variadic" view on variadic executables (methods, constructors). This view only
  * considers the variadic nature of a variadic executable and does not accept arrays
  * instead of the variadic part. Arrays are accepted by the "regular" view
- * {@link RegularExecutableInfo} of variadic executables.<br/>
- * <br/>
+ * {@link RegularExecutableInfo} of variadic executables.<br>
+ * <br>
  * It turned out that dealing with views on executables avoids cumbersome case distinctions
  * for variadic methods: Instead of assuming that there is one (variadic) executable available,
  * we pretend that there are two available: a regular executable and a purely variadic executable.

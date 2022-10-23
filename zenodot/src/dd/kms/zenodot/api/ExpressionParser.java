@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Parser for expressions<br/>
- * <br/>
+ * Parser for expressions<br>
+ * <br>
  * Zenodot provided code completions and evaluates expressions in the context of a certain object referred to by {@code this}.
  * If the context refers to, e.g., a list, then you can simply type {@code size()} to get the size of that list. You do
  * not have to enter {@code this.size()}.
@@ -48,8 +48,8 @@ public interface ExpressionParser
 	CompiledExpression compile(String expression, Class<?> thisType) throws ParseException;
 
 	/**
-	 * Compiles the expression in the context provided by {@code thisValue}.<br/>
-	 * <br/>
+	 * Compiles the expression in the context provided by {@code thisValue}.<br>
+	 * <br>
 	 * This method requires information about an object instead of a class. The reason
 	 * is that with {@link dd.kms.zenodot.api.settings.EvaluationMode#DYNAMIC_TYPING} or
 	 * {@link dd.kms.zenodot.api.settings.EvaluationMode#MIXED} also runtime type information

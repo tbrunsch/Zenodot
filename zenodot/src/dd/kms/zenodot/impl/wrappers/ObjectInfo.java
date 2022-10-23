@@ -1,10 +1,10 @@
 package dd.kms.zenodot.impl.wrappers;
 
 /**
- * Wrapper class for objects and classes.<br/>
- * <br/>
- * Distinguishes between l-values (with setter) and r-values (without setter).<br/>
- * <br/>
+ * Wrapper class for objects and classes.<br>
+ * <br>
+ * Distinguishes between l-values (with setter) and r-values (without setter).<br>
+ * <br>
  * An ObjectInfo can be created via
  * <ul>
  *     <li>{@link InfoProvider#createObjectInfo(Object)},</li>

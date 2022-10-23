@@ -6,8 +6,8 @@ import java.util.Objects;
 
 /**
  * References a class by its fully qualified (normalized) name. That way, a class does not have to be loaded
- * until it is used.<br/>
- * <br/>
+ * until it is used.<br>
+ * <br>
  * See {@link dd.kms.zenodot.impl.utils.ClassUtils#normalizeClassName(String)} for a description what is meant by "normalized".
  */
 public class ClassInfo

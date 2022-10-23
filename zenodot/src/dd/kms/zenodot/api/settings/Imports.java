@@ -3,8 +3,8 @@ package dd.kms.zenodot.api.settings;
 import java.util.Set;
 
 /**
- * Contains information about the imported classes and packages.<br/>
- * <br/>
+ * Contains information about the imported classes and packages.<br>
+ * <br>
  * An existing instance can be obtained from {@link ParserSettings#getImports()}.
  * A new instance can be created via the {@link ParserSettingsBuilder}.
  */

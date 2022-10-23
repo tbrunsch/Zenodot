@@ -6,8 +6,8 @@ import dd.kms.zenodot.api.debug.ParserLogger;
 import java.util.List;
 
 /**
- * Builder for {@link ParserSettings}<br/>
- * <br/>
+ * Builder for {@link ParserSettings}<br>
+ * <br>
  * You can either create a new builder via {@link #create()} or derive
  * one from existing settings via {@link ParserSettings#builder()}.
  */
@@ -59,8 +59,8 @@ public interface ParserSettingsBuilder
 	/**
 	 * By default, when typing an unqualified class name, only classes you have imported or whose package is
 	 * imported will be considered as code completions. With enabling this feature, also classes from other
-	 * packages will be suggested, but fully qualified.<br/>
-	 * <br/>
+	 * packages will be suggested, but fully qualified.<br>
+	 * <br>
 	 * Consider the partial class name "Lis". If you have not imported "java.util", then you will get the
 	 * code completion "java.util.List" if this feature is enabled. Otherwise, that class will not be suggested.
 	 */
@@ -69,11 +69,11 @@ public interface ParserSettingsBuilder
 	/**
 	 * Call this method if you want to inject a custom hierarchy into the parser that is not represented
 	 * by field and method names of classes. Each node of the custom hierarchy must be wrapped into an
-	 * {@link ObjectTreeNode}. Zenodot then provides code completion and evaluation for this hierarchy.<br/>
-	 * <br/>
+	 * {@link ObjectTreeNode}. Zenodot then provides code completion and evaluation for this hierarchy.<br>
+	 * <br>
 	 * An access to a node in the custom hierarchy has to be embraced in curly braces {@code {...}}. The
-	 * character {@code #} is used to separate a child node from its parent node.<br/>
-	 * <br/>
+	 * character {@code #} is used to separate a child node from its parent node.<br>
+	 * <br>
 	 * <b>Example:</b> Assume that for some reason you want to make your main menu commands accessible when
 	 *          parsing expressions. Further assume that you can currently select
 	 *          File -> Open Recent -> README.md in your menu. If you provide this information by specifying

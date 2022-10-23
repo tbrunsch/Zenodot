@@ -1,17 +1,17 @@
 package dd.kms.zenodot.impl.utils.dataproviders;
 
-import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.Variable;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.utils.ParseUtils;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 
 import java.util.Comparator;
 import java.util.List;

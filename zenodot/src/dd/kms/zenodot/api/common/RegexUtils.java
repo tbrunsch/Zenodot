@@ -15,8 +15,8 @@ public class RegexUtils
 	}
 
 	/**
-	 * Returns a regex pattern for a wildcard string.<br/>
-	 * <br/>
+	 * Returns a regex pattern for a wildcard string.<br>
+	 * <br>
 	 * A wildcard string matches a string if it is the prefix of that string. There are two exceptions to this rule:
 	 * <ul>
 	 *     <li>
