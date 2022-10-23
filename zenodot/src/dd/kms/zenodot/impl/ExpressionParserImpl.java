@@ -30,13 +30,27 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 	}
 
 	@Override
+	public List<CodeCompletion> getCompletions(String text, int caretPosition, Class<?> thisType) throws ParseException {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, thisType);
+		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getCompletions();
+	}
+
+	@Override
 	public List<CodeCompletion> getCompletions(String text, int caretPosition, Object thisValue) throws ParseException {
-		return getCodeCompletions(text, caretPosition, thisValue, PARSE_RESULT_EXPECTATION).getCompletions();
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
+		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getCompletions();
+	}
+
+	@Override
+	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String text, int caretPosition, Class<?> thisType) throws ParseException {
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, thisType);
+		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
 	}
 
 	@Override
 	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String text, int caretPosition, Object thisValue) throws ParseException {
-		return getCodeCompletions(text, caretPosition, thisValue, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
+		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
+		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
 	}
 
 	@Override

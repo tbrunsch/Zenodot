@@ -16,9 +16,20 @@ import java.util.Optional;
 public interface ExpressionParser
 {
 	/**
+	 * Returns rated code completions for the given text at a given caret position in the context provided by {@code thisType}.
+	 */
+	List<CodeCompletion> getCompletions(String text, int caretPosition, Class<?> thisType) throws ParseException;
+
+	/**
 	 * Returns rated code completions for the given text at a given caret position in the context provided by {@code thisValue}.
 	 */
 	List<CodeCompletion> getCompletions(String text, int caretPosition, Object thisValue) throws ParseException;
+
+	/**
+	 * Returns optional information about the arguments of the current method or constructor {@link ExecutableArgumentInfo}.
+	 * The value will be present if the caret is inside of a method argument list.
+	 */
+	Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String expression, int caretPosition, Class<?> thisType) throws ParseException;
 
 	/**
 	 * Returns optional information about the arguments of the current method or constructor {@link ExecutableArgumentInfo}.
