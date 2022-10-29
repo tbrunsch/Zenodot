@@ -197,7 +197,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		ParserSettings settingsWithoutSideEffects = settings.builder()
 			.evaluationMode(EvaluationMode.MIXED)
 			.build();
-		return new ParserToolbox(parserToolbox.getThisInfo(), settingsWithoutSideEffects);
+		return new ParserToolbox(parserToolbox.getThisInfo(), settingsWithoutSideEffects, parserToolbox.getVariables());
 	}
 
 	@FunctionalInterface

@@ -3,6 +3,7 @@ package dd.kms.zenodot.impl;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
@@ -13,7 +14,11 @@ import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.utils.Variables;
+import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
+
+import java.util.List;
 
 abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpectation<T>>
 {
@@ -43,8 +48,9 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 	}
 
 	T parse(TokenStream tokenStream, ObjectInfo thisInfo, S parseResultExpectation) throws CodeCompletionException, EvaluationException, SyntaxException, InternalErrorException {
+		Variables variables = createVariablePool(settings.getVariables());
 		try {
-			ParserToolbox parserToolbox = new ParserToolbox(thisInfo, settings);
+			ParserToolbox parserToolbox = new ParserToolbox(thisInfo, settings, variables);
 			return doParse(tokenStream, parserToolbox, parseResultExpectation);
 		} catch (CodeCompletionException | InternalErrorException | EvaluationException | SyntaxException e) {
 			throw e;
@@ -68,5 +74,16 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 			}
 			throw new EvaluationException(message, t);
 		}
+	}
+
+	private static Variables createVariablePool(List<Variable> variables) throws InternalErrorException {
+		Variables variablePool = new Variables(null);
+		for (Variable variable : variables) {
+			String name = variable.getName();
+			Object value = variable.getValue();
+			ObjectInfo valueInfo = InfoProvider.createObjectInfo(value);
+			variablePool.newVariable(name, valueInfo);
+		}
+		return variablePool;
 	}
 }
