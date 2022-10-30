@@ -16,6 +16,7 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
 - [Features and Short Comings](#features-and-short-comings)
   - [Code Completion](#code-completion)
   - [Dynamic Typing](#dynamic-typing)
+  - [Lambdas](#lambdas)
   - [Custom Variables](#custom-variables)
   - [Custom Hierarchies](#custom-hierarchies)
   - [Operators](#operators)
