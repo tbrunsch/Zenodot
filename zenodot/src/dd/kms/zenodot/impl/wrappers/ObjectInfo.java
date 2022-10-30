@@ -53,6 +53,6 @@ public class ObjectInfo
 	@FunctionalInterface
 	public interface ValueSetter
 	{
-		void setObject(Object object) throws IllegalArgumentException;
+		void setObjectInfo(ObjectInfo object) throws IllegalArgumentException;
 	}
 }

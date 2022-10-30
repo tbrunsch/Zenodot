@@ -283,9 +283,9 @@ public class ParseUtils
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context) throws ParseException {
-			ObjectInfo nextObjectInfo = parseResult.evaluate(thisInfo, context);
-			return tailParseResult.evaluate(thisInfo, nextObjectInfo);
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, Variables variables) throws ParseException {
+			ObjectInfo nextObjectInfo = parseResult.evaluate(thisInfo, context, variables);
+			return tailParseResult.evaluate(thisInfo, nextObjectInfo, variables);
 		}
 	}
 }

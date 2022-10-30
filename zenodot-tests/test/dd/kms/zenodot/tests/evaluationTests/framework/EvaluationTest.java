@@ -75,6 +75,8 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			assertTrue("Expression: " + expression + " - Expected exception of class '" + expectedExceptionClass.getSimpleName() + "', but caught an exception of class '" + e.getClass().getSimpleName() + "'", expectedExceptionClass.isInstance(e));
+		} catch (AssertionError e) {
+			throw e;
 		} catch (Throwable t) {
 			Assume.assumeNoException("Skipped test. Reason: We cannot be sure whether this exception is expected or not", t);
 		}

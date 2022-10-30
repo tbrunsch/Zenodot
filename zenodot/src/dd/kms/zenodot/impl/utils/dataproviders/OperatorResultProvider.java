@@ -365,17 +365,17 @@ public class OperatorResultProvider
 			throw new OperatorException("Cannot assign value of type '" + rhsType + "' to left-hand side. Expected an instance of class '" + declaredLhsType + "'");
 		}
 		Class<?> declaredResultType = declaredLhsType;
-		Object resultObject = InfoProvider.INDETERMINATE_VALUE;
+		ObjectInfo resultObjectInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, declaredResultType);
 		Object rhsObject = rhs.getObject();
 		if (isEvaluateWithSideEffects() && rhsObject != InfoProvider.INDETERMINATE_VALUE) {
 			try {
-				resultObject = rhsObject;
-				lhsValueSetter.setObject(resultObject);
+				resultObjectInfo = InfoProvider.createObjectInfo(rhsObject, declaredResultType);
+				lhsValueSetter.setObjectInfo(resultObjectInfo);
 			} catch (IllegalArgumentException e) {
 				throw new OperatorException("Could assign value of type '" + rhsType + "' to left-hand side.");
 			}
 		}
-		return InfoProvider.createObjectInfo(resultObject, declaredResultType);
+		return resultObjectInfo;
 	}
 
 	public ObjectInfo getInstanceOfInfo(ObjectInfo lhs, Class<?> rhs) throws OperatorException {
@@ -459,17 +459,17 @@ public class OperatorResultProvider
 		Class<?> clazz = getClass(objectInfo);
 		Class<?> primitiveClass = getPrimitiveClass(clazz);
 		UnaryOperatorInfo operatorInfo = UNARY_OPERATOR_WITH_ASSIGNMENT_INFO_BY_OPERATOR_AND_TYPE.get(operator, primitiveClass);
-		ObjectInfo operatorResult = applyUnaryOperatorInfo(objectInfo, operatorInfo);
-		Object operatorResultObject = operatorResult.getObject();
+		ObjectInfo operatorResultInfo = applyUnaryOperatorInfo(objectInfo, operatorInfo);
+		Object operatorResultObject = operatorResultInfo.getObject();
 		if (isEvaluateWithSideEffects() && operatorResultObject != InfoProvider.INDETERMINATE_VALUE) {
 			try {
-				Object resultObject = operatorResultObject;
-				valueSetter.setObject(resultObject);
+				operatorResultInfo = InfoProvider.createObjectInfo(operatorResultObject, operatorResultInfo.getDeclaredType(), operatorResultInfo.getValueSetter());
+				valueSetter.setObjectInfo(operatorResultInfo);
 			} catch (IllegalArgumentException e) {
 				throw new OperatorException("Illegal argument exception when applying operator: " + e.getMessage());
 			}
 		}
-		return operatorResult;
+		return operatorResultInfo;
 	}
 
 	private ObjectInfo applySignOperator(ObjectInfo objectInfo, UnaryOperator signOperator) throws OperatorException {

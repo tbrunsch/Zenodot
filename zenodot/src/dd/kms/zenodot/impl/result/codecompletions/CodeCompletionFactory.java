@@ -36,7 +36,7 @@ public class CodeCompletionFactory
 		return new CodeCompletionPackageImpl(packageName, insertionBegin, insertionEnd, rating);
 	}
 
-	public static CodeCompletion variableCompletion(Variable variable, int insertionBegin, int insertionEnd, MatchRating rating) {
-		return new CodeCompletionVariableImpl(variable, insertionBegin, insertionEnd, rating);
+	public static CodeCompletion variableCompletion(String variableName, int insertionBegin, int insertionEnd, MatchRating rating) {
+		return new CodeCompletionVariableImpl(variableName, insertionBegin, insertionEnd, rating);
 	}
 }

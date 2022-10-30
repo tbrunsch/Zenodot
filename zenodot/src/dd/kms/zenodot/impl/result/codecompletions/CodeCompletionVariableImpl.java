@@ -9,21 +9,21 @@ import java.util.Objects;
 
 class CodeCompletionVariableImpl extends AbstractSimpleCodeCompletion implements CodeCompletionVariable
 {
-	private final Variable	variable;
+	private final String variableName;
 
-	CodeCompletionVariableImpl(Variable variable, int insertionBegin, int insertionEnd, MatchRating rating) {
+	CodeCompletionVariableImpl(String variableName, int insertionBegin, int insertionEnd, MatchRating rating) {
 		super(CodeCompletionType.VARIABLE, insertionBegin, insertionEnd, rating);
-		this.variable = variable;
+		this.variableName = variableName;
 	}
 
 	@Override
-	public Variable getVariable() {
-		return variable;
+	public String getVariableName() {
+		return variableName;
 	}
 
 	@Override
 	public String toString() {
-		return variable.getName();
+		return variableName;
 	}
 
 	@Override
@@ -32,11 +32,11 @@ class CodeCompletionVariableImpl extends AbstractSimpleCodeCompletion implements
 		if (o == null || getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 		CodeCompletionVariableImpl that = (CodeCompletionVariableImpl) o;
-		return Objects.equals(variable, that.variable);
+		return Objects.equals(variableName, that.variableName);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), variable);
+		return Objects.hash(super.hashCode(), variableName);
 	}
 }

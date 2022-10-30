@@ -25,6 +25,7 @@ public class ParserToolbox
 {
 	private final ObjectInfo					thisInfo;
 	private final ParserSettings				settings;
+	private final Variables						variables;
 
 	private final InternalLogger				logger;
 
@@ -36,9 +37,10 @@ public class ParserToolbox
 	private final OperatorResultProvider 		operatorResultProvider;
 	private final VariableDataProvider			variableDataProvider;
 
-	public ParserToolbox(ObjectInfo thisInfo, ParserSettings settings) {
+	public ParserToolbox(ObjectInfo thisInfo, ParserSettings settings, Variables variables) {
 		this.thisInfo = thisInfo;
 		this.settings = settings;
+		this.variables = variables;
 
 		logger	= new InternalLogger(settings.getLogger());
 
@@ -51,7 +53,7 @@ public class ParserToolbox
 		fieldDataProvider				= new FieldDataProvider(this);
 		objectTreeNodeDataProvider		= new ObjectTreeNodeDataProvider();
 		operatorResultProvider 			= new OperatorResultProvider(objectInfoProvider, evaluationMode);
-		variableDataProvider			= new VariableDataProvider(settings.getVariables(), objectInfoProvider);
+		variableDataProvider			= new VariableDataProvider(variables, objectInfoProvider);
 	}
 
 	public ObjectInfo getThisInfo() {
@@ -60,6 +62,10 @@ public class ParserToolbox
 
 	public ParserSettings getSettings() {
 		return settings;
+	}
+
+	public Variables getVariables() {
+		return variables;
 	}
 
 	public InternalLogger getLogger() {

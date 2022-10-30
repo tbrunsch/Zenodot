@@ -5,5 +5,5 @@ import dd.kms.zenodot.api.settings.Variable;
 
 public interface CodeCompletionVariable extends CodeCompletion
 {
-	Variable getVariable();
+	String getVariableName();
 }
