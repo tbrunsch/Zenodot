@@ -2,6 +2,7 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.common.ReflectionUtils;
+import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.impl.common.ObjectInfoProvider.Parameter;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
@@ -54,6 +55,9 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		tokenStream.readString(ImmutableList.of("->"), info -> CodeCompletions.NONE);
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
+		log(LogLevel.SUCCESS, "Parsed lambda parameters " + parameters.stream().map(Parameter::getName).collect(Collectors.joining(", ")));
+		log(LogLevel.SUCCESS, "Parsed lambda arrow -> " + parameters.stream().map(Parameter::getName).collect(Collectors.joining(", ")));
+
 		// create new scope for variables
 		Variables variables = new Variables(parserToolbox.getVariables());
 		for (Parameter parameter : parameters) {
@@ -61,17 +65,21 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 			variables.createVariable(parameter.getName(), valueInfo);
 		}
 
+		log(LogLevel.INFO, "parsing lambda body");
 		ObjectParseResult bodyParseResult = parseBody(tokenStream, context, variables);
+
+		int endPosition = tokenStream.getPosition();
+		String lambdaExpression = tokenStream.getExpression().substring(startPosition, endPosition);
+		log(LogLevel.SUCCESS, "parsed lambda '" + lambdaExpression + "'");
 
 		Class<?> bodyResultType = bodyParseResult.getObjectInfo().getDeclaredType();
 		Class<?> expectedReturnType = method.getReturnType();
 		if (!expectedReturnType.isAssignableFrom(bodyResultType)) {
+			log(LogLevel.INFO, "lambda has wrong return type: " + bodyResultType + " instead of " + expectedReturnType);
 			throw new EvaluationException("Return type " + bodyResultType + " is not assignable to " + expectedReturnType);
 		}
 
-		int endPosition = tokenStream.getPosition();
-
-		String lambdaExpression = tokenStream.getExpression().substring(startPosition, endPosition);
+		log(LogLevel.SUCCESS, "lambda has correct return type");
 
 		ObjectInfo lambdaInfo = parserToolbox.getObjectInfoProvider().getLambdaInfo(
 			functionalInterface, method.getName(), parameters, bodyParseResult,
