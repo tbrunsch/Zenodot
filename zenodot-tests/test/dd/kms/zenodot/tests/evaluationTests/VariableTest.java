@@ -23,9 +23,11 @@ public class VariableTest extends EvaluationTest
 		Object testInstance = new TestClass();
 		Variable variable1 = ParserSettingsUtils.createVariable("xyz", 15.0, true);
 		Variable variable2 = ParserSettingsUtils.createVariable("abc", "Test", true);
-		return new EvaluationTestBuilder()
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> test.variables(variable1, variable2))
+			.configurator(test -> test.variables(variable1, variable2));
+
+		testBuilder
 			.addTest("b + xyz",			18.0)
 			.addTest("xyz * i",			-15000.0)
 			.addTest("(int) xyz / f",	6.0f)
@@ -35,8 +37,13 @@ public class VariableTest extends EvaluationTest
 			.addTest("xyz + xyz",		30.0)
 			.addTest("abc + abc",		"TestTest")
 			.addTest("test(xyz)",		"15.0")
-			.addTest("test(abc)",		"Test")
-			.build();
+			.addTest("test(abc)",		"Test");
+
+		testBuilder
+			.addTestWithError("xyz = 13")
+			.addTestWithError("abc = \"Test\"");
+
+		return testBuilder.build();
 	}
 
 	private static class TestClass
