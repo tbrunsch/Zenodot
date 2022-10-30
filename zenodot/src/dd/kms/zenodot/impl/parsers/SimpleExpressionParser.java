@@ -37,7 +37,8 @@ public class SimpleExpressionParser extends AbstractParser<ObjectInfo, ObjectPar
 			parserToolbox.createParser(RootpackageParser.class),
 			parserToolbox.createParser(ConstructorParser.class),
 			parserToolbox.createParser(UnaryPrefixOperatorParser.class),
-			parserToolbox.createParser(CustomHierarchyParser.class)
+			parserToolbox.createParser(CustomHierarchyParser.class),
+			parserToolbox.createParser(LambdaParser.class)
 		) ;
 		/*
 		 * possible ambiguities:

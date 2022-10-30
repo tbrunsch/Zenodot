@@ -4,7 +4,11 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ReflectionUtils
 {
@@ -101,5 +105,41 @@ public class ReflectionUtils
 		addConversions(char.class,	long.class, 	c -> (long) 	c.charValue(),	l -> (char) l.longValue());
 		addConversions(char.class,	float.class, 	c -> (float) 	c.charValue(),	f -> (char) f.floatValue());
 		addConversions(char.class,	double.class, 	c -> (double) 	c.charValue(),	d -> (char) d.doubleValue());
+	}
+
+	public static boolean isFunctionalInterface(Class<?> clazz) {
+		if (!clazz.isInterface()) {
+			return false;
+		}
+		List<Method> unimplementedMethods = getUnimplementedMethods(clazz);
+		return unimplementedMethods.size() == 1;
+	}
+
+	public static List<Method> getUnimplementedMethods(Class<?> clazz) {
+		MethodScanner scanner = MethodScannerBuilder.create().staticMode(StaticMode.NON_STATIC).build();
+		List<Method> methods = scanner.getMethods(clazz);
+		return methods.stream()
+			.filter(method -> !method.isDefault())
+			.filter(method -> Modifier.isAbstract(method.getModifiers()))
+			.filter(method -> !isToStringMethod(method))
+			.filter(method -> !isEqualsMethod(method))
+			.filter(method -> !isHashCodeMethod(method))
+			.collect(Collectors.toList());
+	}
+
+	private static boolean isToStringMethod(Method method) {
+		return method.getName().equals("toString")
+			&& method.getParameterCount() == 0;
+	}
+
+	private static boolean isEqualsMethod(Method method) {
+		return method.getName().equals("equals")
+			&& method.getParameterCount() == 1
+			&& method.getParameterTypes()[0] == Object.class;
+	}
+
+	private static boolean isHashCodeMethod(Method method) {
+		return method.getName().equals("hashCode")
+			&& method.getParameterCount() == 0;
 	}
 }

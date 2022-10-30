@@ -280,13 +280,13 @@ public class TokenStream
 
 	@Nullable
 	public UnaryOperator readUnaryOperator(CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException, InternalErrorException {
-		String operator = readOperator(UNARY_OPERATORS, completionGenerator);
+		String operator = readString(UNARY_OPERATORS, completionGenerator);
 		return UnaryOperator.getValue(operator);
 	}
 
 	@Nullable
 	public BinaryOperator readBinaryOperator(CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException, InternalErrorException {
-		String operator = readOperator(BINARY_OPERATORS, completionGenerator);
+		String operator = readString(BINARY_OPERATORS, completionGenerator);
 		return BinaryOperator.getValue(operator);
 	}
 
@@ -345,9 +345,9 @@ public class TokenStream
 	}
 
 	@Nullable
-	private String readOperator(List<String> availableOperators, CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException, InternalErrorException {
+	public String readString(List<String> expectedStrings, CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		if (caretPosition < position) {
-			throw new IllegalStateException("Internal error: Reading operator after caret position");
+			throw new IllegalStateException("Internal error: Reading string after caret position");
 		}
 		int startPos = position;
 		skipSpaces();
@@ -356,24 +356,24 @@ public class TokenStream
 			throw new CodeCompletionException(CodeCompletions.NONE);
 		}
 		int expressionLength = expression.length();
-		String detectedOperator = null;
+		String detectedString = null;
 		List<CodeCompletion> completions = null;
-		for (String operator : availableOperators) {
-			int operatorPos = 0;
+		for (String expectedString : expectedStrings) {
+			int stringPos = 0;
 			int expressionPos = position;
-			while (operatorPos < operator.length() && expressionPos < expressionLength) {
-				if (operator.charAt(operatorPos) != expression.charAt(expressionPos)) {
+			while (stringPos < expectedString.length() && expressionPos < expressionLength) {
+				if (expectedString.charAt(stringPos) != expression.charAt(expressionPos)) {
 					break;
 				}
-				operatorPos++;
+				stringPos++;
 				expressionPos++;
 			}
 
-			if (operatorPos == operator.length()) {
-				// operator is a substring of expression at current position
-				detectedOperator = operator;
+			if (stringPos == expectedString.length()) {
+				// expected string is a substring of expression at current position
+				detectedString = expectedString;
 				if (caretPosition < expressionPos) {
-					// code completion requested inside operator
+					// code completion requested inside expected string
 					CompletionInfo completionInfo = new CompletionInfoImpl(startPos, expressionPos, position, expressionPos);
 					completions = ImmutableList.copyOf(completionGenerator.generate(completionInfo).getCompletions());
 				} else {
@@ -382,8 +382,8 @@ public class TokenStream
 				break;
 			}
 
-			if (operatorPos == 0) {
-				// not even beginning of operator is a substring of expression at current position
+			if (stringPos == 0) {
+				// not even beginning of expected string is a substring of expression at current position
 				continue;
 			}
 
@@ -400,16 +400,16 @@ public class TokenStream
 		if (completions != null) {
 			throw new CodeCompletionException(new CodeCompletions(completions));
 		}
-		if (detectedOperator == null) {
+		if (detectedString == null) {
 			return null;
 		}
-		setPosition(position + detectedOperator.length());
+		setPosition(position + detectedString.length());
 		skipSpaces();
 		if (position > caretPosition) {
 			// We must not skip the caret
 			setPosition(caretPosition);
 		}
-		return detectedOperator;
+		return detectedString;
 	}
 
 	private void skipSpaces() {

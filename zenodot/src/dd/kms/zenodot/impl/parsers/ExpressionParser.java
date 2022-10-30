@@ -9,7 +9,6 @@ import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.EvaluationMode;
-import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -140,7 +139,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 			int operatorPrecedenceLevelForNextOperand = operator.getPrecedenceLevel() - (associativity == Associativity.LEFT_TO_RIGHT ? 1 : 0);
 
 			if (considerOperatorResult && stopCircuitEvaluation(accumulatedResultInfo, operator)) {
-				parserToolbox = deriveToolboxWithoutSideEffects(parserToolbox);
+				parserToolbox = parserToolbox.withEvaluationMode(EvaluationMode.MIXED);
 				considerOperatorResult = false;
 			}
 			log(LogLevel.INFO, "parsing next operand");
@@ -188,17 +187,6 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 	private static boolean stopCircuitEvaluation(ObjectInfo objectInfo, BinaryOperator operator) {
 		return operator == BinaryOperator.LOGICAL_AND	&& Boolean.FALSE.equals(objectInfo.getObject())
 			|| operator == BinaryOperator.LOGICAL_OR	&& Boolean.TRUE.equals(objectInfo.getObject());
-	}
-
-	private ParserToolbox deriveToolboxWithoutSideEffects(ParserToolbox parserToolbox) {
-		ParserSettings settings = parserToolbox.getSettings();
-		if (settings.getEvaluationMode() != EvaluationMode.DYNAMIC_TYPING) {
-			return parserToolbox;
-		}
-		ParserSettings settingsWithoutSideEffects = settings.builder()
-			.evaluationMode(EvaluationMode.MIXED)
-			.build();
-		return new ParserToolbox(parserToolbox.getThisInfo(), settingsWithoutSideEffects, parserToolbox.getVariables());
 	}
 
 	@FunctionalInterface

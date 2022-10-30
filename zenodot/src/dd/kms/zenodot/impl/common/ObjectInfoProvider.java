@@ -1,15 +1,22 @@
 package dd.kms.zenodot.impl.common;
 
+import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.common.ReflectionUtils;
+import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.EvaluationMode;
+import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.impl.matching.MatchRatings;
+import dd.kms.zenodot.impl.result.ObjectParseResult;
+import dd.kms.zenodot.impl.utils.Variables;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.FieldInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ObjectInfoProvider
 {
@@ -130,5 +137,168 @@ public class ObjectInfoProvider
 								? ReflectionUtils.convertTo(object, targetType, true)
 								: InfoProvider.INDETERMINATE_VALUE;
 		return InfoProvider.createObjectInfo(castedValue, targetType);
+	}
+
+	public ObjectInfo getLambdaInfo(Class<?> functionalInterface, String methodName, List<Parameter> parameters, ObjectParseResult lambdaBodyParseResult, String lambdaStringRepresentation, ObjectInfo thisInfo, Variables variables) throws InternalErrorException {
+		Object lambda = isEvaluateWithSideEffects()
+			? createLambda(functionalInterface, methodName, parameters, lambdaBodyParseResult, lambdaStringRepresentation, thisInfo, variables)
+			: InfoProvider.INDETERMINATE_VALUE;
+		return InfoProvider.createObjectInfo(lambda, functionalInterface);
+	}
+
+	private Object createLambda(Class<?> functionalInterface, String methodName, List<Parameter> parameters, ObjectParseResult lambdaBodyParseResult, String lambdaStringRepresentation, ObjectInfo thisInfo, Variables variables) throws InternalErrorException {
+		List<String> parameterNames = parameters.stream().map(Parameter::getName).collect(Collectors.toList());
+		List<Class<?>> parameterTypes = parameters.stream().map(Parameter::getDeclaredType).collect(Collectors.toList());
+
+		LambdaEvaluator targetMethodEvaluator = new LambdaEvaluator(thisInfo, parameterNames, variables, lambdaBodyParseResult);
+		LambdaInvocationHandler invocationHandler = new LambdaInvocationHandler(functionalInterface, methodName, parameterTypes, targetMethodEvaluator, lambdaStringRepresentation);
+
+		return Proxy.newProxyInstance(
+			functionalInterface.getClassLoader(),
+			new Class<?>[]{ functionalInterface },
+			invocationHandler
+		);
+	}
+
+	private static class LambdaEvaluator
+	{
+		private final ObjectInfo			thisInfo;
+		private final List<String>			parameterNames;
+		private final Variables				variables;
+		private final ObjectParseResult		lambdaBodyParseResult;
+
+		private LambdaEvaluator(ObjectInfo thisInfo, List<String> parameterNames, Variables variables, ObjectParseResult lambdaBodyParseResult) throws InternalErrorException {
+			this.thisInfo = thisInfo;
+			this.parameterNames = parameterNames;
+			this.variables = variables;
+			this.lambdaBodyParseResult = lambdaBodyParseResult;
+
+			// create variables
+			for (String parameterName : parameterNames) {
+				variables.createVariable(parameterName, InfoProvider.NULL_LITERAL);
+			}
+		}
+
+		Object apply(Object[] objects) throws ParseException {
+			setVariables(objects);
+			ObjectInfo lambdaReturnInfo = lambdaBodyParseResult.evaluate(thisInfo, thisInfo, variables);
+			return lambdaReturnInfo.getObject();
+		}
+
+		private void setVariables(Object[] objects) {
+			if (objects == null) {
+				if (parameterNames.isEmpty()) {
+					return;
+				}
+				throw new IllegalStateException("Lambda requires parameters " + parameterNames + ", but got none");
+			}
+			int numParameters = parameterNames.size();
+			if (objects.length != numParameters) {
+				throw new IllegalStateException("Lambda requires parameters " + parameterNames + ", but got " + objects.length + " parameters");
+			}
+			for (int i = 0; i < numParameters; i++) {
+				ObjectInfo variable = variables.getVariable(parameterNames.get(i));
+				ObjectInfo.ValueSetter valueSetter = variable.getValueSetter();
+				ObjectInfo valueInfo = InfoProvider.createObjectInfo(objects[i]);
+				valueSetter.setObjectInfo(valueInfo);
+			}
+		}
+	}
+
+	private static class LambdaInvocationHandler implements InvocationHandler
+	{
+		private final Class<?>						functionalInterface;
+		private final String						targetMethodName;
+		private final List<Class<?>>				targetMethodTypes;
+		private final LambdaEvaluator				targetMethodEvaluator;
+		private final String						stringRepresentation;
+
+		LambdaInvocationHandler(Class<?> functionalInterface, String targetMethodName, List<Class<?>> targetMethodTypes, LambdaEvaluator targetMethodEvaluator, String stringRepresentation) {
+			this.functionalInterface = functionalInterface;
+			this.targetMethodName = targetMethodName;
+			this.targetMethodTypes = targetMethodTypes;
+			this.targetMethodEvaluator = targetMethodEvaluator;
+			this.stringRepresentation = stringRepresentation;
+		}
+
+		@Override
+		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			if (isTargetMethod(method, args)) {
+				return targetMethodEvaluator.apply(args);
+			}
+			String methodName = method.getName();
+			switch (methodName) {
+				case "toString": {
+					if (args == null || args.length == 0) {
+						return stringRepresentation;
+					}
+					break;
+				}
+				case "equals": {
+					if (args != null && args.length == 1) {
+						Object arg = args[0];
+						return proxy == arg;
+					}
+					break;
+				}
+				case "hashCode": {
+					if (args == null || args.length == 0) {
+						return System.identityHashCode(proxy);
+					}
+					break;
+				}
+				default:
+					break;
+			}
+			throw new IllegalStateException("Unexpected method " + methodName + "() of functional interface " + functionalInterface);
+		}
+
+		private boolean isTargetMethod(Method method, Object[] args) {
+			String methodName = method.getName();
+			if (!Objects.equals(methodName, targetMethodName)) {
+				return false;
+			}
+			if (targetMethodTypes.isEmpty()) {
+				return args == null || args.length == 0;
+			}
+			int numParameters = targetMethodTypes.size();
+			if (args.length != numParameters) {
+				return false;
+			}
+			for (int i = 0; i < numParameters; i++) {
+				Class<?> targetParameterType = targetMethodTypes.get(i);
+				Object arg = args[i];
+				if (arg == null) {
+					if (targetParameterType.isPrimitive()) {
+						return false;
+					}
+				} else {
+					Class<?> argClass = arg.getClass();
+					if (MatchRatings.rateTypeMatch(targetParameterType, argClass) == TypeMatch.NONE) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+	}
+
+	public static class Parameter
+	{
+		private final String	name;
+		private final Class<?>	declaredType;
+
+		public Parameter(String name, Class<?> declaredType) {
+			this.name = name;
+			this.declaredType = declaredType;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public Class<?> getDeclaredType() {
+			return declaredType;
+		}
 	}
 }
