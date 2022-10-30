@@ -4,6 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
 
+import java.lang.reflect.Method;
 import java.util.function.Function;
 
 public class ReflectionUtils
@@ -101,5 +102,21 @@ public class ReflectionUtils
 		addConversions(char.class,	long.class, 	c -> (long) 	c.charValue(),	l -> (char) l.longValue());
 		addConversions(char.class,	float.class, 	c -> (float) 	c.charValue(),	f -> (char) f.floatValue());
 		addConversions(char.class,	double.class, 	c -> (double) 	c.charValue(),	d -> (char) d.doubleValue());
+	}
+
+	public static boolean isToStringMethod(Method method) {
+		return method.getName().equals("toString")
+			&& method.getParameterCount() == 0;
+	}
+
+	public static boolean isEqualsMethod(Method method) {
+		return method.getName().equals("equals")
+			&& method.getParameterCount() == 1
+			&& method.getParameterTypes()[0] == Object.class;
+	}
+
+	public static boolean isHashCodeMethod(Method method) {
+		return method.getName().equals("hashCode")
+			&& method.getParameterCount() == 0;
 	}
 }
