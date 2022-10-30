@@ -179,7 +179,8 @@ public class ObjectInfoProvider
 
 		Object apply(Object[] objects) throws ParseException {
 			setVariables(objects);
-			return lambdaBodyParseResult.evaluate(thisInfo, thisInfo, variables);
+			ObjectInfo lambdaReturnInfo = lambdaBodyParseResult.evaluate(thisInfo, thisInfo, variables);
+			return lambdaReturnInfo.getObject();
 		}
 
 		private void setVariables(Object[] objects) {
