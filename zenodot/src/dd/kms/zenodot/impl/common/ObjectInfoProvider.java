@@ -2,8 +2,10 @@ package dd.kms.zenodot.impl.common;
 
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.common.ReflectionUtils;
+import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.utils.Variables;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
@@ -272,7 +274,7 @@ public class ObjectInfoProvider
 					}
 				} else {
 					Class<?> argClass = arg.getClass();
-					if (!targetParameterType.isAssignableFrom(argClass)) {
+					if (MatchRatings.rateTypeMatch(targetParameterType, argClass) == TypeMatch.NONE) {
 						return false;
 					}
 				}
