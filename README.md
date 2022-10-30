@@ -87,7 +87,25 @@ Note that the completions returned by the parsers are unsorted since it is the c
 
 When inspecting the internal state of an object returned by a method, you sometimes have to cast it to its runtime type to be able to access its methods because they are not published via the declared type. To avoid such casts, you can activate dynamic typing. If this option is selected, then both, code completion and expression evaluation, ignore the declared type and use the runtime type of an object instead (see [Dynamic Typing Example](#dynamic-typing-example) for an example). Although this can be handy in some cases, you should be aware of the risks. If you call a method with side effects, then this side effect will also be triggered when requesting code completions or when evalutating an expression with a syntax error. Furthermore, method overloads can be resolved differently with static and dynamic typing.
 
-Zenodot also provides a hybrid between static and dynamic typing that avoids such side effects but provides all benefits of dynamic typing except for determining the return type of a method. This mode is called `EvaluationMode.MIXED`.  
+Zenodot also provides a hybrid between static and dynamic typing that avoids such side effects but provides all benefits of dynamic typing except for determining the return type of a method. This mode is called `EvaluationMode.MIXED`.
+
+## Lambdas
+
+Zenodot supports parsing lambdas as the following sample, taken from **LambdaSample.java**, shows:
+
+```
+ParserSettings settings = ParserSettingsBuilder.create()
+	.importPackages(Collections.singletonList("java.util"))
+	.build();
+// s must be cast to String because Zenodot does not infer generic types
+String expression = "Arrays.asList(\"1\", \"2\", \"3\").stream().mapToInt(s -> Integer.parseInt((String) s)).sum()";
+ExpressionParser parser = Parsers.createExpressionParser(settings);
+System.out.println("Result: " + parser.evaluate(expression, null));
+```
+
+Since Zenodot does not support type inference, parameters for generic types have to be cast. In the example above, the parameter `s` has to be cast to `String`.
+
+Another restriction is that Zenodot does currently not support method references.
 
 ## Custom Variables
 

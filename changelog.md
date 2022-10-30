@@ -4,6 +4,8 @@
 
   - A new evaluation mode has been added that has some advantages of dynamic typing but prevents side effects during code completion and when the expression evaluation cannot be evaluated correctly.
   
+  - Support for lambdas has been added with the following restrictions: Types of generic parameters cannot be inferred, so generic parameters have to be cast, and method references are currently not supported. 
+  
 API changes:
 
   - Dynamic typing is now not enabled/disabled via `ParserSettingsBuilder.enableDynamicTyping()`. Instead, you now specify the evaluation mode via `ParserSettingsBuilder.evaluationMode()`. The new evaluation mode is now the default.
