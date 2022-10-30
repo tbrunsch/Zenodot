@@ -48,7 +48,7 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 	}
 
 	T parse(TokenStream tokenStream, ObjectInfo thisInfo, S parseResultExpectation) throws CodeCompletionException, EvaluationException, SyntaxException, InternalErrorException {
-		Variables variables = createVariablePool(settings.getVariables());
+		Variables variables = createVariablePool();
 		try {
 			ParserToolbox parserToolbox = new ParserToolbox(thisInfo, settings, variables);
 			return doParse(tokenStream, parserToolbox, parseResultExpectation);
@@ -76,13 +76,14 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 		}
 	}
 
-	private static Variables createVariablePool(List<Variable> variables) throws InternalErrorException {
+	Variables createVariablePool() throws InternalErrorException {
 		Variables variablePool = new Variables(null);
+		List<Variable> variables = settings.getVariables();
 		for (Variable variable : variables) {
 			String name = variable.getName();
 			Object value = variable.getValue();
 			ObjectInfo valueInfo = InfoProvider.createObjectInfo(value);
-			variablePool.newVariable(name, valueInfo);
+			variablePool.createVariable(name, valueInfo);
 		}
 		return variablePool;
 	}

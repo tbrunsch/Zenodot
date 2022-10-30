@@ -16,6 +16,7 @@ import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.utils.Variables;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
@@ -71,7 +72,7 @@ public class ClassObjectParser extends AbstractParserWithObjectTail<Class<?>>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) {
 			return InfoProvider.createObjectInfo(classObject, Class.class);
 		}
 	}

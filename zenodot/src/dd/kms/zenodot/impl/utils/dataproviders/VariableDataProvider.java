@@ -11,7 +11,9 @@ import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.utils.ParseUtils;
+import dd.kms.zenodot.impl.utils.Variables;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.util.Comparator;
 import java.util.List;
@@ -22,34 +24,33 @@ import java.util.stream.Collectors;
  */
 public class VariableDataProvider
 {
-	private final List<Variable>		variables;
-	private final ObjectInfoProvider objectInfoProvider;
+	private final Variables				variables;
+	private final ObjectInfoProvider	objectInfoProvider;
 
-	public VariableDataProvider(List<Variable> variables, ObjectInfoProvider objectInfoProvider) {
+	public VariableDataProvider(Variables variables, ObjectInfoProvider objectInfoProvider) {
 		this.variables = variables;
 		this.objectInfoProvider = objectInfoProvider;
 	}
 
 	public CodeCompletions completeVariable(String expectedName, ObjectParseResultExpectation expectation, int insertionBegin, int insertionEnd) {
-		List<Variable> sortedVariables = variables.stream().sorted(Comparator.comparing(Variable::getName)).collect(Collectors.toList());
+		List<String> sortedVariableNames = variables.getNames().stream().sorted().collect(Collectors.toList());
 		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
-			sortedVariables,
-			variable -> CodeCompletionFactory.variableCompletion(variable, insertionBegin, insertionEnd, rateVariable(variable, expectedName, expectation))
+			sortedVariableNames,
+			variableName -> CodeCompletionFactory.variableCompletion(variableName, insertionBegin, insertionEnd, rateVariable(variableName, expectedName, expectation))
 		);
 		return new CodeCompletions(codeCompletions);
 	}
 
-	private StringMatch rateVariableByName(Variable variable, String expectedName) {
-		return MatchRatings.rateStringMatch(expectedName, variable.getName());
+	private StringMatch rateVariableByName(String variableName, String expectedName) {
+		return MatchRatings.rateStringMatch(expectedName, variableName);
 	}
 
-	private TypeMatch rateVariableByTypes(Variable variable, ObjectParseResultExpectation expectation) {
-		Object value = variable.getValue();
-		Class<?> valueType = value != null ? value.getClass() : InfoProvider.NO_TYPE;
-		return expectation.rateTypeMatch(valueType);
+	private TypeMatch rateVariableByTypes(String variableName, ObjectParseResultExpectation expectation) {
+		ObjectInfo valueInfo = variables.getVariable(variableName);
+		return expectation.rateTypeMatch(valueInfo.getDeclaredType());
 	}
 
-	private MatchRating rateVariable(Variable variable, String expectedName, ObjectParseResultExpectation expectation) {
-		return MatchRatings.create(rateVariableByName(variable, expectedName), rateVariableByTypes(variable, expectation), false);
+	private MatchRating rateVariable(String variableName, String expectedName, ObjectParseResultExpectation expectation) {
+		return MatchRatings.create(rateVariableByName(variableName, expectedName), rateVariableByTypes(variableName, expectation), false);
 	}
 }

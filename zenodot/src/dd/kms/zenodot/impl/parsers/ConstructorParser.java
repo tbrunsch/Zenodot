@@ -16,6 +16,7 @@ import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.utils.Variables;
 import dd.kms.zenodot.impl.utils.dataproviders.ExecutableDataProvider;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
@@ -202,10 +203,10 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws Exception {
 			List<ObjectInfo> arguments = new ArrayList<>(this.arguments.size());
 			for (ObjectParseResult argument : this.arguments) {
-				arguments.add(argument.evaluate(thisInfo, thisInfo));
+				arguments.add(argument.evaluate(thisInfo, thisInfo, variables));
 			}
 			return OBJECT_INFO_PROVIDER.getExecutableReturnInfo(null, constructor, arguments);
 		}
@@ -223,10 +224,10 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			List<ObjectInfo> elementInfos = new ArrayList<>(elementParseResults.size());
 			for (ObjectParseResult elementParseResult : elementParseResults) {
-				elementInfos.add(elementParseResult.evaluate(thisInfo, contextInfo));
+				elementInfos.add(elementParseResult.evaluate(thisInfo, contextInfo, variables));
 			}
 			return OBJECT_INFO_PROVIDER.getArrayInfo(componentType, elementInfos);
 		}
@@ -245,8 +246,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
-			ObjectInfo sizeInfo = sizeParseResult.evaluate(thisInfo, contextInfo);
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
+			ObjectInfo sizeInfo = sizeParseResult.evaluate(thisInfo, contextInfo, variables);
 			return OBJECT_INFO_PROVIDER.getArrayInfo(componentType, sizeInfo);
 		}
 	}

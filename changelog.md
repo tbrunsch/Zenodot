@@ -14,7 +14,9 @@ API changes:
   
   - Together with `ObjectInfo` we have also abandoned all other wrapper classes from the API. This lead to a major simplification of the API.
   
-  - We have replaced the custom interface `IntRange` by Guavas class `Range`.
+  - The method `CodeCompletionVariable.getVariable()` has been replaced by the method `CodeCompletionVariable.getVariableName()` which returns a `String` instead of a `Variable`.
+  
+  - We have replaced the custom interface `IntRange` by Guava's class `Range`.
 
 ## v0.2.2
 

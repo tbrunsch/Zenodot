@@ -16,6 +16,7 @@ import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.utils.Variables;
 import dd.kms.zenodot.impl.utils.dataproviders.ExecutableDataProvider;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
@@ -139,11 +140,11 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws Exception {
 			Object contextObject = contextStatic ? null : contextInfo.getObject();
 			List<ObjectInfo> arguments = new ArrayList<>(this.arguments.size());
 			for (ObjectParseResult argument : this.arguments) {
-				arguments.add(argument.evaluate(thisInfo, thisInfo));
+				arguments.add(argument.evaluate(thisInfo, thisInfo, variables));
 			}
 			return OBJECT_INFO_PROVIDER.getExecutableReturnInfo(contextObject, method, arguments);
 		}

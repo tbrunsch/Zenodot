@@ -59,7 +59,7 @@ public class ObjectInfoProvider
 		}
 		return value -> {
 			try {
-				fieldInfo.set(contextObject, value);
+				fieldInfo.set(contextObject, value.getObject());
 			} catch (IllegalAccessException e) {
 				throw new IllegalArgumentException("Could not set field value", e);
 			}
@@ -88,7 +88,7 @@ public class ObjectInfoProvider
 		if (isEvaluate() && arrayObject != InfoProvider.INDETERMINATE_VALUE && indexInfo != InfoProvider.INDETERMINATE_VALUE) {
 			int index = ReflectionUtils.convertTo(indexObject, int.class, false);
 			arrayElementValue = Array.get(arrayObject, index);
-			valueSetter = value -> Array.set(arrayObject, index, value);
+			valueSetter = value -> Array.set(arrayObject, index, value.getObject());
 		}
 		Class<?> arrayElementType = getType(arrayElementValue, getType(arrayInfo).getComponentType());
 		return InfoProvider.createObjectInfo(arrayElementValue, arrayElementType, valueSetter);

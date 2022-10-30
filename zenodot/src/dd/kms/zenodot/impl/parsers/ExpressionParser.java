@@ -26,6 +26,7 @@ import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.impl.utils.Variables;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
@@ -231,16 +232,16 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			// evaluate from left to right
-			ObjectInfo accumulatedResultInfo = operands.get(0).evaluate(thisInfo, contextInfo);
+			ObjectInfo accumulatedResultInfo = operands.get(0).evaluate(thisInfo, contextInfo, variables);
 			for (int i = 0; i < operators.size(); i++) {
 				BinaryOperator operator = operators.get(i);
 				if (stopCircuitEvaluation(accumulatedResultInfo, operator)) {
 					return accumulatedResultInfo;
 				}
 				ObjectParseResult nextOperand = operands.get(i + 1);
-				ObjectInfo nextOperandInfo = nextOperand.evaluate(thisInfo, contextInfo);
+				ObjectInfo nextOperandInfo = nextOperand.evaluate(thisInfo, contextInfo, variables);
 				try {
 					accumulatedResultInfo = applyOperator(OPERATOR_RESULT_PROVIDER, accumulatedResultInfo, nextOperandInfo, operator);
 				} catch (OperatorException e) {
@@ -263,8 +264,8 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context) throws Exception {
-			ObjectInfo objectInfo = expressionParseResult.evaluate(thisInfo, context);
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, Variables variables) throws Exception {
+			ObjectInfo objectInfo = expressionParseResult.evaluate(thisInfo, context, variables);
 			return OPERATOR_RESULT_PROVIDER.getInstanceOfInfo(objectInfo, type);
 		}
 	}

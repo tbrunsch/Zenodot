@@ -53,7 +53,7 @@ public class ParserToolbox
 		fieldDataProvider				= new FieldDataProvider(this);
 		objectTreeNodeDataProvider		= new ObjectTreeNodeDataProvider();
 		operatorResultProvider 			= new OperatorResultProvider(objectInfoProvider, evaluationMode);
-		variableDataProvider			= new VariableDataProvider(settings.getVariables(), objectInfoProvider);
+		variableDataProvider			= new VariableDataProvider(variables, objectInfoProvider);
 	}
 
 	public ObjectInfo getThisInfo() {
