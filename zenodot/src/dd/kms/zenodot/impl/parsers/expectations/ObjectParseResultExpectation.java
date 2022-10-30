@@ -36,6 +36,11 @@ public class ObjectParseResultExpectation extends AbstractParseResultExpectation
 			: new ObjectParseResultExpectation(expectedTypes, resultTypeMustMatch, parseWholeText);
 	}
 
+	@Nullable
+	public List<Class<?>> getExpectedTypes() {
+		return expectedTypes;
+	}
+
 	public ObjectParseResultExpectation resultTypeMustMatch(boolean resultTypeMustMatch) {
 		return this.resultTypeMustMatch == resultTypeMustMatch
 			? this

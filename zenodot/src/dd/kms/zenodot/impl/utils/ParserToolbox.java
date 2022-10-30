@@ -32,7 +32,7 @@ public class ParserToolbox
 	private final ClassDataProvider				classDataProvider;
 	private final ExecutableDataProvider		executableDataProvider;
 	private final FieldDataProvider				fieldDataProvider;
-	private final ObjectInfoProvider objectInfoProvider;
+	private final ObjectInfoProvider			objectInfoProvider;
 	private final ObjectTreeNodeDataProvider	objectTreeNodeDataProvider;
 	private final OperatorResultProvider 		operatorResultProvider;
 	private final VariableDataProvider			variableDataProvider;
@@ -70,6 +70,20 @@ public class ParserToolbox
 
 	public InternalLogger getLogger() {
 		return logger;
+	}
+
+	public ParserToolbox withEvaluationMode(EvaluationMode newEvaluationMode) {
+		if (settings.getEvaluationMode() == newEvaluationMode) {
+			return this;
+		}
+		ParserSettings newSettings = settings.builder()
+			.evaluationMode(newEvaluationMode)
+			.build();
+		return new ParserToolbox(thisInfo, newSettings, variables);
+	}
+
+	public ParserToolbox withVariables(Variables newVariables) {
+		return new ParserToolbox(thisInfo, settings, newVariables);
 	}
 
 	/*
