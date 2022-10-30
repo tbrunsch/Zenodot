@@ -12,6 +12,7 @@ import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,18 @@ public class LambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult, 
 		List<ConcreteLambdaParser> parsers = possibleFunctionalInterfaces.stream()
 			.map(functionalInterface -> new ConcreteLambdaParser(parserToolbox, functionalInterface))
 			.collect(Collectors.toList());
-		ObjectParseResult parseResult = ParseUtils.parse(tokenStream, context, expectation, parsers);
+
+		ObjectParseResult parseResult;
+
+		try {
+			parseResult = ParseUtils.parse(tokenStream, context, expectation, parsers);
+		} catch (SyntaxException e) {
+			ParserConfidence confidence = parsers.stream().map(AbstractParser::getConfidence)
+				.max(Comparator.comparing(ParserConfidence::ordinal))
+				.orElseThrow(() -> new IllegalStateException("No parsers found. This should not happen because this has been checked before."));
+			increaseConfidence(confidence);
+			throw e;
+		}
 
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 

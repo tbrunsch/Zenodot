@@ -76,7 +76,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		Class<?> expectedReturnType = method.getReturnType();
 		if (!expectedReturnType.isAssignableFrom(bodyResultType)) {
 			log(LogLevel.INFO, "lambda has wrong return type: " + bodyResultType + " instead of " + expectedReturnType);
-			throw new EvaluationException("Return type " + bodyResultType + " is not assignable to " + expectedReturnType);
+			throw new SyntaxException("Return type " + bodyResultType + " is not assignable to " + expectedReturnType);
 		}
 
 		log(LogLevel.SUCCESS, "lambda has correct return type");
