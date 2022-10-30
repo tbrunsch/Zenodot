@@ -1,9 +1,6 @@
 package dd.kms.zenodot.impl.parsers;
 
-import dd.kms.zenodot.api.common.MethodScanner;
-import dd.kms.zenodot.api.common.MethodScannerBuilder;
 import dd.kms.zenodot.api.common.ReflectionUtils;
-import dd.kms.zenodot.api.common.StaticMode;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -15,8 +12,6 @@ import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +31,7 @@ public class LambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult, 
 			throw new SyntaxException("No functional interface expected");
 		}
 		List<Class<?>> possibleFunctionalInterfaces = expectedTypes.stream()
-			.filter(LambdaParser::isFunctionalInterface)
+			.filter(ReflectionUtils::isFunctionalInterface)
 			.collect(Collectors.toList());
 		if (possibleFunctionalInterfaces.isEmpty()) {
 			throw new SyntaxException("No functional interface expected");
@@ -45,26 +40,10 @@ public class LambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult, 
 		List<ConcreteLambdaParser> parsers = possibleFunctionalInterfaces.stream()
 			.map(functionalInterface -> new ConcreteLambdaParser(parserToolbox, functionalInterface))
 			.collect(Collectors.toList());
-		return ParseUtils.parse(tokenStream, context, expectation, parsers);
-	}
+		ObjectParseResult parseResult = ParseUtils.parse(tokenStream, context, expectation, parsers);
 
-	private static boolean isFunctionalInterface(Class<?> clazz) {
-		if (!clazz.isInterface()) {
-			return false;
-		}
-		List<Method> unimplementedMethods = getUnimplementedMethods(clazz);
-		return unimplementedMethods.size() == 1;
-	}
+		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-	static List<Method> getUnimplementedMethods(Class<?> clazz) {
-		MethodScanner scanner = MethodScannerBuilder.create().staticMode(StaticMode.NON_STATIC).build();
-		List<Method> methods = scanner.getMethods(clazz);
-		return methods.stream()
-			.filter(method -> !method.isDefault())
-			.filter(method -> Modifier.isAbstract(method.getModifiers()))
-			.filter(method -> !ReflectionUtils.isToStringMethod(method))
-			.filter(method -> !ReflectionUtils.isEqualsMethod(method))
-			.filter(method -> !ReflectionUtils.isHashCodeMethod(method))
-			.collect(Collectors.toList());
+		return parseResult;
 	}
 }

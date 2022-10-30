@@ -1,6 +1,7 @@
 package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.ImmutableList;
+import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.impl.common.ObjectInfoProvider.Parameter;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
@@ -37,7 +38,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 
 	@Override
 	ParseResult doParse(TokenStream tokenStream, ObjectInfo context, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
-		List<Method> unimplementedMethods = LambdaParser.getUnimplementedMethods(functionalInterface);
+		List<Method> unimplementedMethods = ReflectionUtils.getUnimplementedMethods(functionalInterface);
 		if (unimplementedMethods.size() != 1) {
 			throw new InternalErrorException("Class " + functionalInterface + " is no functional interface");
 		}
