@@ -18,11 +18,22 @@ public interface Variables
 	/**
 	 * Creates a variable with the given {@code name} and the given {@code value} and adds it
 	 * to the collection of variables. The parameter {@code isFinal} specifies whether the
-	 * variable if {@code final} or whether its value can be overwritten.
+	 * variable if {@code final} or whether its value can be overwritten. The declared type
+	 * of the variable is derived from the value.
 	 * @return the modified collection
-	 * @throws IllegalArgumentException when a variable with that name already exists
+	 * @throws IllegalArgumentException if a variable with that name already exists
 	 */
 	Variables createVariable(String name, Object value, boolean isFinal);
+
+	/**
+	 * Creates a variable with the given {@code name}, the given {@code type}, and the given
+	 * {@code value} and adds it to the collection of variables. The parameter {@code isFinal}
+	 * specifies whether the variable if {@code final} or whether its value can be overwritten.
+	 * @return the modified collection
+	 * @throws IllegalArgumentException if a variable with that name already exists or if the
+	 * specified type is not assignable to the specified type.
+	 */
+	Variables createVariable(String name, Class<?> type, Object value, boolean isFinal);
 
 	/**
 	 * @return The value of the variable with the given {@code name}

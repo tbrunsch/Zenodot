@@ -41,7 +41,13 @@ public class VariablesImpl implements Variables
 
 	@Override
 	public Variables createVariable(String name, Object value, boolean isFinal) {
-		ObjectInfo valueInfo = InfoProvider.createObjectInfo(value);
+		Class<?> type = value == null ? InfoProvider.NO_TYPE : value.getClass();
+		return createVariable(name, type, value, isFinal);
+	}
+
+	@Override
+	public Variables createVariable(String name, Class<?> type, Object value, boolean isFinal) {
+		ObjectInfo valueInfo = InfoProvider.createObjectInfo(value, type);
 		try {
 			createVariable(name, valueInfo, isFinal);
 		} catch (InternalErrorException e) {
