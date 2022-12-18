@@ -3,8 +3,6 @@ package dd.kms.zenodot.api.settings;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 
-import java.util.List;
-
 /**
  * Builder for {@link ParserSettings}<br>
  * <br>
@@ -37,11 +35,6 @@ public interface ParserSettingsBuilder
 	 * When you import a package, then you can directly reference any of its classes by their simple names.
 	 */
 	ParserSettingsBuilder importPackages(Iterable<String> packageNames);
-
-	/**
-	 * When you add a variable, then you can reference its value by the variable's name.
-	 */
-	ParserSettingsBuilder variables(List<Variable> variables);
 
 	/**
 	 * The minimum access modifier affects which fields and methods are suggested for code completion and

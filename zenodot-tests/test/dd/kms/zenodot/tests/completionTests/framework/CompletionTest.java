@@ -65,7 +65,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		ParserSettings settings = settingsBuilder.build();
 
 		try {
-			Parsers.createExpressionParser(settings).getCompletions(expression, caretPosition, testInstance);
+			Parsers.createExpressionParser(settings, variables).getCompletions(expression, caretPosition, testInstance);
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			if (e.getClass() != expectedExceptionClass) {
@@ -81,7 +81,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		int caretPosition = expression.length();
 		List<String> completions;
 		try {
-			completions = extractCompletions(Parsers.createExpressionParser(settings).getCompletions(expression, caretPosition, testInstance));
+			completions = extractCompletions(Parsers.createExpressionParser(settings, variables).getCompletions(expression, caretPosition, testInstance));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				e.printStackTrace();

@@ -1,7 +1,5 @@
 package dd.kms.zenodot.tests.completionTests;
 
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
-import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -21,11 +19,12 @@ public class VariableTest extends CompletionTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		Variable variable1 = ParserSettingsUtils.createVariable("xyz", 13.0, true);
-		Variable variable2 = ParserSettingsUtils.createVariable("abc", "Test", true);
 		return new CompletionTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> test.variables(variable1, variable2))
+			.configurator(test -> {
+				test.createVariable("xyz", 13.0);
+				test.createVariable("abc", "Test");
+			})
 			.addTest("x",			"x", "xyz", "xy", "xyzw", "abc")
 			.addTest("xy",			"xy", "xyz", "xyzw", "x", "abc")
 			.addTest("xyz",			"xyz", "xyzw", "x", "xy", "abc")

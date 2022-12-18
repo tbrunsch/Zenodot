@@ -3,7 +3,7 @@ package dd.kms.zenodot.impl.result;
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.Variables;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
@@ -43,7 +43,7 @@ public class ParseResults
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, Variables variables) {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, VariablesImpl variables) {
 			return context;
 		}
 	}
@@ -55,7 +55,7 @@ public class ParseResults
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, Variables variables) {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, VariablesImpl variables) {
 			return getObjectInfo();
 		}
 	}

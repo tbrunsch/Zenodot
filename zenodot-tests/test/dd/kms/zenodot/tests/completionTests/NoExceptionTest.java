@@ -67,7 +67,7 @@ public class NoExceptionTest extends AbstractTest
 		ParserSettings settings = settingsBuilder.build();
 
 		try {
-			Parsers.createExpressionParser(settings).getCompletions(expression, caretPosition, testInstance);
+			Parsers.createExpressionParser(settings, variables).getCompletions(expression, caretPosition, testInstance);
 		} catch (Exception e) {
 			if (executeAssertions) {
 				fail("Exception during code completion for " + expression.substring(0, caretPosition) + "^" + expression.substring(caretPosition) + ": " + e.getMessage());

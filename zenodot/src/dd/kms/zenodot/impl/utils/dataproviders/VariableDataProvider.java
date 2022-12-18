@@ -4,30 +4,27 @@ import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
-import dd.kms.zenodot.api.settings.Variable;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.utils.ParseUtils;
-import dd.kms.zenodot.impl.utils.Variables;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Utility class for providing information about {@link Variable}s
+ * Utility class for providing information about variables.
  */
 public class VariableDataProvider
 {
-	private final Variables				variables;
+	private final VariablesImpl			variables;
 	private final ObjectInfoProvider	objectInfoProvider;
 
-	public VariableDataProvider(Variables variables, ObjectInfoProvider objectInfoProvider) {
+	public VariableDataProvider(VariablesImpl variables, ObjectInfoProvider objectInfoProvider) {
 		this.variables = variables;
 		this.objectInfoProvider = objectInfoProvider;
 	}
@@ -46,7 +43,7 @@ public class VariableDataProvider
 	}
 
 	private TypeMatch rateVariableByTypes(String variableName, ObjectParseResultExpectation expectation) {
-		ObjectInfo valueInfo = variables.getVariable(variableName);
+		ObjectInfo valueInfo = variables.getValueInfo(variableName);
 		return expectation.rateTypeMatch(valueInfo.getDeclaredType());
 	}
 

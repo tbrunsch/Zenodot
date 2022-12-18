@@ -7,7 +7,7 @@ import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.utils.Variables;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.FieldInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
@@ -139,14 +139,14 @@ public class ObjectInfoProvider
 		return InfoProvider.createObjectInfo(castedValue, targetType);
 	}
 
-	public ObjectInfo getLambdaInfo(Class<?> functionalInterface, String methodName, List<Parameter> parameters, ObjectParseResult lambdaBodyParseResult, String lambdaStringRepresentation, ObjectInfo thisInfo, Variables variables) throws InternalErrorException {
+	public ObjectInfo getLambdaInfo(Class<?> functionalInterface, String methodName, List<Parameter> parameters, ObjectParseResult lambdaBodyParseResult, String lambdaStringRepresentation, ObjectInfo thisInfo, VariablesImpl variables) throws InternalErrorException {
 		Object lambda = isEvaluateWithSideEffects()
 			? createLambda(functionalInterface, methodName, parameters, lambdaBodyParseResult, lambdaStringRepresentation, thisInfo, variables)
 			: InfoProvider.INDETERMINATE_VALUE;
 		return InfoProvider.createObjectInfo(lambda, functionalInterface);
 	}
 
-	private Object createLambda(Class<?> functionalInterface, String methodName, List<Parameter> parameters, ObjectParseResult lambdaBodyParseResult, String lambdaStringRepresentation, ObjectInfo thisInfo, Variables variables) throws InternalErrorException {
+	private Object createLambda(Class<?> functionalInterface, String methodName, List<Parameter> parameters, ObjectParseResult lambdaBodyParseResult, String lambdaStringRepresentation, ObjectInfo thisInfo, VariablesImpl variables) throws InternalErrorException {
 		List<String> parameterNames = parameters.stream().map(Parameter::getName).collect(Collectors.toList());
 		List<Class<?>> parameterTypes = parameters.stream().map(Parameter::getDeclaredType).collect(Collectors.toList());
 
@@ -164,10 +164,10 @@ public class ObjectInfoProvider
 	{
 		private final ObjectInfo			thisInfo;
 		private final List<String>			parameterNames;
-		private final Variables				variables;
+		private final VariablesImpl variables;
 		private final ObjectParseResult		lambdaBodyParseResult;
 
-		private LambdaEvaluator(ObjectInfo thisInfo, List<String> parameterNames, Variables variables, ObjectParseResult lambdaBodyParseResult) throws InternalErrorException {
+		private LambdaEvaluator(ObjectInfo thisInfo, List<String> parameterNames, VariablesImpl variables, ObjectParseResult lambdaBodyParseResult) throws InternalErrorException {
 			this.thisInfo = thisInfo;
 			this.parameterNames = parameterNames;
 			this.variables = variables;
@@ -197,7 +197,7 @@ public class ObjectInfoProvider
 				throw new IllegalStateException("Lambda requires parameters " + parameterNames + ", but got " + objects.length + " parameters");
 			}
 			for (int i = 0; i < numParameters; i++) {
-				ObjectInfo variable = variables.getVariable(parameterNames.get(i));
+				ObjectInfo variable = variables.getValueInfo(parameterNames.get(i));
 				ObjectInfo.ValueSetter valueSetter = variable.getValueSetter();
 				ObjectInfo valueInfo = InfoProvider.createObjectInfo(objects[i]);
 				valueSetter.setObjectInfo(valueInfo);

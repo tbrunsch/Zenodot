@@ -1,6 +1,5 @@
 package dd.kms.zenodot.impl.settings;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
@@ -8,7 +7,6 @@ import dd.kms.zenodot.api.settings.*;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.impl.utils.ClassUtils;
 
-import java.util.List;
 import java.util.Set;
 
 public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
@@ -16,7 +14,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	private CompletionMode		completionMode;
 	private Set<Class<?>>		importedClasses;
 	private Set<String>			importedPackages;
-	private List<Variable>		variables;
 	private AccessModifier		minimumAccessModifier;
 	private EvaluationMode		evaluationMode;
 	private boolean				considerAllClassesForClassCompletions;
@@ -27,7 +24,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		completionMode = CompletionMode.COMPLETE_AND_REPLACE_WHOLE_WORDS;
 		importedClasses = ImmutableSet.of();
 		importedPackages = ImmutableSet.of();
-		variables = ImmutableList.of();
 		minimumAccessModifier = AccessModifier.PUBLIC;
 		evaluationMode = EvaluationMode.MIXED;
 		considerAllClassesForClassCompletions = false;
@@ -39,7 +35,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		completionMode = settings.getCompletionMode();
 		importedClasses = ImmutableSet.copyOf(settings.getImports().getImportedClasses());
 		importedPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackages());
-		variables = ImmutableList.copyOf(settings.getVariables());
 		minimumAccessModifier = settings.getMinimumAccessModifier();
 		evaluationMode = settings.getEvaluationMode();
 		considerAllClassesForClassCompletions = settings.isConsiderAllClassesForClassCompletions();
@@ -77,12 +72,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilder variables(List<Variable> variables) {
-		this.variables = ImmutableList.copyOf(variables);
-		return this;
-	}
-
-	@Override
 	public ParserSettingsBuilder minimumAccessModifier(AccessModifier minimumAccessModifier) {
 		this.minimumAccessModifier = minimumAccessModifier;
 		return this;
@@ -113,6 +102,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, variables, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
+		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
 	}
 }

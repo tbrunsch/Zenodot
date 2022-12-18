@@ -2,6 +2,7 @@ package dd.kms.zenodot.impl.utils;
 
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.common.ObjectInfoProvider;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.InternalLogger;
@@ -25,7 +26,7 @@ public class ParserToolbox
 {
 	private final ObjectInfo					thisInfo;
 	private final ParserSettings				settings;
-	private final Variables						variables;
+	private final VariablesImpl					variables;
 
 	private final InternalLogger				logger;
 
@@ -37,7 +38,7 @@ public class ParserToolbox
 	private final OperatorResultProvider 		operatorResultProvider;
 	private final VariableDataProvider			variableDataProvider;
 
-	public ParserToolbox(ObjectInfo thisInfo, ParserSettings settings, Variables variables) {
+	public ParserToolbox(ObjectInfo thisInfo, ParserSettings settings, VariablesImpl variables) {
 		this.thisInfo = thisInfo;
 		this.settings = settings;
 		this.variables = variables;
@@ -64,7 +65,7 @@ public class ParserToolbox
 		return settings;
 	}
 
-	public Variables getVariables() {
+	public VariablesImpl getVariables() {
 		return variables;
 	}
 
@@ -82,7 +83,7 @@ public class ParserToolbox
 		return new ParserToolbox(thisInfo, newSettings, variables);
 	}
 
-	public ParserToolbox withVariables(Variables newVariables) {
+	public ParserToolbox withVariables(VariablesImpl newVariables) {
 		return new ParserToolbox(thisInfo, settings, newVariables);
 	}
 

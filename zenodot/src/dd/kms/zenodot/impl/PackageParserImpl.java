@@ -22,7 +22,7 @@ public class PackageParserImpl extends AbstractParser<PackageParseResult, Packag
 	private static final PackageParseResultExpectation	PARSE_RESULT_EXPECTATION	= new PackageParseResultExpectation().parseWholeText(true);
 
 	public PackageParserImpl(ParserSettings settings) {
-		super(settings);
+		super(settings, new VariablesImpl());
 	}
 
 	@Override

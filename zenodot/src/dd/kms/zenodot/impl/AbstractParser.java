@@ -3,7 +3,6 @@ package dd.kms.zenodot.impl;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
@@ -14,18 +13,16 @@ import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.utils.Variables;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
-
-import java.util.List;
 
 abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpectation<T>>
 {
 	final ParserSettings	settings;
+	final VariablesImpl		variables;
 
-	AbstractParser(ParserSettings settings) {
+	AbstractParser(ParserSettings settings, VariablesImpl variables) {
 		this.settings = settings;
+		this.variables = variables;
 	}
 
 	abstract T doParse(TokenStream tokenStream, ParserToolbox parserToolbox, S parseResultExpectation) throws CodeCompletionException, InternalErrorException, EvaluationException, SyntaxException;
@@ -48,7 +45,6 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 	}
 
 	T parse(TokenStream tokenStream, ObjectInfo thisInfo, S parseResultExpectation) throws CodeCompletionException, EvaluationException, SyntaxException, InternalErrorException {
-		Variables variables = createVariablePool();
 		try {
 			ParserToolbox parserToolbox = new ParserToolbox(thisInfo, settings, variables);
 			return doParse(tokenStream, parserToolbox, parseResultExpectation);
@@ -74,17 +70,5 @@ abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpect
 			}
 			throw new EvaluationException(message, t);
 		}
-	}
-
-	Variables createVariablePool() throws InternalErrorException {
-		Variables variablePool = new Variables(null);
-		List<Variable> variables = settings.getVariables();
-		for (Variable variable : variables) {
-			String name = variable.getName();
-			Object value = variable.getValue();
-			ObjectInfo valueInfo = InfoProvider.createObjectInfo(value);
-			variablePool.createVariable(name, valueInfo);
-		}
-		return variablePool;
 	}
 }

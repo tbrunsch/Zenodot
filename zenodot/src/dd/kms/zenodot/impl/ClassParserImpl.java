@@ -22,7 +22,7 @@ public class ClassParserImpl extends AbstractParser<ClassParseResult, ClassParse
 	private static final ClassParseResultExpectation	PARSE_RESULT_EXPECTATION	= new ClassParseResultExpectation().parseWholeText(true);
 
 	public ClassParserImpl(ParserSettings settings) {
-		super(settings);
+		super(settings, new VariablesImpl());
 	}
 
 	@Override
