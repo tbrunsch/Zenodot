@@ -22,7 +22,7 @@ public class NullTest extends CompletionTest
 		Object testInstance = new TestClass();
 		CompletionTestBuilder testBuilder = new CompletionTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> test.createVariable("myNull", null));
+			.configurator(test -> test.createVariable("myNull", null, false));
 
 		testBuilder
 			.addTest("f(",				"myNull", "sNull")

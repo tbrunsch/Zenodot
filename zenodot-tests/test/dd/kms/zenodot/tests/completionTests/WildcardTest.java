@@ -24,8 +24,8 @@ public class WildcardTest extends CompletionTest
 			.testInstance(testInstance)
 			.configurator(test -> {
 				test.importPackages("java.util");
-				test.createVariable("tempFloatVariable", 13.5f);
-				test.createVariable("tempCharVariable", 'c');
+				test.createVariable("tempFloatVariable", 13.5f, false);
+				test.createVariable("tempCharVariable", 'c', false);
 				test.customHierarchyRoot(CustomHierarchy.ROOT);
 			})
 			.addTest("xY", 								"xYZ", "xxYyZz", "xyz")

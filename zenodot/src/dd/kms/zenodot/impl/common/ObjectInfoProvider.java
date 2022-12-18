@@ -175,7 +175,7 @@ public class ObjectInfoProvider
 
 			// create variables
 			for (String parameterName : parameterNames) {
-				variables.createVariable(parameterName, InfoProvider.NULL_LITERAL);
+				variables.createVariable(parameterName, InfoProvider.NULL_LITERAL, false);
 			}
 		}
 

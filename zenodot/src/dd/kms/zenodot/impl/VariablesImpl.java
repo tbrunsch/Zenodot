@@ -40,34 +40,27 @@ public class VariablesImpl implements Variables
 	}
 
 	@Override
-	public Variables createVariable(String name, Object value) {
+	public Variables createVariable(String name, Object value, boolean isFinal) {
 		ObjectInfo valueInfo = InfoProvider.createObjectInfo(value);
 		try {
-			createVariable(name, valueInfo);
+			createVariable(name, valueInfo, isFinal);
 		} catch (InternalErrorException e) {
 			throw new IllegalArgumentException(e.getMessage());
 		}
 		return this;
 	}
 
-	public void createVariable(String name, ObjectInfo valueInfo) throws InternalErrorException {
+	public void createVariable(String name, ObjectInfo valueInfo, boolean isFinal) throws InternalErrorException {
 		// variables can only be introduced in the current scope
 		if (variables.containsKey(name)) {
 			// should be checked by caller
 			throw new InternalErrorException("Variable '" + name + "' already exists");
 		}
-		doCreateVariable(name, valueInfo);
+		doCreateVariable(name, valueInfo, isFinal);
 	}
 
-	private void doCreateVariable(String name, ObjectInfo valueInfo) {
-		/*
-		 * We allow setting variables in inner scopes, but not in the root scope. The root scope contains the values of
-		 * the variables defined in the immutable settings specified by the user. Setting them would have no effect on
-		 * the originally specified variables.
-		 * Inner scopes will be used by the lambda parser and will be required when supporting the evaluation of whole
-		 * code fragments.
-		 */
-		ObjectInfo.ValueSetter setter = parentScope != null
+	private void doCreateVariable(String name, ObjectInfo valueInfo, boolean isFinal) {
+		ObjectInfo.ValueSetter setter = !isFinal
 			? newValueInfo -> setValueInfo(name, newValueInfo)
 			: null;
 		ObjectInfo settableVariableInfo = new ObjectInfo(valueInfo.getObject(), valueInfo.getDeclaredType(), setter);
@@ -76,11 +69,12 @@ public class VariablesImpl implements Variables
 
 	private void setValueInfo(String name, ObjectInfo valueInfo) {
 		// this method is always called in the scope the variable is declared in
-		if (!variables.containsKey(name)) {
+		ObjectInfo variableInfo = variables.get(name);
+		if (variableInfo == null) {
 			throw new IllegalStateException("Unknown variable '" + name + "'");
 		}
-		variables.remove(name);
-		doCreateVariable(name, valueInfo);
+		ObjectInfo newVariableInfo = new ObjectInfo(valueInfo.getObject(), valueInfo.getDeclaredType(), variableInfo.getValueSetter());
+		variables.put(name, newVariableInfo);
 	}
 
 	@Override

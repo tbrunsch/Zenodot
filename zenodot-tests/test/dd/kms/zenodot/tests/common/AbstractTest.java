@@ -34,8 +34,8 @@ public class AbstractTest<T extends AbstractTest>
 		this.testInstance = testInstance;
 	}
 
-	public void createVariable(String name, Object value) {
-		variables.createVariable(name, value);
+	public void createVariable(String name, Object value, boolean isFinal) {
+		variables.createVariable(name, value, isFinal);
 	}
 
 	public void minimumAccessModifier(AccessModifier minimumAccessModifier) {

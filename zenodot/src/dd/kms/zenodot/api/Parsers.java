@@ -35,7 +35,7 @@ public class Parsers
 			throw new IllegalArgumentException("Parameter 'variables' is null");
 		}
 		throw new IllegalArgumentException("Parameter 'variables' is of a custom type '" + variables.getClass() + "'. "
-			+ "This is not supported. Use Variables.create() or Variables.of() to create supported instances of Variables");
+			+ "This is not supported. Use Variables.create() to create instances of Variables");
 	}
 
 	public static ClassParser createClassParser(ParserSettings settings) {

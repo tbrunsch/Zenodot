@@ -8,7 +8,7 @@
   
   - Added method `Parsers.preloadClasses()` that allows loading classes before they are needed.
   
-  - Since variables are not part of the `ParserSettings` anymore, but optionally specified when an `ExpressionParser` is created, Zenodot can now overwrite variables.
+  - Since variables are not part of the `ParserSettings` anymore, but optionally specified when an `ExpressionParser` is created, Zenodot can now overwrite variables (when they are not declared `final`).
   
 API changes:
 

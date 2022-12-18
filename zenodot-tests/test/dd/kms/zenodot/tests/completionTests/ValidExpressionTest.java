@@ -65,7 +65,7 @@ public class ValidExpressionTest extends CompletionTest
 			}
 		};
 
-		test.createVariable("variable", 13.0);
+		test.createVariable("variable", 13.0, false);
 		test.customHierarchyRoot(root);
 	}
 

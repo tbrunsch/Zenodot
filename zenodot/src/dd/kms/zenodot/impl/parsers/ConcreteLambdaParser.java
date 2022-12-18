@@ -62,7 +62,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		VariablesImpl variables = new VariablesImpl(parserToolbox.getVariables());
 		for (Parameter parameter : parameters) {
 			ObjectInfo valueInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, parameter.getDeclaredType());
-			variables.createVariable(parameter.getName(), valueInfo);
+			variables.createVariable(parameter.getName(), valueInfo, false);
 		}
 
 		log(LogLevel.INFO, "parsing lambda body");
