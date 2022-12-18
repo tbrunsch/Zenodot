@@ -6,7 +6,9 @@
   
   - Support for lambdas has been added with the following restrictions: Types of generic parameters cannot be inferred, so generic parameters have to be cast, and method references are currently not supported.
   
-  - Added method `Parsers.preloadClasses()` that allows loading classes before they are needed.  
+  - Added method `Parsers.preloadClasses()` that allows loading classes before they are needed.
+  
+  - Since variables are not part of the `ParserSettings` anymore, but optionally specified when an `ExpressionParser` is created, Zenodot can now overwrite variables.
   
 API changes:
 
@@ -21,6 +23,8 @@ API changes:
   - The method `CodeCompletionVariable.getVariable()` has been replaced by the method `CodeCompletionVariable.getVariableName()` which returns a `String` instead of a `Variable`.
   
   - We have replaced the custom interface `IntRange` by Guava's class `Range`.
+  
+  - Variables are no part of the `ParserSettings` anymore. Instead, you can specify them when creating an `ExpressionParser` via `Parsers.createExpressionParser()`. This allows Zenodot to modify existing and potentially introduce new variables.
 
 ## v0.2.2
 
