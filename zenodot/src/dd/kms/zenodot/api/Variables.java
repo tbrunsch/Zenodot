@@ -42,6 +42,12 @@ public interface Variables
 	Object getValue(String name);
 
 	/**
+	 * @return The type of the variable with the given {@code name}
+	 * @throws IllegalArgumentException if no variable with this name exists
+	 */
+	Class<?> getType(String name);
+
+	/**
 	 * @return The names of the variables contained in this variable collection
 	 */
 	Collection<String> getNames();

@@ -28,6 +28,12 @@ public class VariablesImpl implements Variables
 		return valueInfo.getObject();
 	}
 
+	@Override
+	public Class<?> getType(String name) {
+		ObjectInfo valueInfo = getValueInfo(name);
+		return valueInfo.getDeclaredType();
+	}
+
 	public ObjectInfo getValueInfo(String name) {
 		ObjectInfo valueInfo = variables.get(name);
 		if (valueInfo != null) {
