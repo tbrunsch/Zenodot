@@ -3,12 +3,14 @@ package dd.kms.zenodot.impl.parsers;
 import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.debug.LogLevel;
+import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.impl.common.ObjectInfoProvider.Parameter;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
+import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.ObjectParseResult;
@@ -74,7 +76,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 
 		Class<?> bodyResultType = bodyParseResult.getObjectInfo().getDeclaredType();
 		Class<?> expectedReturnType = method.getReturnType();
-		if (!expectedReturnType.isAssignableFrom(bodyResultType)) {
+		if (MatchRatings.rateTypeMatch(expectedReturnType, bodyResultType) == TypeMatch.NONE) {
 			log(LogLevel.INFO, "lambda has wrong return type: " + bodyResultType + " instead of " + expectedReturnType);
 			throw new SyntaxException("Return type " + bodyResultType + " is not assignable to " + expectedReturnType);
 		}
