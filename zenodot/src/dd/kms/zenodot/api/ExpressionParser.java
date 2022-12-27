@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * Parser for expressions<br>
  * <br>
- * Zenodot provided code completions and evaluates expressions in the context of a certain object referred to by {@code this}.
+ * Zenodot provides code completions and evaluates expressions in the context of a certain object referred to by {@code this}.
  * If the context refers to, e.g., a list, then you can simply type {@code size()} to get the size of that list. You do
  * not have to enter {@code this.size()}.
  */

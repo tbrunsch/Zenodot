@@ -116,7 +116,9 @@ To specify variables when parsing expressions, you have to do the following step
 
   1. Create a collection of variables via `Variables.create()`.
   1. Add variables to this collection via `Variables.createVariable()`. There you can specify whether the variable is `final` or not.
-  1. Create an expression parser via the overload of `Parser.createExpressionParser()` with `Variables` as second parameter and specify your variables collection.
+  1. Create an expression parser builder via `Parser.createExpressionParserBuilder()`.
+  1. Set the variables via `ExpressionParserBuilder.variables()`
+  1. Create an expression parser via `ExpressionParserBuilder.createExpressionParser()`.
 
 The following sample is an excerpt from **VariableSample**:
 
@@ -125,7 +127,9 @@ ParserSettings settings = ParserSettingsBuilder.create().build();
 Variables variables = Variables.create()
 	.createVariable("i", 42, true)
 	.createVariable("x", 3.14, false)
-ExpressionParser parser = Parsers.createExpressionParser(settings, variables);
+ExpressionParser parser = Parsers.createExpressionParserBuilder(settings)
+	.variables(variables)
+	.createExpressionParser();
 
 System.out.println(parser.evaluate("i", null));	    // prints 42
 parser.evaluate("x = 2.72", null);                  // sets x to 2.72

@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.completionTests;
 
+import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.ParserSettings;
@@ -67,7 +68,10 @@ public class NoExceptionTest extends AbstractTest
 		ParserSettings settings = settingsBuilder.build();
 
 		try {
-			Parsers.createExpressionParser(settings, variables).getCompletions(expression, caretPosition, testInstance);
+			ExpressionParser expressionParser = Parsers.createExpressionParserBuilder(settings)
+				.variables(variables)
+				.createExpressionParser();
+			expressionParser.getCompletions(expression, caretPosition, testInstance);
 		} catch (Exception e) {
 			if (executeAssertions) {
 				fail("Exception during code completion for " + expression.substring(0, caretPosition) + "^" + expression.substring(caretPosition) + ": " + e.getMessage());
