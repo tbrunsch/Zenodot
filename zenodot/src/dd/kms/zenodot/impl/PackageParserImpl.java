@@ -22,12 +22,12 @@ public class PackageParserImpl extends AbstractParser<PackageParseResult, Packag
 	private static final PackageParseResultExpectation	PARSE_RESULT_EXPECTATION	= new PackageParseResultExpectation().parseWholeText(true);
 
 	public PackageParserImpl(ParserSettings settings) {
-		super(settings);
+		super(settings, new VariablesImpl());
 	}
 
 	@Override
 	public List<CodeCompletion> getCompletions(String text, int caretPosition) throws ParseException {
-		return getCodeCompletions(text, caretPosition, null, PARSE_RESULT_EXPECTATION).getCompletions();
+		return getCodeCompletions(text, caretPosition, InfoProvider.NULL_LITERAL, PARSE_RESULT_EXPECTATION).getCompletions();
 	}
 
 	@Override

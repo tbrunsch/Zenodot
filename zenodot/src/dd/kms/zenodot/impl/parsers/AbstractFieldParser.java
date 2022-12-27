@@ -17,7 +17,7 @@ import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.utils.Variables;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.utils.dataproviders.FieldDataProvider;
 import dd.kms.zenodot.impl.wrappers.FieldInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
@@ -118,7 +118,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws ParseException {
 			Object contextObject = contextStatic ? null : contextInfo.getObject();
 			return OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
 		}

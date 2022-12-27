@@ -11,7 +11,7 @@ import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.utils.Variables;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.utils.dataproviders.VariableDataProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
@@ -37,11 +37,11 @@ public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
 
-		Variables variables = parserToolbox.getVariables();
-		ObjectInfo variableValueInfo = variables.getVariable(variableName);
-		if (variableValueInfo == null) {
+		VariablesImpl variables = parserToolbox.getVariables();
+		if (!variables.getNames().contains(variableName)) {
 			throw new SyntaxException("Unknown variable '" + variableName + "'");
 		}
+		ObjectInfo variableValueInfo = variables.getValueInfo(variableName);
 		log(LogLevel.SUCCESS, "detected variable '" + variableName + "'");
 
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
@@ -70,12 +70,8 @@ public class VariableParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws InternalErrorException {
-			ObjectInfo valueInfo = variables.getVariable(variableName);
-			if (valueInfo != null) {
-				return valueInfo;
-			}
-			throw new InternalErrorException("Variable '" + variableName + "' does not exist");
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) {
+			return variables.getValueInfo(variableName);
 		}
 	}
 }

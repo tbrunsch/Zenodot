@@ -112,6 +112,26 @@ Another restriction is that Zenodot does currently not support method references
 
 Zenodot allows you to declare variables that can be set and accessed in expressions. This can save some typing when repeatedly evaluating expressions in a certain context.
 
+To specify variables when parsing expressions, you have to do the following steps:
+
+  1. Create a collection of variables via `Variables.create()`.
+  1. Add variables to this collection via `Variables.createVariable()`. There you can specify whether the variable is `final` or not.
+  1. Create an expression parser via the overload of `Parser.createExpressionParser()` with `Variables` as second parameter and specify your variables collection.
+
+The following sample is an excerpt from **VariableSample**:
+
+```
+ParserSettings settings = ParserSettingsBuilder.create().build();
+Variables variables = Variables.create()
+	.createVariable("i", 42, true)
+	.createVariable("x", 3.14, false)
+ExpressionParser parser = Parsers.createExpressionParser(settings, variables);
+
+System.out.println(parser.evaluate("i", null));	    // prints 42
+parser.evaluate("x = 2.72", null);                  // sets x to 2.72
+System.out.println(parser.evaluate("x", null));     // prints 2.72
+```
+
 ## Custom Hierarchies
 
 One of the most interesting features of Zenodot is its support of custom hierarchies. If an application holds a dynamically created tree, then this tree can, of course, be traversed with an arbitrary Java parser. However, in many cases the traversed nodes are only represented by generic node classes. Only in rare cases there will be one node class for each node. Consequently, when traversing such a tree, you will have to call generic methods like `getChild(childIndex)` or something similar. This is different than what you see in your application where every node is displayed with its individual name. When restricted to Java syntax, you can not hope for meaningful code completion here. You have to deal with child indices instead.
@@ -166,8 +186,6 @@ It is obligatory to create an instance of `ParserSettings` in order to create a 
   - Class imports: Imported classes can be referenced by their simple instead of their fully qualified names from within expressions.
   
   - Package imports: All classes in imported packages can be referenced by their simple instead of their fully qualified names from within expressions.
-  
-  - Variables: You can specify variables that can be referenced from within expressions. Use the overloads of `ParserSettingsUtils.createVariable()` to create variables. There you have to specify whether the values the variables point to should be referenced by a hard or by a weak reference. If the objects your variables point to are part of your application you want to debug, then in most cases it will be advisable to use weak references. Otherwise, you might extend the lifetime of these objects unintentionally.
   
   - Minimum access modifier: You can specify the minimum access modifier fields, methods, or constructors must have in order to be accessible by the parser. If you want to debug implementation details of objects, then you should set it to `AccessModifier.PRIVATE`. If you just want to call API methods, then it is advisable to set it to `AccessModifier.PUBLIC` (default). This may reduce the number of code completions significantly by filtering out irrelevant completions. Remarks:
     * For the sake of simplicity we decided that the accessibility of fields, methods, and constructors is independent of context the expression is evaluated in. If the minimum access modifier is `AccessModifier.PUBLIC`, then you cannot access protected fields, even if they are fields of the context.

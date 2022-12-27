@@ -1,7 +1,5 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
-import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -21,27 +19,32 @@ public class VariableTest extends EvaluationTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		Variable variable1 = ParserSettingsUtils.createVariable("xyz", 15.0, true);
-		Variable variable2 = ParserSettingsUtils.createVariable("abc", "Test", true);
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> test.variables(variable1, variable2));
+			.configurator(test -> {
+				test.createVariable("xyz", 15.0, true);
+				test.createVariable("abc", "Test", true);
+				test.createVariable("modifiableVariable", 42, false);
+			});
 
 		testBuilder
-			.addTest("b + xyz",			18.0)
-			.addTest("xyz * i",			-15000.0)
-			.addTest("(int) xyz / f",	6.0f)
-			.addTest("b + abc",			"3Test")
-			.addTest("abc + i",			"Test-1000")
-			.addTest("abc + f",			"Test2.5")
-			.addTest("xyz + xyz",		30.0)
-			.addTest("abc + abc",		"TestTest")
-			.addTest("test(xyz)",		"15.0")
-			.addTest("test(abc)",		"Test");
+			.addTest("b + xyz",											18.0)
+			.addTest("xyz * i",											-15000.0)
+			.addTest("(int) xyz / f",									6.0f)
+			.addTest("b + abc",											"3Test")
+			.addTest("abc + i",											"Test-1000")
+			.addTest("abc + f",											"Test2.5")
+			.addTest("xyz + xyz",										30.0)
+			.addTest("abc + abc",										"TestTest")
+			.addTest("test(xyz)",										"15.0")
+			.addTest("test(abc)",										"Test")
+			.addTest("modifiableVariable",								42)
+			.addTest("(modifiableVariable = 27) + modifiableVariable",	54);
 
 		testBuilder
 			.addTestWithError("xyz = 13")
-			.addTestWithError("abc = \"Test\"");
+			.addTestWithError("abc = \"Test\"")
+			.addTestWithError("modifiableVariable = \"Test\"");
 
 		return testBuilder.build();
 	}

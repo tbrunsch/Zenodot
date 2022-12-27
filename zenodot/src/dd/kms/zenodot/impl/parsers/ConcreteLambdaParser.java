@@ -15,7 +15,7 @@ import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.utils.Variables;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
@@ -59,10 +59,10 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		log(LogLevel.SUCCESS, "Parsed lambda arrow -> " + parameters.stream().map(Parameter::getName).collect(Collectors.joining(", ")));
 
 		// create new scope for variables
-		Variables variables = new Variables(parserToolbox.getVariables());
+		VariablesImpl variables = new VariablesImpl(parserToolbox.getVariables());
 		for (Parameter parameter : parameters) {
 			ObjectInfo valueInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, parameter.getDeclaredType());
-			variables.createVariable(parameter.getName(), valueInfo);
+			variables.createVariable(parameter.getName(), valueInfo, false);
 		}
 
 		log(LogLevel.INFO, "parsing lambda body");
@@ -150,7 +150,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		return parameterNames;
 	}
 
-	private ObjectParseResult parseBody(TokenStream tokenStream, ObjectInfo contextInfo, Variables variables) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
+	private ObjectParseResult parseBody(TokenStream tokenStream, ObjectInfo contextInfo, VariablesImpl variables) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
 		ParserToolbox parserToolBox = parserToolbox
 			.withEvaluationMode(EvaluationMode.STATIC_TYPING)
 			.withVariables(variables);
@@ -176,9 +176,9 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws InternalErrorException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws InternalErrorException {
 			// create new scope for variables
-			variables = new Variables(variables);
+			variables = new VariablesImpl(variables);
 			return OBJECT_INFO_PROVIDER.getLambdaInfo(
 				functionalInterface, methodName, parameters, bodyParseResult,
 				lambdaExpression, thisInfo, variables

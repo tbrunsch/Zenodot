@@ -4,6 +4,7 @@ import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.flowcontrol.*;
 import dd.kms.zenodot.impl.parsers.*;
 import dd.kms.zenodot.impl.parsers.expectations.ClassParseResultExpectation;
@@ -283,7 +284,7 @@ public class ParseUtils
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, Variables variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, VariablesImpl variables) throws ParseException {
 			ObjectInfo nextObjectInfo = parseResult.evaluate(thisInfo, context, variables);
 			return tailParseResult.evaluate(thisInfo, nextObjectInfo, variables);
 		}

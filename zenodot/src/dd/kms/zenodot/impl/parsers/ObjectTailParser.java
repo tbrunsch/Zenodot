@@ -14,7 +14,7 @@ import dd.kms.zenodot.impl.result.ParseResults;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.utils.Variables;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
@@ -99,7 +99,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws ParseException {
 			ObjectInfo indexInfo = indexParseResult.evaluate(thisInfo, thisInfo, variables);
 			return OBJECT_INFO_PROVIDER.getArrayElementInfo(contextInfo, indexInfo);
 		}

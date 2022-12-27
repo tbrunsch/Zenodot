@@ -14,7 +14,6 @@ public interface ParserSettings
 {
 	CompletionMode getCompletionMode();
 	Imports getImports();
-	List<Variable> getVariables();
 	AccessModifier getMinimumAccessModifier();
 	EvaluationMode getEvaluationMode();
 	boolean isConsiderAllClassesForClassCompletions();

@@ -3,7 +3,6 @@ package dd.kms.zenodot.impl.result.codecompletions;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
-import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.impl.wrappers.ClassInfo;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.FieldInfo;

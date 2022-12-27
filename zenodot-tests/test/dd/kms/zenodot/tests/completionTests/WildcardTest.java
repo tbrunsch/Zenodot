@@ -1,7 +1,5 @@
 package dd.kms.zenodot.tests.completionTests;
 
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
-import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.tests.common.CustomHierarchy;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
@@ -22,13 +20,12 @@ public class WildcardTest extends CompletionTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		Variable variable1 = ParserSettingsUtils.createVariable("tempFloatVariable", 13.5f, true);
-		Variable variable2 = ParserSettingsUtils.createVariable("tempCharVariable", 'c', true);
 		return new CompletionTestBuilder()
 			.testInstance(testInstance)
 			.configurator(test -> {
 				test.importPackages("java.util");
-				test.variables(variable1, variable2);
+				test.createVariable("tempFloatVariable", 13.5f, false);
+				test.createVariable("tempCharVariable", 'c', false);
 				test.customHierarchyRoot(CustomHierarchy.ROOT);
 			})
 			.addTest("xY", 								"xYZ", "xxYyZz", "xyz")

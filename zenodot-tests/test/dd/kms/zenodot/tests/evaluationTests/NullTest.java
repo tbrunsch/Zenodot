@@ -1,7 +1,5 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
-import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -21,10 +19,9 @@ public class NullTest extends EvaluationTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		Variable myNull = ParserSettingsUtils.createVariable("myNull", null, true);
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> test.variables(myNull));
+			.configurator(test -> test.createVariable("myNull", null, false));
 
 		testBuilder
 			.addTest("f(null)",				0)

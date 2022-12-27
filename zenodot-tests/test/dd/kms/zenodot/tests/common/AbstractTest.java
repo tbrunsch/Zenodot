@@ -1,13 +1,13 @@
 package dd.kms.zenodot.tests.common;
 
 import com.google.common.collect.ImmutableList;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserConsoleLogger;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.settings.Variable;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import org.junit.Assert;
 
@@ -24,6 +24,7 @@ public class AbstractTest<T extends AbstractTest>
 	protected final ParserSettingsBuilder	settingsBuilder			= ParserSettingsBuilder.create()
 																			.minimumAccessModifier(AccessModifier.PRIVATE)
 																			.evaluationMode(EvaluationMode.STATIC_TYPING);
+	protected final Variables				variables				= Variables.create();
 
 
 	private boolean							stopAtError				= false;
@@ -33,8 +34,8 @@ public class AbstractTest<T extends AbstractTest>
 		this.testInstance = testInstance;
 	}
 
-	public void variables(Variable... variables) {
-		settingsBuilder.variables(ImmutableList.copyOf(variables));
+	public void createVariable(String name, Object value, boolean isFinal) {
+		variables.createVariable(name, value, isFinal);
 	}
 
 	public void minimumAccessModifier(AccessModifier minimumAccessModifier) {

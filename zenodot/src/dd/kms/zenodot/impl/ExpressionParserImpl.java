@@ -15,7 +15,6 @@ import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.utils.Variables;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
@@ -26,8 +25,8 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 {
 	private static final ObjectParseResultExpectation	PARSE_RESULT_EXPECTATION	= new ObjectParseResultExpectation().parseWholeText(true);
 
-	public ExpressionParserImpl(ParserSettings settings) {
-		super(settings);
+	public ExpressionParserImpl(ParserSettings settings, VariablesImpl variables) {
+		super(settings, variables);
 	}
 
 	@Override
@@ -68,12 +67,6 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 			// everything has already been evaluated
 			return parseResult.getObjectInfo().getObject();
 		}
-		Variables variables = null;
-		try {
-			variables = createVariablePool();
-		} catch (InternalErrorException e) {
-			throw new ParseException(tokenStream, e.getMessage(), e);
-		}
 		return parseResult.evaluate(thisInfo, thisInfo, variables).getObject();
 	}
 
@@ -106,12 +99,6 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 	}
 
 	private CompiledExpression createCompiledExpression(ObjectParseResult compiledParseResult) {
-		Variables variables;
-		try {
-			variables = createVariablePool();
-		} catch (InternalErrorException e) {
-			throw new IllegalStateException("Error creating variable pool: " + e, e);
-		}
 		return new CompiledExpression()
 		{
 			@Override

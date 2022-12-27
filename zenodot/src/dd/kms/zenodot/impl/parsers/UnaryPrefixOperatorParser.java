@@ -12,7 +12,7 @@ import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.tokenizer.UnaryOperator;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.utils.Variables;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider.OperatorException;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
@@ -95,7 +95,7 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws ParseException {
 			ObjectInfo expressionInfo = expressionParseResult.evaluate(thisInfo, contextInfo, variables);
 			try {
 				return applyOperator(expressionInfo, operator, OPERATOR_RESULT_PROVIDER);
