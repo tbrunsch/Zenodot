@@ -27,6 +27,11 @@ public class ExpressionParserBuilderImpl implements ExpressionParserBuilder
 
 	@Override
 	public ExpressionParser createExpressionParser() {
-		return new dd.kms.zenodot.impl.ExpressionParserImpl(parserSettings, (VariablesImpl) variables);
+		return new ExpressionParserImpl(parserSettings, (VariablesImpl) variables);
+	}
+
+	@Override
+	public ExpressionParser createLambdaParser(Class<?> functionalInterface) {
+		return new LambdaExpressionParser(parserSettings, (VariablesImpl) variables, functionalInterface);
 	}
 }

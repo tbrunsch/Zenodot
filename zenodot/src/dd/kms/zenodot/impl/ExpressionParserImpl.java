@@ -21,36 +21,38 @@ import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 import java.util.List;
 import java.util.Optional;
 
-public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, ObjectParseResultExpectation> implements ExpressionParser
+class ExpressionParserImpl extends AbstractParser<ObjectParseResult, ObjectParseResultExpectation> implements ExpressionParser
 {
-	private static final ObjectParseResultExpectation	PARSE_RESULT_EXPECTATION	= new ObjectParseResultExpectation().parseWholeText(true);
-
-	public ExpressionParserImpl(ParserSettings settings, VariablesImpl variables) {
+	ExpressionParserImpl(ParserSettings settings, VariablesImpl variables) {
 		super(settings, variables);
+	}
+
+	ObjectParseResultExpectation getParseResultExpectation() {
+		return new ObjectParseResultExpectation().parseWholeText(true);
 	}
 
 	@Override
 	public List<CodeCompletion> getCompletions(String text, int caretPosition, Class<?> thisType) throws ParseException {
 		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, thisType);
-		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getCompletions();
+		return getCodeCompletions(text, caretPosition, thisInfo, getParseResultExpectation()).getCompletions();
 	}
 
 	@Override
 	public List<CodeCompletion> getCompletions(String text, int caretPosition, Object thisValue) throws ParseException {
 		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
-		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getCompletions();
+		return getCodeCompletions(text, caretPosition, thisInfo, getParseResultExpectation()).getCompletions();
 	}
 
 	@Override
 	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String text, int caretPosition, Class<?> thisType) throws ParseException {
 		ObjectInfo thisInfo = InfoProvider.createObjectInfo(InfoProvider.INDETERMINATE_VALUE, thisType);
-		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
+		return getCodeCompletions(text, caretPosition, thisInfo, getParseResultExpectation()).getExecutableArgumentInfo();
 	}
 
 	@Override
 	public Optional<ExecutableArgumentInfo> getExecutableArgumentInfo(String text, int caretPosition, Object thisValue) throws ParseException {
 		ObjectInfo thisInfo = InfoProvider.createObjectInfo(thisValue);
-		return getCodeCompletions(text, caretPosition, thisInfo, PARSE_RESULT_EXPECTATION).getExecutableArgumentInfo();
+		return getCodeCompletions(text, caretPosition, thisInfo, getParseResultExpectation()).getExecutableArgumentInfo();
 	}
 
 	@Override
@@ -59,7 +61,7 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 		TokenStream tokenStream = new TokenStream(expression, -1);
 		ObjectParseResult parseResult;
 		try {
-			parseResult = parse(tokenStream, thisInfo, PARSE_RESULT_EXPECTATION);
+			parseResult = parse(tokenStream, thisInfo, getParseResultExpectation());
 		} catch (Throwable t) {
 			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
@@ -86,7 +88,7 @@ public class ExpressionParserImpl extends AbstractParser<ObjectParseResult, Obje
 		TokenStream tokenStream = new TokenStream(expression, -1);
 		ObjectParseResult parseResult;
 		try {
-			parseResult = parse(tokenStream, thisInfo, PARSE_RESULT_EXPECTATION);
+			parseResult = parse(tokenStream, thisInfo, getParseResultExpectation());
 		} catch (Throwable t) {
 			throw new ParseException(tokenStream, t.getMessage(), t);
 		}
