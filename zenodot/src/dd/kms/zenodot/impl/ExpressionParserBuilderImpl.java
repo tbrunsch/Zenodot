@@ -32,6 +32,11 @@ public class ExpressionParserBuilderImpl implements ExpressionParserBuilder
 
 	@Override
 	public ExpressionParser createLambdaParser(Class<?> functionalInterface) {
-		return new LambdaExpressionParser(parserSettings, (VariablesImpl) variables, functionalInterface);
+		return new LambdaExpressionParser(parserSettings, (VariablesImpl) variables, functionalInterface, null);
+	}
+
+	@Override
+	public ExpressionParser createLambdaParser(Class<?> functionalInterface, Class<?>... parameterTypes) {
+		return new LambdaExpressionParser(parserSettings, (VariablesImpl) variables, functionalInterface, parameterTypes);
 	}
 }

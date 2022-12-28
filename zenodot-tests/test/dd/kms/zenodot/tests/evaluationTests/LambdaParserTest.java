@@ -43,8 +43,16 @@ public class LambdaParserTest
 	public void testFunction() throws Exception {
 		Function<Object, Object> function = parseLambda(Function.class, "t -> ((String) t).length()");
 		for (String s : Arrays.asList("abc", "", "x", "0123456789")) {
-			Object result = function.apply(s);
-			Assert.assertEquals(s.length(), result);
+			Assert.assertEquals(s.length(), function.apply(s));
+		}
+	}
+
+	@Test
+	public void testTypedFunction() throws Exception {
+		// no need to cast t to String as in testFunction() because we tell the parser the correct parameter type
+		Function<Object, Object> function = parseLambda(Function.class, "t -> t.length()", null, String.class);
+		for (String s : Arrays.asList("abc", "", "x", "0123456789")) {
+			Assert.assertEquals(s.length(), function.apply(s));
 		}
 	}
 
@@ -53,8 +61,18 @@ public class LambdaParserTest
 		Comparator<Object> comparator = parseLambda(Comparator.class, "(x, y) -> Integer.compare((int) x, (int) y)");
 		for (int i = 0; i < 5; i++) {
 			for (int j = 0; j < 5; j++) {
-				int comparisonResult = comparator.compare(i, j);
-				Assert.assertEquals(Math.signum(i - j), Math.signum(comparisonResult), 0.0);
+				Assert.assertEquals(Integer.compare(i, j), comparator.compare(i, j));
+			}
+		}
+	}
+
+	@Test
+	public void testTypedComparator() throws Exception {
+		// no need to cast x and y to int as in testComparator() because we tell the parser the correct parameter types
+		Comparator<Object> comparator = parseLambda(Comparator.class, "(x, y) -> Integer.compare(x, y)", null, int.class, int.class);
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 5; j++) {
+				Assert.assertEquals(Integer.compare(i, j), comparator.compare(i, j));
 			}
 		}
 	}
@@ -63,9 +81,9 @@ public class LambdaParserTest
 		return parseLambda(functionalInterface, lambdaExpression, null);
 	}
 
-	private static <T> T parseLambda(Class<T> functionalInterface, String lambdaExpression, Object thisValue) throws Exception {
+	private static <T> T parseLambda(Class<T> functionalInterface, String lambdaExpression, Object thisValue, Class<?>... parameterTypes) throws Exception {
 		ParserSettings parserSettings = ParserSettingsBuilder.create().build();
-		ExpressionParser lambdaParser = Parsers.createExpressionParserBuilder(parserSettings).createLambdaParser(functionalInterface);
+		ExpressionParser lambdaParser = Parsers.createExpressionParserBuilder(parserSettings).createLambdaParser(functionalInterface, parameterTypes);
 		CompiledExpression compiledExpression = lambdaParser.compile(lambdaExpression, thisValue);
 		Object result = compiledExpression.evaluate(thisValue);
 		Assert.assertTrue("parsed result must be of type '" + functionalInterface.getName() + "'", functionalInterface.isInstance(result));

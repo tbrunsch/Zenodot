@@ -46,7 +46,11 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 			throw new InternalErrorException("Class " + functionalInterface + " is no functional interface");
 		}
 		Method method = unimplementedMethods.get(0);
-		Class<?>[] parameterTypes = method.getParameterTypes();
+		Class<?>[] parameterTypes = expectation.getParameterTypes();
+		if (parameterTypes == null) {
+			// no additional information provided by the caller
+			parameterTypes = method.getParameterTypes();
+		}
 
 		int startPosition = tokenStream.getPosition();
 
