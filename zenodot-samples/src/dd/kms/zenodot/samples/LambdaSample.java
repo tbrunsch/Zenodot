@@ -9,7 +9,7 @@ import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import java.util.Collections;
 
 /**
- * This sample demonstrates how to evaluate lambdas
+ * This sample demonstrates how to evaluate expressions that contain lambdas.
  */
 public class LambdaSample
 {
