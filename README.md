@@ -106,7 +106,33 @@ System.out.println("Result: " + parser.evaluate(expression, null));
 
 Since Zenodot does not support type inference, parameters for generic types have to be cast. In the example above, the parameter `s` has to be cast to `String`.
 
-Another restriction is that Zenodot does currently not support method references.
+Another restriction is that Zenodot does currently not support method references or lambdas with code blocks.
+
+It is also possible to create a parser particularly for parsing lambdas for a specific functional interface. For this, you have to create an expression parser for this specific use case:
+
+ 1. Create an `ExpressionParserBuilder` via `Parsers.createExpressionParserBuilder()`
+ 1. Create a lambda parser via `ExpressionParserBuilder.createLambdaParser()` for the desired functional interface. There you can optionally specify the parameter types for your use case. This is necessary if the interface is generic or extends a generic interface and you want to avoid casts in the lambda expression.
+
+The following sample, taken from **LambdaParserSample.java**, shows how to create a lambda parser:
+
+```
+ParserSettings settings = ParserSettingsBuilder.create()
+    .importPackages(Collections.singletonList("java.util"))
+    .build();
+
+// create a lambda parser for Comparator<String> where compare() takes two String parameters 
+ExpressionParser parser = Parsers.createExpressionParserBuilder(settings)
+    .createLambdaParser(Comparator.class, String.class, String.class);
+
+// create a comparator that compares strings by considering them as numbers
+String expression = "(s1, s2) -> Integer.compare(Integer.parseInt(s1), Integer.parseInt(s2))";
+Comparator<String> comparator = (Comparator<String>) parser.evaluate(expression, null);
+
+// sort strings by considering them as numbers
+List<String> numbersAsStrings = Arrays.asList("123", "42", "0", "99");
+numbersAsStrings.sort(comparator);
+System.out.println(numbersAsStrings);
+``` 
 
 ## Custom Variables
 
