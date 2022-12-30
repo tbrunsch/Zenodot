@@ -116,9 +116,7 @@ It is also possible to create a parser particularly for parsing lambdas for a sp
 The following sample, taken from **LambdaParserSample.java**, shows how to create a lambda parser:
 
 ```
-ParserSettings settings = ParserSettingsBuilder.create()
-    .importPackages(Collections.singletonList("java.util"))
-    .build();
+ParserSettings settings = ParserSettingsBuilder.create().build();
 
 // create a lambda parser for Comparator<String> where compare() takes two String parameters 
 ExpressionParser parser = Parsers.createExpressionParserBuilder(settings)

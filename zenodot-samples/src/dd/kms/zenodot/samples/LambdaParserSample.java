@@ -7,7 +7,6 @@ import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -17,9 +16,7 @@ import java.util.List;
 public class LambdaParserSample
 {
 	public static void main(String[] args) throws ParseException {
-		ParserSettings settings = ParserSettingsBuilder.create()
-			.importPackages(Collections.singletonList("java.util"))
-			.build();
+		ParserSettings settings = ParserSettingsBuilder.create().build();
 
 		// create a lambda parser for Comparator<String> where compare() takes two String parameters
 		ExpressionParser parser = Parsers.createExpressionParserBuilder(settings)
