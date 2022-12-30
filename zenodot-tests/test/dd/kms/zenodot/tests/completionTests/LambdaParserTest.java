@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.completionTests;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.Parsers;
@@ -49,7 +50,7 @@ public class LambdaParserTest
 
 	@Test
 	public void testBiConsumer() throws Exception {
-		String completion = getFirstCompletion(BiConsumer.class, "(var1, var2) -> java.util.Collections.sort(var");
+		String completion = getFirstCompletion(BiConsumer.class, "(var1, var2) -> Collections.sort(var");
 		/*
 		 * Since we did not specify the types of var1 and var2, code completion will return the
 		 * first best parameter matching "var".
@@ -59,7 +60,7 @@ public class LambdaParserTest
 
 	@Test
 	public void testTypedBiConsumer() throws Exception {
-		String completion = getFirstCompletion(BiConsumer.class, "(var1, var2) -> java.util.Collections.sort(var", null, Set.class, List.class);
+		String completion = getFirstCompletion(BiConsumer.class, "(var1, var2) -> Collections.sort(var", null, Set.class, List.class);
 		/*
 		 * In contrast to testBiConsumer(), we specify that the lambda represents a BiConsumer<Set, List>.
 		 * Hence, code completion should prefer "var2" over "var1" because Collections.sort() only accepts List.
@@ -72,7 +73,9 @@ public class LambdaParserTest
 	}
 
 	private static String getFirstCompletion(Class<?> functionalInterface, String lambdaExpression, Object thisValue, Class<?>... parameterTypes) throws Exception {
-		ParserSettings parserSettings = ParserSettingsBuilder.create().build();
+		ParserSettings parserSettings = ParserSettingsBuilder.create()
+			.importClasses(ImmutableList.of(java.util.Collections.class))
+			.build();
 		ExpressionParser lambdaParser = Parsers.createExpressionParserBuilder(parserSettings).createLambdaParser(functionalInterface, parameterTypes);
 		List<CodeCompletion> completions = lambdaParser.getCompletions(lambdaExpression, lambdaExpression.length(), thisValue);
 		List<CodeCompletion> sortedCompletions = CompletionTest.getSortedCompletions(completions);
