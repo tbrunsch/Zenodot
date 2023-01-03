@@ -118,13 +118,13 @@ The following sample, taken from **LambdaParserSample.java**, shows how to creat
 ```
 ParserSettings settings = ParserSettingsBuilder.create().build();
 
-// create a lambda parser for Comparator<String> where compare() takes two String parameters 
-ExpressionParser parser = Parsers.createExpressionParserBuilder(settings)
+// create a lambda parser for Comparator<String> where compare() takes two String parameters
+LambdaExpressionParser<Comparator> parser = Parsers.createExpressionParserBuilder(settings)
     .createLambdaParser(Comparator.class, String.class, String.class);
 
 // create a comparator that compares strings by considering them as numbers
 String expression = "(s1, s2) -> Integer.compare(Integer.parseInt(s1), Integer.parseInt(s2))";
-Comparator<String> comparator = (Comparator<String>) parser.evaluate(expression, null);
+Comparator<String> comparator = parser.evaluate(expression, null);
 
 // sort strings by considering them as numbers
 List<String> numbersAsStrings = Arrays.asList("123", "42", "0", "99");

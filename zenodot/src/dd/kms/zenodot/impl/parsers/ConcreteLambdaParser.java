@@ -5,6 +5,7 @@ import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.EvaluationMode;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.common.ObjectInfoProvider.Parameter;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
@@ -13,11 +14,11 @@ import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.impl.result.CodeCompletions;
+import dd.kms.zenodot.impl.result.LambdaParseResult;
 import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
@@ -78,11 +79,13 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		String lambdaExpression = tokenStream.getExpression().substring(startPosition, endPosition);
 		log(LogLevel.SUCCESS, "parsed lambda '" + lambdaExpression + "'");
 
-		Class<?> bodyResultType = bodyParseResult.getObjectInfo().getDeclaredType();
 		Class<?> expectedReturnType = method.getReturnType();
-		if (expectedReturnType != void.class && MatchRatings.rateTypeMatch(expectedReturnType, bodyResultType) == TypeMatch.NONE) {
-			log(LogLevel.INFO, "lambda has wrong return type: " + bodyResultType + " instead of " + expectedReturnType);
-			throw new SyntaxException("Return type " + bodyResultType + " is not assignable to " + expectedReturnType);
+		Class<?> lambdaResultType = expectedReturnType == void.class
+				? void.class
+				: bodyParseResult.getObjectInfo().getDeclaredType();
+		if (MatchRatings.rateTypeMatch(expectedReturnType, lambdaResultType) == TypeMatch.NONE) {
+			log(LogLevel.INFO, "lambda has wrong return type: " + lambdaResultType + " instead of " + expectedReturnType);
+			throw new SyntaxException("Return type " + lambdaResultType + " is not assignable to " + expectedReturnType);
 		}
 
 		log(LogLevel.SUCCESS, "lambda has correct return type");
@@ -91,9 +94,9 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 			functionalInterface, method.getName(), parameters, bodyParseResult,
 			lambdaExpression, parserToolbox.getThisInfo(), variables
 		);
-		return new LambdaParseResult(
-			functionalInterface, method.getName(), parameters,
-			bodyParseResult, lambdaExpression, lambdaInfo, tokenStream
+		return new LambdaParseResultImpl(
+			functionalInterface, method.getName(), parameters, bodyParseResult, lambdaExpression,
+			lambdaInfo, tokenStream, lambdaResultType
 		);
 	}
 
@@ -164,7 +167,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		return expressionParser.parse(tokenStream, contextInfo, new ObjectParseResultExpectation());
 	}
 
-	private static class LambdaParseResult extends ObjectParseResult
+	private static class LambdaParseResultImpl extends LambdaParseResult
 	{
 		private final Class<?>			functionalInterface;
 		private final String			methodName;
@@ -172,8 +175,8 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		private final ObjectParseResult	bodyParseResult;
 		private final String			lambdaExpression;
 
-		LambdaParseResult(Class<?> functionalInterface, String methodName, List<Parameter> parameters, ObjectParseResult bodyParseResult, String lambdaExpression, ObjectInfo lambdaInfo, TokenStream tokenStream) {
-			super(lambdaInfo, tokenStream);
+		LambdaParseResultImpl(Class<?> functionalInterface, String methodName, List<Parameter> parameters, ObjectParseResult bodyParseResult, String lambdaExpression, ObjectInfo lambdaInfo, TokenStream tokenStream, Class<?> lambdaResultType) {
+			super(lambdaInfo, tokenStream, lambdaResultType);
 			this.functionalInterface = functionalInterface;
 			this.methodName = methodName;
 			this.parameters = parameters;

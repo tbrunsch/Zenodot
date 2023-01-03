@@ -12,7 +12,7 @@ public interface ExpressionParserBuilder
 	/**
 	 * Creates a parser for a lambda that represents the functional interface {@code functionalInterface}.
 	 */
-	ExpressionParser createLambdaParser(Class<?> functionalInterface);
+	<T> LambdaExpressionParser<T> createLambdaParser(Class<T> functionalInterface);
 
 	/**
 	 * Creates a parser for a lambda that represents the functional interface {@code functionalInterface}.
@@ -20,5 +20,5 @@ public interface ExpressionParserBuilder
 	 * implement. This is necessary if the functional interface is generic or extends a generic interface
 	 * in order to avoid casts in the lambda body.
 	 */
-	ExpressionParser createLambdaParser(Class<?> functionalInterface, Class<?>... parameterTypes);
+	<T> LambdaExpressionParser<T> createLambdaParser(Class<T> functionalInterface, Class<?>... parameterTypes);
 }

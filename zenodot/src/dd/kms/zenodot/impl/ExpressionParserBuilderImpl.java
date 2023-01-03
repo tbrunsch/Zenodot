@@ -2,6 +2,7 @@ package dd.kms.zenodot.impl;
 
 import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.ExpressionParserBuilder;
+import dd.kms.zenodot.api.LambdaExpressionParser;
 import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.settings.ParserSettings;
 
@@ -31,12 +32,12 @@ public class ExpressionParserBuilderImpl implements ExpressionParserBuilder
 	}
 
 	@Override
-	public ExpressionParser createLambdaParser(Class<?> functionalInterface) {
-		return new LambdaExpressionParser(parserSettings, (VariablesImpl) variables, functionalInterface, null);
+	public <T> LambdaExpressionParser<T> createLambdaParser(Class<T> functionalInterface) {
+		return new LambdaExpressionParserImpl<>(parserSettings, (VariablesImpl) variables, functionalInterface, null);
 	}
 
 	@Override
-	public ExpressionParser createLambdaParser(Class<?> functionalInterface, Class<?>... parameterTypes) {
-		return new LambdaExpressionParser(parserSettings, (VariablesImpl) variables, functionalInterface, parameterTypes);
+	public <T> LambdaExpressionParser<T> createLambdaParser(Class<T> functionalInterface, Class<?>... parameterTypes) {
+		return new LambdaExpressionParserImpl<>(parserSettings, (VariablesImpl) variables, functionalInterface, parameterTypes);
 	}
 }

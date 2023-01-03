@@ -1,6 +1,7 @@
 package dd.kms.zenodot.samples;
 
 import dd.kms.zenodot.api.ExpressionParser;
+import dd.kms.zenodot.api.LambdaExpressionParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.settings.ParserSettings;
@@ -19,12 +20,12 @@ public class LambdaParserSample
 		ParserSettings settings = ParserSettingsBuilder.create().build();
 
 		// create a lambda parser for Comparator<String> where compare() takes two String parameters
-		ExpressionParser parser = Parsers.createExpressionParserBuilder(settings)
+		LambdaExpressionParser<Comparator> parser = Parsers.createExpressionParserBuilder(settings)
 			.createLambdaParser(Comparator.class, String.class, String.class);
 
 		// create a comparator that compares strings by considering them as numbers
 		String expression = "(s1, s2) -> Integer.compare(Integer.parseInt(s1), Integer.parseInt(s2))";
-		Comparator<String> comparator = (Comparator<String>) parser.evaluate(expression, null);
+		Comparator<String> comparator = parser.evaluate(expression, null);
 
 		// sort strings by considering them as numbers
 		List<String> numbersAsStrings = Arrays.asList("123", "42", "0", "99");
