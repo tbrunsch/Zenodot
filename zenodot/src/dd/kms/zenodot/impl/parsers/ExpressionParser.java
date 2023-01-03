@@ -2,6 +2,7 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.matching.MatchRating;
@@ -102,7 +103,9 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 				}
 
 				tokenStream.setPosition(posBeforeOperator);
-				return new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream);
+				return operators.isEmpty()
+						? Iterables.getOnlyElement(operands)
+						: new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream);
 			}
 			log(LogLevel.SUCCESS, "detected binary operator '" + operator + "' at " + tokenStream);
 
