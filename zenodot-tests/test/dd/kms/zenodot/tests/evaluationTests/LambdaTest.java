@@ -32,7 +32,8 @@ public class LambdaTest extends EvaluationTest
 			.testInstance(testInstance)
 			.configurator(test -> test.importPackages(
 					"java.util",
-					"java.util.stream"
+					"java.util.stream",
+					"java.util.function"
 				)
 			);
 		testBuilder
@@ -40,7 +41,8 @@ public class LambdaTest extends EvaluationTest
 			.addTest("Arrays.asList(3, 5, 1, 4, 2).stream().sorted((i, j) -> (int) j - (int) i).collect(Collectors.toList())", Arrays.asList(5, 4, 3, 2, 1))
 			.addTest("IntStream.range(0, 10).filter(i -> (i % 2) == 0).boxed().collect(Collectors.toSet())", ImmutableSet.of(0, 2, 4, 6, 8))
 			.addTest("this.valuesAsStrings(v -> Double.toString(v))", testInstance.valuesAsStrings(Double::toString))
-			.addTest("TestClass.stringToInt(TestClass.class.getSimpleName(), s -> ((String) s).length())", TestClass.stringToInt(TestClass.class.getSimpleName(), String::length));
+			.addTest("TestClass.stringToInt(TestClass.class.getSimpleName(), s -> ((String) s).length())", TestClass.stringToInt(TestClass.class.getSimpleName(), String::length))
+			.addTest("((Function) (x -> 2*((int) x))).apply(21)", 42);
 
 		testBuilder
 			// Zenodot cannot infer that i and j are integers

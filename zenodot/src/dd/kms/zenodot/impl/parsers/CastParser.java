@@ -1,7 +1,9 @@
 package dd.kms.zenodot.impl.parsers;
 
+import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
@@ -12,7 +14,6 @@ import dd.kms.zenodot.impl.result.ObjectParseResult;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 /**
@@ -43,7 +44,8 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 
 	private ObjectParseResult parseAndCast(TokenStream tokenStream, Class<?> targetType) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
 		log(LogLevel.INFO, "parsing object to cast at " + tokenStream);
-		ObjectParseResult parseResult = parserToolbox.createParser(SimpleExpressionParser.class).parse(tokenStream, parserToolbox.getThisInfo(), new ObjectParseResultExpectation());
+		ObjectParseResultExpectation expectation = new ObjectParseResultExpectation(ImmutableList.of(targetType), false);
+		ObjectParseResult parseResult = parserToolbox.createParser(SimpleExpressionParser.class).parse(tokenStream, parserToolbox.getThisInfo(), expectation);
 		ObjectInfo objectInfo = parseResult.getObjectInfo();
 
 		try {
