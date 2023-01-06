@@ -24,6 +24,13 @@ public class LambdaParserTest
 		for (int i = 0; i < 100; i++) {
 			Assert.assertEquals((Double) random2.nextDouble(), supplier.get());
 		}
+
+		try {
+			parseLambda(Supplier.class, "() -> System.out.println()");
+			Assert.fail("Lambda cannot be casted to Supplier");
+		} catch (ParseException e) {
+			/* expected */
+		}
 	}
 
 	@Test

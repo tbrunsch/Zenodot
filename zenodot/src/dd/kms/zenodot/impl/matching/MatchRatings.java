@@ -75,6 +75,10 @@ public class MatchRatings
 			return TypeMatch.FULL;
 		}
 
+		if (actualClass == void.class && expectedClass != void.class) {
+			return TypeMatch.NONE;
+		}
+
 		boolean primitiveConvertible = ReflectionUtils.isPrimitiveConvertibleTo(actualClass, expectedClass, false);
 		if (expectedClass.isPrimitive()) {
 			if (actualClass.isPrimitive()) {
