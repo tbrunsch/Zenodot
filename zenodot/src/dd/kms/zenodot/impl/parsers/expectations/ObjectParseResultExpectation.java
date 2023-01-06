@@ -73,6 +73,9 @@ public class ObjectParseResultExpectation extends AbstractParseResultExpectation
 
 	@Override
 	void doCheck(ObjectParseResult parseResult, ObjectInfoProvider objectInfoProvider) throws SyntaxException {
+		if (!resultTypeMustMatch) {
+			return;
+		}
 		Class<?> resultType = objectInfoProvider.getType(parseResult.getObjectInfo());
 		TypeMatch typeMatch = rateTypeMatch(resultType);
 		if (typeMatch == TypeMatch.NONE) {
