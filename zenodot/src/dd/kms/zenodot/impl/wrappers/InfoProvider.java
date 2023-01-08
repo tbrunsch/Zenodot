@@ -2,6 +2,7 @@ package dd.kms.zenodot.impl.wrappers;
 
 import dd.kms.zenodot.api.common.ConstructorScanner;
 import dd.kms.zenodot.api.common.FieldScanner;
+import dd.kms.zenodot.api.common.GeneralizedField;
 import dd.kms.zenodot.api.common.MethodScanner;
 
 import java.lang.reflect.Constructor;
@@ -50,14 +51,14 @@ public class InfoProvider
 		return new ObjectInfo(object, declaredType, valueSetter);
 	}
 
-	public static FieldInfo createFieldInfo(Field field) {
+	public static FieldInfo createFieldInfo(GeneralizedField field) {
 		return new FieldInfo(field);
 	}
 
 	public static List<FieldInfo> getFieldInfos(Class<?> type, FieldScanner fieldScanner) {
-		List<Field> fields = fieldScanner.getFields(type);
+		List<GeneralizedField> fields = fieldScanner.getFields(type);
 		List<FieldInfo> fieldInfos = new ArrayList<>(fields.size());
-		for (Field field : fields) {
+		for (GeneralizedField field : fields) {
 			FieldInfo fieldInfo = createFieldInfo(field);
 			fieldInfos.add(fieldInfo);
 		}

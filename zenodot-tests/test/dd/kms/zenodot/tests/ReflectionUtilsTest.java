@@ -1,6 +1,7 @@
 package dd.kms.zenodot.tests;
 
 import dd.kms.zenodot.api.common.FieldScannerBuilder;
+import dd.kms.zenodot.api.common.GeneralizedField;
 import dd.kms.zenodot.api.common.MethodScannerBuilder;
 import org.junit.Test;
 
@@ -49,7 +50,7 @@ public class ReflectionUtilsTest
 		}
 
 		for (boolean ignoreShadowedFields : Arrays.asList(true, false)) {
-			List<Field> actualFields = FieldScannerBuilder.create()
+			List<GeneralizedField> actualFields = FieldScannerBuilder.create()
 				.ignoreShadowedFields(ignoreShadowedFields)
 				.build()
 				.getFields(DerivedClass.class);
@@ -63,8 +64,8 @@ public class ReflectionUtilsTest
 			assertEquals("Unexpected number of fields", expectedFields.size(), actualFields.size());
 			for (int i = 0; i < expectedFields.size(); i++) {
 				Field expectedField = expectedFields.get(i);
-				Field actualField = actualFields.get(i);
-				assertEquals("Unexpected field", expectedField, actualField);
+				GeneralizedField actualField = actualFields.get(i);
+				assertEquals("Unexpected field", expectedField, actualField.getWrappedField());
 			}
 		}
 	}

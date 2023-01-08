@@ -1,14 +1,16 @@
 package dd.kms.zenodot.impl.wrappers;
 
+import dd.kms.zenodot.api.common.GeneralizedField;
+
 import java.lang.reflect.Field;
 
-public class FieldInfo extends MemberInfo<Field>
+public class FieldInfo extends MemberInfo<GeneralizedField>
 {
-	public FieldInfo(Field field) {
+	public FieldInfo(GeneralizedField field) {
 		super(field);
 	}
 
-	public Field getField() {
+	public GeneralizedField getField() {
 		return member;
 	}
 

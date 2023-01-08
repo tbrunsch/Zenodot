@@ -25,6 +25,8 @@ API changes:
   - We have replaced the custom interface `IntRange` by Guava's class `Range`.
   
   - Variables are no part of the `ParserSettings` anymore. Instead, you can specify them when creating an `ExpressionParser` via `Parsers.createExpressionParser()`. This allows Zenodot to modify existing and potentially introduce new variables.
+  
+  - The class `Field` has been replaced by the interface `GeneralizedField` that can also represent the field `length` of arrays.
 
 ## v0.2.2
 
