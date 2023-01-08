@@ -1,6 +1,5 @@
 package dd.kms.zenodot.api.common;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -8,5 +7,5 @@ import java.util.List;
  */
 public interface FieldScanner
 {
-	List<Field> getFields(Class<?> clazz);
+	List<GeneralizedField> getFields(Class<?> clazz);
 }

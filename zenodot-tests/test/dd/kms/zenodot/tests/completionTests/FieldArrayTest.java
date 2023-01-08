@@ -31,7 +31,8 @@ public class FieldArrayTest extends CompletionTest
 			.addTest("member[xyzw",		"xyzw", "xyz", "xy", hashCode, "member")
 			.addTest("member[mem",		"member", "xyz", hashCode, "xyzw", "xy")
 			.addTest("member[xyz].",	"member", "xy", "xyz", "xyzw")
-			.addTest("member[xyzw].x",	"xy", "xyz", "xyzw", "member");
+			.addTest("member[xyzw].x",	"xy", "xyz", "xyzw", "member")
+			.addTest("member.le",		"length");
 
 		testBuilder
 			.addTestWithError("xy[",				ParseException.class)

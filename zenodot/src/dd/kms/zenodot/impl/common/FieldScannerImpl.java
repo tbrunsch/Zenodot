@@ -1,14 +1,15 @@
 package dd.kms.zenodot.impl.common;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import dd.kms.zenodot.api.common.FieldScanner;
+import dd.kms.zenodot.api.common.GeneralizedField;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -25,8 +26,8 @@ class FieldScannerImpl implements FieldScanner
 	}
 
 	@Override
-	public List<Field> getFields(Class<?> clazz) {
-		Multimap<String, Field> fieldsByName = ArrayListMultimap.create();
+	public List<GeneralizedField> getFields(Class<?> clazz) {
+		Multimap<String, GeneralizedField> fieldsByName = ArrayListMultimap.create();
 		addFields(clazz, fieldsByName);
 		return fieldsByName.values()
 			.stream()
@@ -34,20 +35,25 @@ class FieldScannerImpl implements FieldScanner
 			.collect(Collectors.toList());
 	}
 
-	private void addFields(Class<?> clazz, Multimap<String, Field> fieldsByName) {
+	private void addFields(Class<?> clazz, Multimap<String, GeneralizedField> fieldsByName) {
 		if (clazz == null) {
 			return;
 		}
+		if (clazz.isArray()) {
+			ArrayLengthField arrayLengthField = new ArrayLengthField(clazz);
+			fieldsByName.put(arrayLengthField.getName(), arrayLengthField);
+		}
+
 		for (Field field : clazz.getDeclaredFields()) {
 			if (!filter.test(field)) {
 				continue;
 			}
 			String fieldName = field.getName();
-			Collection<Field> fields = fieldsByName.get(fieldName);
-			Iterator<Field> fieldIterator = fields.iterator();
+			Collection<GeneralizedField> fields = fieldsByName.get(fieldName);
+			Iterator<GeneralizedField> fieldIterator = fields.iterator();
 			boolean addField = true;
 			while (fieldIterator.hasNext()) {
-				Field otherField = fieldIterator.next();
+				GeneralizedField otherField = fieldIterator.next();
 				Class<?> otherDeclaringClass = otherField.getDeclaringClass();
 				if (otherDeclaringClass == clazz) {
 					addField = false;
@@ -62,7 +68,7 @@ class FieldScannerImpl implements FieldScanner
 				}
 			}
 			if (addField) {
-				fields.add(field);
+				fields.add(new DefaultGeneralizedField(field));
 			}
 		}
 

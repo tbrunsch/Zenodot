@@ -1,23 +1,23 @@
 package dd.kms.zenodot.impl.result.codecompletions;
 
+import dd.kms.zenodot.api.common.GeneralizedField;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletionType;
 import dd.kms.zenodot.api.result.codecompletions.CodeCompletionField;
 
-import java.lang.reflect.Field;
 import java.util.Objects;
 
 class CodeCompletionFieldImpl extends AbstractSimpleCodeCompletion implements CodeCompletionField
 {
-	private final Field	field;
+	private final GeneralizedField	field;
 
-	CodeCompletionFieldImpl(Field field, int insertionBegin, int insertionEnd, MatchRating rating) {
+	CodeCompletionFieldImpl(GeneralizedField field, int insertionBegin, int insertionEnd, MatchRating rating) {
 		super(CodeCompletionType.FIELD, insertionBegin, insertionEnd, rating);
 		this.field = field;
 	}
 
 	@Override
-	public Field getField() {
+	public GeneralizedField getField() {
 		return field;
 	}
 

@@ -27,7 +27,8 @@ public class FieldArrayTest extends EvaluationTest
 			.addTest("array[i0]", 1)
 			.addTest("array[i1]", 4)
 			.addTest("array[i2]", 3)
-			.addTest("array[i3]", 7);
+			.addTest("array[i3]", 7)
+			.addTest("array.length", 4);
 
 		testBuilder
 			.configurator(null)
