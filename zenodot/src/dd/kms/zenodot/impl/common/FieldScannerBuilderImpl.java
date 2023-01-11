@@ -2,10 +2,7 @@ package dd.kms.zenodot.impl.common;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import dd.kms.zenodot.api.common.AccessModifier;
-import dd.kms.zenodot.api.common.FieldScanner;
-import dd.kms.zenodot.api.common.FieldScannerBuilder;
-import dd.kms.zenodot.api.common.StaticMode;
+import dd.kms.zenodot.api.common.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -50,34 +47,34 @@ public class FieldScannerBuilderImpl implements FieldScannerBuilder
 
 	@Override
 	public FieldScanner build() {
-		Predicate<Field> filter = getFilter();
+		Predicate<GeneralizedField> filter = getFilter();
 		return new FieldScannerImpl(filter, ignoreShadowedFields);
 	}
 
-	private Predicate<Field> getFilter() {
-		List<Predicate<Field>> filters = new ArrayList<>();
+	private Predicate<GeneralizedField> getFilter() {
+		List<Predicate<GeneralizedField>> filters = new ArrayList<>();
 
 		if (minimumAccessModifier != AccessModifier.PRIVATE) {
 			IntPredicate modifierFilter = ModifierFilters.createMinimumAccessModifierFilter(minimumAccessModifier);
-			Predicate<Field> minimumAccessModifierFilter = field -> modifierFilter.test(field.getModifiers());
+			Predicate<GeneralizedField> minimumAccessModifierFilter = field -> modifierFilter.test(field.getModifiers());
 			filters.add(minimumAccessModifierFilter);
 		}
 
 		if (staticMode == StaticMode.STATIC) {
-			Predicate<Field> staticModeFilter = field -> Modifier.isStatic(field.getModifiers());
+			Predicate<GeneralizedField> staticModeFilter = field -> Modifier.isStatic(field.getModifiers());
 			filters.add(staticModeFilter);
 		} else if (staticMode == StaticMode.NON_STATIC) {
-			Predicate<Field> staticModeFilter = field -> !Modifier.isStatic(field.getModifiers());
+			Predicate<GeneralizedField> staticModeFilter = field -> !Modifier.isStatic(field.getModifiers());
 			filters.add(staticModeFilter);
 		}
 
 		if (name.isPresent()) {
 			String fieldName = name.get();
-			Predicate<Field> nameFilter = field -> field.getName().equals(fieldName);
+			Predicate<GeneralizedField> nameFilter = field -> field.getName().equals(fieldName);
 			filters.add(nameFilter);
 		}
 
-		Predicate<Field> specialClassFilter = field -> !field.getName().startsWith("this$");
+		Predicate<GeneralizedField> specialClassFilter = field -> !field.getName().startsWith("this$");
 		filters.add(specialClassFilter);
 
 		return Predicates.and(filters);

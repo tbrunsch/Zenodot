@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
  */
 class FieldScannerImpl implements FieldScanner
 {
-	private final Predicate<Field>	filter;
-	private final boolean			ignoreShadowedFields;
+	private final Predicate<GeneralizedField>	filter;
+	private final boolean						ignoreShadowedFields;
 
-	FieldScannerImpl(Predicate<Field> filter, boolean ignoreShadowedFields) {
+	FieldScannerImpl(Predicate<GeneralizedField> filter, boolean ignoreShadowedFields) {
 		this.filter = filter;
 		this.ignoreShadowedFields = ignoreShadowedFields;
 	}
@@ -41,11 +41,14 @@ class FieldScannerImpl implements FieldScanner
 		}
 		if (clazz.isArray()) {
 			ArrayLengthField arrayLengthField = new ArrayLengthField(clazz);
-			fieldsByName.put(arrayLengthField.getName(), arrayLengthField);
+			if (filter.test(arrayLengthField)) {
+				fieldsByName.put(arrayLengthField.getName(), arrayLengthField);
+			}
 		}
 
 		for (Field field : clazz.getDeclaredFields()) {
-			if (!filter.test(field)) {
+			DefaultGeneralizedField generalizedField = new DefaultGeneralizedField(field);
+			if (!filter.test(generalizedField)) {
 				continue;
 			}
 			String fieldName = field.getName();
@@ -68,7 +71,7 @@ class FieldScannerImpl implements FieldScanner
 				}
 			}
 			if (addField) {
-				fields.add(new DefaultGeneralizedField(field));
+				fields.add(generalizedField);
 			}
 		}
 

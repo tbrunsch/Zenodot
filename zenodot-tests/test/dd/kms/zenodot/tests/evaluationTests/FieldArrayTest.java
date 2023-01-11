@@ -35,7 +35,8 @@ public class FieldArrayTest extends EvaluationTest
 			.addTestWithError("o[i0]")
 			.addTestWithError("o[i1]")
 			.addTestWithError("o[i2]")
-			.addTestWithError("o[i3]");
+			.addTestWithError("o[i3]")
+			.addTestWithError("array.x");
 
 		testBuilder
 			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
