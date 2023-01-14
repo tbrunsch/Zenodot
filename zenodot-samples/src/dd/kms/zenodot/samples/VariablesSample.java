@@ -18,7 +18,9 @@ public class VariablesSample
 			.createVariable("i", 42, true)
 			.createVariable("x", 3.14, false)
 			.createVariable("test", Object.class, 123, false);
-		ExpressionParser parser = Parsers.createExpressionParser(settings, variables);
+		ExpressionParser parser = Parsers.createExpressionParserBuilder(settings)
+			.variables(variables)
+			.createExpressionParser();
 
 		System.out.println(parser.evaluate("i", null));		// prints 42
 

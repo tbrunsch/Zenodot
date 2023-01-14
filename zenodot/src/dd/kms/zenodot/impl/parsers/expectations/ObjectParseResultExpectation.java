@@ -7,6 +7,7 @@ import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.result.ObjectParseResult;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,26 +15,23 @@ public class ObjectParseResultExpectation extends AbstractParseResultExpectation
 {
 	private final @Nullable List<Class<?>>	expectedTypes;
 	private final boolean					resultTypeMustMatch;
+	private final @Nullable Class<?>[]		parameterTypes;
 
 	public ObjectParseResultExpectation() {
 		this(null, false);
 	}
 
 	public ObjectParseResultExpectation(@Nullable List<Class<?>> expectedTypes, boolean resultTypeMustMatch) {
-		this(expectedTypes, resultTypeMustMatch, false);
+		this(expectedTypes, resultTypeMustMatch, false, null);
 	}
 
-	private ObjectParseResultExpectation(@Nullable List<Class<?>> expectedTypes, boolean resultTypeMustMatch, boolean parseWholeText) {
+	private ObjectParseResultExpectation(@Nullable List<Class<?>> expectedTypes, boolean resultTypeMustMatch, boolean parseWholeText, @Nullable Class<?>[] parameterTypes) {
 		super(ObjectParseResult.class, parseWholeText);
 		this.expectedTypes = expectedTypes;
 		this.resultTypeMustMatch = resultTypeMustMatch;
-	}
-
-	@Override
-	public ObjectParseResultExpectation parseWholeText(boolean parseWholeText) {
-		return isParseWholeText() == parseWholeText
-			? this
-			: new ObjectParseResultExpectation(expectedTypes, resultTypeMustMatch, parseWholeText);
+		this.parameterTypes = parameterTypes != null
+			? Arrays.copyOf(parameterTypes, parameterTypes.length)
+			: null;
 	}
 
 	@Nullable
@@ -41,10 +39,26 @@ public class ObjectParseResultExpectation extends AbstractParseResultExpectation
 		return expectedTypes;
 	}
 
+	@Nullable
+	public Class<?>[] getParameterTypes() {
+		return parameterTypes;
+	}
+
+	@Override
+	public ObjectParseResultExpectation parseWholeText(boolean parseWholeText) {
+		return isParseWholeText() == parseWholeText
+			? this
+			: new ObjectParseResultExpectation(expectedTypes, resultTypeMustMatch, parseWholeText, parameterTypes);
+	}
+
 	public ObjectParseResultExpectation resultTypeMustMatch(boolean resultTypeMustMatch) {
 		return this.resultTypeMustMatch == resultTypeMustMatch
 			? this
-			: new ObjectParseResultExpectation(expectedTypes, resultTypeMustMatch, isParseWholeText());
+			: new ObjectParseResultExpectation(expectedTypes, resultTypeMustMatch, isParseWholeText(), parameterTypes);
+	}
+
+	public ObjectParseResultExpectation parameterTypes(Class<?>[] parameterTypes) {
+		return new ObjectParseResultExpectation(expectedTypes, resultTypeMustMatch, isParseWholeText(), parameterTypes);
 	}
 
 	public TypeMatch rateTypeMatch(Class<?> type) {
@@ -59,6 +73,9 @@ public class ObjectParseResultExpectation extends AbstractParseResultExpectation
 
 	@Override
 	void doCheck(ObjectParseResult parseResult, ObjectInfoProvider objectInfoProvider) throws SyntaxException {
+		if (!resultTypeMustMatch) {
+			return;
+		}
 		Class<?> resultType = objectInfoProvider.getType(parseResult.getObjectInfo());
 		TypeMatch typeMatch = rateTypeMatch(resultType);
 		if (typeMatch == TypeMatch.NONE) {

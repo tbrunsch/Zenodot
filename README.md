@@ -106,7 +106,31 @@ System.out.println("Result: " + parser.evaluate(expression, null));
 
 Since Zenodot does not support type inference, parameters for generic types have to be cast. In the example above, the parameter `s` has to be cast to `String`.
 
-Another restriction is that Zenodot does currently not support method references.
+Another restriction is that Zenodot does currently not support method references or lambdas with code blocks.
+
+It is also possible to create a parser particularly for parsing lambdas for a specific functional interface. For this, you have to create an expression parser for this specific use case:
+
+ 1. Create an `ExpressionParserBuilder` via `Parsers.createExpressionParserBuilder()`
+ 1. Create a lambda parser via `ExpressionParserBuilder.createLambdaParser()` for the desired functional interface. There you can optionally specify the parameter types for your use case. This is necessary if the interface is generic or extends a generic interface and you want to avoid casts in the lambda expression.
+
+The following sample, taken from **LambdaParserSample.java**, shows how to create a lambda parser:
+
+```
+ParserSettings settings = ParserSettingsBuilder.create().build();
+
+// create a lambda parser for Comparator<String> where compare() takes two String parameters
+LambdaExpressionParser<Comparator> parser = Parsers.createExpressionParserBuilder(settings)
+    .createLambdaParser(Comparator.class, String.class, String.class);
+
+// create a comparator that compares strings by considering them as numbers
+String expression = "(s1, s2) -> Integer.compare(Integer.parseInt(s1), Integer.parseInt(s2))";
+Comparator<String> comparator = parser.evaluate(expression, null);
+
+// sort strings by considering them as numbers
+List<String> numbersAsStrings = Arrays.asList("123", "42", "0", "99");
+numbersAsStrings.sort(comparator);
+System.out.println(numbersAsStrings);
+``` 
 
 ## Custom Variables
 
@@ -116,7 +140,9 @@ To specify variables when parsing expressions, you have to do the following step
 
   1. Create a collection of variables via `Variables.create()`.
   1. Add variables to this collection via `Variables.createVariable()`. There you can specify whether the variable is `final` or not.
-  1. Create an expression parser via the overload of `Parser.createExpressionParser()` with `Variables` as second parameter and specify your variables collection.
+  1. Create an expression parser builder via `Parser.createExpressionParserBuilder()`.
+  1. Set the variables via `ExpressionParserBuilder.variables()`
+  1. Create an expression parser via `ExpressionParserBuilder.createExpressionParser()`.
 
 The following sample is an excerpt from **VariableSample**:
 
@@ -125,7 +151,9 @@ ParserSettings settings = ParserSettingsBuilder.create().build();
 Variables variables = Variables.create()
 	.createVariable("i", 42, true)
 	.createVariable("x", 3.14, false)
-ExpressionParser parser = Parsers.createExpressionParser(settings, variables);
+ExpressionParser parser = Parsers.createExpressionParserBuilder(settings)
+	.variables(variables)
+	.createExpressionParser();
 
 System.out.println(parser.evaluate("i", null));	    // prints 42
 parser.evaluate("x = 2.72", null);                  // sets x to 2.72

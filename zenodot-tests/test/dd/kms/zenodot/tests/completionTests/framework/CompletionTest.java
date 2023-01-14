@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.completionTests.framework;
 
+import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.debug.ParserLogger;
@@ -65,7 +66,10 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		ParserSettings settings = settingsBuilder.build();
 
 		try {
-			Parsers.createExpressionParser(settings, variables).getCompletions(expression, caretPosition, testInstance);
+			ExpressionParser expressionParser = Parsers.createExpressionParserBuilder(settings)
+				.variables(variables)
+				.createExpressionParser();
+			expressionParser.getCompletions(expression, caretPosition, testInstance);
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (ParseException | IllegalStateException e) {
 			if (e.getClass() != expectedExceptionClass) {
@@ -81,7 +85,10 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		int caretPosition = expression.length();
 		List<String> completions;
 		try {
-			completions = extractCompletions(Parsers.createExpressionParser(settings, variables).getCompletions(expression, caretPosition, testInstance));
+			ExpressionParser expressionParser = Parsers.createExpressionParserBuilder(settings)
+				.variables(variables)
+				.createExpressionParser();
+			completions = extractCompletions(expressionParser.getCompletions(expression, caretPosition, testInstance));
 		} catch (ParseException e) {
 			if (executeAssertions) {
 				e.printStackTrace();

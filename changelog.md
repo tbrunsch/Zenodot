@@ -6,6 +6,8 @@
   
   - Support for lambdas has been added with the following restrictions: Types of generic parameters cannot be inferred, so generic parameters have to be cast, and method references are currently not supported.
   
+  - Added possibility to specify a functional interface and the parameter types of its method for parsing lambdas. This can be done via `Parsers.createExpressionParserBuilder()` and `ExpressionParserBuilder.createLambdaParser()`. 
+  
   - Added method `Parsers.preloadClasses()` that allows loading classes before they are needed.
   
   - Since variables are not part of the `ParserSettings` anymore, but optionally specified when an `ExpressionParser` is created, Zenodot can now overwrite variables (when they are not declared `final`).

@@ -24,18 +24,11 @@ public class Parsers
 	}
 
 	public static ExpressionParser createExpressionParser(ParserSettings settings) {
-		return createExpressionParser(settings, Variables.create());
+		return createExpressionParserBuilder(settings).createExpressionParser();
 	}
 
-	public static ExpressionParser createExpressionParser(ParserSettings settings, Variables variables) {
-		if (variables instanceof dd.kms.zenodot.impl.VariablesImpl) {
-			return new dd.kms.zenodot.impl.ExpressionParserImpl(settings, (dd.kms.zenodot.impl.VariablesImpl) variables);
-		}
-		if (variables == null) {
-			throw new IllegalArgumentException("Parameter 'variables' is null");
-		}
-		throw new IllegalArgumentException("Parameter 'variables' is of a custom type '" + variables.getClass() + "'. "
-			+ "This is not supported. Use Variables.create() to create instances of Variables");
+	public static ExpressionParserBuilder createExpressionParserBuilder(ParserSettings settings) {
+		return new dd.kms.zenodot.impl.ExpressionParserBuilderImpl(settings);
 	}
 
 	public static ClassParser createClassParser(ParserSettings settings) {

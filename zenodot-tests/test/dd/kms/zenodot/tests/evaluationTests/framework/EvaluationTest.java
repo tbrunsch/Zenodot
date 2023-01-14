@@ -65,7 +65,9 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 		Class<? extends Exception> expectedExceptionClass = ParseException.class;
 		try {
-			ExpressionParser expressionParser = Parsers.createExpressionParser(settings, variables);
+			ExpressionParser expressionParser = Parsers.createExpressionParserBuilder(settings)
+				.variables(variables)
+				.createExpressionParser();
 			if (compile) {
 				CompiledExpression compiledExpression = expressionParser.compile(expression, testInstance);
 				compiledExpression.evaluate(testInstance);
@@ -90,7 +92,9 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 		try {
 			final Object actualValue;
-			ExpressionParser expressionParser = Parsers.createExpressionParser(settings, variables);
+			ExpressionParser expressionParser = Parsers.createExpressionParserBuilder(settings)
+				.variables(variables)
+				.createExpressionParser();
 			if (compile) {
 				CompiledExpression compiledExpression = expressionParser.compile(expression, testInstance);
 				actualValue = compiledExpression.evaluate(testInstance);
