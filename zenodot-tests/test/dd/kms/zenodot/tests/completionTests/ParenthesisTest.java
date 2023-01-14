@@ -18,14 +18,14 @@ public class ParenthesisTest extends CompletionTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		final String getClass = "getClass()";
 
 		Object testInstance = new TestClass();
 		return new CompletionTestBuilder()
 			.testInstance(testInstance)
 			.addTest("(",							"x", "y", "getFloat()", "goDoNothing()")
-			.addTest("(g",							"getFloat()", "goDoNothing()", getClass)
+			.addTest("(g",							"getFloat()", "goDoNothing()", "getClass()")
 			.addTest("(getFloat(y).toString()).le",	"length()")
+			.addTest("(dd.kms.zenodot.tests.completionTests.ParenthesisTest.TestC", "TestClass", "Test")
 			.build();
 	}
 
@@ -37,4 +37,6 @@ public class ParenthesisTest extends CompletionTest
 		void goDoNothing() {}
 		Float getFloat(int i) { return i + 0.5f; }
 	}
+
+	private interface Test {}
 }

@@ -1,5 +1,6 @@
 package dd.kms.zenodot.impl.utils;
 
+import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.CodeCompletion;
@@ -224,7 +225,7 @@ public class ParseUtils
 			if (completionExceptions.size() == 1) {
 				return completionExceptions.iterator().next();
 			}
-			List<CodeCompletion> completions = new ArrayList<>();
+			Collection<CodeCompletion> completions = new LinkedHashSet<>();
 			Optional<ExecutableArgumentInfo> methodArgumentInfo	= Optional.empty();
 			for (CodeCompletionException codeCompletionException : completionExceptions) {
 				CodeCompletions codeCompletions = codeCompletionException.getCompletions();
@@ -233,7 +234,7 @@ public class ParseUtils
 				}
 				completions.addAll(codeCompletions.getCompletions());
 			}
-			CodeCompletions codeCompletions = new CodeCompletions(completions, methodArgumentInfo.orElse(null));
+			CodeCompletions codeCompletions = new CodeCompletions(ImmutableList.copyOf(completions), methodArgumentInfo.orElse(null));
 			return new CodeCompletionException(codeCompletions);
 		}
 
