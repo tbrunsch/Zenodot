@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.completionTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -38,6 +39,16 @@ public class LambdaTest extends CompletionTest
 			.addTest("IntStream.range(0, 10).filter(index -> (ind", "index")
 			.addTest("this.valuesAsStrings(v -> Double.toSt", "toString()")
 			.addTest("TestClass.stringToInt(TestClass.class.getSimpleName(), s -> ((String) s).len", "length()");
+
+		testBuilder
+			.configurator(test -> {
+				test.importPackages(
+					"java.util",
+					"java.util.stream"
+				);
+				test.evaluationMode(EvaluationMode.DYNAMIC_TYPING);
+			})
+			.addTest("Arrays.asList(1, 2, 3).stream().map(o -> o.toStr", "toString()");
 
 		return testBuilder.build();
 	}

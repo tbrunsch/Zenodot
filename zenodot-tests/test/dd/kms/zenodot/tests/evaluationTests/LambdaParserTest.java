@@ -2,18 +2,33 @@ package dd.kms.zenodot.tests.evaluationTests;
 
 import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.*;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@RunWith(Parameterized.class)
 public class LambdaParserTest
 {
+	@Parameterized.Parameters(name = "Evaluation mode: {0}")
+	public static Collection<Object> getEvaluationModes() {
+		return Arrays.asList(EvaluationMode.values());
+	}
+
+	private final EvaluationMode	evaluationMode;
+
+	public LambdaParserTest(EvaluationMode evaluationMode) {
+		this.evaluationMode = evaluationMode;
+	}
+
 	@Test
 	public void testSupplier() throws Exception {
 		final long seed = 1234567890L;
@@ -82,12 +97,12 @@ public class LambdaParserTest
 		}
 	}
 
-	private static <T> T parseLambda(Class<T> functionalInterface, String lambdaExpression) throws Exception {
+	private <T> T parseLambda(Class<T> functionalInterface, String lambdaExpression) throws Exception {
 		return parseLambda(functionalInterface, lambdaExpression, null);
 	}
 
-	private static <T> T parseLambda(Class<T> functionalInterface, String lambdaExpression, Object thisValue, Class<?>... parameterTypes) throws Exception {
-		ParserSettings parserSettings = ParserSettingsBuilder.create().build();
+	private <T> T parseLambda(Class<T> functionalInterface, String lambdaExpression, Object thisValue, Class<?>... parameterTypes) throws Exception {
+		ParserSettings parserSettings = ParserSettingsBuilder.create().evaluationMode(evaluationMode).build();
 		LambdaExpressionParser<T> lambdaParser = Parsers.createExpressionParserBuilder(parserSettings).createLambdaParser(functionalInterface, parameterTypes);
 		CompiledLambdaExpression<T> compiledExpression = lambdaParser.compile(lambdaExpression, thisValue);
 		T result = compiledExpression.evaluate(thisValue);

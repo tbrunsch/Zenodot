@@ -3,18 +3,33 @@ package dd.kms.zenodot.tests.evaluationTests;
 import dd.kms.zenodot.api.CompiledLambdaExpression;
 import dd.kms.zenodot.api.LambdaExpressionParser;
 import dd.kms.zenodot.api.Parsers;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@RunWith(Parameterized.class)
 public class LambdaResultTypeTest
 {
+	@Parameterized.Parameters(name = "Evaluation mode: {0}")
+	public static Collection<Object> getEvaluationModes() {
+		return Arrays.asList(EvaluationMode.values());
+	}
+
+	private final EvaluationMode	evaluationMode;
+
+	public LambdaResultTypeTest(EvaluationMode evaluationMode) {
+		this.evaluationMode = evaluationMode;
+	}
+
 	@Test
 	public void testSupplier() throws Exception {
 		Random random = new Random();
@@ -55,12 +70,12 @@ public class LambdaResultTypeTest
 		Assert.assertEquals(int.class, lambdaResultType);
 	}
 
-	private static Class<?> getLambdaResultType(Class<?> functionalInterface, String lambdaExpression) throws Exception {
+	private Class<?> getLambdaResultType(Class<?> functionalInterface, String lambdaExpression) throws Exception {
 		return getLambdaResultType(functionalInterface, lambdaExpression, null);
 	}
 
-	private static Class<?> getLambdaResultType(Class<?> functionalInterface, String lambdaExpression, Object thisValue, Class<?>... parameterTypes) throws Exception {
-		ParserSettings parserSettings = ParserSettingsBuilder.create().build();
+	private Class<?> getLambdaResultType(Class<?> functionalInterface, String lambdaExpression, Object thisValue, Class<?>... parameterTypes) throws Exception {
+		ParserSettings parserSettings = ParserSettingsBuilder.create().evaluationMode(evaluationMode).build();
 		LambdaExpressionParser<?> lambdaParser = Parsers.createExpressionParserBuilder(parserSettings).createLambdaParser(functionalInterface, parameterTypes);
 		CompiledLambdaExpression<?> compiledExpression = lambdaParser.compile(lambdaExpression, thisValue);
 		return compiledExpression.getLambdaResultType();

@@ -1,6 +1,7 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
 import com.google.common.collect.ImmutableSet;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -50,6 +51,17 @@ public class LambdaTest extends EvaluationTest
 
 			// Zenodot cannot infer that s is a String
 			.addTestWithError("TestClass.stringToInt(TestClass.class.getSimpleName(), s -> s.length())");
+
+		testBuilder
+			.configurator(test -> {
+				test.importPackages(
+					"java.util",
+					"java.util.stream",
+					"java.util.function"
+				);
+				test.evaluationMode(EvaluationMode.DYNAMIC_TYPING);
+			})
+			.addTest("Arrays.asList(\"Who\", \"is\", \"Zenodot\").stream().filter(s -> ((String) s).contains(\"o\")).collect(Collectors.toList())", Arrays.asList("Who", "Zenodot"));
 
 		return testBuilder.build();
 	}

@@ -5,21 +5,34 @@ import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.result.CodeCompletion;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+@RunWith(Parameterized.class)
 public class LambdaParserTest
 {
+	@Parameterized.Parameters(name = "Evaluation mode: {0}")
+	public static Collection<Object> getEvaluationModes() {
+		return Arrays.asList(EvaluationMode.values());
+	}
+
+	private final EvaluationMode	evaluationMode;
+
+	public LambdaParserTest(EvaluationMode evaluationMode) {
+		this.evaluationMode = evaluationMode;
+	}
+
 	@Test
 	public void testSupplier() throws Exception {
 		final long seed = 1234567890L;
@@ -68,13 +81,14 @@ public class LambdaParserTest
 		Assert.assertEquals("var2", completion);
 	}
 
-	private static String getFirstCompletion(Class<?> functionalInterface, String lambdaExpression) throws Exception {
+	private String getFirstCompletion(Class<?> functionalInterface, String lambdaExpression) throws Exception {
 		return getFirstCompletion(functionalInterface, lambdaExpression, null);
 	}
 
-	private static String getFirstCompletion(Class<?> functionalInterface, String lambdaExpression, Object thisValue, Class<?>... parameterTypes) throws Exception {
+	private String getFirstCompletion(Class<?> functionalInterface, String lambdaExpression, Object thisValue, Class<?>... parameterTypes) throws Exception {
 		ParserSettings parserSettings = ParserSettingsBuilder.create()
 			.importClasses(ImmutableList.of(java.util.Collections.class))
+			.evaluationMode(evaluationMode)
 			.build();
 		ExpressionParser lambdaParser = Parsers.createExpressionParserBuilder(parserSettings).createLambdaParser(functionalInterface, parameterTypes);
 		List<CodeCompletion> completions = lambdaParser.getCompletions(lambdaExpression, lambdaExpression.length(), thisValue);
