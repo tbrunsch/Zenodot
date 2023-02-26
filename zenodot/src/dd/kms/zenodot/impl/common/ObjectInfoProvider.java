@@ -4,10 +4,10 @@ import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.EvaluationMode;
+import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.FieldInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
@@ -164,18 +164,18 @@ public class ObjectInfoProvider
 	{
 		private final ObjectInfo			thisInfo;
 		private final List<String>			parameterNames;
-		private final VariablesImpl variables;
+		private final VariablesImpl			variables;
 		private final ObjectParseResult		lambdaBodyParseResult;
 
 		private LambdaEvaluator(ObjectInfo thisInfo, List<String> parameterNames, VariablesImpl variables, ObjectParseResult lambdaBodyParseResult) throws InternalErrorException {
 			this.thisInfo = thisInfo;
 			this.parameterNames = parameterNames;
-			this.variables = variables;
 			this.lambdaBodyParseResult = lambdaBodyParseResult;
 
-			// create variables
+			// create new scope for variables
+			this.variables = new VariablesImpl(variables);
 			for (String parameterName : parameterNames) {
-				variables.createVariable(parameterName, InfoProvider.NULL_LITERAL, false);
+				this.variables.createVariable(parameterName, InfoProvider.NULL_LITERAL, false);
 			}
 		}
 

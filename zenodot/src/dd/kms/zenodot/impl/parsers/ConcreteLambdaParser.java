@@ -92,7 +92,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 
 		ObjectInfo lambdaInfo = parserToolbox.getObjectInfoProvider().getLambdaInfo(
 			functionalInterface, method.getName(), parameters, bodyParseResult,
-			lambdaExpression, parserToolbox.getThisInfo(), variables
+			lambdaExpression, parserToolbox.getThisInfo(), parserToolbox.getVariables()
 		);
 		return new LambdaParseResultImpl(
 			functionalInterface, method.getName(), parameters, bodyParseResult, lambdaExpression,
@@ -186,8 +186,6 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 
 		@Override
 		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws InternalErrorException {
-			// create new scope for variables
-			variables = new VariablesImpl(variables);
 			return OBJECT_INFO_PROVIDER.getLambdaInfo(
 				functionalInterface, methodName, parameters, bodyParseResult,
 				lambdaExpression, thisInfo, variables
