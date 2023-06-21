@@ -19,7 +19,10 @@ public class BinaryOperatorTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		return new EvaluationTestBuilder()
+		TestClass testInstance = new TestClass();
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder();
+
+		testBuilder
 			.addTest("5 *7- 8 / 3*2 + 4 * 2",	5*7 - 8/3*2 + 4*2)
 			.addTest("5 + 7 * 8",				5 + 7 * 8)
 			.addTest("(5 + 7) * 8",				(5 + 7) * 8)
@@ -70,7 +73,30 @@ public class BinaryOperatorTest extends EvaluationTest
 			.addTest("false || false",			false || false)
 			.addTest("false || true",			false || true)
 			.addTest("true || false",			true || false)
-			.addTest("true || true",			true || true)
-			.build();
+			.addTest("true || true",			true || true);
+
+		testBuilder
+			.testInstance(testInstance)
+			.addTest("s instanceof String",									testInstance.s instanceof String)
+			.addTest("s instanceof Double",									false)
+			.addTest("o instanceof Object",									testInstance.o instanceof Object)
+			.addTest("o instanceof Float",									testInstance.o instanceof Float)
+			.addTest("d instanceof Double && i instanceof Integer",			testInstance.d instanceof Double && testInstance.i instanceof Integer)
+			.addTest("n instanceof Object",									testInstance.n instanceof Object)
+			.addTest("n instanceof Object && n.toString().length() == 4",	testInstance.n instanceof Object && testInstance.n.toString().length() == 4)
+			.addTest("o instanceof String && ((String) o).length() == 3",	testInstance.o instanceof String && ((String) testInstance.o).length() == 3)
+			.addTest("\"abc\" instanceof String && Boolean.TRUE instanceof Boolean",	"abc" instanceof String && Boolean.TRUE instanceof Boolean)
+			.addTest("5 + \"3\" instanceof String",										5 + "3" instanceof String);
+
+		return testBuilder.build();
+	}
+
+	private static class TestClass
+	{
+		private String	s	= "123";
+		private Double	d	= 123.0;
+		private Integer	i	= 123;
+		private Object	o	= 123.0f;
+		private Object	n	= null;
 	}
 }
