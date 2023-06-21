@@ -1,10 +1,8 @@
 package dd.kms.zenodot.impl.result;
 
-import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.VariablesImpl;
-import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
+import dd.kms.zenodot.impl.tokenizer.TokenStream;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.lang.reflect.Executable;
@@ -28,12 +26,8 @@ public class ParseResults
 		return new ConstantObjectParseResult(objectInfo, tokenStream);
 	}
 
-	public static ExecutableArgumentInfo createExecutableArgumentInfo(int currentArgumentIndex, Map<ExecutableInfo, Boolean> applicableExecutableOverloads) {
-		ImmutableMap.Builder<Executable, Boolean> builder = ImmutableMap.builder();
-		for (Map.Entry<ExecutableInfo, Boolean> entry : applicableExecutableOverloads.entrySet()) {
-			builder.put(entry.getKey().getExecutable(), entry.getValue());
-		}
-		return new ExecutableArgumentInfoImpl(currentArgumentIndex, builder.build());
+	public static ExecutableArgumentInfo createExecutableArgumentInfo(int currentArgumentIndex, Map<Executable, Boolean> applicableExecutableOverloads) {
+		return new ExecutableArgumentInfoImpl(currentArgumentIndex, applicableExecutableOverloads);
 	}
 
 	private static class IdentityObjectParseResult extends ObjectParseResult

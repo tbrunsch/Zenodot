@@ -22,6 +22,7 @@ import dd.kms.zenodot.impl.utils.ParserToolbox;
 import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
+import java.lang.reflect.Executable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -192,10 +193,10 @@ public class ExecutableDataProvider
 
 	public ExecutableArgumentInfo createExecutableArgumentInfo(List<ExecutableInfo> executableInfos, List<ObjectInfo> argumentInfos) {
 		int currentArgumentIndex = argumentInfos.size();
-		Map<ExecutableInfo, Boolean> applicableExecutableOverloads = new LinkedHashMap<>(executableInfos.size());
+		Map<Executable, Boolean> applicableExecutableOverloads = new LinkedHashMap<>(executableInfos.size());
 		for (ExecutableInfo executableInfo : executableInfos) {
 			boolean applicable = IntStream.range(0, argumentInfos.size()).allMatch(i -> acceptsArgument(executableInfo, i, argumentInfos.get(i)));
-			applicableExecutableOverloads.put(executableInfo, applicable);
+			applicableExecutableOverloads.put(executableInfo.getExecutable(), applicable);
 		}
 		return ParseResults.createExecutableArgumentInfo(currentArgumentIndex, applicableExecutableOverloads);
 	}
