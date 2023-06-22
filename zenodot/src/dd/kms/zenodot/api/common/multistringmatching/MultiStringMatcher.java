@@ -15,7 +15,16 @@ import java.util.Set;
  */
 public class MultiStringMatcher<T>
 {
-	private final MultiStringMatcherNode<T>	root = new MultiStringMatcherNode<>();
+	private final MultiStringMatcherNode<T>	root;
+
+	public MultiStringMatcher() {
+		root = new MultiStringMatcherNode<>();
+	}
+
+	public MultiStringMatcher(MultiStringMatcher<T> that) {
+		MultiStringMatcherNodeCloner<T> nodeCloner = new MultiStringMatcherNodeCloner<T>();
+		root = nodeCloner.createClone(that.root);
+	}
 
 	public void put(String key, T value) {
 		if (value == null) {

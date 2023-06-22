@@ -1,12 +1,15 @@
 package dd.kms.zenodot.tests;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import dd.kms.zenodot.api.common.RegexUtils;
 import dd.kms.zenodot.api.common.multistringmatching.MultiStringMatcher;
+import dd.kms.zenodot.api.debug.LogLevel;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,105 +19,106 @@ import java.util.regex.Pattern;
  */
 public class MultiStringMatcherTest
 {
+	private static final Map<String, Object>	SEARCH_TARGETS_BY_NAME	= ImmutableMap.<String, Object>builder()
+		.put("ArrayList", 						ArrayList.class)
+		.put("ArrayIndexOutOfBoundsException",	ArrayIndexOutOfBoundsException.class)
+		.put("ArrayBlockingQueue",				ArrayBlockingQueue.class)
+		.put("AbstractLogger",					"AbstractLogger")
+		.put("ArtificialIntelligence",			"AI")
+		.put("LinkedList",						LinkedList.class)
+		.put("LogLevel",						LogLevel.class)
+		.put("Livelock",						"Livelock")
+		.put("Logarithm",						"log")
+		.build();
+
 	@Test
 	public void manualTest() {
-		MultiStringMatcher<String> matcher = new MultiStringMatcher<>();
-		String[] keys = {
-				"ArrayList",
-				"ArrayIndexOutOfBoundsException",
-				"ArrayBlockingQueue",
-				"AbstractLogger",
-				"ArtificialIntelligence",
-				"LinkedList",
-				"LogLevel",
-				"Livelock",
-				"Logarithm"
-		};
-		for (String key : keys) {
-			matcher.put(key, key);
+		MultiStringMatcher<Object> matcher = new MultiStringMatcher<>();
+		for (Map.Entry<String, Object> entry : SEARCH_TARGETS_BY_NAME.entrySet()) {
+			matcher.put(entry.getKey(), entry.getValue());
 		}
 
 		/*
 		 * Successful searches for words starting with "A" without shortcuts
 		 */
-		testManually(matcher, "A", 								"ArrayList", "ArrayIndexOutOfBoundsException", "ArrayBlockingQueue", "AbstractLogger", "ArtificialIntelligence");
-		testManually(matcher, "Ar", 							"ArrayList", "ArrayIndexOutOfBoundsException", "ArrayBlockingQueue", "ArtificialIntelligence");
-		testManually(matcher, "Arr", 							"ArrayList", "ArrayIndexOutOfBoundsException", "ArrayBlockingQueue");
-		testManually(matcher, "Array", 							"ArrayList", "ArrayIndexOutOfBoundsException", "ArrayBlockingQueue");
-		testManually(matcher, "ArrayL", 						"ArrayList");
-		testManually(matcher, "ArrayI", 						"ArrayIndexOutOfBoundsException");
-		testManually(matcher, "ArrayB", 						"ArrayBlockingQueue");
-		testManually(matcher, "ArrayList", 						"ArrayList");
-		testManually(matcher, "ArrayIndexOutOfBoundsException", "ArrayIndexOutOfBoundsException");
-		testManually(matcher, "ArrayBlockingQueue", 			"ArrayBlockingQueue");
+		testManually(matcher, "A", 								ArrayList.class, ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class, "AbstractLogger", "AI");
+		testManually(matcher, "Ar", 							ArrayList.class, ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class, "AI");
+		testManually(matcher, "Arr", 							ArrayList.class, ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class);
+		testManually(matcher, "Array", 							ArrayList.class, ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class);
+		testManually(matcher, "ArrayL", 						ArrayList.class);
+		testManually(matcher, "ArrayI", 						ArrayIndexOutOfBoundsException.class);
+		testManually(matcher, "ArrayB", 						ArrayBlockingQueue.class);
+		testManually(matcher, "ArrayList", 						ArrayList.class);
+		testManually(matcher, "ArrayIndexOutOfBoundsException", ArrayIndexOutOfBoundsException.class);
+		testManually(matcher, "ArrayBlockingQueue", 			ArrayBlockingQueue.class);
 		testManually(matcher, "Ab", 							"AbstractLogger");
 		testManually(matcher, "AbstractLogger", 				"AbstractLogger");
-		testManually(matcher, "Art", 							"ArtificialIntelligence");
-		testManually(matcher, "ArtificialIntelligence", 		"ArtificialIntelligence");
+		testManually(matcher, "Art", 							"AI");
+		testManually(matcher, "ArtificialIntelligence", 		"AI");
 
 		/*
 		 * Successful searches for words starting with "A" with shortcuts
 		 */
-		testManually(matcher, "AL", 							"ArrayList", "AbstractLogger");
-		testManually(matcher, "ArL", 							"ArrayList");
-		testManually(matcher, "ALi", 							"ArrayList");
-		testManually(matcher, "ArLi", 							"ArrayList");
+		testManually(matcher, "AL", 							ArrayList.class, "AbstractLogger");
+		testManually(matcher, "ArL", 							ArrayList.class);
+		testManually(matcher, "ALi", 							ArrayList.class);
+		testManually(matcher, "ArLi", 							ArrayList.class);
 		testManually(matcher, "AbL", 							"AbstractLogger");
 		testManually(matcher, "ALo", 							"AbstractLogger");
 		testManually(matcher, "AbLo", 							"AbstractLogger");
-		testManually(matcher, "AI", 							"ArrayIndexOutOfBoundsException", "ArtificialIntelligence");
-		testManually(matcher, "ArIn", 							"ArrayIndexOutOfBoundsException", "ArtificialIntelligence");
-		testManually(matcher, "ArrIn", 							"ArrayIndexOutOfBoundsException");
-		testManually(matcher, "ArInd", 							"ArrayIndexOutOfBoundsException");
-		testManually(matcher, "ArrInd",							"ArrayIndexOutOfBoundsException");
-		testManually(matcher, "ArtIn", 							"ArtificialIntelligence");
-		testManually(matcher, "ArInt", 							"ArtificialIntelligence");
-		testManually(matcher, "ArtInt",							"ArtificialIntelligence");
+		testManually(matcher, "AI", 							ArrayIndexOutOfBoundsException.class, "AI");
+		testManually(matcher, "ArIn", 							ArrayIndexOutOfBoundsException.class, "AI");
+		testManually(matcher, "ArrIn", 							ArrayIndexOutOfBoundsException.class);
+		testManually(matcher, "ArInd", 							ArrayIndexOutOfBoundsException.class);
+		testManually(matcher, "ArrInd",							ArrayIndexOutOfBoundsException.class);
+		testManually(matcher, "ArtIn", 							"AI");
+		testManually(matcher, "ArInt", 							"AI");
+		testManually(matcher, "ArtInt",							"AI");
 
 		/*
 		 * Successful searches for words starting with "L" without shortcuts
 		 */
-		testManually(matcher, "L",								"LinkedList", "LogLevel", "Livelock", "Logarithm");
-		testManually(matcher, "Li",								"LinkedList", "Livelock");
-		testManually(matcher, "Lin",							"LinkedList");
-		testManually(matcher, "LinkedList",						"LinkedList");
+		testManually(matcher, "L",								LinkedList.class, LogLevel.class, "Livelock", "log");
+		testManually(matcher, "Li",								LinkedList.class, "Livelock");
+		testManually(matcher, "Lin",							LinkedList.class);
+		testManually(matcher, "LinkedList",						LinkedList.class);
 		testManually(matcher, "Liv",							"Livelock");
 		testManually(matcher, "Livelock",						"Livelock");
-		testManually(matcher, "Lo",								"LogLevel", "Logarithm");
-		testManually(matcher, "Log",							"LogLevel", "Logarithm");
-		testManually(matcher, "LogL",							"LogLevel");
-		testManually(matcher, "LogLevel",						"LogLevel");
-		testManually(matcher, "Loga",							"Logarithm");
-		testManually(matcher, "Logarithm",						"Logarithm");
+		testManually(matcher, "Lo",								LogLevel.class, "log");
+		testManually(matcher, "Log",							LogLevel.class, "log");
+		testManually(matcher, "LogL",							LogLevel.class);
+		testManually(matcher, "LogLevel",						LogLevel.class);
+		testManually(matcher, "Loga",							"log");
+		testManually(matcher, "Logarithm",						"log");
 
 		/*
 		 * Successful searches for words starting with "L" with shortcuts
 		 */
-		testManually(matcher, "LL",								"LinkedList", "LogLevel");
-		testManually(matcher, "LiL",							"LinkedList");
-		testManually(matcher, "LLi",							"LinkedList");
-		testManually(matcher, "LiLi",							"LinkedList");
-		testManually(matcher, "LinkLis",						"LinkedList");
-		testManually(matcher, "LoL",							"LogLevel");
-		testManually(matcher, "LLe",							"LogLevel");
-		testManually(matcher, "LoLe",							"LogLevel");
-		testManually(matcher, "LoLeve",							"LogLevel");
+		testManually(matcher, "LL",								LinkedList.class, LogLevel.class);
+		testManually(matcher, "LiL",							LinkedList.class);
+		testManually(matcher, "LLi",							LinkedList.class);
+		testManually(matcher, "LiLi",							LinkedList.class);
+		testManually(matcher, "LinkLis",						LinkedList.class);
+		testManually(matcher, "LoL",							LogLevel.class);
+		testManually(matcher, "LLe",							LogLevel.class);
+		testManually(matcher, "LoLe",							LogLevel.class);
+		testManually(matcher, "LoLeve",							LogLevel.class);
 
 		/*
 		 * Wildcard searches
 		 */
-		testManually(matcher, "*", 								"ArrayList", "ArrayIndexOutOfBoundsException", "ArrayBlockingQueue", "AbstractLogger", "ArtificialIntelligence", "LinkedList", "LogLevel", "Livelock", "Logarithm");
-		testManually(matcher, "A*e", 							"ArrayIndexOutOfBoundsException", "ArrayBlockingQueue", "AbstractLogger", "ArtificialIntelligence");
-		testManually(matcher, "A*o", 							"ArrayIndexOutOfBoundsException", "ArrayBlockingQueue", "AbstractLogger");
-		testManually(matcher, "L*i", 							"LinkedList", "Livelock", "Logarithm");
-		testManually(matcher, "L*o",							"LogLevel", "Livelock", "Logarithm");
-		testManually(matcher, "L*e", 							"LinkedList", "LogLevel", "Livelock");
-		testManually(matcher, "L*t", 							"LinkedList", "Logarithm");
-		testManually(matcher, "*a", 							"ArrayList", "ArrayIndexOutOfBoundsException", "ArrayBlockingQueue", "AbstractLogger", "ArtificialIntelligence", "Logarithm");
-		testManually(matcher, "*i*t", 							"ArrayList", "ArtificialIntelligence", "LinkedList", "Logarithm");
-		testManually(matcher, "*o",								"ArrayIndexOutOfBoundsException", "ArrayBlockingQueue", "AbstractLogger", "LogLevel", "Livelock", "Logarithm");
-		testManually(matcher, "*o*e",							"ArrayIndexOutOfBoundsException", "ArrayBlockingQueue", "AbstractLogger", "LogLevel");
-		testManually(matcher, "*o*k",							"ArrayBlockingQueue", "Livelock");
+		testManually(matcher, "*", 								ArrayList.class, ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class, "AbstractLogger", "AI", LinkedList.class, LogLevel.class, "Livelock", "log");
+		testManually(matcher, "A*e", 							ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class, "AbstractLogger", "AI");
+		testManually(matcher, "A*o", 							ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class, "AbstractLogger");
+		testManually(matcher, "L*i", 							LinkedList.class, "Livelock", "log");
+		testManually(matcher, "L*o",							LogLevel.class, "Livelock", "log");
+		testManually(matcher, "L*e", 							LinkedList.class, LogLevel.class, "Livelock");
+		testManually(matcher, "L*t", 							LinkedList.class, "log");
+		testManually(matcher, "*a", 							ArrayList.class, ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class, "AbstractLogger", "AI", "log");
+		testManually(matcher, "*i*t", 							ArrayList.class, "AI", LinkedList.class, "log");
+		testManually(matcher, "*o",								ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class, "AbstractLogger", LogLevel.class, "Livelock", "log");
+		testManually(matcher, "*o*e",							ArrayIndexOutOfBoundsException.class, ArrayBlockingQueue.class, "AbstractLogger", LogLevel.class);
+		testManually(matcher, "*o*k",							ArrayBlockingQueue.class, "Livelock");
 
 		/*
 		 * Unsuccessful searches
@@ -138,9 +142,9 @@ public class MultiStringMatcherTest
 		testManually(matcher, "ArtificialIntelligenceX");
 	}
 
-	private void testManually(MultiStringMatcher<String> matcher, String keyPattern, String... expectations) {
-		HashSet<String> expectedResults = Sets.newHashSet(expectations);
-		Collection<String> actualResults = matcher.search(keyPattern);
+	private void testManually(MultiStringMatcher<Object> matcher, String keyPattern, Object... expectations) {
+		HashSet<Object> expectedResults = Sets.newHashSet(expectations);
+		Collection<Object> actualResults = matcher.search(keyPattern);
 		checkResult(keyPattern, expectedResults, actualResults);
 	}
 
@@ -202,16 +206,44 @@ public class MultiStringMatcherTest
 		return filteredWords;
 	}
 
-	private static void checkResult(String keyPattern, Set<String> expectedResults, Collection<String> actualResults) {
+	@Test
+	public void copyTest() {
+		MultiStringMatcher<Object> origMatcher = new MultiStringMatcher<>();
+		for (Map.Entry<String, Object> entry : SEARCH_TARGETS_BY_NAME.entrySet()) {
+			origMatcher.put(entry.getKey(), entry.getValue());
+		}
+
+		MultiStringMatcher<Object> clonedMatcher = new MultiStringMatcher<>(origMatcher);
+
+		testSameResults(origMatcher, clonedMatcher, "");
+	}
+
+	private static void testSameResults(MultiStringMatcher<Object> expectedMatcher, MultiStringMatcher<Object> actualMatcher, String keyPattern) {
+		Set<Object> expectedResults = expectedMatcher.search(keyPattern);
+		Set<Object> actualResults = actualMatcher.search(keyPattern);
+		checkResult(keyPattern, expectedResults, actualResults);
+
+		if (expectedResults.isEmpty()) {
+			return;
+		}
+		for (char c = 'A'; c <= 'Z'; c++) {
+			testSameResults(expectedMatcher, actualMatcher, keyPattern + c);
+		}
+		for (char c = 'a'; c <= 'z'; c++) {
+			testSameResults(expectedMatcher, actualMatcher, keyPattern + c);
+		}
+	}
+
+	private static <T> void checkResult(String keyPattern, Set<T> expectedResults, Collection<T> actualResults) {
 		if (Objects.equals(expectedResults, actualResults)) {
 			return;
 		}
-		for (String expectedResult : expectedResults) {
+		for (T expectedResult : expectedResults) {
 			if (!actualResults.contains(expectedResult)) {
 				Assert.fail("Unexpected result for key pattern \"" + keyPattern + "\": Pattern expected to match \"" + expectedResult + "\"");
 			}
 		}
-		for (String actualResult : actualResults) {
+		for (T actualResult : actualResults) {
 			if (!expectedResults.contains(actualResult)) {
 				Assert.fail("Unexpected result for key pattern \"" + keyPattern + "\": Unexpected match \"" + actualResult + "\"");
 			}

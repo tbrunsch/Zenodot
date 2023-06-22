@@ -18,7 +18,7 @@ class MultiStringMatcherNode<T>
 	 * the value registered for the key "ArrayList".
 	 *
 	 */
-	private final List<T>	 										values			= new ArrayList<>();
+	private final List<T>	 										values;
 
 	/**
 	 * Stores the children of that node corresponding to the successor character.
@@ -33,7 +33,7 @@ class MultiStringMatcherNode<T>
 	 * Both keys share the path corresponding to "Array" and then have there custom
 	 * subpaths corresponding to "List" and "BlockingQueue".
 	 */
-	private final Map<Character, MultiStringMatcherNode<T>>			children		= new HashMap<>();
+	private final Map<Character, MultiStringMatcherNode<T>>			children;
 
 	/**
 	 * Stores the shortcuts of that node corresponding to upper case successor characters.
@@ -41,7 +41,25 @@ class MultiStringMatcherNode<T>
 	 * corresponding to "Arra" to the node corresponding to "L" registered for the character
 	 * "L". That way, it is possible to jump to the "L" by typing the key pattern "ArL".
 	 */
-	private final Multimap<Character, MultiStringMatcherNode<T>>	shortcutNodes	= ArrayListMultimap.create();
+	private final Multimap<Character, MultiStringMatcherNode<T>>	shortcutNodes;
+
+	MultiStringMatcherNode() {
+		values = new ArrayList<>();
+		children = new HashMap<>();
+		shortcutNodes = ArrayListMultimap.create();
+	}
+
+	MultiStringMatcherNode(MultiStringMatcherNode<T> that, MultiStringMatcherNodeCloner<T> nodeCloner) {
+		values = new ArrayList<>(that.values);
+		children = new HashMap<>();
+		for (Map.Entry<Character, MultiStringMatcherNode<T>> thatEntry : that.children.entrySet()) {
+			children.put(thatEntry.getKey(), nodeCloner.createClone(thatEntry.getValue()));
+		}
+		shortcutNodes = ArrayListMultimap.create();
+		for (Map.Entry<Character, MultiStringMatcherNode<T>> thatEntry : that.shortcutNodes.entries()) {
+			shortcutNodes.put(thatEntry.getKey(), nodeCloner.createClone(thatEntry.getValue()));
+		}
+	}
 
 	void addValue(T value) {
 		values.add(value);
