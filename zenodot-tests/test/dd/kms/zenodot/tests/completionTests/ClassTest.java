@@ -81,6 +81,22 @@ public class ClassTest extends CompletionTest
 			.addTest("YADC",	"dd.kms.zenodot.tests.classesForTest.dummies.YetAnotherDummyClass")
 			.addTest("DummCl",	"dd.kms.zenodot.tests.classesForTest.DummyClass");
 
+		String innerClassName1 = TestClass2.MyInnerZenodotClass.class.getName();
+		testBuilder
+			.configurator(test -> {
+				test.innerClassNames(innerClassName1);
+				test.enableConsideringAllClassesForClassCompletions();
+			})
+			.addTest("MyInZC", innerClassName1.replace('$', '.'));
+
+		String innerClassName2 = TestClass2.YetAnotherInnerZenodotClass.class.getName();
+		testBuilder
+			.configurator(test -> {
+				test.innerClassNames(innerClassName2);
+				test.enableConsideringAllClassesForClassCompletions();
+			})
+			.addTest("YetAIZClass", innerClassName2.replace('$', '.'));
+
 		return testBuilder.build();
 	}
 
@@ -102,5 +118,11 @@ public class ClassTest extends CompletionTest
 		{
 			static final int test = 13;
 		}
+	}
+
+	private static class TestClass2
+	{
+		private static final class MyInnerZenodotClass {}
+		private static final class YetAnotherInnerZenodotClass {}
 	}
 }

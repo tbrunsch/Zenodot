@@ -38,6 +38,10 @@ public class AbstractTest<T extends AbstractTest>
 		variables.createVariable(name, value, isFinal);
 	}
 
+	public void innerClassNames(String... innerClassNames) {
+		settingsBuilder.innerClassNames(Arrays.asList(innerClassNames));
+	}
+
 	public void minimumAccessModifier(AccessModifier minimumAccessModifier) {
 		settingsBuilder.minimumAccessModifier(minimumAccessModifier);
 	}
