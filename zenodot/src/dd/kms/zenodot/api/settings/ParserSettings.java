@@ -13,6 +13,7 @@ import java.util.List;
 public interface ParserSettings
 {
 	CompletionMode getCompletionMode();
+	List<String> getInnerClassNames();
 	Imports getImports();
 	AccessModifier getMinimumAccessModifier();
 	EvaluationMode getEvaluationMode();

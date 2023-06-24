@@ -1,14 +1,17 @@
 package dd.kms.zenodot.impl.settings;
 
+import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.*;
 
+import java.util.List;
 import java.util.Set;
 
 class ParserSettingsImpl implements ParserSettings
 {
 	private final CompletionMode	completionMode;
+	private final List<String>		innerClassNames;
 	private final Imports			imports;
 	private final AccessModifier	minimumAccessModifier;
 	private final EvaluationMode	evaluationMode;
@@ -16,8 +19,9 @@ class ParserSettingsImpl implements ParserSettings
 	private final ObjectTreeNode	customHierarchyRoot;
 	private final ParserLogger 		logger;
 
-	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
+	ParserSettingsImpl(CompletionMode completionMode, List<String> innerClassNames, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
 		this.completionMode = completionMode;
+		this.innerClassNames = ImmutableList.copyOf(innerClassNames);
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
 		this.minimumAccessModifier = minimumAccessModifier;
 		this.evaluationMode = evaluationMode;
@@ -29,6 +33,11 @@ class ParserSettingsImpl implements ParserSettings
 	@Override
 	public CompletionMode getCompletionMode() {
 		return completionMode;
+	}
+
+	@Override
+	public List<String> getInnerClassNames() {
+		return innerClassNames;
 	}
 
 	@Override

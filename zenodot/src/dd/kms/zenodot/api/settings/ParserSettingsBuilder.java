@@ -3,6 +3,8 @@ package dd.kms.zenodot.api.settings;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 
+import java.util.Collection;
+
 /**
  * Builder for {@link ParserSettings}<br>
  * <br>
@@ -20,6 +22,17 @@ public interface ParserSettingsBuilder
 	 * the selected completion.
 	 */
 	ParserSettingsBuilder completionMode(CompletionMode completionMode);
+
+	/**
+	 * Zenodot does not scan the whole class path for inner classes due to time constraints. Hence, when typing a
+	 * class name, Zenodot cannot suggest inner classes. Calling this method informs Zenodot about the existence of
+	 * selected inner classes which can then be suggested for code completions.<br>
+	 * <b>Note:</b> For performance reasons the classes have to be specified by their fully qualified class names
+	 * (using dollar ($) for separating a class name from its parent class name) instead of {@link Class} objects.
+	 * Zenodot will not try to load these classes or check whether these are valid class names. Class names that do not
+	 * contain "$" will simply be ignored.
+	 */
+	ParserSettingsBuilder innerClassNames(Collection<String> innerClassNames);
 
 	/**
 	 * When you import a class, then you can directly reference that class by its simple name.

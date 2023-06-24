@@ -1,5 +1,6 @@
 package dd.kms.zenodot.impl.settings;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
@@ -7,11 +8,14 @@ import dd.kms.zenodot.api.settings.*;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.impl.utils.ClassUtils;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
 	private CompletionMode		completionMode;
+	private List<String>		innerClassNames;
 	private Set<Class<?>>		importedClasses;
 	private Set<String>			importedPackages;
 	private AccessModifier		minimumAccessModifier;
@@ -22,6 +26,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 
 	public ParserSettingsBuilderImpl() {
 		completionMode = CompletionMode.COMPLETE_AND_REPLACE_WHOLE_WORDS;
+		innerClassNames = ImmutableList.of();
 		importedClasses = ImmutableSet.of();
 		importedPackages = ImmutableSet.of();
 		minimumAccessModifier = AccessModifier.PUBLIC;
@@ -33,6 +38,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 
 	ParserSettingsBuilderImpl(ParserSettings settings) {
 		completionMode = settings.getCompletionMode();
+		innerClassNames = ImmutableList.copyOf(settings.getInnerClassNames());
 		importedClasses = ImmutableSet.copyOf(settings.getImports().getImportedClasses());
 		importedPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackages());
 		minimumAccessModifier = settings.getMinimumAccessModifier();
@@ -45,6 +51,18 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	@Override
 	public ParserSettingsBuilder completionMode(CompletionMode completionMode) {
 		this.completionMode = completionMode;
+		return this;
+	}
+
+	@Override
+	public ParserSettingsBuilder innerClassNames(Collection<String> innerClassNames) {
+		ImmutableList.Builder<String> builder = ImmutableList.builder();
+		for (String innerClassName : innerClassNames) {
+			if (innerClassName.contains("$") && !innerClassName.contains(" ")) {
+				builder.add(innerClassName);
+			}
+		}
+		this.innerClassNames = builder.build();
 		return this;
 	}
 
@@ -102,6 +120,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
+		return new ParserSettingsImpl(completionMode, innerClassNames, importedClasses, importedPackages, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
 	}
 }
