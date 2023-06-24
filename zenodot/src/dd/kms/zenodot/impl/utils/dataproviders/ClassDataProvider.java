@@ -9,6 +9,7 @@ import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.Imports;
+import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.impl.matching.MatchRatings;
 import dd.kms.zenodot.impl.result.CodeCompletions;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
@@ -64,13 +65,27 @@ public class ClassDataProvider
 		PACKAGE_NAMES = ImmutableSet.copyOf(packageNames);
 	}
 
-	private final Imports	imports;
-	private final Class<?>	thisClass;
+	private final Imports						imports;
+	private final Class<?>						thisClass;
+	private final MultiStringMatcher<ClassInfo>	classesByUnqualifiedNames;
 
 	public ClassDataProvider(ParserToolbox parserToolbox) {
-		this.imports = parserToolbox.getSettings().getImports();
+		ParserSettings settings = parserToolbox.getSettings();
+		this.imports = settings.getImports();
 		ObjectInfo thisInfo = parserToolbox.getThisInfo();
 		this.thisClass = parserToolbox.getObjectInfoProvider().getType(thisInfo);
+		List<String> innerClassNames = settings.getInnerClassNames();
+		if (innerClassNames.isEmpty()) {
+			classesByUnqualifiedNames = TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES;
+		} else {
+			classesByUnqualifiedNames = new MultiStringMatcher<>(TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES);
+			for (String innerClassName : innerClassNames) {
+				String simpleClassName = ClassUtils.getLeafOfPath(innerClassName);
+				if (!Character.isDigit(simpleClassName.charAt(0))) {
+					classesByUnqualifiedNames.put(simpleClassName, new ClassInfo(innerClassName));
+				}
+			}
+		}
 	}
 
 	public boolean packageExists(String packageName) {
@@ -225,9 +240,9 @@ public class ClassDataProvider
 		);
 	}
 
-	private static List<CodeCompletion> completeUnqualifiedClassNameToQualifiedClass(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classesToIgnore) {
+	private List<CodeCompletion> completeUnqualifiedClassNameToQualifiedClass(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classesToIgnore) {
 		ImmutableList.Builder<CodeCompletion> completionsBuilder = ImmutableList.builder();
-		Set<ClassInfo> classInfos = TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.search(classPrefix, 100);
+		Set<ClassInfo> classInfos = classesByUnqualifiedNames.search(classPrefix, 100);
 		Set<ClassInfo> classInfosToConsider = Sets.difference(classInfos, classesToIgnore);
 		for (ClassInfo classInfo : classInfosToConsider) {
 			String unqualifiedName = classInfo.getUnqualifiedName();
