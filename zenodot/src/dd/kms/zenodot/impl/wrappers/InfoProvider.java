@@ -7,7 +7,6 @@ import dd.kms.zenodot.api.common.MethodScanner;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,10 +28,6 @@ public class InfoProvider
 
 	public static ClassInfo createClassInfo(Class<?> clazz) {
 		return createClassInfoUnchecked(clazz.getName());
-	}
-
-	public static ClassInfo createClassInfo(String qualifiedClassName) throws ClassNotFoundException {
-		return new ClassInfo(dd.kms.zenodot.impl.utils.ClassUtils.normalizeClassName(qualifiedClassName));
 	}
 
 	public static ClassInfo createClassInfoUnchecked(String qualifiedClassName) {
