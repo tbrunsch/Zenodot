@@ -32,16 +32,18 @@ class CodeCompletionClassImpl extends AbstractSimpleCodeCompletion implements Co
 
 	@Override
 	public String getTextToInsert() {
-		return qualifiedCompletion ? classInfo.getNormalizedName() : classInfo.getUnqualifiedName();
+		return qualifiedCompletion
+			? ClassUtils.getRegularClassName(classInfo.getNormalizedName())
+			: classInfo.getUnqualifiedName();
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(classInfo.getUnqualifiedName());
 		if (qualifiedCompletion) {
-			String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
-			if (packageName != null) {
-				builder.append(" (").append(packageName).append(")");
+			String packageOrParentClassName = ClassUtils.getParentPath(ClassUtils.getRegularClassName(classInfo.getNormalizedName()));
+			if (packageOrParentClassName != null) {
+				builder.append(" (").append(packageOrParentClassName).append(")");
 			}
 		}
 		return builder.toString();
