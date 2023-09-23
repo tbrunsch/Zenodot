@@ -1,6 +1,5 @@
 package dd.kms.zenodot.api.result;
 
-import com.google.common.collect.Range;
 import dd.kms.zenodot.api.matching.MatchRating;
 
 /**
@@ -14,9 +13,14 @@ public interface CodeCompletion
 	CodeCompletionType getType();
 
 	/**
-	 * Returns the range that should be replaced by the code completions
+	 * Returns the first index of the text (inclusive) that should be replaced by the code completion.
 	 */
-	Range<Integer> getInsertionRange();
+	int getInsertionBegin();
+
+	/**
+	 * Returns the last index of the text (exclusive) that should be replaced by the code completion.
+	 */
+	int getInsertionEnd();
 
 	/**
 	 * Returns the suggested caret position after inserting the code completions

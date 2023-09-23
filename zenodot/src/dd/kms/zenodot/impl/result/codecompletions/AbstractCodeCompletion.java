@@ -27,8 +27,13 @@ abstract class AbstractCodeCompletion implements CodeCompletion
 	}
 
 	@Override
-	public final Range<Integer> getInsertionRange() {
-		return Range.openClosed(insertionBegin, insertionEnd);
+	public int getInsertionBegin() {
+		return insertionBegin;
+	}
+
+	@Override
+	public int getInsertionEnd() {
+		return insertionEnd;
 	}
 
 	@Override

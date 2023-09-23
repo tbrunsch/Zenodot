@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0
+
+API changes:
+
+  - `CodeCompletion`: Replaced method `getInsertionRange()` by the methods `getInsertionBegin()` and `getInsertionEnd()`.
+
 ## v0.3.0
 
   - A new evaluation mode has been added that has some advantages of dynamic typing but prevents side effects during code completion and when the expression evaluation cannot be evaluated correctly.
