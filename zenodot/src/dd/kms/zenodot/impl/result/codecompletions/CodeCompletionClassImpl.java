@@ -31,6 +31,18 @@ class CodeCompletionClassImpl extends AbstractSimpleCodeCompletion implements Co
 	}
 
 	@Override
+	public boolean isQualifiedCompletion() {
+		return qualifiedCompletion;
+	}
+
+	@Override
+	public CodeCompletionClass asUnqualifiedCompletion() {
+		return isQualifiedCompletion()
+			? new CodeCompletionClassImpl(classInfo, getInsertionBegin(), getInsertionEnd(), false, getRating())
+			: this;
+	}
+
+	@Override
 	public String getTextToInsert() {
 		return qualifiedCompletion ? classInfo.getNormalizedName() : classInfo.getUnqualifiedName();
 	}
