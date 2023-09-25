@@ -39,6 +39,15 @@ public class ClassDataProvider
 	private static final Set<String>					PACKAGE_NAMES;
 	private static final MultiStringMatcher<ClassInfo>	TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES;
 
+	/**
+	 * The utility class {@link ClassPath} also finds classes that cannot be loaded for whatever
+	 * reason. Whenever such a {@link ClassInfo} is encountered (it is not detected immediately
+	 * after instantiating a {@code ClassInfo} because this class is meant for referencing classes
+	 * without having to load them), then it is registered in this field. Afterwards, this class
+	 * will not be suggested anymore.
+	 */
+	private static final Set<ClassInfo>					CLASS_INFOS_WITH_ERRORS	= new HashSet<>();
+
 	static {
 		TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES = HashMultimap.create();
 		TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES = new MultiStringMatcher<>();
@@ -64,6 +73,16 @@ public class ClassDataProvider
 		PACKAGE_NAMES = ImmutableSet.copyOf(packageNames);
 	}
 
+	public static void reportClassWithError(ClassInfo classInfo) {
+		CLASS_INFOS_WITH_ERRORS.add(classInfo);
+	}
+
+	private static Set<ClassInfo> filterClassesWithoutErrors(Set<ClassInfo> classInfos) {
+		return CLASS_INFOS_WITH_ERRORS.isEmpty()
+			? classInfos
+			: Sets.difference(classInfos, CLASS_INFOS_WITH_ERRORS);
+	}
+
 	private final Imports	imports;
 	private final Class<?>	thisClass;
 
@@ -73,7 +92,7 @@ public class ClassDataProvider
 		this.thisClass = parserToolbox.getObjectInfoProvider().getType(thisInfo);
 	}
 
-	public boolean packageExists(String packageName) {
+	public static boolean packageExists(String packageName) {
 		return PACKAGE_NAMES.contains(packageName);
 	}
 
@@ -137,13 +156,13 @@ public class ClassDataProvider
 			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
 			classes.addAll(classInfos);
 		}
-		return classes;
+		return filterClassesWithoutErrors(classes);
 	}
 
 	/*
 	 * Package Completions
 	 */
-	public CodeCompletions completePackage(int insertionBegin, int insertionEnd, String packagePrefix) {
+	public static CodeCompletions completePackage(int insertionBegin, int insertionEnd, String packagePrefix) {
 		String parentPackage = ClassUtils.getParentPath(packagePrefix);
 		int lastSeparatorIndex = ClassUtils.lastIndexOfPathSeparator(packagePrefix);
 		List<String> suggestedPackageNames = new ArrayList<>();
@@ -165,6 +184,7 @@ public class ClassDataProvider
 
 		return new CodeCompletions(codeCompletions);
 	}
+
 	private static StringMatch ratePackageByName(String packageName, String expectedName) {
 		int lastDotIndex = packageName.lastIndexOf('.');
 		String subpackageName = packageName.substring(lastDotIndex + 1);
@@ -184,7 +204,7 @@ public class ClassDataProvider
 			// class is not fully qualified, so no match
 			return CodeCompletions.NONE;
 		}
-		Set<ClassInfo> suggestedClasses = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
+		Set<ClassInfo> suggestedClasses = filterClassesWithoutErrors(TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName));
 		String classPrefix = ClassUtils.getLeafOfPath(classPrefixWithPackage);
 
 		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
@@ -220,14 +240,14 @@ public class ClassDataProvider
 			return ImmutableList.of();
 		}
 		return ParseUtils.createCodeCompletions(
-			classes,
+			filterClassesWithoutErrors(classes),
 			classInfo -> CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, false, rateClass(classInfo, classPrefix))
 		);
 	}
 
 	private static List<CodeCompletion> completeUnqualifiedClassNameToQualifiedClass(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classesToIgnore) {
 		ImmutableList.Builder<CodeCompletion> completionsBuilder = ImmutableList.builder();
-		Set<ClassInfo> classInfos = TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.search(classPrefix, 100);
+		Set<ClassInfo> classInfos = filterClassesWithoutErrors(TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.search(classPrefix, 100));
 		Set<ClassInfo> classInfosToConsider = Sets.difference(classInfos, classesToIgnore);
 		for (ClassInfo classInfo : classInfosToConsider) {
 			String unqualifiedName = classInfo.getUnqualifiedName();
@@ -241,10 +261,12 @@ public class ClassDataProvider
 		return completionsBuilder.build();
 	}
 
-	public CodeCompletions completeInnerClass(String expectedName, Class<?> contextClass, int insertionBegin, int insertionEnd) {
-		List<ClassInfo> classesToConsider = Arrays.stream(contextClass.getDeclaredClasses())
+	public static CodeCompletions completeInnerClass(String expectedName, Class<?> contextClass, int insertionBegin, int insertionEnd) {
+		Set<ClassInfo> classesToConsider = filterClassesWithoutErrors(
+			Arrays.stream(contextClass.getDeclaredClasses())
 			.map(clazz -> InfoProvider.createClassInfoUnchecked(clazz.getName()))
-			.collect(Collectors.toList());
+			.collect(Collectors.toSet())
+		);
 		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 			classesToConsider,
 			classInfo -> CodeCompletionFactory.classCompletion(classInfo, insertionBegin, insertionEnd, false, rateClass(classInfo, expectedName))
