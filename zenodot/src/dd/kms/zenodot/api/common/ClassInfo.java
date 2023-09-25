@@ -1,4 +1,4 @@
-package dd.kms.zenodot.impl.wrappers;
+package dd.kms.zenodot.api.common;
 
 import dd.kms.zenodot.impl.utils.ClassUtils;
 

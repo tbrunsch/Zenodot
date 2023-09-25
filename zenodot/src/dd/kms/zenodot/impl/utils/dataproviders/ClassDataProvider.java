@@ -3,6 +3,7 @@ package dd.kms.zenodot.impl.utils.dataproviders;
 import com.google.common.collect.*;
 import com.google.common.primitives.Primitives;
 import com.google.common.reflect.ClassPath;
+import dd.kms.zenodot.api.common.ClassInfo;
 import dd.kms.zenodot.api.common.multistringmatching.MultiStringMatcher;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
@@ -15,7 +16,6 @@ import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.utils.ClassUtils;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.wrappers.ClassInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
