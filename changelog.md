@@ -5,6 +5,7 @@
 API changes:
 
   - `CodeCompletion`: Replaced method `getInsertionRange()` by the methods `getInsertionBegin()` and `getInsertionEnd()`.
+  - `CodeCompletionClass.getClassInfo()` now returns a `ClassInfo` instead of a `Class` to avoid loading classes unnecessarily.
 
 ## v0.3.0
 

@@ -20,14 +20,8 @@ class CodeCompletionClassImpl extends AbstractSimpleCodeCompletion implements Co
 	}
 
 	@Override
-	public Class<?> getClassInfo() {
-		String normalizedName = classInfo.getNormalizedName();
-		Class<?> clazz = ClassUtils.getClassUnchecked(normalizedName);
-		if (clazz != null) {
-			return clazz;
-		}
-		String regularName = ClassUtils.getRegularClassName(normalizedName);
-		throw new IllegalStateException("Unknown class '" + regularName + "'");
+	public ClassInfo getClassInfo() {
+		return classInfo;
 	}
 
 	@Override

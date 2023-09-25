@@ -1,10 +1,11 @@
 package dd.kms.zenodot.api.result.codecompletions;
 
+import dd.kms.zenodot.api.common.ClassInfo;
 import dd.kms.zenodot.api.result.CodeCompletion;
 
 public interface CodeCompletionClass extends CodeCompletion
 {
-	Class<?> getClassInfo();
+	ClassInfo getClassInfo();
 
 	/**
 	 * Returns whether the code completion returns the fully qualified class name or the
