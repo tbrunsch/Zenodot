@@ -1,14 +1,10 @@
 package dd.kms.zenodot.api.common;
 
-import dd.kms.zenodot.impl.utils.ClassUtils;
-
 import java.util.Objects;
 
 /**
  * References a class by its fully qualified (normalized) name. That way, a class does not have to be loaded
- * until it is used.<br>
- * <br>
- * See {@link dd.kms.zenodot.impl.utils.ClassUtils#normalizeClassName(String)} for a description what is meant by "normalized".
+ * until it is used.
  */
 public class ClassInfo
 {
@@ -18,8 +14,20 @@ public class ClassInfo
 		this.normalizedClassName = normalizedClassName;
 	}
 
+	/**
+	 * Returns the qualified class name as required for the reflection API. Inner class names are separated by
+	 * a dollar sign ('$') from their outer class names.
+	 */
 	public String getNormalizedName() {
 		return normalizedClassName;
+	}
+
+	/**
+	 * Returns the qualified class name as used in Java code. Inner class names are separated by a dot ('.')
+	 * from their outer class names.
+	 */
+	public String getRegularName() {
+		return dd.kms.zenodot.impl.utils.ClassUtils.getRegularClassName(normalizedClassName);
 	}
 
 	/**
@@ -28,7 +36,20 @@ public class ClassInfo
 	 * leading numbers (Java technicalities), whereas simple class names do not.
 	 */
 	public String getUnqualifiedName() {
-		return ClassUtils.getLeafOfPath(normalizedClassName);
+		return dd.kms.zenodot.impl.utils.ClassUtils.getLeafOfPath(normalizedClassName);
+	}
+
+	/**
+	 * Returns the {@link Class} object that is represented by this instance, if possible.
+	 * @throws IllegalStateException if any exception occurred when loading the {@code Class}
+	 */
+	public Class<?> asClass() {
+		try {
+			return Class.forName(normalizedClassName);
+		} catch (Throwable t) {
+			dd.kms.zenodot.impl.utils.dataproviders.ClassDataProvider.reportClassWithError(this);
+			throw new IllegalStateException("Error loading class '" + getRegularName() + "': " + t, t);
+		}
 	}
 
 	@Override
@@ -46,6 +67,6 @@ public class ClassInfo
 
 	@Override
 	public String toString() {
-		return ClassUtils.getRegularClassName(normalizedClassName);
+		return getRegularName();
 	}
 }
