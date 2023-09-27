@@ -44,11 +44,9 @@ class CodeCompletionClassImpl extends AbstractSimpleCodeCompletion implements Co
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder(classInfo.getUnqualifiedName());
-		if (qualifiedCompletion) {
-			String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
-			if (packageName != null) {
-				builder.append(" (").append(packageName).append(")");
-			}
+		String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
+		if (packageName != null) {
+			builder.append(" (").append(packageName).append(")");
 		}
 		return builder.toString();
 	}

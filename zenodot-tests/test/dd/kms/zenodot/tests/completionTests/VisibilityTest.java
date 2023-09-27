@@ -58,12 +58,16 @@ public class VisibilityTest
 		ParserSettings settings = builder.build();
 
 		String outerEntityName = VisibilityTestUtils.getOuterEntityName(outerClassModifier);
+		String qualifiedOuterEntityName = VisibilityTestUtils.getQualifiedOuterEntityName(outerClassModifier);
 		String innerEntityName = VisibilityTestUtils.getInnerEntityName(innerModifier, innerType);
 		String unqualifiedEntityName = outerEntityName + "." + innerEntityName;
 		String unqualifiedExpression = unqualifiedEntityName.substring(0, unqualifiedEntityName.length() - innerType.getInnerEntityName().length() / 2);
 
 		String expression = useQualifiedClass ? VisibilityTestUtils.PACKAGE + "." + unqualifiedExpression : unqualifiedExpression;
-		String completionString = innerType == EntityType.METHOD ? innerEntityName + "()" : innerEntityName;
+		String completionString =
+			innerType == EntityType.METHOD	? innerEntityName + "()" :
+			innerType == EntityType.CLASS	? innerEntityName + " (" + qualifiedOuterEntityName + ")"
+											: innerEntityName;
 
 		/*
 		 * There seems to be no way to determine the access modifier of a class without

@@ -23,6 +23,10 @@ public class VisibilityTestUtils
 		return getModifierName(modifier, VisibilityTestUtils.EntityType.CLASS) + "OuterClass";
 	}
 
+	public static String getQualifiedOuterEntityName(AccessModifier modifier) {
+		return "dd.kms.zenodot.tests.classesForTest.visibility." + getOuterEntityName(modifier);
+	}
+
 	public static String getInnerEntityName(AccessModifier modifier, VisibilityTestUtils.EntityType type) {
 		String modifierName = getModifierName(modifier, type);
 		String innerEntityNameWithoutModifier = type.getInnerEntityName();

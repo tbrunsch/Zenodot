@@ -2,6 +2,8 @@
 
 ## v0.4.0
 
+  - The string representation of class code completions now always contains the package and possibly the enclosing class, even if the class has been imported.
+
 API changes:
 
   - `CodeCompletion`: Replaced method `getInsertionRange()` by the methods `getInsertionBegin()` and `getInsertionEnd()`.

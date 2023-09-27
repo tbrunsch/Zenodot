@@ -2,7 +2,6 @@ package dd.kms.zenodot.tests.classesForTest.visibility;
 
 public class PublicOuterClass
 {
-
 	public static String	publicField			= "public";
 	protected static String	protectedField		= "protected";
 	static String			packagePrivateField	= "package private";
