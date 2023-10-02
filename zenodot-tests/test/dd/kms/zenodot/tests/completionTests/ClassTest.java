@@ -82,20 +82,24 @@ public class ClassTest extends CompletionTest
 			.addTest("DummCl",	"dd.kms.zenodot.tests.classesForTest.DummyClass");
 
 		String innerClassName1 = TestClass2.MyInnerZenodotClass.class.getName();
+		String innerClassName2 = TestClass2.YetAnotherInnerZenodotClass.class.getName();
+		String regularInnerClassName1 = ClassUtils.getRegularClassName(innerClassName1);
+		String regularInnerClassName2 = ClassUtils.getRegularClassName(innerClassName2);
 		testBuilder
 			.configurator(test -> {
 				test.innerClassNames(innerClassName1);
 				test.enableConsideringAllClassesForClassCompletions();
 			})
-			.addTest("MyInZC", innerClassName1.replace('$', '.'));
+			.addTest				("MyInZC", regularInnerClassName1)
+			.addTestWithBlacklist	("MyInZC", regularInnerClassName2);
 
-		String innerClassName2 = TestClass2.YetAnotherInnerZenodotClass.class.getName();
 		testBuilder
 			.configurator(test -> {
 				test.innerClassNames(innerClassName2);
 				test.enableConsideringAllClassesForClassCompletions();
 			})
-			.addTest("YetAIZClass", innerClassName2.replace('$', '.'));
+			.addTest				("YetAIZClass", regularInnerClassName2)
+			.addTestWithBlacklist	("YetAIZClass", regularInnerClassName1);
 
 		return testBuilder.build();
 	}
