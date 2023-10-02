@@ -16,6 +16,7 @@ import java.util.Set;
 public class MultiStringMatcher<T>
 {
 	private final MultiStringMatcherNode<T>	root;
+	private boolean							immutable;
 
 	public MultiStringMatcher() {
 		root = new MultiStringMatcherNode<>();
@@ -27,6 +28,9 @@ public class MultiStringMatcher<T>
 	}
 
 	public void put(String key, T value) {
+		if (immutable) {
+			throw new UnsupportedOperationException("Trying to modify immutable " + getClass().getSimpleName());
+		}
 		if (value == null) {
 			throw new IllegalArgumentException("The value must not be null");
 		}
@@ -84,6 +88,10 @@ public class MultiStringMatcher<T>
 				lastCapitalLetter = c;
 			}
 		}
+	}
+
+	public void makeImmutable() {
+		this.immutable = true;
 	}
 
 	public Set<T> search(String keyPattern) {
