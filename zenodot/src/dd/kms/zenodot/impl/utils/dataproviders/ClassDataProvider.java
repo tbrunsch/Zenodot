@@ -1,8 +1,8 @@
 package dd.kms.zenodot.impl.utils.dataproviders;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
-import com.google.common.reflect.ClassPath;
 import dd.kms.zenodot.api.common.multistringmatching.MultiStringMatcher;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
@@ -20,7 +20,6 @@ import dd.kms.zenodot.impl.wrappers.ClassInfo;
 import dd.kms.zenodot.impl.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,34 +35,6 @@ public class ClassDataProvider
 					clazz -> clazz
 				)
 		);
-	private static final SetMultimap<String, ClassInfo> TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES;
-	private static final Set<String>					PACKAGE_NAMES;
-	private static final MultiStringMatcher<ClassInfo>	TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES;
-
-	static {
-		TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES = HashMultimap.create();
-		TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES = new MultiStringMatcher<>();
-		try {
-			ClassPath classPath = ClassPath.from(ClassLoader.getSystemClassLoader());
-			for (ClassPath.ClassInfo topLevelClass : classPath.getTopLevelClasses()) {
-				String qualifiedClassName = topLevelClass.getName();
-				ClassInfo classInfo = InfoProvider.createClassInfoUnchecked(qualifiedClassName);
-				String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
-				TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.put(packageName, classInfo);
-				String unqualifiedName = ClassUtils.getLeafOfPath(qualifiedClassName);
-				TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.put(unqualifiedName, classInfo);
-			}
-		} catch (IOException e) {
-		}
-
-		Set<String> packageNames = new LinkedHashSet<>();
-		for (String mainPackageName : TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.keySet()) {
-			for (String packageName = mainPackageName; packageName != null; packageName = ClassUtils.getParentPath(packageName)) {
-				packageNames.add(packageName);
-			}
-		}
-		PACKAGE_NAMES = ImmutableSet.copyOf(packageNames);
-	}
 
 	private final Imports						imports;
 	private final Class<?>						thisClass;
@@ -75,21 +46,7 @@ public class ClassDataProvider
 		ObjectInfo thisInfo = parserToolbox.getThisInfo();
 		this.thisClass = parserToolbox.getObjectInfoProvider().getType(thisInfo);
 		List<String> innerClassNames = settings.getInnerClassNames();
-		if (innerClassNames.isEmpty()) {
-			classesByUnqualifiedNames = TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES;
-		} else {
-			classesByUnqualifiedNames = new MultiStringMatcher<>(TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES);
-			for (String innerClassName : innerClassNames) {
-				String simpleClassName = ClassUtils.getLeafOfPath(innerClassName);
-				if (!Character.isDigit(simpleClassName.charAt(0))) {
-					classesByUnqualifiedNames.put(simpleClassName, new ClassInfo(innerClassName));
-				}
-			}
-		}
-	}
-
-	public boolean packageExists(String packageName) {
-		return PACKAGE_NAMES.contains(packageName);
+		classesByUnqualifiedNames = ClassUtils.getClassesByUnqualifiedNames(innerClassNames);
 	}
 
 	public Class<?> getImportedClass(String className) {
@@ -146,15 +103,6 @@ public class ClassDataProvider
 		return importedPackages;
 	}
 
-	private static Set<ClassInfo> getTopLevelClassesInPackages(Collection<String> packageNames) {
-		Set<ClassInfo> classes = new HashSet<>();
-		for (String packageName : Iterables.filter(packageNames, Objects::nonNull)) {
-			Set<ClassInfo> classInfos = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
-			classes.addAll(classInfos);
-		}
-		return classes;
-	}
-
 	/*
 	 * Package Completions
 	 */
@@ -162,7 +110,7 @@ public class ClassDataProvider
 		String parentPackage = ClassUtils.getParentPath(packagePrefix);
 		int lastSeparatorIndex = ClassUtils.lastIndexOfPathSeparator(packagePrefix);
 		List<String> suggestedPackageNames = new ArrayList<>();
-		for (String packageName : PACKAGE_NAMES) {
+		for (String packageName : ClassUtils.getPackageNames()) {
 			if (ClassUtils.lastIndexOfPathSeparator(packageName) != lastSeparatorIndex) {
 				continue;
 			}
@@ -199,7 +147,7 @@ public class ClassDataProvider
 			// class is not fully qualified, so no match
 			return CodeCompletions.NONE;
 		}
-		Set<ClassInfo> suggestedClasses = TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.get(packageName);
+		Set<ClassInfo> suggestedClasses = ClassUtils.getTopLevelClassesInPackages(Collections.singletonList(packageName));
 		String classPrefix = ClassUtils.getLeafOfPath(classPrefixWithPackage);
 
 		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
@@ -214,7 +162,7 @@ public class ClassDataProvider
 		ImmutableList.Builder<CodeCompletion> completionsBuilder = ImmutableList.builder();
 
 		Set<ClassInfo> importedClasses = getImportedClasses().stream().map(InfoProvider::createClassInfo).collect(Collectors.toSet());
-		Set<ClassInfo> topLevelClassesInPackages = getTopLevelClassesInPackages(getImportedPackages());
+		Set<ClassInfo> topLevelClassesInPackages = ClassUtils.getTopLevelClassesInPackages(getImportedPackages());
 		Set<ClassInfo> additionalTopLevelClassesInPackage = Sets.difference(topLevelClassesInPackages, importedClasses);
 
 		completionsBuilder.addAll(completeUnqualifiedClass(insertionBegin, insertionEnd, classPrefix, importedClasses));

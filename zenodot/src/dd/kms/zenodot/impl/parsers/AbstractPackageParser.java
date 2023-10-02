@@ -13,6 +13,7 @@ import dd.kms.zenodot.impl.result.ParseResult;
 import dd.kms.zenodot.impl.result.ParseResults;
 import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
 import dd.kms.zenodot.impl.tokenizer.TokenStream;
+import dd.kms.zenodot.impl.utils.ClassUtils;
 import dd.kms.zenodot.impl.utils.ParseUtils;
 import dd.kms.zenodot.impl.utils.ParserToolbox;
 import dd.kms.zenodot.impl.utils.dataproviders.ClassDataProvider;
@@ -57,8 +58,7 @@ abstract class AbstractPackageParser<C, T extends ParseResult, S extends ParseRe
 	private PackageParseResult readPackage(TokenStream tokenStream, C context) throws SyntaxException, CodeCompletionException {
 		String packagePrefix = getPackagePrefix(context);
 		String packageName = packagePrefix + tokenStream.readPackage(info -> suggestPackages(info, context));
-		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-		if (!classDataProvider.packageExists(packageName)) {
+		if (!ClassUtils.packageExists(packageName)) {
 			throw new SyntaxException("Unknown package '" + packageName + "'");
 		}
 		return ParseResults.createPackageParseResult(packageName);

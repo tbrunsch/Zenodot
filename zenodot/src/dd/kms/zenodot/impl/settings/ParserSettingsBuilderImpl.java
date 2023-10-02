@@ -58,8 +58,19 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	public ParserSettingsBuilder innerClassNames(Collection<String> innerClassNames) {
 		ImmutableList.Builder<String> builder = ImmutableList.builder();
 		for (String innerClassName : innerClassNames) {
-			if (innerClassName.contains("$") && !innerClassName.contains(" ")) {
-				builder.add(innerClassName);
+			if (innerClassName.contains(" ")) {
+				continue;
+			}
+			String normalizedName;
+			try {
+				normalizedName = ClassUtils.normalizeClassName(innerClassName, false);
+			} catch (Throwable ignored) {
+				/* ignore this class */
+				continue;
+			}
+			if (normalizedName.contains("$")) {
+				// only consider inner classes
+				builder.add(normalizedName);
 			}
 		}
 		this.innerClassNames = builder.build();
@@ -76,7 +87,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	public ParserSettingsBuilder importClassesByName(Iterable<String> classNames) throws ClassNotFoundException {
 		ImmutableSet.Builder<Class<?>> builder = ImmutableSet.builder();
 		for (String className : classNames) {
-			String normalizedClassName = ClassUtils.normalizeClassName(className);
+			String normalizedClassName = ClassUtils.normalizeClassName(className, false);
 			Class<?> clazz = Class.forName(normalizedClassName);
 			builder.add(clazz);
 		}
