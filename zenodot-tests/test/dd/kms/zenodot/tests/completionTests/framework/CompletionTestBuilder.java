@@ -27,6 +27,10 @@ public class CompletionTestBuilder
 		return addTest(new SuccessfulCompletion(expression, expectedCompletions));
 	}
 
+	public CompletionTestBuilder addTestWithBlacklist(String expression, String... unexpectedCompletions) {
+		return addTest(new CompletionWithBlacklist(expression, unexpectedCompletions));
+	}
+
 	public CompletionTestBuilder addUnstableTest(String expression, String... expectedCompletions) {
 		if (!AbstractTest.SKIP_UNSTABLE_TESTS) {
 			addTest(expression, expectedCompletions);

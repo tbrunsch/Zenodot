@@ -13,9 +13,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -59,6 +57,28 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 			int numLoggedEntries = logger.getNumberOfLoggedEntries();
 			prepareLogger(isPrintLogEntriesAtError(), isStopAtError() ? numLoggedEntries : -1);
 			runTest(expression, true, expectedCompletions);
+		}
+	}
+
+	void testCompletionWithBlacklist(String expression, String[] unexpectedCompletions) {
+		ParserSettings settings = settingsBuilder.build();
+
+		ExpressionParser expressionParser = Parsers.createExpressionParserBuilder(settings)
+			.variables(variables)
+			.createExpressionParser();
+		int caretPosition = expression.length();
+		List<String> completions;
+		try {
+			completions = extractCompletions(expressionParser.getCompletions(expression, caretPosition, testInstance));
+		} catch (ParseException e) {
+			e.printStackTrace();
+			fail("Exception during code completion: " + e.getMessage());
+			return;
+		}
+
+		Set<String> completionSet = new HashSet<>(completions);
+		for (String unexpectedCompletion : unexpectedCompletions) {
+			assertFalse("Detected unexpected completion '" + unexpectedCompletion + "'", completionSet.contains(unexpectedCompletion));
 		}
 	}
 
