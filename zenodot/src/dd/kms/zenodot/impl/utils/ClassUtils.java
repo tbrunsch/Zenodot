@@ -48,11 +48,11 @@ public class ClassUtils
 
 		int lastSeparatorPos = -1;
 		while (true) {
-			int nextDotPos = qualifiedClassName.indexOf('.', lastSeparatorPos + 1);
-			int nextDollarPos = qualifiedClassName.indexOf('$', lastSeparatorPos + 1);
+			int nextDotPos		= qualifiedClassName.indexOf('.', lastSeparatorPos + 1);
+			int nextDollarPos	= qualifiedClassName.indexOf('$', lastSeparatorPos + 1);
 			int nextSeparatorPos =	nextDotPos < 0		? nextDollarPos :
-					nextDollarPos < 0	? nextDotPos
-							: Math.min(nextDotPos, nextDollarPos);
+									nextDollarPos < 0	? nextDotPos
+														: Math.min(nextDotPos, nextDollarPos);
 			if (nextSeparatorPos < 0) {
 				throw new ClassNotFoundException("Unknown class '" + qualifiedClassName + "'");
 			}
