@@ -27,10 +27,6 @@ public class InfoProvider
 		return createClassInfoUnchecked(clazz.getName());
 	}
 
-	public static ClassInfo createClassInfo(String qualifiedClassName) throws ClassNotFoundException {
-		return new ClassInfo(dd.kms.zenodot.impl.utils.ClassUtils.normalizeClassName(qualifiedClassName));
-	}
-
 	public static ClassInfo createClassInfoUnchecked(String qualifiedClassName) {
 		return new ClassInfo(qualifiedClassName);
 	}
