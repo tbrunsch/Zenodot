@@ -39,35 +39,30 @@ public class ClassUtils
 	 * the former style <b>regular class names</b> and class names in the latter style
 	 * <b>normalized class names</b>.
 	 *
-	 * @throws ClassNotFoundException
+	 * @throws ClassNotFoundException if the class does not exist or cannot be loaded otherwise
 	 */
 	public static String normalizeClassName(String qualifiedClassName) throws ClassNotFoundException {
-		if (ClassUtils.getClassUnchecked(qualifiedClassName) != null) {
-			return qualifiedClassName;
-		}
-
-		int lastSeparatorPos = -1;
-		while (true) {
-			int nextDotPos		= qualifiedClassName.indexOf('.', lastSeparatorPos + 1);
-			int nextDollarPos	= qualifiedClassName.indexOf('$', lastSeparatorPos + 1);
-			int nextSeparatorPos =	nextDotPos < 0		? nextDollarPos :
-									nextDollarPos < 0	? nextDotPos
-														: Math.min(nextDotPos, nextDollarPos);
-			if (nextSeparatorPos < 0) {
-				throw new ClassNotFoundException("Unknown class '" + qualifiedClassName + "'");
+		int dollarPos = qualifiedClassName.indexOf('$');
+		if (dollarPos >= 0) {
+			String innerClassNamePart = qualifiedClassName.substring(dollarPos);
+			if (innerClassNamePart.indexOf('.') >= 0) {
+				// inner class name part contains '$' and '.'
+				throw new ClassNotFoundException("Invalid class name '" + qualifiedClassName + "'");
 			}
-			Class<?> clazz = ClassUtils.getClassUnchecked(qualifiedClassName.substring(0, nextSeparatorPos));
-			if (clazz != null) {
-				String topLevelClassName = qualifiedClassName.substring(0, nextSeparatorPos);
-				String remainderClassName = qualifiedClassName.substring(nextSeparatorPos).replace('.', '$');
+			if (getClassUnchecked(qualifiedClassName) != null) {
+				return qualifiedClassName;
+			}
+		} else {
+			for (int endPosTopLevelClassName = qualifiedClassName.length(); endPosTopLevelClassName >= 0; endPosTopLevelClassName = qualifiedClassName.lastIndexOf('.', endPosTopLevelClassName - 1)) {
+				String topLevelClassName = qualifiedClassName.substring(0, endPosTopLevelClassName);
+				String remainderClassName = qualifiedClassName.substring(endPosTopLevelClassName).replace('.', '$');
 				String normalizedClassName = topLevelClassName + remainderClassName;
-				if (Class.forName(normalizedClassName) == null) {
-					throw new ClassNotFoundException("Unknown class '" + qualifiedClassName + "'");
+				if (getClassUnchecked(normalizedClassName) != null) {
+					return normalizedClassName;
 				}
-				return normalizedClassName;
 			}
-			lastSeparatorPos = nextSeparatorPos;
 		}
+		throw new ClassNotFoundException("Unknown class '" + qualifiedClassName + "'");
 	}
 
 	/**
