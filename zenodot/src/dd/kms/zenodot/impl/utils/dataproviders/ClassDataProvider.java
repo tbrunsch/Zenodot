@@ -37,7 +37,7 @@ public class ClassDataProvider
 		);
 	private static final SetMultimap<String, ClassInfo> TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES;
 	private static final Set<String>					PACKAGE_NAMES;
-	private static final MultiStringMatcher<ClassInfo>	TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES;
+	private static final MultiStringMatcher<ClassInfo>	CLASSES_BY_UNQUALIFIED_NAMES;
 
 	/**
 	 * The utility class {@link ClassPath} also finds classes that cannot be loaded for whatever
@@ -50,16 +50,18 @@ public class ClassDataProvider
 
 	static {
 		TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES = HashMultimap.create();
-		TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES = new MultiStringMatcher<>();
+		CLASSES_BY_UNQUALIFIED_NAMES = new MultiStringMatcher<>();
 		try {
 			ClassPath classPath = ClassPath.from(ClassLoader.getSystemClassLoader());
-			for (ClassPath.ClassInfo topLevelClass : classPath.getTopLevelClasses()) {
-				String qualifiedClassName = topLevelClass.getName();
+			for (ClassPath.ClassInfo clazz : classPath.getAllClasses()) {
+				String qualifiedClassName = clazz.getName();
 				ClassInfo classInfo = InfoProvider.createClassInfoUnchecked(qualifiedClassName);
-				String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
-				TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.put(packageName, classInfo);
+				if (clazz.isTopLevel()) {
+					String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
+					TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.put(packageName, classInfo);
+				}
 				String unqualifiedName = ClassUtils.getLeafOfPath(qualifiedClassName);
-				TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.put(unqualifiedName, classInfo);
+				CLASSES_BY_UNQUALIFIED_NAMES.put(unqualifiedName, classInfo);
 			}
 		} catch (IOException e) {
 		}
@@ -247,7 +249,7 @@ public class ClassDataProvider
 
 	private static List<CodeCompletion> completeUnqualifiedClassNameToQualifiedClass(int insertionBegin, int insertionEnd, String classPrefix, Set<ClassInfo> classesToIgnore) {
 		ImmutableList.Builder<CodeCompletion> completionsBuilder = ImmutableList.builder();
-		Set<ClassInfo> classInfos = filterClassesWithoutErrors(TOP_LEVEL_CLASSES_BY_UNQUALIFIED_NAMES.search(classPrefix, 100));
+		Set<ClassInfo> classInfos = filterClassesWithoutErrors(CLASSES_BY_UNQUALIFIED_NAMES.search(classPrefix, 100));
 		Set<ClassInfo> classInfosToConsider = Sets.difference(classInfos, classesToIgnore);
 		for (ClassInfo classInfo : classInfosToConsider) {
 			String unqualifiedName = classInfo.getUnqualifiedName();
