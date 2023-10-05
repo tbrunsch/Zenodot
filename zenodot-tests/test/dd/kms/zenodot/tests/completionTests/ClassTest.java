@@ -77,9 +77,10 @@ public class ClassTest extends CompletionTest
 
 		testBuilder
 			.configurator(test -> test.enableConsideringAllClassesForClassCompletions())
-			.addTest("MyC",		"dd.kms.zenodot.tests.classesForTest.dummies.MyClass")
-			.addTest("YADC",	"dd.kms.zenodot.tests.classesForTest.dummies.YetAnotherDummyClass")
-			.addTest("DummCl",	"dd.kms.zenodot.tests.classesForTest.DummyClass");
+			.addTest("MyC",			"dd.kms.zenodot.tests.classesForTest.dummies.MyClass")
+			.addTest("YADC",		"dd.kms.zenodot.tests.classesForTest.dummies.YetAnotherDummyClass")
+			.addTest("DummCl",		"dd.kms.zenodot.tests.classesForTest.DummyClass")
+			.addTest("IntClStage1",	"dd.kms.zenodot.tests.classesForTest.DummyClass.InternalClassStage1");
 
 		return testBuilder.build();
 	}

@@ -3,6 +3,7 @@
 ## v0.4.0
 
   - The string representation of class code completions now always contains the package and possibly the enclosing class, even if the class has been imported.
+  - Inner class names are now also suggested when typing unqualified names.
 
 API changes:
 
