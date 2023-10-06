@@ -5,22 +5,22 @@ import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
-import dd.kms.zenodot.impl.common.ObjectInfoProvider;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.matching.MatchRatings;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.CodeCompletions;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.result.ParseResults;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.matching.MatchRatings;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.CodeCompletions;
+import dd.kms.zenodot.framework.result.ObjectParseResult;
+import dd.kms.zenodot.framework.result.ParseResults;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParseUtils;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.ExecutableInfo;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParseUtils;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.lang.reflect.Executable;
 import java.util.*;
@@ -156,12 +156,12 @@ public class ExecutableDataProvider
 		} catch (IndexOutOfBoundsException e) {
 			return false;
 		}
-		Class<?> argType = parserToolbox.getObjectInfoProvider().getType(arg);
+		Class<?> argType = parserToolbox.inject(ObjectInfoProvider.class).getType(arg);
 		return MatchRatings.isConvertibleTo(argType, expectedArgType);
 	}
 
 	public List<ExecutableInfo> getBestMatchingExecutables(List<ExecutableInfo> availableExecutableInfos, List<ObjectInfo> argumentInfos) {
-		ObjectInfoProvider objectInfoProvider = parserToolbox.getObjectInfoProvider();
+		ObjectInfoProvider objectInfoProvider = parserToolbox.inject(ObjectInfoProvider.class);
 		List<Class<?>> argumentTypes = argumentInfos.stream().map(objectInfoProvider::getType).collect(Collectors.toList());
 		Map<ExecutableInfo, TypeMatch> ratedExecutableInfos = availableExecutableInfos.stream()
 			.collect(Collectors.toMap(

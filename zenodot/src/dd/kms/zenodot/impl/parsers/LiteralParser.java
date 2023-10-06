@@ -2,28 +2,30 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Primitives;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.matching.MatchRatings;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.CodeCompletions;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.result.ParseResults;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.matching.MatchRatings;
+import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.ParserConfidence;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.CodeCompletions;
+import dd.kms.zenodot.framework.result.ObjectParseResult;
+import dd.kms.zenodot.framework.result.ParseResults;
+import dd.kms.zenodot.framework.tokenizer.CompletionInfo;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParseUtils;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
-import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParseUtils;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.VariablesImpl;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.util.HashMap;
 import java.util.List;
@@ -46,9 +48,6 @@ import java.util.Map;
  */
 public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
-	private static final ObjectInfo	TRUE_INFO	= InfoProvider.createObjectInfo(true, boolean.class);
-	private static final ObjectInfo	FALSE_INFO	= InfoProvider.createObjectInfo(false, boolean.class);
-
 	private static final String		NULL_LITERAL	= "null";
 	private static final String		THIS_LITERAL	= "this";
 	private static final String		TRUE_LITERAL	= "true";
@@ -175,7 +174,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) {
 			return thisInfo;
 		}
 	}
@@ -190,7 +189,7 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		@Override
-		ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
+		protected ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 			V literalValue = tokenReader.read(tokenStream);
 			log(LogLevel.SUCCESS, "detected numeric literal '" + literalValue + "'");
 			increaseConfidence(ParserConfidence.RIGHT_PARSER);

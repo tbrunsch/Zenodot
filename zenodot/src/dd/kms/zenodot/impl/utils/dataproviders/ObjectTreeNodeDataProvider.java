@@ -5,11 +5,11 @@ import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
-import dd.kms.zenodot.impl.matching.MatchRatings;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.CodeCompletions;
+import dd.kms.zenodot.framework.matching.MatchRatings;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.CodeCompletions;
+import dd.kms.zenodot.framework.utils.ParseUtils;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
-import dd.kms.zenodot.impl.utils.ParseUtils;
 
 import java.util.List;
 

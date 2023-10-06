@@ -1,26 +1,28 @@
 package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.Iterables;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.common.MethodScanner;
 import dd.kms.zenodot.api.common.MethodScannerBuilder;
 import dd.kms.zenodot.api.common.StaticMode;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.CodeCompletions;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.VariablesImpl;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.ParserConfidence;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.CodeCompletions;
+import dd.kms.zenodot.framework.result.ObjectParseResult;
+import dd.kms.zenodot.framework.tokenizer.CompletionInfo;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.ExecutableInfo;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.utils.dataproviders.ExecutableDataProvider;
-import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +56,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 		log(LogLevel.SUCCESS, "Detected " + methods.size() + " method(s) '" + methodName + "'");
 
 		log(LogLevel.INFO, "Parsing method arguments");
-		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
+		ExecutableDataProvider executableDataProvider = parserToolbox.inject(ExecutableDataProvider.class);
 		List<ObjectParseResult> argumentResults = executableDataProvider.parseArguments(tokenStream, methods);
 		List<ObjectInfo> arguments = argumentResults.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
 
@@ -68,7 +70,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 				ObjectInfo methodReturnInfo;
 				try {
 					log(LogLevel.SUCCESS, "Found unique matching method");
-					methodReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(getContextObject(context), bestMatchingMethod, arguments);
+					methodReturnInfo = parserToolbox.inject(ObjectInfoProvider.class).getExecutableReturnInfo(getContextObject(context), bestMatchingMethod, arguments);
 				} catch (Exception e) {
 					throw new EvaluationException("Exception when evaluating method '" + methodName + "'", e);
 				}
@@ -89,7 +91,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 
 		log(LogLevel.SUCCESS, "suggesting methods matching '" + nameToComplete + "'");
 
-		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
+		ExecutableDataProvider executableDataProvider = parserToolbox.inject(ExecutableDataProvider.class);
 		List<ExecutableInfo> methodInfos = getMethods(context, getMethodScanner());
 		boolean contextIsStatic = isContextStatic();
 		return executableDataProvider.completeMethod(methodInfos, contextIsStatic, nameToComplete, expectation, insertionBegin, insertionEnd);
@@ -140,7 +142,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws Exception {
 			Object contextObject = contextStatic ? null : contextInfo.getObject();
 			List<ObjectInfo> arguments = new ArrayList<>(this.arguments.size());
 			for (ObjectParseResult argument : this.arguments) {

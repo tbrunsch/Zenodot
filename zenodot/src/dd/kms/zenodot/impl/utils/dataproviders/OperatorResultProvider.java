@@ -6,14 +6,13 @@ import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.settings.EvaluationMode;
-import dd.kms.zenodot.impl.common.ObjectInfoProvider;
-import dd.kms.zenodot.impl.matching.MatchRatings;
-import dd.kms.zenodot.impl.tokenizer.BinaryOperator;
-import dd.kms.zenodot.impl.tokenizer.UnaryOperator;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider;
+import dd.kms.zenodot.framework.matching.MatchRatings;
+import dd.kms.zenodot.framework.operators.BinaryOperator;
+import dd.kms.zenodot.framework.operators.UnaryOperator;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -25,8 +24,6 @@ import java.util.function.Function;
  */
 public class OperatorResultProvider
 {
-	public static final int	MAX_BINARY_OPERATOR_PRECEDENCE_LEVEL			= Arrays.stream(BinaryOperator.values()).mapToInt(BinaryOperator::getPrecedenceLevel).max().getAsInt();
-
 	private static final Set<Class<?>>	INTEGRAL_PRIMITIVE_CLASSES			= ImmutableSet.of(char.class, byte.class, short.class, int.class, long.class);
 	private static final Set<Class<?>>	FLOATING_POINT_PRIMITIVE_CLASSES	= ImmutableSet.of(float.class, double.class);
 	private static final Set<Class<?>>	NUMERIC_PRIMITIVE_CLASSES			= ImmutableSet.<Class<?>>builder().addAll(INTEGRAL_PRIMITIVE_CLASSES).addAll(FLOATING_POINT_PRIMITIVE_CLASSES).build();

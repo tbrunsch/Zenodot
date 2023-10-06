@@ -1,9 +1,9 @@
 package dd.kms.zenodot.tests.tokenstream;
 
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

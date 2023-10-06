@@ -2,25 +2,27 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.common.ConstructorScanner;
 import dd.kms.zenodot.api.common.ConstructorScannerBuilder;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.ClassParseResult;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParseUtils;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.VariablesImpl;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.ParserConfidence;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.ClassParseResult;
+import dd.kms.zenodot.framework.result.ObjectParseResult;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParseUtils;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.ExecutableInfo;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.utils.dataproviders.ExecutableDataProvider;
-import dd.kms.zenodot.impl.wrappers.ExecutableInfo;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
@@ -76,10 +78,10 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		List<ExecutableInfo> constructorInfos = getConstructorInfos(constructorType);
 
 		log(LogLevel.INFO, "parsing constructor arguments");
-		ExecutableDataProvider executableDataProvider = parserToolbox.getExecutableDataProvider();
+		ExecutableDataProvider executableDataProvider = parserToolbox.inject(ExecutableDataProvider.class);
 		List<ObjectParseResult> argumentResults = executableDataProvider.parseArguments(tokenStream, constructorInfos);
 		List<ObjectInfo> argumentInfos = argumentResults.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
-		List<ExecutableInfo> bestMatchingConstructorInfos = parserToolbox.getExecutableDataProvider().getBestMatchingExecutables(constructorInfos, argumentInfos);
+		List<ExecutableInfo> bestMatchingConstructorInfos = executableDataProvider.getBestMatchingExecutables(constructorInfos, argumentInfos);
 
 		switch (bestMatchingConstructorInfos.size()) {
 			case 0:
@@ -89,7 +91,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				ObjectInfo constructorReturnInfo;
 				try {
 					log(LogLevel.SUCCESS, "found unique matching constructor");
-					constructorReturnInfo = parserToolbox.getObjectInfoProvider().getExecutableReturnInfo(null, bestMatchingConstructorInfo, argumentInfos);
+					constructorReturnInfo = parserToolbox.inject(ObjectInfoProvider.class).getExecutableReturnInfo(null, bestMatchingConstructorInfo, argumentInfos);
 				} catch (Exception e) {
 					throw new EvaluationException("Error when trying to invoke constructor of '" + constructorType.getSimpleName() + "': " + e.getMessage(), e);
 				}
@@ -112,7 +114,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			ObjectParseResultExpectation elementExpectation = new ObjectParseResultExpectation(ImmutableList.of(componentType), true);
 			List<ObjectParseResult> elementParseResults = parseArrayElements(tokenStream, elementExpectation);
 			List<ObjectInfo> elementInfos = elementParseResults.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
-			ObjectInfo arrayInfo = parserToolbox.getObjectInfoProvider().getArrayInfo(componentType, elementInfos);
+			ObjectInfo arrayInfo = parserToolbox.inject(ObjectInfoProvider.class).getArrayInfo(componentType, elementInfos);
 			log(LogLevel.SUCCESS, "detected valid array construction with initializer list");
 			return new ArrayConstructorWithInitializerListParseResult(componentType, elementParseResults, arrayInfo, tokenStream);
 		} else {
@@ -120,7 +122,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			ObjectInfo arrayInfo;
 			try {
 				ObjectInfo sizeInfo = arraySizeParseResult.getObjectInfo();
-				arrayInfo = parserToolbox.getObjectInfoProvider().getArrayInfo(componentType, sizeInfo);
+				arrayInfo = parserToolbox.inject(ObjectInfoProvider.class).getArrayInfo(componentType, sizeInfo);
 				log(LogLevel.SUCCESS, "detected valid array construction with null initialization");
 			} catch (ClassCastException | NegativeArraySizeException e) {
 				log(LogLevel.ERROR, "caught exception: " + e.getMessage());
@@ -172,7 +174,6 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 	}
 
 	private List<ExecutableInfo> getConstructorInfos(Class<?> constructorType) {
-		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
 		ConstructorScanner constructorScanner = getConstructorScanner();
 		return InfoProvider.getConstructorInfos(constructorType, constructorScanner);
 	}
@@ -203,7 +204,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws Exception {
 			List<ObjectInfo> arguments = new ArrayList<>(this.arguments.size());
 			for (ObjectParseResult argument : this.arguments) {
 				arguments.add(argument.evaluate(thisInfo, thisInfo, variables));
@@ -224,7 +225,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			List<ObjectInfo> elementInfos = new ArrayList<>(elementParseResults.size());
 			for (ObjectParseResult elementParseResult : elementParseResults) {
 				elementInfos.add(elementParseResult.evaluate(thisInfo, contextInfo, variables));
@@ -246,7 +247,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			ObjectInfo sizeInfo = sizeParseResult.evaluate(thisInfo, contextInfo, variables);
 			return OBJECT_INFO_PROVIDER.getArrayInfo(componentType, sizeInfo);
 		}

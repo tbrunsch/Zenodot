@@ -2,8 +2,8 @@ package dd.kms.zenodot.impl.flowcontrol;
 
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.framework.utils.ParseUtils;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
-import dd.kms.zenodot.impl.utils.ParseUtils;
 
 import java.util.HashSet;
 import java.util.Set;

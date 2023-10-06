@@ -1,9 +1,9 @@
 package dd.kms.zenodot.impl.parsers;
 
-import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
-import dd.kms.zenodot.impl.result.ParseResult;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
+import dd.kms.zenodot.framework.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.framework.result.ParseResult;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
 /**
  * Parses expressions of the form {@code <package name>} in the context of {@code this} (ignored).
