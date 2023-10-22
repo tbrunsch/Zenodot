@@ -1,6 +1,5 @@
 package dd.kms.zenodot.tests.completionTests;
 
-import dd.kms.zenodot.tests.common.CustomHierarchy;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -26,7 +25,6 @@ public class WildcardTest extends CompletionTest
 				test.importPackages("java.util");
 				test.createVariable("tempFloatVariable", 13.5f, false);
 				test.createVariable("tempCharVariable", 'c', false);
-				test.customHierarchyRoot(CustomHierarchy.ROOT);
 			})
 			.addTest("xY", 								"xYZ", "xxYyZz", "xyz")
 			.addTest("xYZ",								"xYZ", "xyz", "xxYyZz")
@@ -38,8 +36,6 @@ public class WildcardTest extends CompletionTest
 			.addTest("gVAI",							"getValueAsInt()")
 			.addTest("tFV",								"tempFloatVariable")
 			.addTest("tCV",								"tempCharVariable")
-			.addTest("{CM",								"Component Manager")
-			.addTest("{Productivity Calculation#RP",	"Relative Productivity", "Relative Productivity Potential")
 			.build();
 	}
 

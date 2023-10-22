@@ -1,6 +1,5 @@
 package dd.kms.zenodot.samples;
 
-import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.LambdaExpressionParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;

@@ -1,5 +1,7 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
+import dd.kms.zenodot.api.CustomHierarchyParsers;
+import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 import dd.kms.zenodot.tests.common.CustomHierarchy;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
@@ -19,7 +21,9 @@ public class CustomHierarchyTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().configurator(test -> test.customHierarchyRoot(CustomHierarchy.ROOT));
+		AdditionalParserSettings customHierarchyParserSettings = CustomHierarchyParsers.createCustomHierarchyParserSettings(CustomHierarchy.ROOT);
+
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().configurator(test -> test.additionalParserSettings(customHierarchyParserSettings));
 
 		testBuilder
 			.addTest("{Component Manager}",											CustomHierarchy.COMPONENT_MANAGER)

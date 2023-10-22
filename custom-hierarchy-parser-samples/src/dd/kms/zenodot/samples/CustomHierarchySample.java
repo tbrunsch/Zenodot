@@ -1,5 +1,6 @@
 package dd.kms.zenodot.samples;
 
+import dd.kms.zenodot.api.CustomHierarchyParsers;
 import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
@@ -7,7 +8,7 @@ import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.settings.ParserSettingsUtils;
+import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,8 +64,9 @@ public class CustomHierarchySample
 			)
 		);
 
+		AdditionalParserSettings additionalParserSettings = CustomHierarchyParsers.createCustomHierarchyParserSettings(root);
 		ParserSettings settings = ParserSettingsBuilder.create()
-			.customHierarchyRoot(root)
+			.additionalParserSettings(additionalParserSettings)
 			.build();
 		ExpressionParser parser = Parsers.createExpressionParser(settings);
 		String text = "{strings#long strings#ve";
@@ -99,6 +101,6 @@ public class CustomHierarchySample
 	}
 
 	private static ObjectTreeNode leaf(String name, Object value) {
-		return ParserSettingsUtils.createLeafNode(name, value);
+		return CustomHierarchyParsers.createLeafNode(name, value);
 	}
 }

@@ -1,7 +1,6 @@
 package dd.kms.zenodot.impl.result.codecompletions;
 
 import dd.kms.zenodot.api.matching.MatchRating;
-import dd.kms.zenodot.api.result.CodeCompletionType;
 import dd.kms.zenodot.api.result.codecompletions.CodeCompletionObjectTreeNode;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 
@@ -12,7 +11,7 @@ class CodeCompletionObjectTreeNodeImpl extends AbstractSimpleCodeCompletion impl
 	private final ObjectTreeNode	node;
 
 	CodeCompletionObjectTreeNodeImpl(ObjectTreeNode node, int insertionBegin, int insertionEnd, MatchRating rating) {
-		super(CodeCompletionType.OBJECT_TREE_NODE, insertionBegin, insertionEnd, rating);
+		super(CodeCompletionObjectTreeNode.OBJECT_TREE_NODE, insertionBegin, insertionEnd, rating);
 		this.node = node;
 	}
 

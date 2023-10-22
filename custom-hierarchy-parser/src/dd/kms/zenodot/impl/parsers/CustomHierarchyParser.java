@@ -1,9 +1,9 @@
 package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.Iterables;
+import dd.kms.zenodot.api.CustomHierarchyParsers;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
-import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
@@ -15,9 +15,11 @@ import dd.kms.zenodot.framework.result.ObjectParseResult;
 import dd.kms.zenodot.framework.result.ParseResults;
 import dd.kms.zenodot.framework.tokenizer.CompletionInfo;
 import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParseUtils;
 import dd.kms.zenodot.framework.utils.ParserToolbox;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.settings.parsers.AdditionalCustomHierarchyParserSettings;
 import dd.kms.zenodot.impl.utils.dataproviders.ObjectTreeNodeDataProvider;
 
 import java.util.Objects;
@@ -25,7 +27,7 @@ import java.util.Objects;
 /**
  * Parses expressions of the form {@code {<child level 1>#...#<child level n>}} in
  * the (ignored) context of {@code this}. {@code <child level 1>} refers to a child
- * of the root of the custom hierarchy specified by {@link ParserSettingsBuilder#customHierarchyRoot(ObjectTreeNode)}.
+ * of the root of the custom hierarchy specified by {@link CustomHierarchyParsers#createCustomHierarchyParserSettings(ObjectTreeNode)}.
  * With each separator {@code #}, the expression descends to the next lower level
  * in the hierarchy.
  */
@@ -45,8 +47,8 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
 
-		ObjectTreeNode hierarchyNode = parserToolbox.getSettings().getCustomHierarchyRoot();
-		return parseHierarchyNode(tokenStream, hierarchyNode, expectation);
+		AdditionalCustomHierarchyParserSettings settings = ParseUtils.getAdditionalParserSettings(parserToolbox.getSettings(), AdditionalCustomHierarchyParserSettings.class);
+		return parseHierarchyNode(tokenStream, settings.getSettings().getRoot(), expectation);
 	}
 
 	private ObjectParseResult parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {

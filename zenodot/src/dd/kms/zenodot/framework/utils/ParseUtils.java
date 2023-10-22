@@ -6,6 +6,8 @@ import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
+import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
@@ -22,6 +24,7 @@ import dd.kms.zenodot.framework.result.ParseResult;
 import dd.kms.zenodot.framework.tokenizer.TokenStream;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -31,6 +34,18 @@ import java.util.stream.Collectors;
  */
 public class ParseUtils
 {
+	/*
+	 * Settings
+	 */
+	@Nullable
+	public static <T extends AdditionalParserSettings> T getAdditionalParserSettings(ParserSettings settings, Class<T> additionalParserSettingsClass) {
+		return settings.getAdditionalParserSettings().stream()
+			.filter(additionalParserSettingsClass::isInstance)
+			.map(additionalParserSettingsClass::cast)
+			.findFirst()
+			.orElse(null);
+	}
+
 	/*
 	 * Parsing
 	 */

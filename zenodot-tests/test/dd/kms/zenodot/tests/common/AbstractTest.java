@@ -1,13 +1,12 @@
 package dd.kms.zenodot.tests.common;
 
-import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserConsoleLogger;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.EvaluationMode;
-import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
+import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import org.junit.Assert;
 
@@ -54,8 +53,8 @@ public class AbstractTest<T extends AbstractTest>
 		settingsBuilder.importPackages(Arrays.asList(packageNames));
 	}
 
-	public void customHierarchyRoot(ObjectTreeNode root) {
-		settingsBuilder.customHierarchyRoot(root);
+	public void additionalParserSettings(AdditionalParserSettings settings) {
+		settingsBuilder.additionalParserSettings(settings);
 	}
 
 	public void evaluationMode(EvaluationMode evaluationMode) {

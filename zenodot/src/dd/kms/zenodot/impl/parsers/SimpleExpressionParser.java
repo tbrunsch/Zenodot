@@ -1,5 +1,8 @@
 package dd.kms.zenodot.impl.parsers;
 
+import com.google.common.collect.Lists;
+import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
+import dd.kms.zenodot.api.settings.parsers.ParserType;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
@@ -12,7 +15,7 @@ import dd.kms.zenodot.framework.utils.ParseUtils;
 import dd.kms.zenodot.framework.utils.ParserToolbox;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,20 +30,33 @@ public class SimpleExpressionParser extends AbstractParser<ObjectInfo, ObjectPar
 
 	@Override
 	protected ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws CodeCompletionException, InternalErrorException, SyntaxException, EvaluationException {
-		List<AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation>> parsers = Arrays.asList(
-			parserToolbox.createParser(LiteralParser.class),
-			parserToolbox.createParser(VariableParser.class),
-			parserToolbox.createParser(ObjectFieldParser.class),
-			parserToolbox.createParser(ObjectMethodParser.class),
-			parserToolbox.createParser(ParenthesizedExpressionParser.class),
-			parserToolbox.createParser(CastParser.class),
-			parserToolbox.createParser(UnqualifiedClassParser.class),
-			parserToolbox.createParser(RootpackageParser.class),
-			parserToolbox.createParser(ConstructorParser.class),
-			parserToolbox.createParser(UnaryPrefixOperatorParser.class),
-			parserToolbox.createParser(CustomHierarchyParser.class),
-			parserToolbox.createParser(LambdaParser.class)
-		) ;
+		// predefined parser classes
+		List<Class<? extends AbstractParser>> parserClasses = Lists.newArrayList(
+			LiteralParser.class,
+			VariableParser.class,
+			ObjectFieldParser.class,
+			ObjectMethodParser.class,
+			ParenthesizedExpressionParser.class,
+			CastParser.class,
+			UnqualifiedClassParser.class,
+			RootpackageParser.class,
+			ConstructorParser.class,
+			UnaryPrefixOperatorParser.class,
+			LambdaParser.class
+		);
+
+		// additional parser classes
+		List<AdditionalParserSettings> additionalParserSettings = parserToolbox.getSettings().getAdditionalParserSettings();
+		additionalParserSettings.stream()
+			.filter(settings -> settings.getParserType() == ParserType.ROOT_OBJECT_PARSER)
+			.forEach(settings -> parserClasses.add(settings.getParserClass()));
+
+		List<AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation>> parsers = new ArrayList<>();
+		for (Class<? extends AbstractParser> parserClass : parserClasses) {
+			AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation> parser = parserToolbox.createParser(parserClass);
+			parsers.add(parser);
+		}
+
 		/*
 		 * possible ambiguities:
 		 *
