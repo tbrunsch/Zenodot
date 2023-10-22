@@ -3,6 +3,7 @@ package dd.kms.zenodot.impl.parsers;
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.CustomHierarchyParsers;
 import dd.kms.zenodot.api.debug.LogLevel;
+import dd.kms.zenodot.api.settings.CustomHierarchyParserSettings;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
@@ -33,26 +34,26 @@ import java.util.Objects;
  */
 public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectInfo>
 {
-	private static final char		HIERARCHY_BEGIN		= '{';
-	private static final char		HIERARCHY_SEPARATOR	= '#';
-	private static final char		HIERARCHY_END		= '}';
-
 	public CustomHierarchyParser(ParserToolbox parserToolbox) {
 		super(parserToolbox);
 	}
 
 	@Override
 	protected ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
-		tokenStream.readCharacter(HIERARCHY_BEGIN);
+		CustomHierarchyParserSettings settings = ParseUtils.getAdditionalParserSettings(parserToolbox.getSettings(), AdditionalCustomHierarchyParserSettings.class).getSettings();
+
+		tokenStream.readCharacter(settings.getHierarchyBegin());
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
 
-		AdditionalCustomHierarchyParserSettings settings = ParseUtils.getAdditionalParserSettings(parserToolbox.getSettings(), AdditionalCustomHierarchyParserSettings.class);
-		return parseHierarchyNode(tokenStream, settings.getSettings().getRoot(), expectation);
+		return parseHierarchyNode(tokenStream, settings, settings.getRoot(), expectation);
 	}
 
-	private ObjectParseResult parseHierarchyNode(TokenStream tokenStream, ObjectTreeNode contextNode, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
-		String nodeName = tokenStream.readUntilCharacter(info -> suggestHierarchyNode(contextNode, expectation, info), HIERARCHY_SEPARATOR, HIERARCHY_END);
+	private ObjectParseResult parseHierarchyNode(TokenStream tokenStream, CustomHierarchyParserSettings settings, ObjectTreeNode contextNode, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
+		char hierarchySeparator = settings.getHierarchySeparator();
+		char hierarchyEnd = settings.getHierarchyEnd();
+
+		String nodeName = tokenStream.readUntilCharacter(info -> suggestHierarchyNode(contextNode, expectation, info), hierarchySeparator, hierarchyEnd);
 
 		Iterable<? extends ObjectTreeNode> childNodes = contextNode.getChildNodes();
 		ObjectTreeNode firstChildNodeMatch = Iterables.getFirst(Iterables.filter(childNodes, node -> Objects.equals(node.getName(), nodeName)), null);
@@ -62,17 +63,15 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 		log(LogLevel.SUCCESS, "detected hierarchy node '" + nodeName + "'");
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
 
-		char nextChar = tokenStream.readCharacter(HIERARCHY_SEPARATOR, HIERARCHY_END);
-		switch (nextChar) {
-			case HIERARCHY_SEPARATOR:
-				return parseHierarchyNode(tokenStream, firstChildNodeMatch, expectation);
-			case HIERARCHY_END: {
-				Object userObject = firstChildNodeMatch.getUserObject();
-				return ParseResults.createCompiledConstantObjectParseResult(InfoProvider.createObjectInfo(userObject), tokenStream);
-			}
-			default:
-				throw new InternalErrorException(tokenStream.toString() + ": Expected '" + HIERARCHY_SEPARATOR + "' or '" + HIERARCHY_END + "', but found '" + nextChar + "'");
+		char nextChar = tokenStream.readCharacter(hierarchySeparator, hierarchyEnd);
+		if (nextChar == hierarchySeparator) {
+			return parseHierarchyNode(tokenStream, settings, firstChildNodeMatch, expectation);
+		} else if (nextChar == hierarchyEnd) {
+			Object userObject = firstChildNodeMatch.getUserObject();
+			return ParseResults.createCompiledConstantObjectParseResult(InfoProvider.createObjectInfo(userObject), tokenStream);
+
 		}
+		throw new InternalErrorException(tokenStream.toString() + ": Expected '" + hierarchySeparator + "' or '" + hierarchyEnd + "', but found '" + nextChar + "'");
 	}
 
 	private CodeCompletions suggestHierarchyNode(ObjectTreeNode contextNode, ObjectParseResultExpectation expectation, CompletionInfo info) {

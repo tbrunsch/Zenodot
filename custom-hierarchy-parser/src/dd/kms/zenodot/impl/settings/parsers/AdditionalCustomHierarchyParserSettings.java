@@ -11,8 +11,8 @@ public class AdditionalCustomHierarchyParserSettings implements AdditionalParser
 {
 	private final CustomHierarchyParserSettings	settings;
 
-	public AdditionalCustomHierarchyParserSettings(ObjectTreeNode customHierarchyRoot) {
-		this.settings = new dd.kms.zenodot.impl.settings.CustomHierarchyParserSettingsImpl(customHierarchyRoot);
+	public AdditionalCustomHierarchyParserSettings(ObjectTreeNode customHierarchyRoot, char hierarchyBegin, char hierarchySeparator, char hierarchyEnd) {
+		this.settings = new dd.kms.zenodot.impl.settings.CustomHierarchyParserSettingsImpl(customHierarchyRoot, hierarchyBegin, hierarchySeparator, hierarchyEnd);
 	}
 
 	@Override
