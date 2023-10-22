@@ -12,6 +12,7 @@ import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.AbstractParserWithObjectTail;
 import dd.kms.zenodot.framework.parsers.ParserConfidence;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.result.CodeCompletions;
@@ -42,7 +43,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, EvaluationException, InternalErrorException {
+	protected ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, EvaluationException, InternalErrorException {
 		String methodName = tokenStream.readIdentifier(info -> suggestMethods(context, expectation, info), "Expected a method");
 		int positionAfterMethodName = tokenStream.getPosition();
 		tokenStream.readCharacter('(');

@@ -12,6 +12,7 @@ import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.AbstractParserWithObjectTail;
 import dd.kms.zenodot.framework.parsers.ParserConfidence;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.result.ClassParseResult;
@@ -49,7 +50,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
+	protected ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		String keyword = tokenStream.readKeyword(TokenStream.NO_COMPLETIONS, ERROR_MESSAGE);
 		if (!NEW_KEYWORD.equals(keyword)) {
 			throw new SyntaxException(ERROR_MESSAGE);

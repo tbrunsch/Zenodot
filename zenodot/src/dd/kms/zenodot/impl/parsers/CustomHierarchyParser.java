@@ -7,6 +7,7 @@ import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.AbstractParserWithObjectTail;
 import dd.kms.zenodot.framework.parsers.ParserConfidence;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.result.CodeCompletions;
@@ -39,7 +40,7 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
+	protected ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		tokenStream.readCharacter(HIERARCHY_BEGIN);
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);

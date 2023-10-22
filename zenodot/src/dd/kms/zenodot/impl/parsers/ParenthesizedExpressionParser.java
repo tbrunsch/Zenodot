@@ -4,6 +4,7 @@ import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.AbstractParserWithObjectTail;
 import dd.kms.zenodot.framework.parsers.ParserConfidence;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.result.ObjectParseResult;
@@ -21,7 +22,7 @@ public class ParenthesizedExpressionParser extends AbstractParserWithObjectTail<
 	}
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
+	protected ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		tokenStream.readCharacter('(');
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
