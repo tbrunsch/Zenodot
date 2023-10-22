@@ -190,7 +190,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 
 		@Override
 		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws InternalErrorException {
-			return OBJECT_INFO_PROVIDER.getLambdaInfo(
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getLambdaInfo(
 				functionalInterface, methodName, parameters, bodyParseResult,
 				lambdaExpression, thisInfo, variables
 			);

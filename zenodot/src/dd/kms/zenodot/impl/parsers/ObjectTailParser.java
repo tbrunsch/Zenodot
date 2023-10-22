@@ -103,7 +103,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		@Override
 		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			ObjectInfo indexInfo = indexParseResult.evaluate(thisInfo, thisInfo, variables);
-			return OBJECT_INFO_PROVIDER.getArrayElementInfo(contextInfo, indexInfo);
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getArrayElementInfo(contextInfo, indexInfo);
 		}
 	}
 }

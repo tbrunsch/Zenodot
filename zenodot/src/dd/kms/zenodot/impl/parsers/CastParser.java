@@ -74,7 +74,7 @@ public class CastParser extends AbstractParser<ObjectInfo, ObjectParseResult, Ob
 		@Override
 		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			ObjectInfo objectInfo = parseResult.evaluate(thisInfo, contextInfo, variables);
-			return OBJECT_INFO_PROVIDER.getCastInfo(objectInfo, targetType);
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getCastInfo(objectInfo, targetType);
 		}
 	}
 }

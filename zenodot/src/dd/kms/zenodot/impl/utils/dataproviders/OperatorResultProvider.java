@@ -24,6 +24,8 @@ import java.util.function.Function;
  */
 public class OperatorResultProvider
 {
+	public static final OperatorResultProvider	DYNAMIC_OPERATOR_RESULT_PROVIDER	= new OperatorResultProvider(ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER, EvaluationMode.DYNAMIC_TYPING);
+
 	private static final Set<Class<?>>	INTEGRAL_PRIMITIVE_CLASSES			= ImmutableSet.of(char.class, byte.class, short.class, int.class, long.class);
 	private static final Set<Class<?>>	FLOATING_POINT_PRIMITIVE_CLASSES	= ImmutableSet.of(float.class, double.class);
 	private static final Set<Class<?>>	NUMERIC_PRIMITIVE_CLASSES			= ImmutableSet.<Class<?>>builder().addAll(INTEGRAL_PRIMITIVE_CLASSES).addAll(FLOATING_POINT_PRIMITIVE_CLASSES).build();

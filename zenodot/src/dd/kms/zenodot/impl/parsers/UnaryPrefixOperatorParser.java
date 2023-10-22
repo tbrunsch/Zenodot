@@ -100,7 +100,7 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			ObjectInfo expressionInfo = expressionParseResult.evaluate(thisInfo, contextInfo, variables);
 			try {
-				return applyOperator(expressionInfo, operator, OPERATOR_RESULT_PROVIDER);
+				return applyOperator(expressionInfo, operator, OperatorResultProvider.DYNAMIC_OPERATOR_RESULT_PROVIDER);
 			} catch (OperatorException e) {
 				throw new ParseException(getExpression(), getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
 			}

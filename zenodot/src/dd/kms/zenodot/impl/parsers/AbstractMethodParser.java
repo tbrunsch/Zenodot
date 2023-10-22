@@ -148,7 +148,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 			for (ObjectParseResult argument : this.arguments) {
 				arguments.add(argument.evaluate(thisInfo, thisInfo, variables));
 			}
-			return OBJECT_INFO_PROVIDER.getExecutableReturnInfo(contextObject, method, arguments);
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getExecutableReturnInfo(contextObject, method, arguments);
 		}
 	}
 }

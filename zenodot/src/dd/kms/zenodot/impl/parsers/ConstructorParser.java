@@ -209,7 +209,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			for (ObjectParseResult argument : this.arguments) {
 				arguments.add(argument.evaluate(thisInfo, thisInfo, variables));
 			}
-			return OBJECT_INFO_PROVIDER.getExecutableReturnInfo(null, constructor, arguments);
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getExecutableReturnInfo(null, constructor, arguments);
 		}
 	}
 
@@ -230,7 +230,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 			for (ObjectParseResult elementParseResult : elementParseResults) {
 				elementInfos.add(elementParseResult.evaluate(thisInfo, contextInfo, variables));
 			}
-			return OBJECT_INFO_PROVIDER.getArrayInfo(componentType, elementInfos);
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getArrayInfo(componentType, elementInfos);
 		}
 	}
 
@@ -249,7 +249,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 		@Override
 		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			ObjectInfo sizeInfo = sizeParseResult.evaluate(thisInfo, contextInfo, variables);
-			return OBJECT_INFO_PROVIDER.getArrayInfo(componentType, sizeInfo);
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getArrayInfo(componentType, sizeInfo);
 		}
 	}
 }

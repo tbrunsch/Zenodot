@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 
 public class ObjectInfoProvider
 {
+	public static final ObjectInfoProvider	DYNAMIC_OBJECT_INFO_PROVIDER	= new ObjectInfoProvider(EvaluationMode.DYNAMIC_TYPING);
+
 	private final EvaluationMode evaluationMode;
 
 	public ObjectInfoProvider(EvaluationMode evaluationMode) {

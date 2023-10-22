@@ -121,7 +121,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		@Override
 		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) {
 			Object contextObject = contextStatic ? null : contextInfo.getObject();
-			return OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
 		}
 	}
 }

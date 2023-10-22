@@ -237,7 +237,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 				ObjectParseResult nextOperand = operands.get(i + 1);
 				ObjectInfo nextOperandInfo = nextOperand.evaluate(thisInfo, contextInfo, variables);
 				try {
-					accumulatedResultInfo = applyOperator(OPERATOR_RESULT_PROVIDER, accumulatedResultInfo, nextOperandInfo, operator);
+					accumulatedResultInfo = applyOperator(OperatorResultProvider.DYNAMIC_OPERATOR_RESULT_PROVIDER, accumulatedResultInfo, nextOperandInfo, operator);
 				} catch (OperatorException e) {
 					throw new ParseException(getExpression(), nextOperand.getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
 				}
@@ -260,7 +260,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		@Override
 		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, Variables variables) throws Exception {
 			ObjectInfo objectInfo = expressionParseResult.evaluate(thisInfo, context, variables);
-			return OPERATOR_RESULT_PROVIDER.getInstanceOfInfo(objectInfo, type);
+			return OperatorResultProvider.DYNAMIC_OPERATOR_RESULT_PROVIDER.getInstanceOfInfo(objectInfo, type);
 		}
 	}
 }

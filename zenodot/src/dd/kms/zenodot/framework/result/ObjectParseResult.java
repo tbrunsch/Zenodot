@@ -10,9 +10,6 @@ import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
 public abstract class ObjectParseResult implements ParseResult
 {
-	protected static final ObjectInfoProvider OBJECT_INFO_PROVIDER = new ObjectInfoProvider(EvaluationMode.DYNAMIC_TYPING);
-	protected static final dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider OPERATOR_RESULT_PROVIDER = new dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider(OBJECT_INFO_PROVIDER, EvaluationMode.DYNAMIC_TYPING);
-
 	private final ObjectInfo 	objectInfo;
 	private final String		expression;
 	private final int			position;
