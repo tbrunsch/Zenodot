@@ -18,13 +18,12 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
   - [Dynamic Typing](#dynamic-typing)
   - [Lambdas](#lambdas)
   - [Custom Variables](#custom-variables)
-  - [Custom Hierarchies](#custom-hierarchies)
+  - [Syntax Extensions](#syntax-extensions)
   - [Operators](#operators)
 - [Evaluation Context](#evaluation-context)
 - [Handling Code Completions](#handling-code-completions)
 - [Parser Settings](#parser-settings)
   - [Dynamic Typing Example](#dynamic-typing-example)
-  - [Custom Hierarchy Example](#custom-hierarchy-example)
 - [Open Source License Acknowledgement](#open-source-license-acknowledgement)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->

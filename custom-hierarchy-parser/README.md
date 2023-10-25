@@ -2,6 +2,13 @@
 This module is intended to extend the Zenodot basic parser by another parser that allows parsing custom hierarchies. We will elaborate on this in the remainder of this document.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+# Table of Contents
+
+- [Custom Hierarchies](#custom-hierarchies)
+- [Custom Hierarchy Example](#custom-hierarchy-example)
+- [Customizing the Custom Hierarchy Parser](#customizing-the-custom-hierarchy-parser)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Custom Hierarchies

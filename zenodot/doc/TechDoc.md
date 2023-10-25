@@ -5,6 +5,19 @@
 This documentation is meant for developers that want to know the core ideas behind the architecture of Zenodot. It is not suitable for API users.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+# Table of Contents
+
+- [Expression Evaluation vs. Code Completions](#expression-evaluation-vs-code-completions)
+- [Token](#token)
+- [Parsing Process](#parsing-process)
+  - [Merging Syntax Exceptions](#merging-syntax-exceptions)
+- [Workflow Simplifications](#workflow-simplifications)
+- [Parse Result Expectations](#parse-result-expectations)
+- [Parameterized Parsers](#parameterized-parsers)
+- [Compiled Expressions](#compiled-expressions)
+  - [Dynamic Typing](#dynamic-typing)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Expression Evaluation vs. Code Completions
