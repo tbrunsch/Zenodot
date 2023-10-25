@@ -1,26 +1,27 @@
 package dd.kms.zenodot.impl;
 
 import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.framework.result.CodeCompletions;
+import dd.kms.zenodot.framework.result.ParseResult;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
-import dd.kms.zenodot.impl.result.CodeCompletions;
-import dd.kms.zenodot.impl.result.ParseResult;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 abstract class AbstractParser<T extends ParseResult, S extends ParseResultExpectation<T>>
 {
 	final ParserSettings	settings;
-	final VariablesImpl		variables;
+	final Variables			variables;
 
-	AbstractParser(ParserSettings settings, VariablesImpl variables) {
+	AbstractParser(ParserSettings settings, Variables variables) {
 		this.settings = settings;
 		this.variables = variables;
 	}

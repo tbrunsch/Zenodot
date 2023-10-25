@@ -1,6 +1,5 @@
 package dd.kms.zenodot.impl.result.codecompletions;
 
-import com.google.common.collect.Range;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.CodeCompletionType;

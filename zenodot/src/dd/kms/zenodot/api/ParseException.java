@@ -1,5 +1,7 @@
 package dd.kms.zenodot.api;
 
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+
 import java.text.MessageFormat;
 
 public class ParseException extends Exception
@@ -7,11 +9,11 @@ public class ParseException extends Exception
 	private final String	expression;
 	private final int		position;
 
-	public ParseException(dd.kms.zenodot.impl.tokenizer.TokenStream tokenStream, String message) {
+	public ParseException(TokenStream tokenStream, String message) {
 		this(tokenStream, message, null);
 	}
 
-	public ParseException(dd.kms.zenodot.impl.tokenizer.TokenStream tokenStream, String message, Throwable cause) {
+	public ParseException(TokenStream tokenStream, String message, Throwable cause) {
 		this(tokenStream.getExpression(), tokenStream.getPosition(), message, cause);
 	}
 

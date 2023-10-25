@@ -1,28 +1,32 @@
 package dd.kms.zenodot.impl.settings;
 
+import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.*;
+import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 class ParserSettingsImpl implements ParserSettings
 {
-	private final CompletionMode	completionMode;
-	private final Imports			imports;
-	private final AccessModifier	minimumAccessModifier;
-	private final EvaluationMode	evaluationMode;
-	private final boolean 			considerAllClassesForClassCompletions;
-	private final ObjectTreeNode	customHierarchyRoot;
-	private final ParserLogger 		logger;
+	private final CompletionMode					completionMode;
+	private final Imports							imports;
+	private final AccessModifier					minimumAccessModifier;
+	private final EvaluationMode					evaluationMode;
+	private final boolean 							considerAllClassesForClassCompletions;
+	private final List<AdditionalParserSettings>	additionalParserSettings;
+	private final ParserLogger 						logger;
 
-	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, ObjectTreeNode customHierarchyRoot, ParserLogger logger) {
+	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, List<AdditionalParserSettings> additionalParserSettings, ParserLogger logger) {
 		this.completionMode = completionMode;
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
 		this.minimumAccessModifier = minimumAccessModifier;
 		this.evaluationMode = evaluationMode;
 		this.considerAllClassesForClassCompletions = considerAllClassesForClassCompletions;
-		this.customHierarchyRoot = customHierarchyRoot;
+		this.additionalParserSettings = ImmutableList.copyOf(additionalParserSettings);
 		this.logger = logger;
 	}
 
@@ -52,8 +56,9 @@ class ParserSettingsImpl implements ParserSettings
 	}
 
 	@Override
-	public ObjectTreeNode getCustomHierarchyRoot() {
-		return customHierarchyRoot;
+	@Nullable
+	public List<AdditionalParserSettings> getAdditionalParserSettings() {
+		return additionalParserSettings;
 	}
 
 	@Override

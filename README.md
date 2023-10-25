@@ -4,7 +4,7 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
   - Name and type based code completion
   - Optional dynamically typed expression evaluation
   - Parsing of custom variables
-  - Parsing of individual hierarchies that are not reflected by regular Java syntax
+  - Support for adding additional parsers for syntax extensions
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -18,13 +18,12 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
   - [Dynamic Typing](#dynamic-typing)
   - [Lambdas](#lambdas)
   - [Custom Variables](#custom-variables)
-  - [Custom Hierarchies](#custom-hierarchies)
+  - [Syntax Extensions](#syntax-extensions)
   - [Operators](#operators)
 - [Evaluation Context](#evaluation-context)
 - [Handling Code Completions](#handling-code-completions)
 - [Parser Settings](#parser-settings)
   - [Dynamic Typing Example](#dynamic-typing-example)
-  - [Custom Hierarchy Example](#custom-hierarchy-example)
 - [Open Source License Acknowledgement](#open-source-license-acknowledgement)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -45,7 +44,7 @@ When an application integrates the Zenodot library, then an alternative workflow
   1. Open the UI that is linked with the library
   1. Enter the expression you want to evaluate
 
-Note that you do not have to switch to your IDE at all. In particular, you can (to some extend) debug your application without an IDE.
+Note that you do not have to switch to your IDE at all. In particular, you can (to some extent) debug your application without an IDE.
 
 # When not to use Zenodot
 
@@ -160,16 +159,16 @@ parser.evaluate("x = 2.72", null);                  // sets x to 2.72
 System.out.println(parser.evaluate("x", null));     // prints 2.72
 ```
 
-## Custom Hierarchies
+## Syntax Extensions
 
-One of the most interesting features of Zenodot is its support of custom hierarchies. If an application holds a dynamically created tree, then this tree can, of course, be traversed with an arbitrary Java parser. However, in many cases the traversed nodes are only represented by generic node classes. Only in rare cases there will be one node class for each node. Consequently, when traversing such a tree, you will have to call generic methods like `getChild(childIndex)` or something similar. This is different than what you see in your application where every node is displayed with its individual name. When restricted to Java syntax, you can not hope for meaningful code completion here. You have to deal with child indices instead.
+Zenodot provides a way to specify additional parsers that will be used for parsing expressions. This allows users to extend the Java syntax that is supported by the basic Zenodot parser. In this section we briefly describe how to do so:
 
-Zenodot extends the Java syntax to allow for parsing a custom hierarchy. The only thing the application developer has to do is to specify his tree in a form Zenodot understands by implementing a certain interface. A user can then traverse that tree using the node names.
+1. You have to use an existing additional parser or write your own parser that extends `dd.kms.zenodot.framework.parsers.AbstractParser`.
+2. Create an instance of `AdditionalParserSettings` that references, among others, the class and specific settings of that parser.
+3. Register this instance via `ParserSettingsBuilder.additionalParserSettings()`.
 
-**Example:** Assume that you have a document viewer application that has loaded this document. It might store the content in a hierarchy with sections on the first level, subsections on the second level, and so one. Let us assume that we want to evaluate the object behind this section, i.e., the section "Features and Short Comings" -> "Custom Hierarchies". A classic approach would be to call `getSection(4).getSubsection(3)`. As you can imagine, handling the indices, which is only a technical detail, will become troublesome in large trees. However, if you have configured Zenodot correctly, then you can also write `{Features and Short Comings#Custom Hierarchies}` to reference the same node in your tree. This is much more readable and less error-prone. (Also note the spaces inside the node names.) Furthermore, you can, e.g., request code completion after typing `{Features and Short Comings#Custom`. The result will be `Custom Variables` and `Custom Hierarchies`.
+While the Zenodot API has been kept stable as possible over time, the framework for writing parsers has been considered an internal part of Zenodot until recently. Although many thoughts went into that framework - after all, we had to write quite some parsers with that framework -, it is far from perfect and, hence, more likely to be subject to change. Currently, we consider it more a framework for providing our own additional parsers that are not meant to be part of the basic Zenodot parser, but that could additionally be loaded by users. As of now, we discourage you to write your own parsers with that framework. 
 
-See [Custom Hierarchy Example](#custom-hierarchy-example) to see how to use custom hierarchies in Zenodot.
- 
 ## Operators
 
 Zenodot implements most but not all unary and binary operators. The following operators are currently not supported:
@@ -196,11 +195,11 @@ The expression "substring(4)" is evaluated using the string "Zenodot" as context
 Code completions are represented by the interface `CodeCompletion`. We will discuss some of its methods in detail:
 
   - `getInsertionRange()` returns the range of the current text that should be replaced by the code completion.
-  - `getTextToInsert()` returns the text that should be used to replace the range of the current text specified by`getInsertionRange()`.  
+  - `getTextToInsert()` returns the text that should be used to replace the range of the current text specified by `getInsertionBegin()` and `getInsertionEnd()`.  
   - `getCaretPositionAfterInsertion()` returns the position of the caret after inserting the code completion. In many cases it will be the end of the insertion range. For methods, however, it is the position after the opening parenthesis.
   - `toString()` returns the suggested text that should be displayed to the user. This is not always the same as the text returned by `getTextToInsert()`. For methods, for instance, it contains information about the argument types.
 
-If the interface `CodeCompletion` does not provide sufficient information because you need to handle different types of code completions differently, then you can cast them to one of the following specific interfaces: `CodeCompletionClass`, `CodeCompletionPackage`, `CodeCompletionField`, `CodeCompletionMethod`, `CodeCompletionKeyword`, `CodeCompletionVariable`, or `CodeCompletionObjectTreeNode`.   
+If the interface `CodeCompletion` does not provide sufficient information because you need to handle different types of code completions differently, then you can cast them to one of the following specific interfaces: `CodeCompletionClass`, `CodeCompletionPackage`, `CodeCompletionField`, `CodeCompletionMethod`, `CodeCompletionKeyword`, or `CodeCompletionVariable`.   
 
 # Parser Settings
 
@@ -224,8 +223,6 @@ It is obligatory to create an instance of `ParserSettings` in order to create a 
   - Consider all classes for class completions: You can specify whether all top-level classes are considered for class completions. By default, they are not. When this option is enabled, then you also get code completions for classes you have not imported even if you only enter their simple name. Note that this option may take some time because all top-level classes will be considered. Additionally, this option does not make importing classes obsolete:
     * Simple names of classes that have not been imported are not valid when evaluating expressions. They are just considered for code completions.
     * Simple names of classes that have not been imported will be completed to fully qualified class names. Example: If you have imported the package "java.util" and request code completions for the text "Li", then you will get a completion "List". If you have neither imported the package "java.util" nor the class "java.util.List", then you will get a completion "java.util.List" when requesting code completions for the text "Li" if this option is enabled.
-
-  - Custom Hierarchy: You can specify the root of a custom hierarchy that can be accessed from within expressions by a dedicated syntax. See [Custom Hierarchies](#custom-hierarchies) for a motivation and [Custom Hierarchy Example](#custom-hierarchy-example) for an example. To make your custom hierarchy accessible for Zenodot, you must wrap all your nodes in custom implementations of `ObjectTreeNode`. You can use overloads of `ParserSettingsUtils.createLeafNode()` to wrap leaves of your hierarchy.  
 
 ## Dynamic Typing Example
 
@@ -252,92 +249,6 @@ System.out.println("Result: " + parser.evaluate(expression, testInstance));
 ```
 
 Without dynamic typing, Zenodot would throw a `ParseException` when evaluating the expression "getObject().length()" because `getObject()` is declared to return an `Object`, which does not provide a method "length". With dynamic typing, Zenodot evaluates the subexpression "getObject()" and detects that the runtime type is `String`, which has a method "length". It then calls this method on the String "This is a string".
-
-## Custom Hierarchy Example
-
-**CustomHierarchySample.java:* Assume that we have the hierarchy
-
-  - numbers
-    - pi (value = 3.14)
-    - e (value = 2.72)
-  - strings
-    - short strings
-      - test (value = "Test")
-    - long strings
-      - long string (value = "This is a long string.")
-      - very long string (value = "This is a very long string.")
-
-All leaves in this example have user objects (the "xxx" in "value = xxx"), but it is not uncommon that also inner nodes carry user objects. In order to make this hierarchy accessible for Zenodot, we have to represent it by a hiearchy of `ObjectTreeNode`s. Here we use simple utility methods
-
-```
-static ObjectTreeNode node(String name, ObjectTreeNode... childNodes) {
-    return new ObjectTreeNode() {
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public Iterable<? extends ObjectTreeNode> getChildNodes() {
-            return Arrays.asList(childNodes);
-        }
-
-        @Override
-        public Object getUserObject() {
-            return null;
-        }
-    };
-}
-
-static ObjectTreeNode leaf(String name, Object value) {
-	return ParserSettingsUtils.createLeafNode(name, value);
-}
-```
-
-which allows us to hard-code the hierarchy easily:
-
-```
-ObjectTreeNode root = node(null,
-    node("numbers",
-        leaf("pi", 3.14),
-        leaf("e", 2.72)),
-    node("strings",
-        node("short strings",
-            leaf("test", "Test")),
-        node("long strings",
-            leaf("long string", "This is a long string."),
-            leaf("very long string", "This is a very long string.")
-        )
-    )
-);
-```
-
-In real-life applications such hierarchies will by dynamic, so you will not hard-code them like in this example.
-
-No consider the following parser code:
-
-```
-ParserSettings settings = ParserSettingsBuilder.create()
-	.customHierarchyRoot(root)
-	.build();
-ExpressionParser parser = Parsers.createExpressionParser(settings);
-String text = "{strings#long strings#ve";
-List<CodeCompletion> completions = new ArrayList<>(parser.getCompletions(text, text.length(), null));
-Collections.sort(completions, Parsers.COMPLETION_COMPARATOR);
-
-System.out.println("Completion: " + completions.get(0).getTextToInsert());
-
-String expression = "{numbers#e}";
-Object result = parser.evaluate(expression, null);
-
-System.out.println("Result: " + result);
-```
-
-The first part of the code requests Zenodot to suggest child nodes of the node for the path "strings" -> "long strings" considering the text "ve". The output will be "Completion: very long string". Note that node names can even contain white spaces. The only forbidden characters are '#' and '}'.
-
-The second part of the code accesses the user object assigned to the node for the path "numbers" -> "e". The output is "Result: 2.72".
-
-Observe that custom hierarchies are a language extension supported by Zenodot that allow semantic instead of syntactic code completions and expression evaluations. In contrast to class hierarchies that are determined at compile time (in most of the cases), custom hierarchies can be build and updated during an application's lifetime. 
 
 # Open Source License Acknowledgement
 

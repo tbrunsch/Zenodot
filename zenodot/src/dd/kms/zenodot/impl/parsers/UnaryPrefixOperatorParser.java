@@ -2,20 +2,22 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.tokenizer.UnaryOperator;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.VariablesImpl;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.operators.UnaryOperator;
+import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.ParserConfidence;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.ObjectParseResult;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider.OperatorException;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.util.Map;
 
@@ -48,7 +50,7 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 	}
 
 	@Override
-	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, EvaluationException, InternalErrorException {
+	protected ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, EvaluationException, InternalErrorException {
 		UnaryOperator operator = tokenStream.readUnaryOperator(TokenStream.NO_COMPLETIONS);
 		if (operator == null) {
 			throw new SyntaxException("Expression does not start with an unary operator");
@@ -70,7 +72,7 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 	}
 
 	private ObjectInfo applyOperator(ObjectInfo objectInfo, UnaryOperator operator) throws OperatorException {
-		return applyOperator(objectInfo, operator, parserToolbox.getOperatorResultProvider());
+		return applyOperator(objectInfo, operator, parserToolbox.inject(OperatorResultProvider.class));
 	}
 
 	private static ObjectInfo applyOperator(ObjectInfo objectInfo, UnaryOperator operator, OperatorResultProvider operatorResultProvider) throws OperatorException {
@@ -95,10 +97,10 @@ public class UnaryPrefixOperatorParser extends AbstractParser<ObjectInfo, Object
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			ObjectInfo expressionInfo = expressionParseResult.evaluate(thisInfo, contextInfo, variables);
 			try {
-				return applyOperator(expressionInfo, operator, OPERATOR_RESULT_PROVIDER);
+				return applyOperator(expressionInfo, operator, OperatorResultProvider.DYNAMIC_OPERATOR_RESULT_PROVIDER);
 			} catch (OperatorException e) {
 				throw new ParseException(getExpression(), getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
 			}

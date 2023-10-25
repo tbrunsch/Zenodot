@@ -4,31 +4,33 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.EvaluationMode;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.matching.MatchRatings;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.ClassParseResult;
-import dd.kms.zenodot.impl.result.CodeCompletions;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.matching.MatchRatings;
+import dd.kms.zenodot.framework.operators.Associativity;
+import dd.kms.zenodot.framework.operators.BinaryOperator;
+import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.ParserConfidence;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.ClassParseResult;
+import dd.kms.zenodot.framework.result.CodeCompletions;
+import dd.kms.zenodot.framework.result.ObjectParseResult;
+import dd.kms.zenodot.framework.tokenizer.CompletionInfo;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParseUtils;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
-import dd.kms.zenodot.impl.tokenizer.Associativity;
-import dd.kms.zenodot.impl.tokenizer.BinaryOperator;
-import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParseUtils;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.VariablesImpl;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +75,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 	}
 
 	@Override
-	ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
+	protected ObjectParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
 		ObjectParseResultExpectation operandExpectation = expectation.parseWholeText(false).resultTypeMustMatch(false);
 
 		List<ObjectParseResult> operands = new ArrayList<>();
@@ -109,13 +111,14 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 			}
 			log(LogLevel.SUCCESS, "detected binary operator '" + operator + "' at " + tokenStream);
 
+			OperatorResultProvider operatorResultProvider = parserToolbox.inject(OperatorResultProvider.class);
 			if (operator == BinaryOperator.INSTANCE_OF) {
 				ExpressionParseResult expressionParseResult = new ExpressionParseResult(operands, operators, accumulatedResultInfo, tokenStream);
 				ClassParseResult classParseResult = ParseUtils.parseClass(tokenStream, parserToolbox);
 				Class<?> type = classParseResult.getType();
 				ObjectInfo instanceOfInfo;
 				try {
-					instanceOfInfo = parserToolbox.getOperatorResultProvider().getInstanceOfInfo(expressionParseResult.getObjectInfo(), type);
+					instanceOfInfo = operatorResultProvider.getInstanceOfInfo(expressionParseResult.getObjectInfo(), type);
 				} catch (OperatorException e) {
 					log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
 					throw new SyntaxException(e.getMessage());
@@ -152,7 +155,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 			operands.add(nextOperand);
 			try {
 				// Check syntax even if result of operator is not considered because of short circuit evaluation
-				ObjectInfo operatorResult = applyOperator(parserToolbox.getOperatorResultProvider(), accumulatedResultInfo, nextOperandInfo, operator);
+				ObjectInfo operatorResult = applyOperator(operatorResultProvider, accumulatedResultInfo, nextOperandInfo, operator);
 				if (considerOperatorResult) {
 					accumulatedResultInfo = operatorResult;
 				}
@@ -223,7 +226,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			// evaluate from left to right
 			ObjectInfo accumulatedResultInfo = operands.get(0).evaluate(thisInfo, contextInfo, variables);
 			for (int i = 0; i < operators.size(); i++) {
@@ -234,7 +237,7 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 				ObjectParseResult nextOperand = operands.get(i + 1);
 				ObjectInfo nextOperandInfo = nextOperand.evaluate(thisInfo, contextInfo, variables);
 				try {
-					accumulatedResultInfo = applyOperator(OPERATOR_RESULT_PROVIDER, accumulatedResultInfo, nextOperandInfo, operator);
+					accumulatedResultInfo = applyOperator(OperatorResultProvider.DYNAMIC_OPERATOR_RESULT_PROVIDER, accumulatedResultInfo, nextOperandInfo, operator);
 				} catch (OperatorException e) {
 					throw new ParseException(getExpression(), nextOperand.getPosition(), "Exception when evaluating operator '" + operator + "': " + e.getMessage(), e);
 				}
@@ -255,9 +258,9 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, VariablesImpl variables) throws Exception {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo context, Variables variables) throws Exception {
 			ObjectInfo objectInfo = expressionParseResult.evaluate(thisInfo, context, variables);
-			return OPERATOR_RESULT_PROVIDER.getInstanceOfInfo(objectInfo, type);
+			return OperatorResultProvider.DYNAMIC_OPERATOR_RESULT_PROVIDER.getInstanceOfInfo(objectInfo, type);
 		}
 	}
 }

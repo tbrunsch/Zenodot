@@ -17,7 +17,6 @@ import java.util.function.DoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
 
 @RunWith(Parameterized.class)
 public class LambdaTest extends EvaluationTest

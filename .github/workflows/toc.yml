@@ -10,3 +10,4 @@ jobs:
           TOC_TITLE: "# Table of Contents"
           COMMIT_MESSAGE: "automatic GitHub action: updated table of contents"
           CREATE_PR: false
+          TARGET_PATHS: "**/Readme.md, **/TechDoc.md"

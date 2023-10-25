@@ -6,7 +6,7 @@ import dd.kms.zenodot.api.matching.TypeMatch;
 
 import java.util.Objects;
 
-class MatchRatingImpl implements MatchRating
+public class MatchRatingImpl implements MatchRating
 {
 	private final StringMatch nameMatch;
 	private final TypeMatch typeMatch;
@@ -18,7 +18,7 @@ class MatchRatingImpl implements MatchRating
 	 */
 	private final boolean		accessDiscouraged;
 
-	MatchRatingImpl(StringMatch nameMatch, TypeMatch typeMatch, boolean accessDiscouraged) {
+	public MatchRatingImpl(StringMatch nameMatch, TypeMatch typeMatch, boolean accessDiscouraged) {
 		this.nameMatch = nameMatch;
 		this.typeMatch = typeMatch;
 		this.accessDiscouraged = accessDiscouraged;

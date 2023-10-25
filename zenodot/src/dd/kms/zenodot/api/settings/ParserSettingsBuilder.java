@@ -2,6 +2,7 @@ package dd.kms.zenodot.api.settings;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 
 /**
  * Builder for {@link ParserSettings}<br>
@@ -59,22 +60,7 @@ public interface ParserSettingsBuilder
 	 */
 	ParserSettingsBuilder considerAllClassesForClassCompletions(boolean considerAllClassesForClassCompletions);
 
-	/**
-	 * Call this method if you want to inject a custom hierarchy into the parser that is not represented
-	 * by field and method names of classes. Each node of the custom hierarchy must be wrapped into an
-	 * {@link ObjectTreeNode}. Zenodot then provides code completion and evaluation for this hierarchy.<br>
-	 * <br>
-	 * An access to a node in the custom hierarchy has to be embraced in curly braces {@code {...}}. The
-	 * character {@code #} is used to separate a child node from its parent node.<br>
-	 * <br>
-	 * <b>Example:</b> Assume that for some reason you want to make your main menu commands accessible when
-	 *          parsing expressions. Further assume that you can currently select
-	 *          File -> Open Recent -> README.md in your menu. If you provide this information by specifying
-	 *          a custom hierarchy, then you can access the command behind that menu item via
-	 *          {@code {File#Open Recent#README.md}} in the expression.
-	 *
-	 */
-	ParserSettingsBuilder customHierarchyRoot(ObjectTreeNode customHierarchyRoot);
+	ParserSettingsBuilder additionalParserSettings(AdditionalParserSettings additionalParserSettings);
 
 	/**
 	 * Specify a logger that receives messages during the parsing process. This is primarily meant for

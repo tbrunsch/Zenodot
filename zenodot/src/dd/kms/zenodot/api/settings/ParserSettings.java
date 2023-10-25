@@ -2,6 +2,7 @@ package dd.kms.zenodot.api.settings;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface ParserSettings
 	AccessModifier getMinimumAccessModifier();
 	EvaluationMode getEvaluationMode();
 	boolean isConsiderAllClassesForClassCompletions();
-	ObjectTreeNode getCustomHierarchyRoot();
+	List<AdditionalParserSettings> getAdditionalParserSettings();
 	ParserLogger getLogger();
 	ParserSettingsBuilder builder();
 }

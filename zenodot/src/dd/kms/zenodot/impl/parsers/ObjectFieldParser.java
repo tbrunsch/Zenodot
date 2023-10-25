@@ -1,7 +1,8 @@
 package dd.kms.zenodot.impl.parsers;
 
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
 /**
  * Parses
@@ -28,7 +29,7 @@ public class ObjectFieldParser extends AbstractFieldParser<ObjectInfo>
 
 	@Override
 	Class<?> getContextType(ObjectInfo context) {
-		return parserToolbox.getObjectInfoProvider().getType(context);
+		return parserToolbox.inject(ObjectInfoProvider.class).getType(context);
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package dd.kms.zenodot.api;
 
+import dd.kms.zenodot.impl.VariablesImpl;
+
 import java.util.Collection;
 
 /**
@@ -12,7 +14,7 @@ public interface Variables
 	 * @return An empty variable collection.
 	 */
 	static Variables create() {
-		return new dd.kms.zenodot.impl.VariablesImpl();
+		return new VariablesImpl();
 	}
 
 	/**

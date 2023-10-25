@@ -1,26 +1,30 @@
 package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.ImmutableList;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.EvaluationMode;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider.Parameter;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.matching.MatchRatings;
+import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.ParserConfidence;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.CodeCompletions;
+import dd.kms.zenodot.framework.result.LambdaParseResult;
+import dd.kms.zenodot.framework.result.ObjectParseResult;
+import dd.kms.zenodot.framework.result.ParseResult;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.VariablesImpl;
-import dd.kms.zenodot.impl.common.ObjectInfoProvider.Parameter;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.matching.MatchRatings;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.CodeCompletions;
-import dd.kms.zenodot.impl.result.LambdaParseResult;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.result.ParseResult;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -41,7 +45,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, ObjectInfo context, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
+	protected ParseResult doParse(TokenStream tokenStream, ObjectInfo context, ObjectParseResultExpectation expectation) throws CodeCompletionException, SyntaxException, InternalErrorException, EvaluationException {
 		List<Method> unimplementedMethods = ReflectionUtils.getUnimplementedMethods(functionalInterface);
 		if (unimplementedMethods.size() != 1) {
 			throw new InternalErrorException("Class " + functionalInterface + " is no functional interface");
@@ -90,7 +94,7 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 
 		log(LogLevel.SUCCESS, "lambda has correct return type");
 
-		ObjectInfo lambdaInfo = parserToolbox.getObjectInfoProvider().getLambdaInfo(
+		ObjectInfo lambdaInfo = parserToolbox.inject(ObjectInfoProvider.class).getLambdaInfo(
 			functionalInterface, method.getName(), parameters, bodyParseResult,
 			lambdaExpression, parserToolbox.getThisInfo(), parserToolbox.getVariables()
 		);
@@ -185,8 +189,8 @@ class ConcreteLambdaParser extends AbstractParser<ObjectInfo, ObjectParseResult,
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws InternalErrorException {
-			return OBJECT_INFO_PROVIDER.getLambdaInfo(
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws InternalErrorException {
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getLambdaInfo(
 				functionalInterface, methodName, parameters, bodyParseResult,
 				lambdaExpression, thisInfo, variables
 			);

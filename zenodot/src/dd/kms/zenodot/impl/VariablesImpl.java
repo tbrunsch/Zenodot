@@ -1,9 +1,10 @@
 package dd.kms.zenodot.impl;
 
+import com.google.common.base.Preconditions;
 import dd.kms.zenodot.api.Variables;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -18,8 +19,11 @@ public class VariablesImpl implements Variables
 		this(null);
 	}
 
-	public VariablesImpl(@Nullable VariablesImpl parentScope) {
-		this.parentScope = parentScope;
+	public VariablesImpl(@Nullable Variables parentScope) {
+		if (parentScope != null) {
+			Preconditions.checkArgument(parentScope instanceof VariablesImpl, "Specified argument must be of type VariableImpl");
+		}
+		this.parentScope = (VariablesImpl) parentScope;
 	}
 
 	@Override

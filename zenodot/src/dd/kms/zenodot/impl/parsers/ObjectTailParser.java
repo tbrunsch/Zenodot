@@ -2,21 +2,23 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.result.ParseResult;
-import dd.kms.zenodot.impl.result.ParseResults;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParseUtils;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.VariablesImpl;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.ObjectParseResult;
+import dd.kms.zenodot.framework.result.ParseResult;
+import dd.kms.zenodot.framework.result.ParseResults;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParseUtils;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
 import java.util.Arrays;
 import java.util.List;
@@ -56,7 +58,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		}
 
 		// array access
-		Class<?> currentContextType = parserToolbox.getObjectInfoProvider().getType(contextInfo);
+		Class<?> currentContextType = parserToolbox.inject(ObjectInfoProvider.class).getType(contextInfo);
 		Class<?> elementType = currentContextType.getComponentType();
 		if (elementType == InfoProvider.NO_TYPE) {
 			throw new SyntaxException("Cannot apply [] to non-array types");
@@ -67,7 +69,7 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		ObjectInfo indexInfo = indexParseResult.getObjectInfo();
 		ObjectInfo elementInfo;
 		try {
-			elementInfo = parserToolbox.getObjectInfoProvider().getArrayElementInfo(contextInfo, indexInfo);
+			elementInfo = parserToolbox.inject(ObjectInfoProvider.class).getArrayElementInfo(contextInfo, indexInfo);
 			log(LogLevel.SUCCESS, "detected valid array access");
 		} catch (ClassCastException | ArrayIndexOutOfBoundsException e) {
 			throw new EvaluationException(e.getClass().getSimpleName() + " during array index evaluation", e);
@@ -99,9 +101,9 @@ public class ObjectTailParser extends AbstractTailParser<ObjectInfo, ObjectParse
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws ParseException {
 			ObjectInfo indexInfo = indexParseResult.evaluate(thisInfo, thisInfo, variables);
-			return OBJECT_INFO_PROVIDER.getArrayElementInfo(contextInfo, indexInfo);
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getArrayElementInfo(contextInfo, indexInfo);
 		}
 	}
 }

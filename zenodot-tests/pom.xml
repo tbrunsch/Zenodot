@@ -26,6 +26,26 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+
+            <!--
+                Package this module as test jar to make test classes available for other test modules.
+                Test modules that want to do so must add a dependency to this module by and specify the
+                dependency as <type>test-jar</type>.
+             -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>Jar Tests Package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

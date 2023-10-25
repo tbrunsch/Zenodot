@@ -1,24 +1,31 @@
 package dd.kms.zenodot.impl.settings;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
-import dd.kms.zenodot.api.settings.*;
+import dd.kms.zenodot.api.settings.CompletionMode;
+import dd.kms.zenodot.api.settings.EvaluationMode;
+import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
+import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.impl.utils.ClassUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
-	private CompletionMode		completionMode;
-	private Set<Class<?>>		importedClasses;
-	private Set<String>			importedPackages;
-	private AccessModifier		minimumAccessModifier;
-	private EvaluationMode		evaluationMode;
-	private boolean				considerAllClassesForClassCompletions;
-	private ObjectTreeNode		customHierarchyRoot;
-	private ParserLogger		logger;
+	private CompletionMode					completionMode;
+	private Set<Class<?>>					importedClasses;
+	private Set<String>						importedPackages;
+	private AccessModifier					minimumAccessModifier;
+	private EvaluationMode					evaluationMode;
+	private boolean							considerAllClassesForClassCompletions;
+	private List<AdditionalParserSettings>	additionalParserSettings;
+	private ParserLogger					logger;
 
 	public ParserSettingsBuilderImpl() {
 		completionMode = CompletionMode.COMPLETE_AND_REPLACE_WHOLE_WORDS;
@@ -27,7 +34,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		minimumAccessModifier = AccessModifier.PUBLIC;
 		evaluationMode = EvaluationMode.MIXED;
 		considerAllClassesForClassCompletions = false;
-		customHierarchyRoot = ParserSettingsUtils.createEmptyLeafNode();
+		additionalParserSettings = new ArrayList<>();
 		logger = ParserLoggers.createNullLogger();
 	}
 
@@ -38,7 +45,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		minimumAccessModifier = settings.getMinimumAccessModifier();
 		evaluationMode = settings.getEvaluationMode();
 		considerAllClassesForClassCompletions = settings.isConsiderAllClassesForClassCompletions();
-		customHierarchyRoot = settings.getCustomHierarchyRoot();
+		additionalParserSettings = ImmutableList.copyOf(settings.getAdditionalParserSettings());
 		logger = settings.getLogger();
 	}
 
@@ -90,8 +97,8 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilder customHierarchyRoot(ObjectTreeNode customHierarchyRoot) {
-		this.customHierarchyRoot = customHierarchyRoot;
+	public ParserSettingsBuilder additionalParserSettings(AdditionalParserSettings additionalParserSettings) {
+		this.additionalParserSettings.add(additionalParserSettings);
 		return this;
 	}
 
@@ -102,6 +109,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, customHierarchyRoot, logger);
+		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, additionalParserSettings, logger);
 	}
 }

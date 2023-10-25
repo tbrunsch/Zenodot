@@ -1,7 +1,10 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
 import com.google.common.collect.ImmutableList;
-import dd.kms.zenodot.api.*;
+import dd.kms.zenodot.api.CompiledLambdaExpression;
+import dd.kms.zenodot.api.LambdaExpressionParser;
+import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;

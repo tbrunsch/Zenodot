@@ -1,18 +1,20 @@
 package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.parsers.expectations.ParseResultExpectation;
-import dd.kms.zenodot.impl.result.ClassParseResult;
-import dd.kms.zenodot.impl.result.CodeCompletions;
-import dd.kms.zenodot.impl.result.ParseResult;
-import dd.kms.zenodot.impl.result.ParseResults;
-import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.ParserConfidence;
+import dd.kms.zenodot.framework.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.framework.result.ClassParseResult;
+import dd.kms.zenodot.framework.result.CodeCompletions;
+import dd.kms.zenodot.framework.result.ParseResult;
+import dd.kms.zenodot.framework.result.ParseResults;
+import dd.kms.zenodot.framework.tokenizer.CompletionInfo;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
 import dd.kms.zenodot.impl.utils.dataproviders.ClassDataProvider;
 
 import java.util.Arrays;
@@ -29,7 +31,7 @@ public class InnerClassParser<T extends ParseResult, S extends ParseResultExpect
 	}
 
 	@Override
-	ParseResult doParse(TokenStream tokenStream, Class<?> contextType, S expectation) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
+	protected ParseResult doParse(TokenStream tokenStream, Class<?> contextType, S expectation) throws CodeCompletionException, SyntaxException, EvaluationException, InternalErrorException {
 		ClassParseResult innerClassParseResult = readInnerClass(tokenStream, contextType);
 		Class<?> innerClassType = innerClassParseResult.getType();
 
@@ -63,7 +65,6 @@ public class InnerClassParser<T extends ParseResult, S extends ParseResultExpect
 
 		log(LogLevel.SUCCESS, "suggesting inner classes matching '" + nameToComplete + "'");
 
-		ClassDataProvider classDataProvider = parserToolbox.getClassDataProvider();
-		return classDataProvider.completeInnerClass(nameToComplete, contextType, insertionBegin, insertionEnd);
+		return ClassDataProvider.completeInnerClass(nameToComplete, contextType, insertionBegin, insertionEnd);
 	}
 }

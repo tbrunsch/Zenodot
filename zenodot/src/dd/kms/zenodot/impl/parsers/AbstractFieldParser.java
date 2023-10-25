@@ -1,27 +1,29 @@
 package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.Iterables;
-import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.common.FieldScanner;
 import dd.kms.zenodot.api.common.FieldScannerBuilder;
 import dd.kms.zenodot.api.common.StaticMode;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.impl.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.impl.flowcontrol.EvaluationException;
-import dd.kms.zenodot.impl.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.impl.flowcontrol.SyntaxException;
-import dd.kms.zenodot.impl.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.impl.result.CodeCompletions;
-import dd.kms.zenodot.impl.result.ObjectParseResult;
-import dd.kms.zenodot.impl.tokenizer.CompletionInfo;
-import dd.kms.zenodot.impl.tokenizer.TokenStream;
-import dd.kms.zenodot.impl.utils.ParserToolbox;
-import dd.kms.zenodot.impl.VariablesImpl;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider;
+import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
+import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
+import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
+import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
+import dd.kms.zenodot.framework.parsers.AbstractParserWithObjectTail;
+import dd.kms.zenodot.framework.parsers.ParserConfidence;
+import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
+import dd.kms.zenodot.framework.result.CodeCompletions;
+import dd.kms.zenodot.framework.result.ObjectParseResult;
+import dd.kms.zenodot.framework.tokenizer.CompletionInfo;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParserToolbox;
+import dd.kms.zenodot.framework.wrappers.FieldInfo;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.utils.dataproviders.FieldDataProvider;
-import dd.kms.zenodot.impl.wrappers.FieldInfo;
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
-import dd.kms.zenodot.impl.wrappers.ObjectInfo;
 
 import java.util.List;
 
@@ -39,7 +41,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 	abstract boolean isContextStatic();
 
 	@Override
-	ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
+	protected ObjectParseResult parseNext(TokenStream tokenStream, C context, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		String fieldName = tokenStream.readIdentifier(info -> suggestFields(context, expectation, info), "Expected a field");
 
 		if (tokenStream.peekCharacter() == '(') {
@@ -56,7 +58,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 
 		FieldInfo fieldInfo = Iterables.getOnlyElement(fieldInfos);
 		Object contextObject = getContextObject(context);
-		ObjectInfo matchingFieldInfo = parserToolbox.getObjectInfoProvider().getFieldValueInfo(contextObject, fieldInfo);
+		ObjectInfo matchingFieldInfo = parserToolbox.inject(ObjectInfoProvider.class).getFieldValueInfo(contextObject, fieldInfo);
 
 		return new FieldParseResult(isContextStatic(), fieldInfo, matchingFieldInfo, tokenStream);
 	}
@@ -68,7 +70,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 
 		log(LogLevel.SUCCESS, "suggesting fields matching '" + nameToComplete + "'");
 
-		FieldDataProvider fieldDataProvider = parserToolbox.getFieldDataProvider();
+		FieldDataProvider fieldDataProvider = parserToolbox.inject(FieldDataProvider.class);
 		Object contextObject = getContextObject(context);
 		List<FieldInfo> fieldInfos = getFieldInfos(context, getFieldScanner());
 		boolean contextIsStatic = isContextStatic();
@@ -118,9 +120,9 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, VariablesImpl variables) throws ParseException {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) {
 			Object contextObject = contextStatic ? null : contextInfo.getObject();
-			return OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
+			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
 		}
 	}
 }

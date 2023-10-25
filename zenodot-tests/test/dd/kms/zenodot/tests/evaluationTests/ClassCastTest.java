@@ -1,6 +1,6 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
-import dd.kms.zenodot.impl.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
