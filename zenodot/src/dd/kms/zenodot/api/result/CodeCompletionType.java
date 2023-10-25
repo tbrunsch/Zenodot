@@ -31,6 +31,10 @@ public class CodeCompletionType implements Comparable<CodeCompletionType>
 		return codeCompletionType;
 	}
 
+	public static CodeCompletionType[] values() {
+		return REGISTERED_CODE_COMPLETION_TYPES.values().toArray(new CodeCompletionType[0]);
+	}
+
 	private final String	text;
 	private final int		ordinal;
 	private final boolean	predefined;
@@ -39,6 +43,10 @@ public class CodeCompletionType implements Comparable<CodeCompletionType>
 		this.text = text;
 		this.ordinal = ordinal;
 		this.predefined = predefined;
+	}
+
+	public int ordinal() {
+		return ordinal;
 	}
 
 	@Override
