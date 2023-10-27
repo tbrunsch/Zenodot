@@ -77,14 +77,16 @@ public class BinaryOperatorTest extends EvaluationTest
 
 		testBuilder
 			.testInstance(testInstance)
-			.addTest("s instanceof String",									testInstance.s instanceof String)
-			.addTest("s instanceof Double",									false)
-			.addTest("o instanceof Object",									testInstance.o instanceof Object)
-			.addTest("o instanceof Float",									testInstance.o instanceof Float)
-			.addTest("d instanceof Double && i instanceof Integer",			testInstance.d instanceof Double && testInstance.i instanceof Integer)
-			.addTest("n instanceof Object",									testInstance.n instanceof Object)
-			.addTest("n instanceof Object && n.toString().length() == 4",	testInstance.n instanceof Object && testInstance.n.toString().length() == 4)
-			.addTest("o instanceof String && ((String) o).length() == 3",	testInstance.o instanceof String && ((String) testInstance.o).length() == 3)
+			.addTest("s instanceof String",												testInstance.s instanceof String)
+			.addTest("s instanceof Double",												false)
+			.addTest("o instanceof Object",												testInstance.o instanceof Object)
+			.addTest("o instanceof Float",												testInstance.o instanceof Float)
+			.addTest("o instanceof Float && ((Float) o).floatValue() == 123.0f",		testInstance.o instanceof Float && ((Float) testInstance.o).floatValue() == 123.0f)
+			.addTest("o instanceof Float && (Float) o == 123.0f",						testInstance.o instanceof Float && (Float) testInstance.o == 123.0f)
+			.addTest("d instanceof Double && i instanceof Integer",						testInstance.d instanceof Double && testInstance.i instanceof Integer)
+			.addTest("n instanceof Object",												testInstance.n instanceof Object)
+			.addTest("n instanceof Object && n.toString().length() == 4",				testInstance.n instanceof Object && testInstance.n.toString().length() == 4)
+			.addTest("o instanceof String && ((String) o).length() == 3",				testInstance.o instanceof String && ((String) testInstance.o).length() == 3)
 			.addTest("\"abc\" instanceof String && Boolean.TRUE instanceof Boolean",	"abc" instanceof String && Boolean.TRUE instanceof Boolean)
 			.addTest("5 + \"3\" instanceof String",										5 + "3" instanceof String);
 
