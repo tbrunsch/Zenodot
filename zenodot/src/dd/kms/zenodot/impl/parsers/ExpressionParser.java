@@ -100,10 +100,6 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 
 			if (operator == null || operator.getPrecedenceLevel() > maxOperatorPrecedenceLevelToConsider) {
 				// Example: parsed "+" in "a*b + c" => only evaluate "a*b" and let outer expression parser evaluate sum of a*b and c
-				if (operator == BinaryOperator.INSTANCE_OF) {
-					throw new SyntaxException("Unexpected operator '" + operator + "'");
-				}
-
 				tokenStream.setPosition(posBeforeOperator);
 				return operators.isEmpty()
 						? Iterables.getOnlyElement(operands)
@@ -123,9 +119,16 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 					log(LogLevel.ERROR, "applying operator failed: " + e.getMessage());
 					throw new SyntaxException(e.getMessage());
 				}
-				return new InstanceOfParseResult(expressionParseResult, type, instanceOfInfo, tokenStream);
-			}
+				InstanceOfParseResult instanceOfParseResult = new InstanceOfParseResult(expressionParseResult, type, instanceOfInfo, tokenStream);
+				if (considerOperatorResult) {
+					accumulatedResultInfo = instanceOfParseResult.getObjectInfo();
+				}
 
+				operands = new ArrayList<>();
+				operators = new ArrayList<>();
+				operands.add(instanceOfParseResult);
+				continue;
+			}
 			operators.add(operator);
 
 			/*
