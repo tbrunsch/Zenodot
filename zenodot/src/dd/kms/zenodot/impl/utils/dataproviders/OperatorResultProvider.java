@@ -419,7 +419,7 @@ public class OperatorResultProvider
 			return clazz;
 		}
 		Class<?> primitiveClass = Primitives.unwrap(clazz);
-		if (primitiveClass == null) {
+		if (!primitiveClass.isPrimitive()) {
 			throw new OperatorException("Class '" + clazz + "' is neither a primitive nor a boxed class");
 		}
 		return primitiveClass;
