@@ -5,6 +5,7 @@
   - The string representation of class code completions now always contains the package and possibly the enclosing class, even if the class has been imported.
   - Inner class names are now also suggested when typing unqualified names.
   - The custom hierarchy parser has been removed from the Zenodot basic parser. It is now part of a separate module and has to be registered explicitly via `ParserSettingsBuilder.additionalParserSettings()`. This method also allows registering other parsers for extending the Java syntax supported by the basic Zenodot parser.
+  - Fixed parsing compound expressions with an `instanceof` expression as operand.
 
 API changes:
 
