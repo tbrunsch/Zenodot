@@ -6,11 +6,11 @@ import dd.kms.zenodot.api.settings.ObjectTreeNode;
 
 import java.util.Objects;
 
-class CodeCompletionObjectTreeNodeImpl extends AbstractSimpleCodeCompletion implements CodeCompletionObjectTreeNode
+public class CodeCompletionObjectTreeNodeImpl extends AbstractSimpleCodeCompletion implements CodeCompletionObjectTreeNode
 {
 	private final ObjectTreeNode	node;
 
-	CodeCompletionObjectTreeNodeImpl(ObjectTreeNode node, int insertionBegin, int insertionEnd, MatchRating rating) {
+	public CodeCompletionObjectTreeNodeImpl(ObjectTreeNode node, int insertionBegin, int insertionEnd, MatchRating rating) {
 		super(CodeCompletionObjectTreeNode.OBJECT_TREE_NODE, insertionBegin, insertionEnd, rating);
 		this.node = node;
 	}

@@ -9,7 +9,7 @@ import dd.kms.zenodot.framework.matching.MatchRatings;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.result.CodeCompletions;
 import dd.kms.zenodot.framework.utils.ParseUtils;
-import dd.kms.zenodot.impl.result.codecompletions.ObjectTreeNodeCodeCompletionFactory;
+import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionObjectTreeNodeImpl;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class ObjectTreeNodeDataProvider
 		Iterable<? extends ObjectTreeNode> nodes = contextNode.getChildNodes();
 		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 			nodes,
-			node -> ObjectTreeNodeCodeCompletionFactory.objectTreeNodeCompletion(node, insertionBegin, insertionEnd, rateNode(node, expectedName, expectation))
+			node -> new CodeCompletionObjectTreeNodeImpl(node, insertionBegin, insertionEnd, rateNode(node, expectedName, expectation))
 		);
 		return new CodeCompletions(codeCompletions);
 	}
