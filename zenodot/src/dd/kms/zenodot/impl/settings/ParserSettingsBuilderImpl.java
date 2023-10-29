@@ -18,14 +18,14 @@ import java.util.Set;
 
 public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
-	private CompletionMode					completionMode;
-	private Set<Class<?>>					importedClasses;
-	private Set<String>						importedPackages;
-	private AccessModifier					minimumAccessModifier;
-	private EvaluationMode					evaluationMode;
-	private boolean							considerAllClassesForClassCompletions;
-	private List<AdditionalParserSettings>	additionalParserSettings;
-	private ParserLogger					logger;
+	private CompletionMode							completionMode;
+	private Set<Class<?>>							importedClasses;
+	private Set<String>								importedPackages;
+	private AccessModifier							minimumAccessModifier;
+	private EvaluationMode							evaluationMode;
+	private boolean									considerAllClassesForClassCompletions;
+	private final List<AdditionalParserSettings>	additionalParserSettings;
+	private ParserLogger							logger;
 
 	public ParserSettingsBuilderImpl() {
 		completionMode = CompletionMode.COMPLETE_AND_REPLACE_WHOLE_WORDS;
@@ -45,7 +45,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		minimumAccessModifier = settings.getMinimumAccessModifier();
 		evaluationMode = settings.getEvaluationMode();
 		considerAllClassesForClassCompletions = settings.isConsiderAllClassesForClassCompletions();
-		additionalParserSettings = ImmutableList.copyOf(settings.getAdditionalParserSettings());
+		additionalParserSettings = new ArrayList<>(settings.getAdditionalParserSettings());
 		logger = settings.getLogger();
 	}
 
