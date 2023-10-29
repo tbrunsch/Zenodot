@@ -4,18 +4,26 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
+import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.framework.operators.BinaryOperator;
 import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.CallerContext;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.parsers.expectations.ParseResultExpectation;
+import dd.kms.zenodot.framework.result.CodeCompletions;
 import dd.kms.zenodot.framework.result.ObjectParseResult;
 import dd.kms.zenodot.framework.result.ParseResult;
+import dd.kms.zenodot.framework.tokenizer.CompletionGenerator;
+import dd.kms.zenodot.framework.tokenizer.TokenStream;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -125,6 +133,30 @@ public class ParserToolbox
 			}
 		}
 		return registeredInstances;
+	}
+
+	public CompletionGenerator getStringLiteralCompletionGenerator(@Nullable CallerContext callerContext) {
+		if (callerContext == null) {
+			return TokenStream.NO_COMPLETIONS;
+		}
+		Set<Executable> executables = callerContext.getExecutables();
+		int paramIndex = callerContext.getPreviousParameters().size();
+		List<CompletionProvider> completionProviders = new ArrayList<>();
+		for (Executable executable : executables) {
+			List<CompletionProvider> completionProvidersForExecutable = settings.getStringLiteralCompletionProviders(executable, paramIndex);
+			completionProviders.addAll(completionProvidersForExecutable);
+		}
+		if (completionProviders.isEmpty()) {
+			return TokenStream.NO_COMPLETIONS;
+		}
+		return completionInfo -> {
+			List<CodeCompletion> completions = new ArrayList<>();
+			for (CompletionProvider completionProvider : completionProviders) {
+				List<? extends CodeCompletion> completionsOfProvider = completionProvider.getCodeCompletions(completionInfo, callerContext);
+				completions.addAll(completionsOfProvider);
+			}
+			return new CodeCompletions(completions);
+		};
 	}
 
 	/*

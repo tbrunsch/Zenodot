@@ -151,14 +151,14 @@ public class TokenStream
 		return readRegex(CLASS_NAME_PATTERN, 2, completionGenerator, "Expected a class name", true);
 	}
 
-	public String readStringLiteral() throws SyntaxException, CodeCompletionException {
+	public String readStringLiteral(CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException {
 		String errorMessage = "No string literal found";
 		if (peekCharacter() != '"') {
 			throw new SyntaxException(errorMessage);
 		}
 		String escapedStringLiteral;
 		try {
-			escapedStringLiteral = readRegex(STRING_LITERAL_PATTERN, 2, NO_COMPLETIONS, errorMessage, true);
+			escapedStringLiteral = readRegex(STRING_LITERAL_PATTERN, 2, completionGenerator, errorMessage, true);
 		} catch (SyntaxException e) {
 			if (position <= caretPosition && caretPosition <= expression.length()) {
 				// missing closing double quotes, but code completion requested

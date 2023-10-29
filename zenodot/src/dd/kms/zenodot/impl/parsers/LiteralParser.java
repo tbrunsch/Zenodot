@@ -15,11 +15,13 @@ import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
 import dd.kms.zenodot.framework.matching.MatchRatings;
 import dd.kms.zenodot.framework.parsers.AbstractParser;
 import dd.kms.zenodot.framework.parsers.AbstractParserWithObjectTail;
+import dd.kms.zenodot.framework.parsers.CallerContext;
 import dd.kms.zenodot.framework.parsers.ParserConfidence;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.result.CodeCompletions;
 import dd.kms.zenodot.framework.result.ObjectParseResult;
 import dd.kms.zenodot.framework.result.ParseResults;
+import dd.kms.zenodot.framework.tokenizer.CompletionGenerator;
 import dd.kms.zenodot.framework.tokenizer.CompletionInfo;
 import dd.kms.zenodot.framework.tokenizer.TokenStream;
 import dd.kms.zenodot.framework.utils.ParseUtils;
@@ -99,7 +101,10 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 	private ObjectParseResult parseStringLiteral(TokenStream tokenStream) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		increaseConfidence(ParserConfidence.RIGHT_PARSER);
-		String stringLiteral = tokenStream.readStringLiteral();
+		ParserToolbox parserToolbox = getToolbox();
+		CallerContext callerContext = getCallerContext();
+		CompletionGenerator completionGenerator = parserToolbox.getStringLiteralCompletionGenerator(callerContext);
+		String stringLiteral = tokenStream.readStringLiteral(completionGenerator);
 		log(LogLevel.SUCCESS, "detected string literal '" + stringLiteral + "'");
 
 		return ParseResults.createCompiledConstantObjectParseResult(InfoProvider.createObjectInfo(stringLiteral), tokenStream);

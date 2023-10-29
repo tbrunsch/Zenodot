@@ -3,7 +3,9 @@ package dd.kms.zenodot.api.settings;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
+import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
 
+import java.lang.reflect.Executable;
 import java.util.List;
 
 /**
@@ -19,6 +21,7 @@ public interface ParserSettings
 	EvaluationMode getEvaluationMode();
 	boolean isConsiderAllClassesForClassCompletions();
 	List<AdditionalParserSettings> getAdditionalParserSettings();
+	List<CompletionProvider> getStringLiteralCompletionProviders(Executable executable, int parameterIndex);
 	ParserLogger getLogger();
 	ParserSettingsBuilder builder();
 }
