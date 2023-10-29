@@ -80,7 +80,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 
 		log(LogLevel.INFO, "parsing constructor arguments");
 		ExecutableDataProvider executableDataProvider = parserToolbox.inject(ExecutableDataProvider.class);
-		List<ObjectParseResult> argumentResults = executableDataProvider.parseArguments(tokenStream, constructorInfos);
+		List<ObjectParseResult> argumentResults = executableDataProvider.parseArguments(tokenStream, null, constructorInfos);
 		List<ObjectInfo> argumentInfos = argumentResults.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
 		List<ExecutableInfo> bestMatchingConstructorInfos = executableDataProvider.getBestMatchingExecutables(constructorInfos, argumentInfos);
 

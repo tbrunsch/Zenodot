@@ -16,6 +16,8 @@ import dd.kms.zenodot.framework.utils.ParseUtils;
 import dd.kms.zenodot.framework.utils.ParserToolbox;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
+import javax.annotation.Nullable;
+
 /**
  * Base class of all parsers. Each parser assumes that it is called in a certain context. This is
  * either an object (described by {@link ObjectInfo}) or a class (describes by {@link Class}).<br>
@@ -78,6 +80,14 @@ public abstract class AbstractParser<C, T extends ParseResult, S extends ParseRe
 	private boolean					parsed;
 	private ParserConfidence		confidence		= ParserConfidence.WRONG_PARSER;
 
+	/**
+	 * This field is non-null if the parser is used to parse a parameter of a method or
+	 * constructor call. The field contains information about this method/constructor
+	 * and about previous parameters.
+	 */
+	@Nullable
+	private CallerContext			callerContext;
+
 	protected AbstractParser(ParserToolbox parserToolbox) {
 		this.parserToolbox = parserToolbox;
 	}
@@ -125,19 +135,28 @@ public abstract class AbstractParser<C, T extends ParseResult, S extends ParseRe
 		return parserToolbox.inject(dd.kms.zenodot.impl.flowcontrol.InternalLogger.class);
 	}
 
-	public ParserConfidence getConfidence() {
-		return confidence;
-	}
-
-	protected void log(LogLevel logLevel, String message) {
-		getLogger().log(getClass(), logLevel, message);
-	}
-
 	protected void increaseConfidence(ParserConfidence newConfidence) throws InternalErrorException {
 		if (confidence.compareTo(newConfidence) > 0) {
 			throw new InternalErrorException("Trying to increase confidence from " + confidence + " to lower confidence " + newConfidence);
 		}
 		confidence = newConfidence;
+	}
+
+	public ParserConfidence getConfidence() {
+		return confidence;
+	}
+
+	public void setCallerContext(CallerContext callerContext) {
+		this.callerContext = callerContext;
+	}
+
+	@Nullable
+	protected CallerContext getCallerContext() {
+		return callerContext;
+	}
+
+	protected void log(LogLevel logLevel, String message) {
+		getLogger().log(getClass(), logLevel, message);
 	}
 
 	protected int getInsertionBegin(CompletionInfo info) {

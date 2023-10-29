@@ -11,6 +11,8 @@ import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
 import dd.kms.zenodot.framework.matching.MatchRatings;
+import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.CallerContext;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.result.CodeCompletions;
 import dd.kms.zenodot.framework.result.ObjectParseResult;
@@ -22,6 +24,7 @@ import dd.kms.zenodot.framework.wrappers.ExecutableInfo;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Executable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,7 +59,7 @@ public class ExecutableDataProvider
 	/**
 	 * Parses the arguments of executables including the final ')'
 	 */
-	public List<ObjectParseResult> parseArguments(TokenStream tokenStream, List<ExecutableInfo> executables) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
+	public List<ObjectParseResult> parseArguments(TokenStream tokenStream, Object callerObject, List<ExecutableInfo> executables) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		List<ObjectParseResult> arguments = new ArrayList<>();
 
 		boolean foundClosingParenthesis = false;
@@ -99,7 +102,12 @@ public class ExecutableDataProvider
 			ObjectParseResultExpectation argExpectation = new ObjectParseResultExpectation(expectedArgTypes_i, true);
 			ObjectParseResult argument_i;
 			try {
-				argument_i = parserToolbox.createExpressionParser().parse(tokenStream, parserToolbox.getThisInfo(), argExpectation);
+				AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation> expressionParser = parserToolbox.createExpressionParser();
+				Set<Executable> actualExecutables = executables.stream().map(ExecutableInfo::getExecutable).collect(Collectors.toSet());
+				List<Object> previousParameters = arguments.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
+				CallerContext callerContext = new CallerContext(actualExecutables, previousParameters, callerObject);
+				expressionParser.setCallerContext(callerContext);
+				argument_i = expressionParser.parse(tokenStream, parserToolbox.getThisInfo(), argExpectation);
 			} catch (CodeCompletionException e) {
 				CodeCompletions completions = e.getCompletions();
 				if (completions.getExecutableArgumentInfo().isPresent()) {

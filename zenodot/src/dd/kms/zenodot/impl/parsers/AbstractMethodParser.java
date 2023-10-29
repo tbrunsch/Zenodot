@@ -58,7 +58,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 
 		log(LogLevel.INFO, "Parsing method arguments");
 		ExecutableDataProvider executableDataProvider = parserToolbox.inject(ExecutableDataProvider.class);
-		List<ObjectParseResult> argumentResults = executableDataProvider.parseArguments(tokenStream, methods);
+		List<ObjectParseResult> argumentResults = executableDataProvider.parseArguments(tokenStream, getContextObject(context), methods);
 		List<ObjectInfo> arguments = argumentResults.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
 
 		List<ExecutableInfo> bestMatchingMethods = executableDataProvider.getBestMatchingExecutables(methods, arguments);

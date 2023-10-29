@@ -19,6 +19,7 @@ import dd.kms.zenodot.framework.matching.MatchRatings;
 import dd.kms.zenodot.framework.operators.Associativity;
 import dd.kms.zenodot.framework.operators.BinaryOperator;
 import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.CallerContext;
 import dd.kms.zenodot.framework.parsers.ParserConfidence;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.result.ClassParseResult;
@@ -82,7 +83,15 @@ public class ExpressionParser extends AbstractParser<ObjectInfo, ObjectParseResu
 		List<BinaryOperator> operators = new ArrayList<>();
 
 		log(LogLevel.INFO, "parsing first operand");
-		ObjectParseResult firstOperand = parserToolbox.createParser(SimpleExpressionParser.class).parse(tokenStream, contextInfo, operandExpectation);
+		SimpleExpressionParser simpleExpressionParser = parserToolbox.createParser(SimpleExpressionParser.class);
+		CallerContext callerContext = getCallerContext();
+		/*
+		 * Apply the caller context only to the first operand and not to further operands.
+		 * This covers the most important use cases for evaluators of this context. Additionally,
+		 * handling the caller context when parsing further operands would be much more complicated.
+		 */
+		simpleExpressionParser.setCallerContext(callerContext);
+		ObjectParseResult firstOperand = simpleExpressionParser.parse(tokenStream, contextInfo, operandExpectation);
 		ObjectInfo accumulatedResultInfo = firstOperand.getObjectInfo();
 		operands.add(firstOperand);
 
