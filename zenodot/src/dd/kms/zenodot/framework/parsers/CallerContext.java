@@ -59,6 +59,26 @@ public class CallerContext
 	}
 
 	/**
+	 * Returns the value of the parameter with index {@code paramIndex}, casted to its expected
+	 * type {@code paramType}.
+	 * @throws IllegalStateException if the parameter value is undetermined or not of the expected type
+	 * @throws IndexOutOfBoundsException if no parameter with the given index exists
+	 */
+	public <T> T getParameter(int paramIndex, Class<T> paramType, String paramDescription) {
+		Object paramValue = previousParameters.get(paramIndex);
+		if (paramValue == InfoProvider.INDETERMINATE_VALUE) {
+			throw new IllegalStateException(paramDescription + " is undetermined");
+		}
+		if (paramValue == null) {
+			return null;
+		}
+		if (!paramType.isInstance(paramValue)) {
+			throw new IllegalStateException(paramDescription + " is not of expected type " + paramType.getSimpleName());
+		}
+		return paramType.cast(paramValue);
+	}
+
+	/**
 	 * Returns the caller of the executables. This can be one of the following values:
 	 * <ul>
 	 *     <li>
@@ -75,5 +95,19 @@ public class CallerContext
 	 */
 	public Object getCaller() {
 		return caller;
+	}
+
+	/**
+	 * Returns the caller, casted to its expected type {@code callerType}.
+	 * @throws IllegalStateException if the caller is undetermined or not of the expected type
+	 */
+	public <T> T getCaller(Class<T> callerType, String callerDescription) {
+		if (caller == InfoProvider.INDETERMINATE_VALUE) {
+			throw new IllegalStateException((callerDescription + " is undetermined"));
+		}
+		if (!callerType.isInstance(caller)) {
+			throw new IllegalStateException(callerDescription + " is not of expected type " + callerType.getSimpleName());
+		}
+		return callerType.cast(caller);
 	}
 }
