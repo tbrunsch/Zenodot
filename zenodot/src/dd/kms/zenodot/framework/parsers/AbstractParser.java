@@ -160,34 +160,20 @@ public abstract class AbstractParser<C, T extends ParseResult, S extends ParseRe
 	}
 
 	protected int getInsertionBegin(CompletionInfo info) {
-		return info.getTokenTextStartPosition();
+		ParserSettings settings = parserToolbox.getSettings();
+		CompletionMode completionMode = settings.getCompletionMode();
+		return completionMode.getInsertionBegin(info.getTokenStartPosition(), info.getTokenTextStartPosition());
 	}
 
 	protected int getInsertionEnd(CompletionInfo info) {
 		ParserSettings settings = parserToolbox.getSettings();
 		CompletionMode completionMode = settings.getCompletionMode();
-		switch (completionMode) {
-			case COMPLETE_AND_REPLACE_UNTIL_CARET:
-				return info.getCaretPosition();
-			case COMPLETE_UNTIL_CARET_REPLACE_WHOLE_WORDS:
-			case COMPLETE_AND_REPLACE_WHOLE_WORDS:
-				return info.getTokenTextEndPosition();
-			default:
-				throw new IllegalStateException("Unsupported completion mode: " + completionMode);
-		}
+		return completionMode.getInsertionEnd(info.getCaretPosition(), info.getTokenTextEndPosition(), info.getTokenEndPosition());
 	}
 
 	protected String getTextToComplete(CompletionInfo info) {
 		ParserSettings settings = parserToolbox.getSettings();
 		CompletionMode completionMode = settings.getCompletionMode();
-		switch (completionMode) {
-			case COMPLETE_AND_REPLACE_UNTIL_CARET:
-			case COMPLETE_UNTIL_CARET_REPLACE_WHOLE_WORDS:
-				return info.getTokenTextUntilCaret();
-			case COMPLETE_AND_REPLACE_WHOLE_WORDS:
-				return info.getTokenText();
-			default:
-				throw new IllegalStateException("Unsupported completion mode: " + completionMode);
-		}
+		return completionMode.getTextToComplete(info.getTokenTextUntilCaret(), info.getTokenText());
 	}
 }

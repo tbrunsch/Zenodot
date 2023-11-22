@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.result.CodeCompletion;
+import dd.kms.zenodot.api.settings.CompletionMode;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
@@ -149,10 +150,12 @@ public class ParserToolbox
 		if (completionProviders.isEmpty()) {
 			return TokenStream.NO_COMPLETIONS;
 		}
+		ParserSettings settings = getSettings();
+		CompletionMode completionMode = settings.getCompletionMode();
 		return completionInfo -> {
 			List<CodeCompletion> completions = new ArrayList<>();
 			for (CompletionProvider completionProvider : completionProviders) {
-				List<? extends CodeCompletion> completionsOfProvider = completionProvider.getCodeCompletions(completionInfo, callerContext);
+				List<? extends CodeCompletion> completionsOfProvider = completionProvider.getCodeCompletions(completionInfo, completionMode, callerContext);
 				completions.addAll(completionsOfProvider);
 			}
 			return new CodeCompletions(completions);
