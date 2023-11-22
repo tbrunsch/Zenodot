@@ -26,6 +26,8 @@ public class ParenthesisTest extends CompletionTest
 			.addTest("(g",							"getFloat()", "goDoNothing()", "getClass()")
 			.addTest("(getFloat(y).toString()).le",	"length()")
 			.addTest("(dd.kms.zenodot.tests.completionTests.ParenthesisTest.TestC", "TestClass", "Test")
+			.addInsertionTest("(dd.kms.zenodot.tests.completionT@.ParenthesisTest.TestC", "(dd.kms.zenodot.tests.completionTests.ParenthesisTest.TestC")
+			.addInsertionTest("(dd.kms.zenodot.tests.completionTests.ParenthesisT@.TestC", "(dd.kms.zenodot.tests.completionTests.ParenthesisTest.TestC")
 			.build();
 	}
 

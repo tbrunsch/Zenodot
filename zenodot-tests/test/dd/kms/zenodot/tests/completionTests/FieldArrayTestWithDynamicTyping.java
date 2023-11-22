@@ -31,7 +31,8 @@ public class FieldArrayTestWithDynamicTyping extends CompletionTest
 			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
 			.addTest("array[",		"i0", "i1", "i2")
 			.addTest("array[i0].",	"value")
-			.addTest("array[i1].",	"index");
+			.addTest("array[i1].",	"index")
+			.addInsertionTest("arr@[i1].",	"array[i1].");
 
 		testBuilder
 			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))

@@ -25,6 +25,7 @@ public class ClassObjectTest extends CompletionTest
 			.addTest("test(TestClass.cl",							"closed", "class")
 			.addTest("test(TestClass.cla",							"class")
 			.addTest("test(TestClass.class.getSimpleName()).cl",	"clone()", "closed")
+			.addInsertionTest("test(TestCla@.class.getSimpleName()).cl", "test(TestClass.class.getSimpleName()).cl")
 			.build();
 	}
 

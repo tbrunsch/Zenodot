@@ -36,6 +36,15 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 			.collect(Collectors.toList());
 	}
 
+	private static String applyCompletion(String expression, CodeCompletion completion) {
+		int insertionBegin = completion.getInsertionBegin();
+		int insertionEnd = completion.getInsertionEnd();
+		String textToInsert = completion.getTextToInsert();
+		return expression.substring(0, insertionBegin)
+			+ textToInsert
+			+ expression.substring(insertionEnd);
+	}
+
 	private final TestExecutor	testExecutor;
 
 	protected CompletionTest(TestData testData) {
@@ -60,6 +69,17 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 			int numLoggedEntries = logger.getNumberOfLoggedEntries();
 			prepareLogger(isPrintLogEntriesAtError(), isStopAtError() ? numLoggedEntries : -1);
 			runTest(expression, true, expectedCompletions);
+		}
+	}
+
+	void testInsertion(String expression, int caretPosition, String expectedResult) {
+		ParserLogger logger = prepareLogger(false, -1);
+
+		boolean repeatTestAtError = isStopAtError() || isPrintLogEntriesAtError();
+		if (!runInsertionTest(expression, caretPosition, !repeatTestAtError, expectedResult) && repeatTestAtError) {
+			int numLoggedEntries = logger.getNumberOfLoggedEntries();
+			prepareLogger(isPrintLogEntriesAtError(), isStopAtError() ? numLoggedEntries : -1);
+			runInsertionTest(expression, caretPosition, true, expectedResult);
 		}
 	}
 
@@ -117,5 +137,38 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 			}
 		}
 		return true;
+	}
+
+	private boolean runInsertionTest(String expression, int caretPosition, boolean executeAssertions, String expectedResult) {
+		ParserSettings settings = settingsBuilder.build();
+
+		String expressionAfterInsertion = null;
+		try {
+			ExpressionParser expressionParser = Parsers.createExpressionParserBuilder(settings)
+				.variables(variables)
+				.createExpressionParser();
+			List<CodeCompletion> sortedCompletions = getSortedCompletions(expressionParser.getCompletions(expression, caretPosition, testInstance));
+			if (!sortedCompletions.isEmpty()) {
+				CodeCompletion bestCompletion = sortedCompletions.get(0);
+				expressionAfterInsertion = applyCompletion(expression, bestCompletion);
+			}
+		} catch (ParseException e) {
+			if (executeAssertions) {
+				e.printStackTrace();
+				fail("Exception during code completion: " + e.getMessage());
+			}
+			return false;
+		}
+		if (expressionAfterInsertion == null) {
+			if (executeAssertions) {
+				fail("No completions available");
+			}
+			return false;
+		}
+
+		if (executeAssertions) {
+			assertEquals("Unexpected expression after insertion", expectedResult, expressionAfterInsertion);
+		}
+		return Objects.equals(expressionAfterInsertion, expectedResult);
 	}
 }
