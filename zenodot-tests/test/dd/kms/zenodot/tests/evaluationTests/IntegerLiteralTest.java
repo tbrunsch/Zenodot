@@ -23,12 +23,16 @@ public class IntegerLiteralTest extends EvaluationTest
 
 		testBuilder
 			.addTest("120",						120)
+			.addTest("-120",					-120)
 			.addTest("getByte((byte) 120)",		testInstance.getByte((byte) 120))
 			.addTest("1234",					1234)
+			.addTest("-1234",					-1234)
 			.addTest("getShort((short) 1234)",	testInstance.getShort((short) 1234))
 			.addTest("100000",					100000)
+			.addTest("-100000",					-100000)
 			.addTest("getInt(100000)",			testInstance.getInt(100000))
 			.addTest("5000000000L",				5000000000L)
+			.addTest("-5000000000L",			-5000000000L)
 			.addTest("getLong(5000000000l)",	testInstance.getLong(5000000000l));
 
 		testBuilder

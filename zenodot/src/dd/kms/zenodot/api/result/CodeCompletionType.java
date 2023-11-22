@@ -16,6 +16,7 @@ public class CodeCompletionType implements Comparable<CodeCompletionType>
 	public static final CodeCompletionType	CLASS				= register("Class",		true);
 	public static final CodeCompletionType	PACKAGE				= register("Package",	true);
 	public static final CodeCompletionType	KEYWORD				= register("Keyword",	true);
+	public static final CodeCompletionType	STRING_LITERAL		= register("String",	true);
 
 	public static CodeCompletionType register(String text) {
 		return register(text, false);

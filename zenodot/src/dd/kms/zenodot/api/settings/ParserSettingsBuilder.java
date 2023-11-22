@@ -3,6 +3,9 @@ package dd.kms.zenodot.api.settings;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
+import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
+
+import java.lang.reflect.Executable;
 
 /**
  * Builder for {@link ParserSettings}<br>
@@ -61,6 +64,8 @@ public interface ParserSettingsBuilder
 	ParserSettingsBuilder considerAllClassesForClassCompletions(boolean considerAllClassesForClassCompletions);
 
 	ParserSettingsBuilder additionalParserSettings(AdditionalParserSettings additionalParserSettings);
+
+	ParserSettingsBuilder stringLiteralCompletionProvider(Executable executable, int parameterIndex, CompletionProvider completionProvider);
 
 	/**
 	 * Specify a logger that receives messages during the parsing process. This is primarily meant for

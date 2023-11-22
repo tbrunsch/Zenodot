@@ -443,7 +443,7 @@ public class OperatorResultProvider
 		}
 		Object result = InfoProvider.INDETERMINATE_VALUE;
 		Object object = objectInfo.getObject();
-		if (isEvaluate() && object != InfoProvider.INDETERMINATE_VALUE) {
+		if (isEvaluate() || object != InfoProvider.INDETERMINATE_VALUE) {
 			Function<Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(object);
 		}
@@ -519,7 +519,7 @@ public class OperatorResultProvider
 		Object result = InfoProvider.INDETERMINATE_VALUE;
 		Object lhsObject = lhs.getObject();
 		Object rhsObject = rhs.getObject();
-		if (isEvaluate() && lhsObject != InfoProvider.INDETERMINATE_VALUE && rhsObject != InfoProvider.INDETERMINATE_VALUE) {
+		if (isEvaluate() || (lhsObject != InfoProvider.INDETERMINATE_VALUE && rhsObject != InfoProvider.INDETERMINATE_VALUE)) {
 			BiFunction<Object, Object, Object> operation = operatorInfo.getOperation();
 			result = operation.apply(lhsObject, rhsObject);
 		}

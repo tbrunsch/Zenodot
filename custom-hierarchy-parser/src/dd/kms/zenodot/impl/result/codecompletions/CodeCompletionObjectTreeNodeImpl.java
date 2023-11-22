@@ -3,6 +3,7 @@ package dd.kms.zenodot.impl.result.codecompletions;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.codecompletions.CodeCompletionObjectTreeNode;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
+import dd.kms.zenodot.framework.result.codecompletions.AbstractSimpleCodeCompletion;
 
 import java.util.Objects;
 

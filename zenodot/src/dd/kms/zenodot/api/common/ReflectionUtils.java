@@ -4,9 +4,13 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -141,5 +145,82 @@ public class ReflectionUtils
 	private static boolean isHashCodeMethod(Method method) {
 		return method.getName().equals("hashCode")
 			&& method.getParameterCount() == 0;
+	}
+
+	public static boolean isOverriddenBy(Executable baseExecutable, Executable potentialOverride) {
+		Class<?> executableClass = baseExecutable.getClass();
+		if (!Objects.equals(executableClass, potentialOverride.getClass())) {
+			return false;
+		}
+		int baseModifiers = baseExecutable.getModifiers();
+		if (Modifier.isStatic(baseModifiers)) {
+			return false;
+		}
+		int potentialOverrideModifiers = potentialOverride.getModifiers();
+		if (Modifier.isStatic(potentialOverrideModifiers)) {
+			return false;
+		}
+		AccessModifier baseAccessModifier = AccessModifier.getValue(baseModifiers);
+		AccessModifier potentialOverrideAccessModifier = AccessModifier.getValue(potentialOverrideModifiers);
+		if (baseAccessModifier.compareTo(potentialOverrideAccessModifier) < 0) {
+			return false;
+		}
+
+		if (baseExecutable.equals(potentialOverride)) {
+			return true;
+		}
+		if (Objects.equals(executableClass, Constructor.class)) {
+			return false;
+		}
+		if (potentialOverride instanceof Constructor) {
+			return false;
+		}
+
+		if (baseExecutable.isSynthetic() && baseExecutable instanceof Method && !(((Method) baseExecutable).isBridge())) {
+			return false;
+		}
+		if (potentialOverride.isSynthetic() && potentialOverride instanceof Method && !(((Method) potentialOverride).isBridge())) {
+			return false;
+		}
+		if (baseExecutable.isVarArgs() != potentialOverride.isVarArgs()) {
+			return false;
+		}
+		if (!baseExecutable.getName().equals(potentialOverride.getName())) {
+			return false;
+		}
+
+		Class<?> baseClass = baseExecutable.getDeclaringClass();
+		Class<?> potentialSubClass = potentialOverride.getDeclaringClass();
+		if (Objects.equals(baseClass, potentialSubClass) || !baseClass.isAssignableFrom(potentialSubClass)) {
+			return false;
+		}
+
+		final AccessModifier requiredBaseVisibility;
+		if (isInnerClassOf(potentialSubClass, baseClass)) {
+			requiredBaseVisibility = AccessModifier.PRIVATE;
+		} else {
+			Package basePackage = baseClass.getPackage();
+			Package potentialSubClassPackage = potentialSubClass.getPackage();
+			requiredBaseVisibility = Objects.equals(basePackage, potentialSubClassPackage)
+				? AccessModifier.PACKAGE_PRIVATE
+				: AccessModifier.PROTECTED;
+		}
+		if (requiredBaseVisibility.compareTo(baseAccessModifier) < 0) {
+			return false;
+		}
+
+		Class<?>[] baseMethodParameters = baseExecutable.getParameterTypes();
+		Class<?>[] potentialOverrideParameters = potentialOverride.getParameterTypes();
+		return Arrays.equals(baseMethodParameters, potentialOverrideParameters);
+	}
+
+	private static boolean isInnerClassOf(Class<?> clazz, Class<?> potentialEnclosingClass) {
+		while (clazz != null) {
+			if (Objects.equals(clazz, potentialEnclosingClass)) {
+				return true;
+			}
+			clazz = clazz.getEnclosingClass();
+		}
+		return false;
 	}
 }

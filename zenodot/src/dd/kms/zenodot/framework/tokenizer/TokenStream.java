@@ -1,5 +1,6 @@
 package dd.kms.zenodot.framework.tokenizer;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.common.RegexUtils;
@@ -35,7 +36,6 @@ public class TokenStream
 	private static final Pattern 			REMAINING_WHITESPACE_PATTERN	= Pattern.compile("^(\\s*)$");
 	private static final Pattern			CHARACTERS_PATTERN				= Pattern.compile("^\\s*([^\\s]*).*");
 	private static final Pattern			IDENTIFIER_PATTERN  			= Pattern.compile("^(([_\\$A-Za-z][_\\$A-Za-z0-9]*)\\s*).*");
-	private static final Pattern			STRING_LITERAL_PATTERN			= Pattern.compile("^(\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"\\s*).*");
 	private static final Pattern			CHARACTER_LITERAL_PATTERN		= Pattern.compile("^('(\\\\.|[^\\\\])'\\s*).*");
 	private static final Pattern			KEYWORD_PATTERN					= IDENTIFIER_PATTERN;
 	private static final Pattern			INTEGER_LITERAL_PATTERN			= Pattern.compile("^((0|[1-9][0-9]*)\\s*)($|[^0-9dDeEfFL\\.].*)");
@@ -151,22 +151,69 @@ public class TokenStream
 		return readRegex(CLASS_NAME_PATTERN, 2, completionGenerator, "Expected a class name", true);
 	}
 
-	public String readStringLiteral() throws SyntaxException, CodeCompletionException {
-		String errorMessage = "No string literal found";
+	public String readStringLiteral(CompletionGenerator completionGenerator) throws SyntaxException, CodeCompletionException, InternalErrorException {
 		if (peekCharacter() != '"') {
-			throw new SyntaxException(errorMessage);
+			throw new SyntaxException("No string literal found");
 		}
-		String escapedStringLiteral;
-		try {
-			escapedStringLiteral = readRegex(STRING_LITERAL_PATTERN, 2, NO_COMPLETIONS, errorMessage, true);
-		} catch (SyntaxException e) {
-			if (position <= caretPosition && caretPosition <= expression.length()) {
-				// missing closing double quotes, but code completion requested
-				throw new CodeCompletionException(CodeCompletions.NONE);
+
+		if (caretPosition < position) {
+			throw new IllegalStateException("Internal error: Reading tokens after caret position");
+		}
+		int startPos = position;
+		skipSpaces();
+
+		if (caretPosition <= position) {
+			// Completion within leading white spaces
+			throw new CodeCompletionException(CodeCompletions.NONE);
+		}
+
+		position++;
+		int textStartPos = position;
+
+		StringBuilder builder = new StringBuilder();
+		boolean terminatedStringLiteral = false;
+		while (position < expression.length()) {
+			char c = expression.charAt(position++);
+			if (c == '"') {
+				terminatedStringLiteral = true;
+				break;
+			} else if (c != '\\') {
+				builder.append(c);
+			} else {
+				if (position == expression.length()) {
+					throw new SyntaxException("The literal ends with a backslash '\\'");
+				}
+				char escapedChar = expression.charAt(position++);
+				Character interpretation = INTERPRETATION_OF_ESCAPED_CHARACTERS.get(escapedChar);
+				if (interpretation == null) {
+					throw new SyntaxException("The literal contains an unknown escape sequence: \\" + escapedChar);
+				}
+				builder.append((char) interpretation);
 			}
-			throw e;
 		}
-		return unescapeCharacters(escapedStringLiteral);
+
+		int stringLiteralEndPos = position;
+		int textEndPos = terminatedStringLiteral ? stringLiteralEndPos - 1 : stringLiteralEndPos;
+
+		skipSpaces();
+		int endPos = position;
+
+		if (caretPosition <= textEndPos) {
+			// Code completion
+			CompletionInfo completionSuggestionInfo = new CompletionInfoImpl(startPos, endPos, textStartPos, textEndPos);
+			CodeCompletions completions = completionGenerator.generate(completionSuggestionInfo);
+			throw new CodeCompletionException(completions);
+		} else if (caretPosition < position) {
+			// Move to the beginning of the trailing white spaces, return non-white spaces and handle completions when reading next token
+			position = stringLiteralEndPos;
+			assert caretPosition >= position;
+		}
+
+		// No code completion
+		if (!terminatedStringLiteral) {
+			throw new SyntaxException("Missing '\"'");
+		}
+		return builder.toString();
 	}
 
 	public char readCharacterLiteral() throws SyntaxException, CodeCompletionException, InternalErrorException {
@@ -278,6 +325,78 @@ public class TokenStream
 		regex.append("]+).*");
 		Pattern pattern = Pattern.compile(regex.toString());
 		return readRegex(pattern, 1, completionGenerator, "Failed parsing until " + joinCharacters(terminalCharacters), true);
+	}
+
+	public String readUntilStrings(CompletionGenerator completionGenerator, String... terminalStrings) throws SyntaxException, CodeCompletionException {
+		if (caretPosition < position) {
+			throw new IllegalStateException("Internal error: Reading tokens after caret position");
+		}
+		int startPos = position;
+		skipSpaces();
+		int textStartPos = position;
+
+		if (caretPosition < position) {
+			// Completion within leading white spaces
+			CompletionInfo completionSuggestionInfo = new CompletionInfoImpl(startPos, caretPosition, caretPosition, caretPosition);
+			CodeCompletions completions = completionGenerator.generate(completionSuggestionInfo);
+			throw new CodeCompletionException(completions);
+		}
+
+		int endPos = position;
+		while (endPos < expression.length() && !subStringAtEqualsAnyOf(endPos, terminalStrings)) {
+			endPos++;
+		}
+		String extractedString = expression.substring(position, endPos);
+
+		if (extractedString.isEmpty()) {
+			if (caretPosition == textStartPos) {
+				// Completion at beginning of non-white spaces
+				CompletionInfo completionSuggestionInfo = new CompletionInfoImpl(startPos, textStartPos, textStartPos, textStartPos);
+				CodeCompletions completions = completionGenerator.generate(completionSuggestionInfo);
+				throw new CodeCompletionException(completions);
+			}
+			// No completion requested, no match
+			throw new SyntaxException("Failed parsing until " + Joiner.on(" or ").join(terminalStrings));
+		}
+
+		int textEndPos = endPos;
+
+		if (caretPosition <= endPos) {
+			// Code completion
+			if (caretPosition < textEndPos) {
+				CompletionInfo completionSuggestionInfo = new CompletionInfoImpl(startPos, endPos, textStartPos, textEndPos);
+				CodeCompletions completions = completionGenerator.generate(completionSuggestionInfo);
+				throw new CodeCompletionException(completions);
+			}
+			// Move to the beginning of the trailing white spaces, return non-white spaces and handle completions when reading next token
+			position = textEndPos;
+			assert caretPosition >= position;
+		} else {
+			// No code completion => move to the end of the parsed area and return non-white spaces
+			position = endPos;
+			assert caretPosition > position;
+		}
+		return extractedString;
+	}
+
+	private boolean subStringAtEqualsAnyOf(int pos, String... strings) {
+		for (String string : strings) {
+			int numChars = string.length();
+			if (pos + numChars > expression.length()) {
+				continue;
+			}
+			boolean equals = true;
+			for (int i = 0; i < numChars; i++) {
+				if (string.charAt(i) != expression.charAt(pos + i)) {
+					equals = false;
+					break;
+				}
+			}
+			if (equals) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Nullable
