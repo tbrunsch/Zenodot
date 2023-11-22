@@ -172,8 +172,14 @@ public class ReflectionUtils
 		if (Objects.equals(executableClass, Constructor.class)) {
 			return false;
 		}
+		if (potentialOverride instanceof Constructor) {
+			return false;
+		}
 
-		if (baseExecutable.isSynthetic() || potentialOverride.isSynthetic()) {
+		if (baseExecutable.isSynthetic() && baseExecutable instanceof Method && !(((Method) baseExecutable).isBridge())) {
+			return false;
+		}
+		if (potentialOverride.isSynthetic() && potentialOverride instanceof Method && !(((Method) potentialOverride).isBridge())) {
 			return false;
 		}
 		if (baseExecutable.isVarArgs() != potentialOverride.isVarArgs()) {
