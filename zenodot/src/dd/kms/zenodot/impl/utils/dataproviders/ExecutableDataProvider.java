@@ -24,7 +24,6 @@ import dd.kms.zenodot.framework.wrappers.ExecutableInfo;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Executable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -104,7 +103,7 @@ public class ExecutableDataProvider
 			try {
 				AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation> expressionParser = parserToolbox.createExpressionParser();
 				Set<Executable> actualExecutables = executables.stream().map(ExecutableInfo::getExecutable).collect(Collectors.toSet());
-				List<Object> previousParameters = arguments.stream().map(ObjectParseResult::getObjectInfo).collect(Collectors.toList());
+				List<Object> previousParameters = arguments.stream().map(result -> result.getObjectInfo().getObject()).collect(Collectors.toList());
 				CallerContext callerContext = new CallerContext(actualExecutables, previousParameters, callerObject);
 				expressionParser.setCallerContext(callerContext);
 				argument_i = expressionParser.parse(tokenStream, parserToolbox.getThisInfo(), argExpectation);
