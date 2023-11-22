@@ -4,6 +4,7 @@ import dd.kms.zenodot.api.common.ClassInfo;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletionType;
 import dd.kms.zenodot.api.result.codecompletions.CodeCompletionClass;
+import dd.kms.zenodot.framework.result.codecompletions.AbstractSimpleCodeCompletion;
 import dd.kms.zenodot.impl.utils.ClassUtils;
 
 import java.util.Objects;

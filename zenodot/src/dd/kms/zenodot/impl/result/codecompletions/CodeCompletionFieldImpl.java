@@ -4,6 +4,7 @@ import dd.kms.zenodot.api.common.GeneralizedField;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletionType;
 import dd.kms.zenodot.api.result.codecompletions.CodeCompletionField;
+import dd.kms.zenodot.framework.result.codecompletions.AbstractSimpleCodeCompletion;
 
 import java.util.Objects;
 
