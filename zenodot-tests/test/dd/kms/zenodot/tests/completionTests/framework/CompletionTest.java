@@ -14,6 +14,7 @@ import org.junit.runners.Parameterized;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -99,7 +100,7 @@ public abstract class CompletionTest extends AbstractTest<CompletionTest>
 		if (executeAssertions) {
 			assertTrue(MessageFormat.format("expected completions: {1}, actual completions: {2}",
 					expression,
-					expectedCompletions,
+					Arrays.asList(expectedCompletions),
 					completions),
 					completions.size() >= expectedCompletions.length);
 		}
