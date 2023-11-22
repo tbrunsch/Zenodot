@@ -80,8 +80,6 @@ public class LiteralParser extends AbstractParserWithObjectTail<ObjectInfo>
 			case 't':	// this, true
 			case 'f':	// false
 				return parseNamedLiteral(tokenStream, expectation);
-			case '+':
-			case '-':
 			case '.':
 			case '0':
 			case '1':
