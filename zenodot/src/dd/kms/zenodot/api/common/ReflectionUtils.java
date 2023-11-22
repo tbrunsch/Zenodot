@@ -191,7 +191,7 @@ public class ReflectionUtils
 
 		Class<?> baseClass = baseExecutable.getDeclaringClass();
 		Class<?> potentialSubClass = potentialOverride.getDeclaringClass();
-		if (!baseClass.isAssignableFrom(potentialSubClass)) {
+		if (Objects.equals(baseClass, potentialSubClass) || !baseClass.isAssignableFrom(potentialSubClass)) {
 			return false;
 		}
 
