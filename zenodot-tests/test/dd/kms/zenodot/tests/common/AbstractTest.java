@@ -33,6 +33,10 @@ public class AbstractTest<T extends AbstractTest>
 		this.testInstance = testInstance;
 	}
 
+	public ParserSettingsBuilder getSettingsBuilder() {
+		return settingsBuilder;
+	}
+
 	public void createVariable(String name, Object value, boolean isFinal) {
 		variables.createVariable(name, value, isFinal);
 	}
