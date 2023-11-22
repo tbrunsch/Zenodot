@@ -8,6 +8,7 @@ import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
 import dd.kms.zenodot.framework.parsers.AbstractParser;
+import dd.kms.zenodot.framework.parsers.CallerContext;
 import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
 import dd.kms.zenodot.framework.result.ObjectParseResult;
 import dd.kms.zenodot.framework.tokenizer.TokenStream;
@@ -52,8 +53,10 @@ public class SimpleExpressionParser extends AbstractParser<ObjectInfo, ObjectPar
 			.forEach(settings -> parserClasses.add(settings.getParserClass()));
 
 		List<AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation>> parsers = new ArrayList<>();
+		CallerContext callerContext = getCallerContext();
 		for (Class<? extends AbstractParser> parserClass : parserClasses) {
 			AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation> parser = parserToolbox.createParser(parserClass);
+			parser.setCallerContext(callerContext);
 			parsers.add(parser);
 		}
 
