@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 class ParserSettingsImpl implements ParserSettings
@@ -75,7 +76,7 @@ class ParserSettingsImpl implements ParserSettings
 				continue;
 			}
 			Executable supportedExecutable = stringLiteralCompletionProvider.getFirst();
-			if (!ReflectionUtils.isOverriddenBy(supportedExecutable, executable)) {
+			if (!Objects.equals(executable, supportedExecutable) && !ReflectionUtils.isOverriddenBy(supportedExecutable, executable)) {
 				continue;
 			}
 			completionProviders.add(stringLiteralCompletionProvider.getThird());
