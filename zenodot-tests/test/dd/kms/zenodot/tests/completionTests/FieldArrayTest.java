@@ -32,9 +32,9 @@ public class FieldArrayTest extends CompletionTest
 			.addTest("member[mem",		"member", "xyz", hashCode, "xyzw", "xy")
 			.addTest("member[xyz].",	"member", "xy", "xyz", "xyzw")
 			.addTest("member[xyzw].x",	"xy", "xyz", "xyzw", "member")
-			.addInsertionTest("mem@[xyzw].x",	"member[xyzw].x")
 			.addTest("member.le",		"length")
-			.addInsertionTest("memb@.le",		"member.le");
+			.addInsertionTest("mem^[xyzw].x",	'^', "member[xyzw].x")
+			.addInsertionTest("memb^.le",		'^',	"member.le");
 
 		testBuilder
 			.addTestWithError("xy[",				ParseException.class)

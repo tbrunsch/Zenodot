@@ -28,7 +28,7 @@ public class FieldDotFieldTestWithDynamicTyping extends CompletionTest
 			.addTest("member.x",	"x", "xyz")
 			.addTest("member.xy",	"xyz", "x")
 			.addTest("member.xyz",	"xyz", "x")
-			.addInsertionTest("mem@.xyz",	"member.xyz");
+			.addInsertionTest("mem^.xyz",	'^', "member.xyz");
 
 		testBuilder
 			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
@@ -36,7 +36,7 @@ public class FieldDotFieldTestWithDynamicTyping extends CompletionTest
 			.addTest("member.x",	"x", "xy", "xyz")
 			.addTest("member.xy",	"xy", "xyz", "x")
 			.addTest("member.xyz",	"xyz", "xy", "x")
-			.addInsertionTest("mem@.xyz",	"member.xyz");
+			.addInsertionTest("mem^.xyz",	'^', "member.xyz");
 
 		return testBuilder.build();
 	}

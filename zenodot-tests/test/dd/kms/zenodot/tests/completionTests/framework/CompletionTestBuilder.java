@@ -34,10 +34,10 @@ public class CompletionTestBuilder
 		return this;
 	}
 
-	public CompletionTestBuilder addInsertionTest(String expressionWithMarkedCaret, String expectedResult) {
-		int caretPosition = expressionWithMarkedCaret.indexOf('@');
+	public CompletionTestBuilder addInsertionTest(String expressionWithMarkedCaret, char caretMarker, String expectedResult) {
+		int caretPosition = expressionWithMarkedCaret.indexOf(caretMarker);
 		if (caretPosition < 0) {
-			throw new IllegalArgumentException("The caret must be marked with '@' within the expression");
+			throw new IllegalArgumentException("The caret must be marked with '" + caretMarker + "' within the expression");
 		}
 		String expression = expressionWithMarkedCaret.substring(0, caretPosition)
 			+ expressionWithMarkedCaret.substring(caretPosition + 1);
