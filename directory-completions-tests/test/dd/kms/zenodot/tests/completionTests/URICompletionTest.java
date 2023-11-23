@@ -45,15 +45,32 @@ public class URICompletionTest extends CompletionTest
 			.addTest("new URI(\"jimfs://uri/", "zenodot")
 			.addTest("new URI(\"jimfs://uri/zen", "zenodot")
 			.addTest("new URI(\"jimfs://uri/zenodot/fr", "framework")
+
 			.addTest("new URI(\"jimfs\", \"//uri/zenodot/a", "api")
 			.addTest("new URI(\"jimfs\", \"//uri/zenodot/api/Ex", "ExpressionParser")
+
 			.addTest("new URI(\"jimfs\", \"uri\", \"/zen", "zenodot")
 			.addTest("new URI(\"jimfs\", \"uri\", \"/zenodot/fr", "framework")
+
 			.addTest("new URI(\"jimfs\", null, \"uri\", -1, \"/zen", "zenodot")
 			.addTest("new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/a", "api")
+
 			.addTest("URI.create(\"jimfs://uri/", "zenodot")
 			.addTest("URI.create(\"jimfs://uri/zen", "zenodot")
 			.addTest("URI.create(\"jimfs://uri/zenodot/fr", "framework")
+
+			.addInsertionTest("new URI(\"jimfs://uri/zen^/fr",	'^', "new URI(\"jimfs://uri/zenodot/fr")
+
+			.addInsertionTest("new URI(\"jimfs\", \"//uri/z^/a", 				'^', "new URI(\"jimfs\", \"//uri/zenodot/a")
+			.addInsertionTest("new URI(\"jimfs\", \"//uri/zenod^/api/Ex",		'^', "new URI(\"jimfs\", \"//uri/zenodot/api/Ex")
+			.addInsertionTest("new URI(\"jimfs\", \"//uri/zenodot/a^/Ex",		'^', "new URI(\"jimfs\", \"//uri/zenodot/api/Ex")
+
+			.addInsertionTest("new URI(\"jimfs\", \"uri\", \"/ze^/fr",			'^', "new URI(\"jimfs\", \"uri\", \"/zenodot/fr")
+
+			.addInsertionTest("new URI(\"jimfs\", null, \"uri\", -1, \"/z^/a",	'^', "new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/a")
+
+			.addInsertionTest("URI.create(\"jimfs://uri/zen^/fr",				'^', "URI.create(\"jimfs://uri/zenodot/fr")
+
 			.build();
 	}
 

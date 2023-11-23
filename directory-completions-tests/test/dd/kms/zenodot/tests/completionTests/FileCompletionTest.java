@@ -49,10 +49,21 @@ public class FileCompletionTest extends CompletionTest
 			.addTest("new File(\"/zen", "zenodot")
 			.addTest("new File(\"/zenodot/framework/tokenizer/", "TokenStream")
 			.addTest("new File(\"/zenodot/framework", "framework")
+
 			.addTest("new File(\"/zenodot\", \"a", "api")
 			.addTest("new File(\"/zenodot/api/\", \"Ex", "ExpressionParser")
+
 			.addTest("new File(parent, \"Ex", "ExpressionParser")
 			.addTest("new File(parent, \"common/Fi", "FieldScanner")
+
+			.addInsertionTest("new File(\"/z^/framework/tokenizer/",	'^', "new File(\"/zenodot/framework/tokenizer/")
+			.addInsertionTest("new File(\"/zenodot/fr^/tokenizer/",		'^', "new File(\"/zenodot/framework/tokenizer/")
+			.addInsertionTest("new File(\"/zenodot/framework/tok^/", 	'^', "new File(\"/zenodot/framework/tokenizer/")
+
+			.addInsertionTest("new File(\"/zen^/api/\", \"Ex", 			'^', "new File(\"/zenodot/api/\", \"Ex")
+
+			.addInsertionTest("new File(parent, \"com^/Fi", 			'^', "new File(parent, \"common/Fi")
+
 			.build();
 	}
 

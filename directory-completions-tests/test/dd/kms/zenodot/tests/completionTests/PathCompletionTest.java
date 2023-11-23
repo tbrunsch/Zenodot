@@ -53,6 +53,7 @@ public class PathCompletionTest extends CompletionTest
 			.addTest("Paths.get(\"/zen", "zenodot")
 			.addTest("Paths.get(\"/zenodot/framework/tokenizer/", "TokenStream")
 			.addTest("Paths.get(\"/zenodot/framework", "framework")
+
 			.addTest("Paths.get(\"/zenodot\", \"a", "api")
 			.addTest("Paths.get(\"/zenodot/api/\", \"Ex", "ExpressionParser")
 
@@ -65,6 +66,23 @@ public class PathCompletionTest extends CompletionTest
 
 			.addTest("path.resolveSibling(\"fr", "framework")
 			.addTest("path.resolveSibling(\"framework/tok", "tokenizer")
+
+			.addInsertionTest("Paths.get(\"/z^/framework/tokenizer/",		'^', "Paths.get(\"/zenodot/framework/tokenizer/")
+			.addInsertionTest("Paths.get(\"/zenodot/fr^/tokenizer/",		'^', "Paths.get(\"/zenodot/framework/tokenizer/")
+			.addInsertionTest("Paths.get(\"/zenodot/framework/tok^/",		'^', "Paths.get(\"/zenodot/framework/tokenizer/")
+
+			.addInsertionTest("Paths.get(\"/zen^/api/\", \"Ex",				'^', "Paths.get(\"/zenodot/api/\", \"Ex")
+
+			.addInsertionTest("fileSystem.getPath(\"/zeno^/fr",				'^', "fileSystem.getPath(\"/zenodot/fr")
+			.addInsertionTest("fileSystem.getPath(\"/ze^/framework/u",		'^', "fileSystem.getPath(\"/zenodot/framework/u")
+			.addInsertionTest("fileSystem.getPath(\"/zenodot/frame^/u", 	'^', "fileSystem.getPath(\"/zenodot/framework/u")
+
+			.addInsertionTest("fileSystem.getPath(\"/zenodot\", \"a^/com",	'^', "fileSystem.getPath(\"/zenodot\", \"api/com")
+
+			.addInsertionTest("path.resolve(\"com^/Fi",						'^', "path.resolve(\"common/Fi")
+
+			.addInsertionTest("path.resolveSibling(\"fra^/tok",				'^', "path.resolveSibling(\"framework/tok")
+
 			.build();
 	}
 
