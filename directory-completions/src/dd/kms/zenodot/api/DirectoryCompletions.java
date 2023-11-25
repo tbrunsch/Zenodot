@@ -5,6 +5,7 @@ import dd.kms.zenodot.api.directories.PathDirectoryStructure;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 
 import java.io.File;
+import java.nio.file.Path;
 
 public interface DirectoryCompletions
 {
@@ -12,8 +13,27 @@ public interface DirectoryCompletions
 		return new dd.kms.zenodot.impl.DirectoryCompletionsImpl();
 	}
 
+	/**
+	 * By default, all completions for {@link File} constructors (see {@link CompletionTarget#FILE_CREATION})
+	 * are based on file system queries (behavior of {@link FileDirectoryStructure#DEFAULT}). However, they
+	 * are abstracted by the interface {@link FileDirectoryStructure}. That way, you can influence how the
+	 * completions are generated: You can, e.g., cache these accesses
+	 * (see {@link FileDirectoryStructure#cache(FileDirectoryStructure, long)}).
+	 */
 	DirectoryCompletions fileDirectoryStructure(FileDirectoryStructure fileDirectoryStructure);
+
+	/**
+	 * By default, all completions for {@link Path}-related operations (see {@link CompletionTarget#PATH_CREATION},
+	 * {@link CompletionTarget#PATH_RESOLUTION}, and {@link CompletionTarget#URI_CREATION}) are based on file
+	 * system queries (behavior of {@link PathDirectoryStructure#DEFAULT}). However, they are abstracted by the
+	 * interface {@link PathDirectoryStructure}. That way, you can influence how the completions are generated:
+	 * You can, e.g., cache these accesses (see {@link PathDirectoryStructure#cache(PathDirectoryStructure, long)}).
+	 */
 	DirectoryCompletions pathDirectoryStructure(PathDirectoryStructure pathDirectoryStructure);
+
+	/**
+	 * Specify for which methods to provide code completions.
+	 */
 	DirectoryCompletions completionTargets(CompletionTarget... completionTargets);
 
 	void configure(ParserSettingsBuilder parserSettingsBuilder);
