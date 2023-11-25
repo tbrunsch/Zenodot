@@ -4,16 +4,17 @@ import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import dd.kms.zenodot.api.directories.CacheConfigurator;
 
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 class CacheUtils
 {
-	static <K, V> ExceptionalFunction<K, V> cacheDelegate(ExceptionalFunction<K, V> functionToCache, CacheConfigurator cacheConfigurator) {
-		LoadingCache<K, V> cache = cacheConfigurator.configure(CacheBuilder.newBuilder())
+	static <K, V> ExceptionalFunction<K, V> cacheDelegate(ExceptionalFunction<K, V> functionToCache, long timeUntilEvictionMs) {
+		LoadingCache<K, V> cache = CacheBuilder.newBuilder()
+			.expireAfterWrite(timeUntilEvictionMs, TimeUnit.MILLISECONDS)
 			.build(new CacheLoader<K, V>() {
 				@Override
 				public V load(K key) throws Exception {
@@ -31,9 +32,9 @@ class CacheUtils
 		};
 	}
 
-	static <K1, K2, V> ExceptionalBiFunction<K1, K2, V> cacheDelegate(ExceptionalBiFunction<K1, K2, V> biFunctionToCache, CacheConfigurator cacheConfigurator) {
+	static <K1, K2, V> ExceptionalBiFunction<K1, K2, V> cacheDelegate(ExceptionalBiFunction<K1, K2, V> biFunctionToCache, long timeUntilEvictionMs) {
 		ExceptionalFunction<Pair<K1, K2>, V> functionToCache = p -> biFunctionToCache.apply(p.getFirst(), p.getSecond());
-		ExceptionalFunction<Pair<K1, K2>, V> cachedFunction = cacheDelegate(functionToCache, cacheConfigurator);
+		ExceptionalFunction<Pair<K1, K2>, V> cachedFunction = cacheDelegate(functionToCache, timeUntilEvictionMs);
 		return (k1, k2) -> cachedFunction.apply(new Pair<>(k1, k2));
 	}
 

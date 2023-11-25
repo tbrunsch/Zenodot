@@ -10,8 +10,8 @@ public interface PathDirectoryStructure
 {
 	PathDirectoryStructure DEFAULT	= new dd.kms.zenodot.impl.directories.DefaultPathDirectoryStructure();
 
-	static PathDirectoryStructure cache(PathDirectoryStructure pathDirectoryStructure, CacheConfigurator cacheConfigurator) {
-		return new dd.kms.zenodot.impl.directories.CachedPathDirectoryStructure(pathDirectoryStructure, cacheConfigurator);
+	static PathDirectoryStructure cache(PathDirectoryStructure pathDirectoryStructure, long timeUntilEvictionMs) {
+		return new dd.kms.zenodot.impl.directories.CachedPathDirectoryStructure(pathDirectoryStructure, timeUntilEvictionMs);
 	}
 
 	Path getFile(FileSystem fileSystem, String path) throws IOException;

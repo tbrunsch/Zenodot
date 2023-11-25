@@ -1,6 +1,5 @@
 package dd.kms.zenodot.impl.directories;
 
-import dd.kms.zenodot.api.directories.CacheConfigurator;
 import dd.kms.zenodot.api.directories.PathDirectoryStructure;
 import dd.kms.zenodot.impl.directories.CacheUtils.ExceptionalBiFunction;
 import dd.kms.zenodot.impl.directories.CacheUtils.ExceptionalFunction;
@@ -21,14 +20,14 @@ public class CachedPathDirectoryStructure implements PathDirectoryStructure
 	private final ExceptionalFunction<URI, Path>					uriToPathCache;
 	private final ExceptionalFunction<Path, URI>					pathToUriCache;
 
-	public CachedPathDirectoryStructure(PathDirectoryStructure pathDirectoryStructure, CacheConfigurator cacheConfigurator) {
-		this.fileCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getFile, cacheConfigurator);
-		this.resolveCache = CacheUtils.cacheDelegate(pathDirectoryStructure::resolve, cacheConfigurator);
-		this.parentCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getParent, cacheConfigurator);
-		this.childCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getChildren, cacheConfigurator);
-		this.rootDirectoryCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getRootDirectories, cacheConfigurator);
-		this.uriToPathCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toPath, cacheConfigurator);
-		this.pathToUriCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toURI, cacheConfigurator);
+	public CachedPathDirectoryStructure(PathDirectoryStructure pathDirectoryStructure, long timeUntilEvictionMs) {
+		this.fileCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getFile, timeUntilEvictionMs);
+		this.resolveCache = CacheUtils.cacheDelegate(pathDirectoryStructure::resolve, timeUntilEvictionMs);
+		this.parentCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getParent, timeUntilEvictionMs);
+		this.childCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getChildren, timeUntilEvictionMs);
+		this.rootDirectoryCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getRootDirectories, timeUntilEvictionMs);
+		this.uriToPathCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toPath, timeUntilEvictionMs);
+		this.pathToUriCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toURI, timeUntilEvictionMs);
 	}
 
 	@Override

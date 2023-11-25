@@ -8,8 +8,8 @@ public interface FileDirectoryStructure
 {
 	FileDirectoryStructure DEFAULT	= new dd.kms.zenodot.impl.directories.DefaultFileDirectoryStructure();
 
-	static FileDirectoryStructure cache(FileDirectoryStructure fileDirectoryStructure, CacheConfigurator cacheConfigurator) {
-		return new dd.kms.zenodot.impl.directories.CachedFileDirectoryStructure(fileDirectoryStructure, cacheConfigurator);
+	static FileDirectoryStructure cache(FileDirectoryStructure fileDirectoryStructure, long timeUntilEvictionMs) {
+		return new dd.kms.zenodot.impl.directories.CachedFileDirectoryStructure(fileDirectoryStructure, timeUntilEvictionMs);
 	}
 
 	File getFile(String path) throws IOException;

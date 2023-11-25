@@ -1,6 +1,5 @@
 package dd.kms.zenodot.impl.directories;
 
-import dd.kms.zenodot.api.directories.CacheConfigurator;
 import dd.kms.zenodot.api.directories.FileDirectoryStructure;
 import dd.kms.zenodot.impl.directories.CacheUtils.ExceptionalBiFunction;
 import dd.kms.zenodot.impl.directories.CacheUtils.ExceptionalFunction;
@@ -16,11 +15,11 @@ public class CachedFileDirectoryStructure implements FileDirectoryStructure
 	private final ExceptionalFunction<Void, List<File>>		rootDirectoryCache;
 	private final ExceptionalFunction<File, List<File>>		childCache;
 
-	public CachedFileDirectoryStructure(FileDirectoryStructure fileDirectoryStructure, CacheConfigurator cacheConfigurator) {
-		this.fileCache = CacheUtils.cacheDelegate(fileDirectoryStructure::getFile, cacheConfigurator);
-		this.resolveFileCache = CacheUtils.cacheDelegate(fileDirectoryStructure::resolve, cacheConfigurator);
-		this.rootDirectoryCache = CacheUtils.cacheDelegate(nothing -> fileDirectoryStructure.getRootDirectories(), cacheConfigurator);
-		this.childCache = CacheUtils.cacheDelegate(fileDirectoryStructure::getChildren, cacheConfigurator);
+	public CachedFileDirectoryStructure(FileDirectoryStructure fileDirectoryStructure, long timeUntilEvictionMs) {
+		this.fileCache = CacheUtils.cacheDelegate(fileDirectoryStructure::getFile, timeUntilEvictionMs);
+		this.resolveFileCache = CacheUtils.cacheDelegate(fileDirectoryStructure::resolve, timeUntilEvictionMs);
+		this.rootDirectoryCache = CacheUtils.cacheDelegate(nothing -> fileDirectoryStructure.getRootDirectories(), timeUntilEvictionMs);
+		this.childCache = CacheUtils.cacheDelegate(fileDirectoryStructure::getChildren, timeUntilEvictionMs);
 	}
 
 	@Override
