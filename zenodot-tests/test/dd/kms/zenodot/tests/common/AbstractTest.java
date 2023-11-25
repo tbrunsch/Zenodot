@@ -73,8 +73,16 @@ public class AbstractTest<T extends AbstractTest>
 		stopAtError = true;
 	}
 
+	protected boolean isStopAtError() {
+		return stopAtError;
+	}
+
 	public void printLogEntriesAtError() {
 		printLogEntriesAtError = true;
+	}
+
+	protected boolean isPrintLogEntriesAtError() {
+		return printLogEntriesAtError;
 	}
 
 	protected ParserLogger prepareLogger(boolean printToConsole, int numLoggedEntriesToStopAfter) {
@@ -84,13 +92,5 @@ public class AbstractTest<T extends AbstractTest>
 		logger.stopAfter(numLoggedEntriesToStopAfter);
 		settingsBuilder.logger(logger);
 		return logger;
-	}
-
-	protected boolean isStopAtError() {
-		return stopAtError;
-	}
-
-	protected boolean isPrintLogEntriesAtError() {
-		return printLogEntriesAtError;
 	}
 }
