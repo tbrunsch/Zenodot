@@ -230,7 +230,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 
 			@Override
 			protected String doExtractChildRepresentation(URI childURI) {
-				return childURI.getRawSchemeSpecificPart();
+				return childURI.getSchemeSpecificPart();
 			}
 		};
 		parserSettingsBuilder.stringLiteralCompletionProvider(constructor, 1, completionProviderParameter1);
@@ -248,7 +248,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 
 			@Override
 			protected String doExtractChildRepresentation(URI childURI) {
-				return childURI.getRawPath();
+				return childURI.getPath();
 			}
 		};
 		parserSettingsBuilder.stringLiteralCompletionProvider(constructor, 2, completionProviderParameter2);
@@ -266,7 +266,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 
 			@Override
 			protected String doExtractChildRepresentation(URI childURI) {
-				return childURI.getRawPath();
+				return childURI.getPath();
 			}
 		};
 		parserSettingsBuilder.stringLiteralCompletionProvider(constructor, 2, completionProviderParameter2);
@@ -286,7 +286,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 
 			@Override
 			protected String doExtractChildRepresentation(URI childURI) {
-				return childURI.getRawPath();
+				return childURI.getPath();
 			}
 		};
 		parserSettingsBuilder.stringLiteralCompletionProvider(constructor, 4, completionProviderParameter4);
@@ -301,7 +301,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				if (parentPath == null) {
 					return null;
 				}
-				return new URI(parentPath);
+				return URI.create(parentPath);
 			}
 
 			@Override
