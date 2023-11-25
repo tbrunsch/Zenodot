@@ -27,6 +27,11 @@ class DirectoryCompletionTestUtils
 				dir("utils",
 					file("ParseUtils")
 				)
+			),
+			dir("directory with spaces",
+				dir("subdirectory with spaces"),
+				dir("subdirectory_without_spaces"),
+				file("file with spaces")
 			)
 		)
 	);
