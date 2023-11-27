@@ -6,11 +6,12 @@ import dd.kms.zenodot.framework.parsers.CallerContext;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public abstract class AbstractRelativeFileDirectoryCompletionProvider extends AbstractFileDirectoryCompletionProvider
 {
-	public AbstractRelativeFileDirectoryCompletionProvider(FileDirectoryStructure fileDirectoryStructure) {
-		super(fileDirectoryStructure);
+	public AbstractRelativeFileDirectoryCompletionProvider(FileDirectoryStructure fileDirectoryStructure, List<String> favoritePaths) {
+		super(fileDirectoryStructure, favoritePaths);
 	}
 
 	@Nullable

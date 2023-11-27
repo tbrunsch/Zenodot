@@ -7,12 +7,13 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Function;
 
 public abstract class AbstractRelativePathDirectoryCompletionProvider extends AbstractPathDirectoryCompletionProvider
 {
-	public AbstractRelativePathDirectoryCompletionProvider(PathDirectoryStructure pathDirectoryStructure, Function<CallerContext, FileSystem> fileSystemProvider) {
-		super(pathDirectoryStructure, fileSystemProvider);
+	public AbstractRelativePathDirectoryCompletionProvider(PathDirectoryStructure pathDirectoryStructure, List<String> favoritePaths, Function<CallerContext, FileSystem> fileSystemProvider) {
+		super(pathDirectoryStructure, favoritePaths, fileSystemProvider);
 	}
 
 	protected abstract Path getRootFile(CallerContext callerContext) throws IOException;

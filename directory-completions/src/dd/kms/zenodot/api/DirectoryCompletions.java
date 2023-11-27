@@ -5,7 +5,9 @@ import dd.kms.zenodot.api.directories.PathDirectoryStructure;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
+import java.util.List;
 
 public interface DirectoryCompletions
 {
@@ -35,6 +37,19 @@ public interface DirectoryCompletions
 	 * Specify for which methods to provide code completions.
 	 */
 	DirectoryCompletions completionTargets(CompletionTarget... completionTargets);
+
+	/**
+	 * By default, only children of the specified path will be suggested for completions. Favorite paths
+	 * (referencing files or directories on the default file system) that extend the specified path will
+	 * always be suggested, even if they are no direct children.
+	 */
+	DirectoryCompletions favoritePaths(List<String> favoritePaths);
+
+	/**
+	 * By default, only children of the specified path will be suggested for completions. Favorite {@link URI}s
+	 * that extend the specified path will always be suggested, even if they are no direct children.
+	 */
+	DirectoryCompletions favoriteURIs(List<URI> favoriteURIs);
 
 	void configure(ParserSettingsBuilder parserSettingsBuilder);
 

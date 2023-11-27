@@ -1,5 +1,6 @@
 package dd.kms.zenodot.impl.completionproviders;
 
+import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
@@ -12,7 +13,7 @@ import dd.kms.zenodot.framework.result.codecompletions.CodeCompletionStringLiter
 import dd.kms.zenodot.framework.tokenizer.CompletionInfo;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractDirectoryCompletionProvider<P> implements CompletionProvider
@@ -20,7 +21,8 @@ public abstract class AbstractDirectoryCompletionProvider<P> implements Completi
 	@Nullable
 	protected abstract P doGetParent(@Nullable String parentPath, CallerContext callerContext) throws Exception;
 
-	protected abstract List<? extends CodeCompletion> doGetCodeCompletions(@Nullable P parent, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, CallerContext callerContext);
+	protected abstract List<CodeCompletion> doGetCodeCompletions(NullableOptional<P> parent, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, CallerContext callerContext);
+	protected abstract List<CodeCompletion> doGetFavoriteCompletions(NullableOptional<P> parent, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, CallerContext callerContext);
 
 	protected CodeCompletion createCodeCompletion(String childName, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode) {
 		return createCodeCompletion(childName, childCompletionInfo, completionMode, childName);
@@ -38,13 +40,24 @@ public abstract class AbstractDirectoryCompletionProvider<P> implements Completi
 	@Override
 	public List<? extends CodeCompletion> getCodeCompletions(CompletionInfo completionInfo, CompletionMode completionMode, CallerContext callerContext) {
 		ChildCompletionInfo childCompletionInfo = new ChildCompletionInfo(completionInfo);
-		P parent;
+		NullableOptional<P> parent;
 		try {
-			parent = doGetParent(childCompletionInfo.getParentPath(), callerContext);
+			parent = NullableOptional.of(doGetParent(childCompletionInfo.getParentPath(), callerContext));
 		} catch (Exception e) {
-			return Collections.emptyList();
+			parent = NullableOptional.empty();
 		}
-		return doGetCodeCompletions(parent, childCompletionInfo, completionMode, callerContext);
+		List<CodeCompletion> codeCompletions = doGetCodeCompletions(parent, childCompletionInfo, completionMode, callerContext);
+		boolean suggestOnlyDirectChildren = childCompletionInfo.hasSeparatorAfterCaret();
+		List<CodeCompletion> favoriteCompletions = suggestOnlyDirectChildren
+			? ImmutableList.of()
+			: doGetFavoriteCompletions(parent, childCompletionInfo, completionMode, callerContext);
+		if (favoriteCompletions.isEmpty()) {
+			return codeCompletions;
+		}
+		List<CodeCompletion> combinedCompletions = new ArrayList<>();
+		combinedCompletions.addAll(codeCompletions);
+		combinedCompletions.addAll(favoriteCompletions);
+		return combinedCompletions;
 	}
 
 	/**
@@ -58,6 +71,7 @@ public abstract class AbstractDirectoryCompletionProvider<P> implements Completi
 		private final String			parentPath;
 		private final int				childBeginPos;
 		private final int				childEndPos;
+		private final boolean			separatorAfterCaret;
 
 		ChildCompletionInfo(CompletionInfo fullPathCompletionInfo) {
 			this.fullPathCompletionInfo = fullPathCompletionInfo;
@@ -81,10 +95,15 @@ public abstract class AbstractDirectoryCompletionProvider<P> implements Completi
 				separatorPos++;
 			}
 			childEndPos = separatorPos;
+			separatorAfterCaret = childEndPos < text.length();
 		}
 
 		String getParentPath() {
 			return parentPath;
+		}
+
+		boolean hasSeparatorAfterCaret() {
+			return separatorAfterCaret;
 		}
 
 		@Override
@@ -96,7 +115,7 @@ public abstract class AbstractDirectoryCompletionProvider<P> implements Completi
 
 		@Override
 		public int getTokenEndPosition() {
-			return childEndPos == fullPathCompletionInfo.getTokenText().length()
+			return separatorAfterCaret
 				? fullPathCompletionInfo.getTokenEndPosition()
 				: getTokenTextEndPosition();
 		}
