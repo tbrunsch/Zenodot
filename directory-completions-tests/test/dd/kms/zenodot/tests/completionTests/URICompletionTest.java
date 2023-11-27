@@ -18,7 +18,7 @@ import java.util.Collection;
 @RunWith(Parameterized.class)
 public class URICompletionTest extends CompletionTest
 {
-	private static final FileSystem NONE_DEFAULT_FILE_SYSTEM	= DirectoryCompletionTestUtils.createFileSystem("uri");
+	private static FileSystem NONE_DEFAULT_FILE_SYSTEM;
 
 	public URICompletionTest(TestData testData) {
 		super(testData);
@@ -26,6 +26,7 @@ public class URICompletionTest extends CompletionTest
 
 	@BeforeClass
 	public static void setupFileSystems() throws IOException {
+		NONE_DEFAULT_FILE_SYSTEM = DirectoryCompletionTestUtils.createFileSystem("uri");
 		FileSystemUtils.setupFileSystem(NONE_DEFAULT_FILE_SYSTEM, DirectoryCompletionTestUtils.ROOT);
 	}
 
