@@ -94,9 +94,14 @@ public abstract class AbstractPathDirectoryCompletionProvider extends AbstractDi
 			return null;
 		}
 		String parentPath = parent.toString();
-		return childPath.startsWith(parentPath) && !Objects.equals(childPath, parentPath)
-			? childPath.substring(parentPath.length())
-			: null;
+		if (childPath.startsWith(parentPath) && !Objects.equals(childPath, parentPath)) {
+			int beginIndex = parentPath.length();
+			if (isSeparator(childPath.charAt(beginIndex))) {
+				beginIndex++;
+			}
+			return childPath.substring(beginIndex);
+		}
+		return null;
 	}
 
 	protected FileSystem getFileSystem(CallerContext callerContext) {

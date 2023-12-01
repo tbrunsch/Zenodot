@@ -60,6 +60,10 @@ public abstract class AbstractDirectoryCompletionProvider<P> implements Completi
 		return combinedCompletions;
 	}
 
+	protected static boolean isSeparator(char c) {
+		return c == '/' || c == '\\';
+	}
+
 	/**
 	 * The completion info we get by Zenodot refers to the whole path string. However,
 	 * we do not want to complete the whole path, but only the child the caret
@@ -144,10 +148,6 @@ public abstract class AbstractDirectoryCompletionProvider<P> implements Completi
 		public String getTokenText() {
 			return fullPathCompletionInfo.getTokenText().substring(childBeginPos, childEndPos);
 
-		}
-
-		private static boolean isSeparator(char c) {
-			return c == '/' || c == '\\';
 		}
 	}
 }
