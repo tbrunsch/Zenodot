@@ -140,8 +140,8 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 
 	private void configurePathCreationViaPaths(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
 		Executable pathsGet = Paths.class.getMethod("get", String.class, String[].class);
-		CompletionProvider completionProviderParameter0 = new AbsolutePathDirectoryCompletionProvider(pathDirectoryStructure, favoritePaths, AbstractPathDirectoryCompletionProvider::getDefaultFileSystem);
-		CompletionProvider completionProviderParameter1 = new AbstractRelativePathDirectoryCompletionProvider(pathDirectoryStructure, favoritePaths, AbstractPathDirectoryCompletionProvider::getDefaultFileSystem) {
+		CompletionProvider completionProviderParameter0 = new AbsolutePathDirectoryCompletionProvider(pathDirectoryStructure, favoritePaths, callerContext -> pathDirectoryStructure.getDefaultFileSystem());
+		CompletionProvider completionProviderParameter1 = new AbstractRelativePathDirectoryCompletionProvider(pathDirectoryStructure, favoritePaths, callerContext -> pathDirectoryStructure.getDefaultFileSystem()) {
 			@Override
 			protected Path getRootFile(CallerContext callerContext) throws IOException {
 				String rootFilePath = callerContext.getParameter(0, String.class, "parent path");

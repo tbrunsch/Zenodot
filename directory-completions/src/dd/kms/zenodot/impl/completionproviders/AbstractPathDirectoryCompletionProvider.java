@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +29,7 @@ public abstract class AbstractPathDirectoryCompletionProvider extends AbstractDi
 		ImmutableList.Builder<Path> favoriteFilesBuilder = ImmutableList.builder();
 		for (String favoritePath : favoritePaths) {
 			try {
-				Path favoriteFile = Paths.get(favoritePath);
+				Path favoriteFile = pathDirectoryStructure.getFile(FileSystems.getDefault(), favoritePath);
 				favoriteFilesBuilder.add(favoriteFile);
 			} catch (Exception ignored) {
 				/* simply skip this file */
@@ -70,9 +69,6 @@ public abstract class AbstractPathDirectoryCompletionProvider extends AbstractDi
 			return Collections.emptyList();
 		}
 		Path actualParent = parent.get();
-		if (actualParent != null && !Objects.equals(actualParent.getFileSystem(), FileSystems.getDefault())) {
-			return Collections.emptyList();
-		}
 		List<CodeCompletion> favoriteCompletions = new ArrayList<>();
 		try {
 			for (Path favoriteFile : favoriteFiles) {
@@ -94,6 +90,9 @@ public abstract class AbstractPathDirectoryCompletionProvider extends AbstractDi
 		if (parent == null) {
 			return childPath;
 		}
+		if (!Objects.equals(parent.getFileSystem(), child.getFileSystem())) {
+			return null;
+		}
 		String parentPath = parent.toString();
 		return childPath.startsWith(parentPath) && !Objects.equals(childPath, parentPath)
 			? childPath.substring(parentPath.length())
@@ -102,10 +101,6 @@ public abstract class AbstractPathDirectoryCompletionProvider extends AbstractDi
 
 	protected FileSystem getFileSystem(CallerContext callerContext) {
 		return fileSystemProvider.apply(callerContext);
-	}
-
-	public static FileSystem getDefaultFileSystem(CallerContext callerContext) {
-		return FileSystems.getDefault();
 	}
 
 	public static FileSystem getCallerFileSystem(CallerContext callerContext) {
