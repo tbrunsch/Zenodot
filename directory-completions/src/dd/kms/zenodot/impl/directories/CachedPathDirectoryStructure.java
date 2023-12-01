@@ -12,6 +12,7 @@ import java.util.List;
 
 public class CachedPathDirectoryStructure implements PathDirectoryStructure
 {
+	private final PathDirectoryStructure							pathDirectoryStructure;
 	private final ExceptionalBiFunction<FileSystem, String, Path>	fileCache;
 	private final ExceptionalBiFunction<Path, String, Path>			resolveCache;
 	private final ExceptionalFunction<Path, Path>					parentCache;
@@ -21,6 +22,7 @@ public class CachedPathDirectoryStructure implements PathDirectoryStructure
 	private final ExceptionalFunction<Path, URI>					pathToUriCache;
 
 	public CachedPathDirectoryStructure(PathDirectoryStructure pathDirectoryStructure, long timeUntilEvictionMs) {
+		this.pathDirectoryStructure = pathDirectoryStructure;
 		this.fileCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getFile, timeUntilEvictionMs);
 		this.resolveCache = CacheUtils.cacheDelegate(pathDirectoryStructure::resolve, timeUntilEvictionMs);
 		this.parentCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getParent, timeUntilEvictionMs);
@@ -28,6 +30,11 @@ public class CachedPathDirectoryStructure implements PathDirectoryStructure
 		this.rootDirectoryCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getRootDirectories, timeUntilEvictionMs);
 		this.uriToPathCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toPath, timeUntilEvictionMs);
 		this.pathToUriCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toURI, timeUntilEvictionMs);
+	}
+
+	@Override
+	public FileSystem getDefaultFileSystem() {
+		return pathDirectoryStructure.getDefaultFileSystem();
 	}
 
 	@Override

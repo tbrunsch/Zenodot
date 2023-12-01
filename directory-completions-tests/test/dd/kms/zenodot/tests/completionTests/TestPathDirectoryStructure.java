@@ -18,6 +18,11 @@ class TestPathDirectoryStructure implements PathDirectoryStructure
 	}
 
 	@Override
+	public FileSystem getDefaultFileSystem() {
+		return replacementForDefaultFileSystem;
+	}
+
+	@Override
 	public Path getFile(FileSystem fileSystem, String path) {
 		return getTestFileSystem(fileSystem).getPath(path);
 	}

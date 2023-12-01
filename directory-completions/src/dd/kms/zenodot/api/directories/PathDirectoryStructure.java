@@ -14,6 +14,7 @@ public interface PathDirectoryStructure
 		return new dd.kms.zenodot.impl.directories.CachedPathDirectoryStructure(pathDirectoryStructure, timeUntilEvictionMs);
 	}
 
+	FileSystem getDefaultFileSystem();
 	Path getFile(FileSystem fileSystem, String path) throws IOException;
 	Path resolve(Path parent, String childPath) throws IOException;
 	Path getParent(Path child) throws IOException;

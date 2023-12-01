@@ -11,6 +11,11 @@ import java.util.List;
 public class DefaultPathDirectoryStructure implements PathDirectoryStructure
 {
 	@Override
+	public FileSystem getDefaultFileSystem() {
+		return FileSystems.getDefault();
+	}
+
+	@Override
 	public Path getFile(FileSystem fileSystem, String path) {
 		return fileSystem.getPath(path);
 	}
