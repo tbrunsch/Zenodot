@@ -52,25 +52,25 @@ public class FavoriteURICompletionTest extends CompletionTest
 			.addTest("new URI(\"jimfs://x", "xyz/test")
 			.addTest("new URI(\"jimfs://xyz/", "test")
 			.addTest("new URI(\"jimfs://uri/zen", "zenodot")
-			.addTest("new URI(\"jimfs://uri/zenodot/fr", "framework")	// no favorite
-			.addTest("new URI(\"jimfs://uri/zenodot/dir", "directory%20with%20spaces")
+			.addTest("new URI(\"jimfs://uri/zenodot/fr", "framework")					// no favorite
+			.addTest("new URI(\"jimfs://uri/zenodot/te", "test/test%20with%20spaces")
 
 			.addTest("new URI(\"http\", \"", "//github.com")
 			.addTest("new URI(\"jimfs\", \"//x", "xyz/test")
 			.addTest("new URI(\"jimfs\", \"//xyz/", "test")
 			.addTest("new URI(\"jimfs\", \"//uri/zen", "zenodot")
 			.addTest("new URI(\"jimfs\", \"//uri/zenodot/fr", "framework")	// no favorite
-			.addTest("new URI(\"jimfs\", \"//uri/zenodot/dir", "directory with spaces")
+			.addTest("new URI(\"jimfs\", \"//uri/zenodot/te", "test/test with spaces")
 
 			.addTest("new URI(\"jimfs\", \"xyz\", \"/t", "test")
 			.addTest("new URI(\"jimfs\", \"uri\", \"/zen", "zenodot")
 			.addTest("new URI(\"jimfs\", \"uri\", \"/zenodot/fr", "framework")	// no favorite
-			.addTest("new URI(\"jimfs\", \"uri\", \"/zenodot/dir", "directory with spaces")
+			.addTest("new URI(\"jimfs\", \"uri\", \"/zenodot/te", "test/test with spaces")
 
 			.addTest("new URI(\"jimfs\", null, \"xyz\", -1, \"/t", "test")
 			.addTest("new URI(\"jimfs\", null, \"uri\", -1, \"/zen", "zenodot")
 			.addTest("new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/fr", "framework")	// no favorite
-			.addTest("new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/dir", "directory with spaces")
+			.addTest("new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/te", "test/test with spaces")
 
 			.addTest("URI.create(\"h", "http://github.com")
 			.addTest("URI.create(\"http:", "http://github.com")
@@ -78,7 +78,7 @@ public class FavoriteURICompletionTest extends CompletionTest
 			.addTest("URI.create(\"jimfs://xyz/", "test")
 			.addTest("URI.create(\"jimfs://uri/zen", "zenodot")
 			.addTest("URI.create(\"jimfs://uri/zenodot/fr", "framework")	// no favorite
-			.addTest("URI.create(\"jimfs://uri/zenodot/dir", "directory%20with%20spaces")
+			.addTest("URI.create(\"jimfs://uri/zenodot/te", "test/test%20with%20spaces")
 
 			.build();
 	}
