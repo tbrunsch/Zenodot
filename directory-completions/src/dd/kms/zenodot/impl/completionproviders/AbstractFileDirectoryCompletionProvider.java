@@ -27,7 +27,7 @@ public abstract class AbstractFileDirectoryCompletionProvider extends AbstractDi
 		ImmutableList.Builder<File> favoriteFilesBuilder = ImmutableList.builder();
 		for (String favoritePath : favoritePaths) {
 			try {
-				File favoriteFile = new File(favoritePath);
+				File favoriteFile = fileDirectoryStructure.getFile(favoritePath);
 				favoriteFilesBuilder.add(favoriteFile);
 			} catch (Exception ignored) {
 				/* simply skip this file */
