@@ -1,6 +1,7 @@
 package dd.kms.zenodot.impl.completionproviders;
 
 import com.google.common.collect.ImmutableList;
+import dd.kms.zenodot.api.directories.PathContainer;
 import dd.kms.zenodot.api.directories.PathDirectoryStructure;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.CompletionMode;
@@ -38,8 +39,8 @@ public abstract class AbstractURIDirectoryCompletionProvider extends AbstractDir
 			return Collections.emptyList();
 		}
 		List<CodeCompletion> codeCompletions = new ArrayList<>();
-		try {
-			Path parent = pathDirectoryStructure.toPath(parentURI.get());
+		try (PathContainer parentContainer = pathDirectoryStructure.toPath(parentURI.get())) {
+			Path parent = parentContainer.getPath();
 			List<Path> children = pathDirectoryStructure.getChildren(parent);
 			for (Path child : children) {
 				URI childURI = pathDirectoryStructure.toURI(child);

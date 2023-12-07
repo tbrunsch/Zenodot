@@ -1,6 +1,7 @@
 package dd.kms.zenodot.tests.completionTests;
 
 import com.google.common.collect.Lists;
+import dd.kms.zenodot.api.directories.PathContainer;
 import dd.kms.zenodot.api.directories.PathDirectoryStructure;
 
 import java.io.IOException;
@@ -55,8 +56,8 @@ class TestPathDirectoryStructure implements PathDirectoryStructure
 	}
 
 	@Override
-	public Path toPath(URI uri) {
-		return Paths.get(uri);
+	public PathContainer toPath(URI uri) throws IOException {
+		return PathDirectoryStructure.DEFAULT.toPath(uri);
 	}
 
 	private FileSystem getTestFileSystem(FileSystem fileSystem) {

@@ -1,8 +1,7 @@
 package dd.kms.zenodot.impl.directories;
 
+import dd.kms.zenodot.api.directories.PathContainer;
 import dd.kms.zenodot.api.directories.PathDirectoryStructure;
-import dd.kms.zenodot.impl.directories.CacheUtils.ExceptionalBiFunction;
-import dd.kms.zenodot.impl.directories.CacheUtils.ExceptionalFunction;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,7 +17,7 @@ public class CachedPathDirectoryStructure implements PathDirectoryStructure
 	private final ExceptionalFunction<Path, Path>					parentCache;
 	private final ExceptionalFunction<Path, List<Path>>				childCache;
 	private final ExceptionalFunction<FileSystem, List<Path>>		rootDirectoryCache;
-	private final ExceptionalFunction<URI, Path>					uriToPathCache;
+	private final ExceptionalFunction<URI, PathContainer>			uriToPathContainerCache;
 	private final ExceptionalFunction<Path, URI>					pathToUriCache;
 
 	public CachedPathDirectoryStructure(PathDirectoryStructure pathDirectoryStructure, long timeUntilEvictionMs) {
@@ -28,7 +27,7 @@ public class CachedPathDirectoryStructure implements PathDirectoryStructure
 		this.parentCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getParent, timeUntilEvictionMs);
 		this.childCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getChildren, timeUntilEvictionMs);
 		this.rootDirectoryCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getRootDirectories, timeUntilEvictionMs);
-		this.uriToPathCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toPath, timeUntilEvictionMs);
+		this.uriToPathContainerCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toPath, timeUntilEvictionMs);
 		this.pathToUriCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toURI, timeUntilEvictionMs);
 	}
 
@@ -68,7 +67,7 @@ public class CachedPathDirectoryStructure implements PathDirectoryStructure
 	}
 
 	@Override
-	public Path toPath(URI uri) throws IOException {
-		return uriToPathCache.apply(uri);
+	public PathContainer toPath(URI uri) throws IOException {
+		return uriToPathContainerCache.apply(uri);
 	}
 }

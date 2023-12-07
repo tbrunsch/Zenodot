@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import dd.kms.zenodot.api.directories.common.OptionalCloseable;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -23,7 +24,12 @@ class CacheUtils
 			});
 		return key -> {
 			try {
-				return cache.get(key);
+				V value = cache.get(key);
+				if (value instanceof OptionalCloseable && ((OptionalCloseable) value).mustBeClosed()) {
+					// do not cache this value
+					cache.invalidate(key);
+				}
+				return value;
 			} catch (ExecutionException e) {
 				Throwable cause = e.getCause();
 				Throwables.throwIfUnchecked(cause);
@@ -36,18 +42,6 @@ class CacheUtils
 		ExceptionalFunction<Pair<K1, K2>, V> functionToCache = p -> biFunctionToCache.apply(p.getFirst(), p.getSecond());
 		ExceptionalFunction<Pair<K1, K2>, V> cachedFunction = cacheDelegate(functionToCache, timeUntilEvictionMs);
 		return (k1, k2) -> cachedFunction.apply(new Pair<>(k1, k2));
-	}
-
-	@FunctionalInterface
-	interface ExceptionalFunction<K, V>
-	{
-		V apply(K key) throws IOException;
-	}
-
-	@FunctionalInterface
-	interface ExceptionalBiFunction<K1, K2, V>
-	{
-		V apply(K1 key1, K2 key2) throws IOException;
 	}
 
 	private static class Pair<U, V>
