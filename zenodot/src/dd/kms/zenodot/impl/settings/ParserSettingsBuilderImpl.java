@@ -15,19 +15,20 @@ import dd.kms.zenodot.impl.utils.ClassUtils;
 import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
-	private CompletionMode												completionMode;
-	private Set<Class<?>>												importedClasses;
-	private Set<String>													importedPackages;
-	private AccessModifier												minimumAccessModifier;
-	private EvaluationMode												evaluationMode;
-	private boolean														considerAllClassesForClassCompletions;
-	private final List<AdditionalParserSettings>						additionalParserSettings;
-	private final List<Triple<Executable, Integer, CompletionProvider>>	stringLiteralCompletionProviders;
-	private ParserLogger												logger;
+	private CompletionMode								completionMode;
+	private Set<Class<?>>								importedClasses;
+	private Set<String>									importedPackages;
+	private AccessModifier								minimumAccessModifier;
+	private EvaluationMode								evaluationMode;
+	private boolean										considerAllClassesForClassCompletions;
+	private final List<AdditionalParserSettings>		additionalParserSettings;
+	private final List<StringLiteralCompletionEntry>	stringLiteralCompletionProviders;
+	private ParserLogger								logger;
 
 	public ParserSettingsBuilderImpl() {
 		completionMode = CompletionMode.COMPLETE_AND_REPLACE_WHOLE_WORDS;
@@ -107,8 +108,14 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilder stringLiteralCompletionProvider(Executable executable, int parameterIndex, CompletionProvider completionProvider) {
-		stringLiteralCompletionProviders.add(new Triple<>(executable, parameterIndex, completionProvider));
+	public ParserSettingsBuilder addStringLiteralCompletionProvider(Object owner, Executable executable, int parameterIndex, CompletionProvider completionProvider) {
+		stringLiteralCompletionProviders.add(new StringLiteralCompletionEntry(owner, executable, parameterIndex, completionProvider));
+		return this;
+	}
+
+	@Override
+	public ParserSettingsBuilder removeStringLiteralCompletionProviders(Object owner) {
+		stringLiteralCompletionProviders.removeIf(q -> Objects.equals(q.getOwner(), owner));
 		return this;
 	}
 

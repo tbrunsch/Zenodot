@@ -17,16 +17,16 @@ import java.util.Set;
 
 class ParserSettingsImpl implements ParserSettings
 {
-	private final CompletionMode										completionMode;
-	private final Imports												imports;
-	private final AccessModifier										minimumAccessModifier;
-	private final EvaluationMode										evaluationMode;
-	private final boolean 												considerAllClassesForClassCompletions;
-	private final List<AdditionalParserSettings>						additionalParserSettings;
-	private final List<Triple<Executable, Integer, CompletionProvider>>	stringLiteralCompletionProviders;
-	private final ParserLogger 											logger;
+	private final CompletionMode						completionMode;
+	private final Imports								imports;
+	private final AccessModifier						minimumAccessModifier;
+	private final EvaluationMode						evaluationMode;
+	private final boolean 								considerAllClassesForClassCompletions;
+	private final List<AdditionalParserSettings>		additionalParserSettings;
+	private final List<StringLiteralCompletionEntry>	stringLiteralCompletionProviders;
+	private final ParserLogger 							logger;
 
-	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, List<AdditionalParserSettings> additionalParserSettings, List<Triple<Executable, Integer, CompletionProvider>> stringLiteralCompletionProviders, ParserLogger logger) {
+	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, List<AdditionalParserSettings> additionalParserSettings, List<StringLiteralCompletionEntry> stringLiteralCompletionProviders, ParserLogger logger) {
 		this.completionMode = completionMode;
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
 		this.minimumAccessModifier = minimumAccessModifier;
@@ -71,20 +71,20 @@ class ParserSettingsImpl implements ParserSettings
 	@Override
 	public List<CompletionProvider> getStringLiteralCompletionProviders(Executable executable, int parameterIndex) {
 		List<CompletionProvider> completionProviders = new ArrayList<>();
-		for (Triple<Executable, Integer, CompletionProvider> stringLiteralCompletionProvider : stringLiteralCompletionProviders) {
-			if (parameterIndex != stringLiteralCompletionProvider.getSecond()) {
+		for (StringLiteralCompletionEntry entry : stringLiteralCompletionProviders) {
+			if (parameterIndex != entry.getParameterIndex()) {
 				continue;
 			}
-			Executable supportedExecutable = stringLiteralCompletionProvider.getFirst();
+			Executable supportedExecutable = entry.getExecutable();
 			if (!Objects.equals(executable, supportedExecutable) && !ReflectionUtils.isOverriddenBy(supportedExecutable, executable)) {
 				continue;
 			}
-			completionProviders.add(stringLiteralCompletionProvider.getThird());
+			completionProviders.add(entry.getCompletionProvider());
 		}
 		return completionProviders;
 	}
 
-	List<Triple<Executable, Integer, CompletionProvider>> getStringLiteralCompletionProviders() {
+	List<StringLiteralCompletionEntry> getStringLiteralCompletionProviders() {
 		return stringLiteralCompletionProviders;
 	}
 

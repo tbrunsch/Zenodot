@@ -24,6 +24,8 @@ import java.util.Set;
 
 public class DirectoryCompletionsImpl implements DirectoryCompletions
 {
+	private static final Object	OWNER	= DirectoryCompletions.class;
+
 	private FileDirectoryStructure	fileDirectoryStructure	= FileDirectoryStructure.DEFAULT;
 	private PathDirectoryStructure	pathDirectoryStructure	= PathDirectoryStructure.DEFAULT;
 	private Set<CompletionTarget>	completionTargets		= ImmutableSet.of();
@@ -62,6 +64,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 
 	@Override
 	public void configure(ParserSettingsBuilder parserSettingsBuilder) {
+		parserSettingsBuilder.removeStringLiteralCompletionProviders(OWNER);
 		for (CompletionTarget completionTarget : completionTargets) {
 			configure(parserSettingsBuilder, completionTarget);
 		}
@@ -99,7 +102,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 	private void configureSimpleFileConstructor(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
 		Executable fileConstructor = File.class.getConstructor(String.class);
 		CompletionProvider completionProvider = new AbsoluteFileDirectoryCompletionProvider(fileDirectoryStructure, favoritePaths);
-		parserSettingsBuilder.stringLiteralCompletionProvider(fileConstructor, 0, completionProvider);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, fileConstructor, 0, completionProvider);
 	}
 
 	private void configureFileConstructorRelativeToParentPath(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
@@ -113,8 +116,8 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return fileDirectoryStructure.getFile(rootFilePath);
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(fileConstructor, 0, completionProviderParameter0);
-		parserSettingsBuilder.stringLiteralCompletionProvider(fileConstructor, 1, completionProviderParameter1);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, fileConstructor, 0, completionProviderParameter0);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, fileConstructor, 1, completionProviderParameter1);
 	}
 
 	private void configureFileConstructorRelativeToParentFile(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
@@ -126,7 +129,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return callerContext.getParameter(0, File.class, "parent file");
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(fileConstructor, 1, completionProviderParameter1);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, fileConstructor, 1, completionProviderParameter1);
 	}
 
 	private void configurePathCreation(ParserSettingsBuilder parserSettingsBuilder) {
@@ -148,8 +151,8 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return pathDirectoryStructure.getFile(FileSystems.getDefault(), rootFilePath);
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(pathsGet, 0, completionProviderParameter0);
-		parserSettingsBuilder.stringLiteralCompletionProvider(pathsGet, 1, completionProviderParameter1);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, pathsGet, 0, completionProviderParameter0);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, pathsGet, 1, completionProviderParameter1);
 	}
 
 	private void configurePathCreationViaFileSystem(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
@@ -162,8 +165,8 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return pathDirectoryStructure.getFile(getFileSystem(callerContext), rootFilePath);
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(fileSystemGetPath, 0, completionProviderParameter0);
-		parserSettingsBuilder.stringLiteralCompletionProvider(fileSystemGetPath, 1, completionProviderParameter1);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, fileSystemGetPath, 0, completionProviderParameter0);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, fileSystemGetPath, 1, completionProviderParameter1);
 	}
 
 	private void configurePathResolution(ParserSettingsBuilder parserSettingsBuilder) {
@@ -183,7 +186,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return callerContext.getCaller(Path.class, "parent path");
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(pathResolve, 0, completionProviderParameter0);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, pathResolve, 0, completionProviderParameter0);
 	}
 
 	private void configurePathSiblingResolution(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
@@ -199,7 +202,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return parentPath;
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(pathResolveSibling, 0, completionProviderParameter0);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, pathResolveSibling, 0, completionProviderParameter0);
 	}
 
 	private void configureURICreation(ParserSettingsBuilder parserSettingsBuilder) {
@@ -227,7 +230,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return new URI(parentPath);
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(constructor, 0, completionProviderParameter0);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 0, completionProviderParameter0);
 	}
 
 	private void configureURICreation3Strings(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
@@ -239,7 +242,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return new URI(scheme, parentPath, null);
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(constructor, 1, completionProviderParameter1);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 1, completionProviderParameter1);
 	}
 
 	private void configureURICreation4Strings(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
@@ -252,7 +255,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return new URI(scheme, host, parentPath, null);
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(constructor, 2, completionProviderParameter2);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 2, completionProviderParameter2);
 	}
 
 	private void configureURICreation5Strings(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
@@ -265,7 +268,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return new URI(scheme, host, parentPath, null);
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(constructor, 2, completionProviderParameter2);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 2, completionProviderParameter2);
 	}
 
 	private void configureURICreation6Strings1Int(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
@@ -280,7 +283,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return new URI(scheme, userInfo, host, port, parentPath, null, null);
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(constructor, 4, completionProviderParameter4);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 4, completionProviderParameter4);
 	}
 
 	private void configureURICreationFactory(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
@@ -295,6 +298,6 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return URI.create(parentPath);
 			}
 		};
-		parserSettingsBuilder.stringLiteralCompletionProvider(createURI, 0, completionProviderParameter0);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, createURI, 0, completionProviderParameter0);
 	}
 }

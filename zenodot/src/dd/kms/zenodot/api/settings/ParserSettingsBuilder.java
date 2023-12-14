@@ -63,9 +63,23 @@ public interface ParserSettingsBuilder
 	 */
 	ParserSettingsBuilder considerAllClassesForClassCompletions(boolean considerAllClassesForClassCompletions);
 
+	/**
+	 * Call this method if you want to add custom parsers to the Zenodot parser framework.
+	 */
 	ParserSettingsBuilder additionalParserSettings(AdditionalParserSettings additionalParserSettings);
 
-	ParserSettingsBuilder stringLiteralCompletionProvider(Executable executable, int parameterIndex, CompletionProvider completionProvider);
+	/**
+	 * Adds a completion provider for the String parameter {@code parameterIndex} of {@code executable}. The
+	 * completion provider is associated with the specified {@code owner}. All completion providers of
+	 * {@code owner} can later be removed by calling {@link #removeStringLiteralCompletionProviders(Object)}.
+	 */
+	ParserSettingsBuilder addStringLiteralCompletionProvider(Object owner, Executable executable, int parameterIndex, CompletionProvider completionProvider);
+
+	/**
+	 * Removes all completion providers registered via {@link #addStringLiteralCompletionProvider(Object, Executable, int, CompletionProvider)}
+	 * for the specified {@code owner}.
+	 */
+	ParserSettingsBuilder removeStringLiteralCompletionProviders(Object owner);
 
 	/**
 	 * Specify a logger that receives messages during the parsing process. This is primarily meant for
