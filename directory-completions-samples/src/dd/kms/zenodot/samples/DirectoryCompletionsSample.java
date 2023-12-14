@@ -88,10 +88,10 @@ public class DirectoryCompletionsSample
 			printBestCompletion(parser, "this.resolve(\"fi", other);		// prints "file with spaces"
 			printBestCompletion(parser, "this.resolveSibling(\"so", other);	// prints "some_file"
 
-			printBestCompletion(parser, "new URI(\"jimfs://sample/zenodot/other/dir", null);							// prints "directory%20with%20spaces/"
-			printBestCompletion(parser, "new URI(\"jimfs\", \"//sample/zenodot/other/fi", null);						// prints "file with spaces"
-			printBestCompletion(parser, "new URI(\"jimfs\", null, \"//sample/zenodot/an", null);						// prints "another_file"
-			printBestCompletion(parser, "new URI(\"jimfs\", null, null, 8080, \"//sample/zenodot/samples/co", null);	// prints "completion_sample"
+			printBestCompletion(parser, "new URI(\"jimfs://sample/zenodot/other/dir", null);						// prints "directory%20with%20spaces/"
+			printBestCompletion(parser, "new URI(\"jimfs\", \"//sample/zenodot/other/fi", null);					// prints "file with spaces"
+			printBestCompletion(parser, "new URI(\"jimfs\", \"sample\", \"/zenodot/an", null);						// prints "another_file"
+			printBestCompletion(parser, "new URI(\"jimfs\", null, \"sample\", -1, \"/zenodot/samples/co", null);	// prints "completion_sample"
 		}
 	}
 
