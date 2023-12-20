@@ -49,6 +49,14 @@ public abstract class AbstractFileDirectoryCompletionProvider extends AbstractDi
 				: fileDirectoryStructure.getRootDirectories();
 			for (File child : children) {
 				String childName = child.getName();
+				if (childName.trim().isEmpty() && child.getParent() == null) {
+					// happens for Windows drives
+					String path = child.getPath();
+					int lastCharPos = path.length() - 1;
+					childName = lastCharPos >= 0 && isSeparator(path.charAt(lastCharPos))
+						? path.substring(0, lastCharPos)
+						: path;
+				}
 				CodeCompletion codeCompletion = createCodeCompletion(childName, childCompletionInfo, completionMode);
 				codeCompletions.add(codeCompletion);
 			}
