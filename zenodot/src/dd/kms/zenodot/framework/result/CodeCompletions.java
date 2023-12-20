@@ -7,6 +7,8 @@ import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A collection of {@link CodeCompletion} including their ratings
@@ -27,7 +29,7 @@ public class CodeCompletions
 	}
 
 	public CodeCompletions(List<CodeCompletion> completions, ExecutableArgumentInfo executableArgumentInfo) {
-		this.completions = ImmutableList.copyOf(completions);
+		this.completions = completions.stream().distinct().collect(ImmutableList.toImmutableList());
 		this.executableArgumentInfo = executableArgumentInfo;
 	}
 
