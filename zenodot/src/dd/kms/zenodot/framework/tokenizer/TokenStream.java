@@ -181,7 +181,10 @@ public class TokenStream
 				builder.append(c);
 			} else {
 				if (position == expression.length()) {
-					throw new SyntaxException("The literal ends with a backslash '\\'");
+					if (caretPosition == position) {
+						throw new CodeCompletionException(CodeCompletions.NONE);
+					}
+					throw new SyntaxException("Missing '\"'");
 				}
 				char escapedChar = expression.charAt(position++);
 				Character interpretation = INTERPRETATION_OF_ESCAPED_CHARACTERS.get(escapedChar);
