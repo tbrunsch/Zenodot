@@ -1,19 +1,19 @@
 package dd.kms.zenodot.impl.directories;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import dd.kms.zenodot.api.directories.PathContainer;
 import dd.kms.zenodot.api.directories.PathDirectoryStructure;
+import dd.kms.zenodot.impl.common.JarUriWorkaround;
+import dd.kms.zenodot.impl.common.PathContainerImpl;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.List;
-import java.util.Map;
 
 public class DefaultPathDirectoryStructure implements PathDirectoryStructure
 {
-	private static final Map<String, Object>	OPEN_ZIP_FILE_SYSTEM_PARAMETERS	= ImmutableMap.of("create", "true");
+	private final JarUriWorkaround	jarUriWorkaround	= new JarUriWorkaround();
 
 	@Override
 	public FileSystem getDefaultFileSystem() {
@@ -49,49 +49,22 @@ public class DefaultPathDirectoryStructure implements PathDirectoryStructure
 
 	@Override
 	public URI toURI(Path path) {
-		return path.toUri();
+		URI uri = path.toUri();
+		String scheme = uri.getScheme();
+		if (!jarUriWorkaround.isApplicable(scheme)) {
+			return uri;
+		}
+		return jarUriWorkaround.correctJarUri(uri);
 	}
 
 	@Override
 	public PathContainer toPath(URI uri) {
-		Path _path;
-		ExceptionalRunnable _onClose = null;
-		try {
-			_path = Paths.get(uri);
-		} catch (FileSystemNotFoundException e) {
-			String scheme = uri.getScheme();
-			if ("jar".equalsIgnoreCase(scheme) || "zip".equalsIgnoreCase(scheme)) {
-				// We have to open the ZipFileSystem manually and ensure that it will be closed later
-				try {
-					FileSystem fileSystem = FileSystems.newFileSystem(uri, OPEN_ZIP_FILE_SYSTEM_PARAMETERS);
-					_onClose = fileSystem::close;
-				} catch (IOException ioException) {
-					throw e;
-				}
-				_path = Paths.get(uri);
-			} else {
-				throw e;
-			}
+		String scheme = uri.getScheme();
+		if (jarUriWorkaround.isApplicable(scheme)) {
+			return jarUriWorkaround.toPath(uri);
+		} else {
+			Path path = Paths.get(uri);
+			return new PathContainerImpl(path, null);
 		}
-		Path path = _path;
-		ExceptionalRunnable onClose = _onClose;
-		return new PathContainer() {
-			@Override
-			public Path getPath() {
-				return path;
-			}
-
-			@Override
-			public boolean mustBeClosed() {
-				return onClose != null;
-			}
-
-			@Override
-			public void close() throws IOException {
-				if (onClose != null) {
-					onClose.run();
-				}
-			}
-		};
 	}
 }

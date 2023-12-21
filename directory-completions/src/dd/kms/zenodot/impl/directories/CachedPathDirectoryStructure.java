@@ -2,6 +2,8 @@ package dd.kms.zenodot.impl.directories;
 
 import dd.kms.zenodot.api.directories.PathContainer;
 import dd.kms.zenodot.api.directories.PathDirectoryStructure;
+import dd.kms.zenodot.impl.common.ExceptionalBiFunction;
+import dd.kms.zenodot.impl.common.ExceptionalFunction;
 
 import java.io.IOException;
 import java.net.URI;
@@ -12,9 +14,9 @@ import java.util.List;
 public class CachedPathDirectoryStructure implements PathDirectoryStructure
 {
 	private final PathDirectoryStructure							pathDirectoryStructure;
-	private final ExceptionalBiFunction<FileSystem, String, Path>	fileCache;
+	private final ExceptionalBiFunction<FileSystem, String, Path> fileCache;
 	private final ExceptionalBiFunction<Path, String, Path>			resolveCache;
-	private final ExceptionalFunction<Path, Path>					parentCache;
+	private final ExceptionalFunction<Path, Path> parentCache;
 	private final ExceptionalFunction<Path, List<Path>>				childCache;
 	private final ExceptionalFunction<FileSystem, List<Path>>		rootDirectoryCache;
 	private final ExceptionalFunction<URI, PathContainer>			uriToPathContainerCache;

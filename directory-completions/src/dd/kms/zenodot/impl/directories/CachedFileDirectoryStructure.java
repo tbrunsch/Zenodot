@@ -1,6 +1,8 @@
 package dd.kms.zenodot.impl.directories;
 
 import dd.kms.zenodot.api.directories.FileDirectoryStructure;
+import dd.kms.zenodot.impl.common.ExceptionalBiFunction;
+import dd.kms.zenodot.impl.common.ExceptionalFunction;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,8 +10,8 @@ import java.util.List;
 
 public class CachedFileDirectoryStructure implements FileDirectoryStructure
 {
-	private final ExceptionalFunction<String, File> 		fileCache;
-	private final ExceptionalBiFunction<File, String, File>	resolveFileCache;
+	private final ExceptionalFunction<String, File> fileCache;
+	private final ExceptionalBiFunction<File, String, File> resolveFileCache;
 	private final ExceptionalFunction<Void, List<File>>		rootDirectoryCache;
 	private final ExceptionalFunction<File, List<File>>		childCache;
 

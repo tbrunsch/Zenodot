@@ -1,8 +1,8 @@
-package dd.kms.zenodot.impl.directories;
+package dd.kms.zenodot.impl.common;
 
 import java.io.IOException;
 
 @FunctionalInterface
-interface ExceptionalBiFunction<K1, K2, V> {
+public interface ExceptionalBiFunction<K1, K2, V> {
 	V apply(K1 key1, K2 key2) throws IOException;
 }

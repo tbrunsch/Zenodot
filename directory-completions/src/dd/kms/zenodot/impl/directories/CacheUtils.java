@@ -5,6 +5,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import dd.kms.zenodot.api.directories.common.OptionalCloseable;
+import dd.kms.zenodot.impl.common.ExceptionalBiFunction;
+import dd.kms.zenodot.impl.common.ExceptionalFunction;
 
 import java.io.IOException;
 import java.util.Objects;

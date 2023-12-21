@@ -1,4 +1,4 @@
-package dd.kms.zenodot.impl.directories;
+package dd.kms.zenodot.impl.common;
 
 import java.io.IOException;
 

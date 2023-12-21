@@ -1,8 +1,8 @@
-package dd.kms.zenodot.impl.directories;
+package dd.kms.zenodot.impl.common;
 
 import java.io.IOException;
 
 @FunctionalInterface
-interface ExceptionalFunction<K, V> {
+public interface ExceptionalFunction<K, V> {
 	V apply(K key) throws IOException;
 }
