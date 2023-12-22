@@ -63,17 +63,20 @@ public class FileCompletionTest extends CompletionTest
 			.addInsertionTest("new File(\"/z^/framework/tokenizer/",						'^', "new File(\"/zenodot/framework/tokenizer/")
 			.addInsertionTest("new File(\"/zenodot/fr^/tokenizer/",							'^', "new File(\"/zenodot/framework/tokenizer/")
 			.addInsertionTest("new File(\"/zenodot/framework/tok^/", 						'^', "new File(\"/zenodot/framework/tokenizer/")
+			.addInsertionTest("new File(\"/zenodot/framework/tok^)", 						'^', "new File(\"/zenodot/framework/tokenizer)")
 			.addInsertionTest("new File(\"/zenodot/dir^/subdirectory_without_spaces/", 		'^', "new File(\"/zenodot/directory with spaces/subdirectory_without_spaces/")
 			.addInsertionTest("new File(\"/zenodot/directory with spaces/subdirectory_^/", 	'^', "new File(\"/zenodot/directory with spaces/subdirectory_without_spaces/")
 
 			.addInsertionTest("new File(\"/zen^/api/\", \"Ex", 											'^', "new File(\"/zenodot/api/\", \"Ex")
 			.addInsertionTest("new File(\"/zenodot/api/\", \"co^/FieldScanner", 						'^', "new File(\"/zenodot/api/\", \"common/FieldScanner")
 			.addInsertionTest("new File(\"/zenodot/api/\", \"common/FieldSca^", 						'^', "new File(\"/zenodot/api/\", \"common/FieldScanner")
+			.addInsertionTest("new File(\"/zenodot/api/\", \"common/Fiel^dSca)", 						'^', "new File(\"/zenodot/api/\", \"common/FieldScanner)")
 			.addInsertionTest("new File(\"/z^/directory with spaces/\", \"subdirectory_without_spaces",	'^', "new File(\"/zenodot/directory with spaces/\", \"subdirectory_without_spaces")
 			.addInsertionTest("new File(\"/zenodot/direct^/\", \"subdirectory_without_spaces",			'^', "new File(\"/zenodot/directory with spaces/\", \"subdirectory_without_spaces")
 			.addInsertionTest("new File(\"/zenodot/directory with spaces/\", \"subdirectory_^",			'^', "new File(\"/zenodot/directory with spaces/\", \"subdirectory_without_spaces")
 
 			.addInsertionTest("new File(parent, \"com^/Fi", 							'^', "new File(parent, \"common/Fi")
+			.addInsertionTest("new File(parent, \"common/Fi^)", 						'^', "new File(parent, \"common/FieldScanner)")
 			.addInsertionTest("new File(parent, \"../directory wi^/file with spaces", 	'^', "new File(parent, \"../directory with spaces/file with spaces")
 			.addInsertionTest("new File(parent, \"../directory with spaces/file w^", 	'^', "new File(parent, \"../directory with spaces/file with spaces")
 

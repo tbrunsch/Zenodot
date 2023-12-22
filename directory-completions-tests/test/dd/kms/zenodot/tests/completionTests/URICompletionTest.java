@@ -70,20 +70,25 @@ public class URICompletionTest extends CompletionTest
 			.addTest("URI.create(\"jimfs://uri/zenodot/directory%20with%20spaces/subdirectory_", "subdirectory_without_spaces")
 
 			.addInsertionTest("new URI(\"jimfs://uri/zen^/fr",					'^', "new URI(\"jimfs://uri/zenodot/fr")
+			.addInsertionTest("new URI(\"jimfs://uri/zenodot/fr^)",				'^', "new URI(\"jimfs://uri/zenodot/framework)")
 			.addInsertionTest("new URI(\"jimfs://uri/zenodot/dir^ectory/file",	'^', "new URI(\"jimfs://uri/zenodot/directory%20with%20spaces/file")
 
 			.addInsertionTest("new URI(\"jimfs\", \"//uri/z^/a", 					'^', "new URI(\"jimfs\", \"//uri/zenodot/a")
 			.addInsertionTest("new URI(\"jimfs\", \"//uri/zenod^/api/Ex",			'^', "new URI(\"jimfs\", \"//uri/zenodot/api/Ex")
+			.addInsertionTest("new URI(\"jimfs\", \"//uri/zenodot/api/Ex^)",		'^', "new URI(\"jimfs\", \"//uri/zenodot/api/ExpressionParser)")
 			.addInsertionTest("new URI(\"jimfs\", \"//uri/zenodot/a^/Ex",			'^', "new URI(\"jimfs\", \"//uri/zenodot/api/Ex")
 			.addInsertionTest("new URI(\"jimfs\", \"//uri/zenodot/dir^ectory/sub",	'^', "new URI(\"jimfs\", \"//uri/zenodot/directory with spaces/sub")
 
 			.addInsertionTest("new URI(\"jimfs\", \"uri\", \"/ze^/fr",				'^', "new URI(\"jimfs\", \"uri\", \"/zenodot/fr")
+			.addInsertionTest("new URI(\"jimfs\", \"uri\", \"/zenodot/fr^)",		'^', "new URI(\"jimfs\", \"uri\", \"/zenodot/framework)")
 			.addInsertionTest("new URI(\"jimfs\", \"uri\", \"/zenodot/dir^/sub",	'^', "new URI(\"jimfs\", \"uri\", \"/zenodot/directory with spaces/sub")
 
 			.addInsertionTest("new URI(\"jimfs\", null, \"uri\", -1, \"/z^/a",				'^', "new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/a")
+			.addInsertionTest("new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/a^)",		'^', "new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/api)")
 			.addInsertionTest("new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/direc^t/s",	'^', "new URI(\"jimfs\", null, \"uri\", -1, \"/zenodot/directory with spaces/s")
 
 			.addInsertionTest("URI.create(\"jimfs://uri/zen^/fr",					'^', "URI.create(\"jimfs://uri/zenodot/fr")
+			.addInsertionTest("URI.create(\"jimfs://uri/zenodot/fr^)",				'^', "URI.create(\"jimfs://uri/zenodot/framework)")
 			.addInsertionTest("URI.create(\"jimfs://uri/zenodot/dir^ectory/file",	'^', "URI.create(\"jimfs://uri/zenodot/directory%20with%20spaces/file")
 
 			.build();
