@@ -6,6 +6,7 @@ import dd.kms.zenodot.api.directories.PathDirectoryStructure;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.CompletionMode;
 import dd.kms.zenodot.framework.parsers.CallerContext;
+import dd.kms.zenodot.impl.common.JarUriHelper;
 
 import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
@@ -34,17 +35,28 @@ public abstract class AbstractURIDirectoryCompletionProvider extends AbstractDir
 	}
 
 	@Override
-	protected List<CodeCompletion> doGetCodeCompletions(NullableOptional<URI> parentURI, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, CallerContext callerContext) {
-		if (!parentURI.isPresent() || parentURI.get() == null) {
+	protected List<CodeCompletion> doGetCodeCompletions(NullableOptional<URI> optParentURI, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, CallerContext callerContext) {
+		if (!optParentURI.isPresent() || optParentURI.get() == null) {
 			return Collections.emptyList();
 		}
+		URI parentURI = optParentURI.get();
+		String childNamePrefix = "";
+		if (JarUriHelper.isApplicable(parentURI.getScheme())) {
+			String oldParentUriAsString = parentURI.toString();
+			parentURI = JarUriHelper.getCompletableUri(parentURI);
+			String newParentUriAsString = parentURI.toString();
+			if (oldParentUriAsString.endsWith(newParentUriAsString)) {
+				childNamePrefix = oldParentUriAsString.substring(0, oldParentUriAsString.length() - newParentUriAsString.length());
+			}
+		}
+
 		List<CodeCompletion> codeCompletions = new ArrayList<>();
-		try (PathContainer parentContainer = pathDirectoryStructure.toPath(parentURI.get())) {
+		try (PathContainer parentContainer = pathDirectoryStructure.toPath(parentURI)) {
 			Path parent = parentContainer.getPath();
 			List<Path> children = pathDirectoryStructure.getChildren(parent);
 			for (Path child : children) {
 				URI childURI = pathDirectoryStructure.toURI(child);
-				handleURI(childURI, childCompletionInfo, completionMode, codeCompletions);
+				handleURI(childURI, childNamePrefix, childCompletionInfo, completionMode, codeCompletions);
 			}
 		} catch (Throwable ignored) {
 			/* fallthrough to return the code completions gathered so far */
@@ -57,7 +69,7 @@ public abstract class AbstractURIDirectoryCompletionProvider extends AbstractDir
 		List<CodeCompletion> favoriteCompletions = new ArrayList<>();
 		try {
 			for (URI favoriteURI : favoriteURIs) {
-				handleURI(favoriteURI, childCompletionInfo, completionMode, favoriteCompletions);
+				handleURI(favoriteURI, "", childCompletionInfo, completionMode, favoriteCompletions);
 			}
 		} catch (Throwable ignored) {
 			/* fallthrough to return the code completions gathered so far */
@@ -65,9 +77,9 @@ public abstract class AbstractURIDirectoryCompletionProvider extends AbstractDir
 		return favoriteCompletions;
 	}
 
-	private void handleURI(URI uri, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, List<CodeCompletion> codeCompletions) throws UnsupportedEncodingException {
+	private void handleURI(URI uri, String childNamePrefix, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, List<CodeCompletion> codeCompletions) throws UnsupportedEncodingException {
 		String parentPath = childCompletionInfo.getParentPath();
-		String childName = getChildName(uri, parentPath);
+		String childName = getChildName(uri, childNamePrefix, parentPath);
 		if (childName == null) {
 			return;
 		}
@@ -82,8 +94,8 @@ public abstract class AbstractURIDirectoryCompletionProvider extends AbstractDir
 	}
 
 	@Nullable
-	private String getChildName(URI child, String parentPath) {
-		String childRepresentation = uriRepresentationFunction.apply(child);
+	private String getChildName(URI child, String childNamePrefix, String parentPath) {
+		String childRepresentation = childNamePrefix + uriRepresentationFunction.apply(child);
 		if (childRepresentation == null) {
 			return null;
 		}

@@ -10,36 +10,65 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class encapsulates two workarounds that are required for transforming jar {@link URI}s, i.e., URIs like
- * {@code "jar:file://sample.zip!/zipped.txt"}, to {@link Path}s and back:
- * <ul>
- *     <li>
- *         <b>{@code URI} to {@code Path}:</b> The call {@link Paths#get(URI)} does only succeed for a jar URI
- *         {@code uri} if the {@link FileSystem} that represents the zip file has already been opened. Since the caller
- *         should not be bothered with opening that file system, the method {@link #toPath(URI)} opens the file system
- *         if it is not already open. In that case, the caller is responsible for closing the file system. To make this
- *         as simple as possible for the caller, the method returns a {@link PathContainer}, which extends
- *         {@link java.io.Closeable}. The method {@link PathContainer#close()} will only close the file system if
- *         {@code toPath()} has opened it. Otherwise, {@code close()} won't do anything with the file system.
- *     </li>
- *     <li>
- *         <b>{@code Path} to {@code URI}:</b> The call {@link Path#toUri()} does not return a correct {@code URI}
- *         for {@code Path} instances that reference an entry in a zip file in all Java versions (see
- *         <a href="https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8131067">this bug report</a>). The method
- *         encodes parts of the URI twice in the affected version. The method {@link #correctJarUri(URI)} checks whether
- *         the result of {@code Path.toUri()} returns a valid result. If not, then it tries to construct a valid URI
- *         be decode the affected part of the URI.
- *     </li>
- * </ul>
+ * This class contains methods for handling jar URIs, i.e., URIs of the form
+ * {@code "jar:file://sample.zip!/zipped.txt"}.
  */
-public class JarUriWorkaround
+public class JarUriHelper
 {
-	private static final Map<String, Object> OPEN_ZIP_FILE_SYSTEM_PARAMETERS	= ImmutableMap.of("create", "true");
+	private static final Map<String, Object>	OPEN_ZIP_FILE_SYSTEM_PARAMETERS	= ImmutableMap.of("create", "true");
+	private static final String					JAR_SEPARATOR					= "!/";
 
-	public boolean isApplicable(String scheme) {
+	public static boolean isApplicable(String scheme) {
 		return "jar".equalsIgnoreCase(scheme) || "zip".equalsIgnoreCase(scheme);
 	}
 
+	/**
+	 * A full jar URI consists of a wrapped URI that references the zip file and a part that
+	 * references a file within the zip file: {@code "jar:file://sample.zip!/zipped.txt"}.
+	 * When typing this URI, the second part is missing for some time. Until then, the
+	 * framework shall complete the reference to the zip file instead of the file within the
+	 * zip file.<br>
+	 * <br>
+	 * <b>Examples:</b>
+	 * <ul>
+	 *     <li>
+	 *         Let us assume that the current incomplete jar URI is {@code "jar:file://sampl"}.
+	 *         In that case, the URI that the framework should actually complete is
+	 *         {@code "file://sampl"}.
+	 *     </li>
+	 *     <li>
+	 *         Let us assume that the current incomplete jar URI is {@code "jar:file://sample.zip!/zipped.txt"}.
+	 *         In that case, this is also the URI that the framework should complete.
+	 *     </li>
+	 * </ul>
+	 * Given a possibly incomplete URI, this method returns the one the framework should
+	 * complete.
+	 */
+	public static URI getCompletableUri(URI uri) {
+		if (!isApplicable(uri.getScheme())) {
+			throw new IllegalArgumentException("Unsupported URI: " + uri);
+		}
+		String rawSchemeSpecificPart = uri.getRawSchemeSpecificPart();
+		int lastJarSeparatorIndex = rawSchemeSpecificPart.lastIndexOf(JAR_SEPARATOR);
+		if (lastJarSeparatorIndex >= 0) {
+			return uri;
+		}
+		try {
+			return new URI(rawSchemeSpecificPart);
+		} catch (Exception e) {
+			// no way to handle this
+			return uri;
+		}
+	}
+
+	/**
+	 * The call {@link Path#toUri()} does not return a correct {@link URI} for {@link Path}
+	 * instances that reference an entry in a zip file in all Java versions (see
+	 * <a href="https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8131067">this bug report</a>).
+	 * The method encodes parts of the URI twice in the affected versions. This method takes
+	 * the result of {@code Path.toUri()} as argument and checks whether it is valid. If not,
+	 * then it tries to construct a valid URI by decoding the affected part of the URI.
+	 */
 	public URI correctJarUri(URI uri) {
 		String scheme = uri.getScheme();
 		if (!isApplicable(scheme)) {
@@ -88,6 +117,16 @@ public class JarUriWorkaround
 		}
 	}
 
+	/**
+	 * The call {@link Paths#get(URI)} does only succeed for a jar URI if the {@link FileSystem}
+	 * that represents the zip file has already been opened. Since the caller should not be
+	 * bothered with opening that file system, this method opens the file system if it is not
+	 * already open. In that case, the caller is responsible for closing the file system. To
+	 * make this as simple as possible for the caller, the method returns a {@link PathContainer},
+	 * which extends {@link java.io.Closeable}. The method {@link PathContainer#close()} will
+	 * only close the file system if this method has opened it. Otherwise, {@code close()}
+	 * won't do anything with the file system.
+	 */
 	public PathContainer toPath(URI uri) {
 		if (!isApplicable(uri.getScheme())) {
 			throw new IllegalArgumentException("Unsupported URI: " + uri);
@@ -118,20 +157,20 @@ public class JarUriWorkaround
 
 	private URI correctUri(URI uri) {
 		String schemeSpecificPart = uri.getSchemeSpecificPart();
-		String[] subUriParts = schemeSpecificPart.split("!/");
+		String[] subUriParts = schemeSpecificPart.split(JAR_SEPARATOR);
 		if (subUriParts.length != 2) {
 			// We don't know how to handle this.
 			return uri;
 		}
 		String rawSchemeSpecificPart = uri.getRawSchemeSpecificPart();
-		String[] rawSubUriParts = rawSchemeSpecificPart.split("!/");
+		String[] rawSubUriParts = rawSchemeSpecificPart.split(JAR_SEPARATOR);
 		if (rawSubUriParts.length != 2) {
 			// We don't know how to handle this.
 			return uri;
 		}
 		String correctedUriString = uri.getScheme() + ":"
 			+ subUriParts[0]	// decoded once because encoded twice due to a bug in some Java versions
-			+ "!/"
+			+ JAR_SEPARATOR
 			+ rawSubUriParts[1];
 		try {
 			URI correctedUri = new URI(correctedUriString);

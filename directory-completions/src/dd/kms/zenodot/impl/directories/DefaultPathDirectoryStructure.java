@@ -3,7 +3,7 @@ package dd.kms.zenodot.impl.directories;
 import com.google.common.collect.Lists;
 import dd.kms.zenodot.api.directories.PathContainer;
 import dd.kms.zenodot.api.directories.PathDirectoryStructure;
-import dd.kms.zenodot.impl.common.JarUriWorkaround;
+import dd.kms.zenodot.impl.common.JarUriHelper;
 import dd.kms.zenodot.impl.common.PathContainerImpl;
 
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class DefaultPathDirectoryStructure implements PathDirectoryStructure
 {
-	private final JarUriWorkaround	jarUriWorkaround	= new JarUriWorkaround();
+	private final JarUriHelper	jarUriHelper	= new JarUriHelper();
 
 	@Override
 	public FileSystem getDefaultFileSystem() {
@@ -51,17 +51,17 @@ public class DefaultPathDirectoryStructure implements PathDirectoryStructure
 	public URI toURI(Path path) {
 		URI uri = path.toUri();
 		String scheme = uri.getScheme();
-		if (!jarUriWorkaround.isApplicable(scheme)) {
+		if (!JarUriHelper.isApplicable(scheme)) {
 			return uri;
 		}
-		return jarUriWorkaround.correctJarUri(uri);
+		return jarUriHelper.correctJarUri(uri);
 	}
 
 	@Override
 	public PathContainer toPath(URI uri) {
 		String scheme = uri.getScheme();
-		if (jarUriWorkaround.isApplicable(scheme)) {
-			return jarUriWorkaround.toPath(uri);
+		if (JarUriHelper.isApplicable(scheme)) {
+			return jarUriHelper.toPath(uri);
 		} else {
 			Path path = Paths.get(uri);
 			return new PathContainerImpl(path, null);
