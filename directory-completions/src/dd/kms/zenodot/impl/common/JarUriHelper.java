@@ -1,11 +1,14 @@
 package dd.kms.zenodot.impl.common;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.directories.PathContainer;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -17,6 +20,7 @@ public class JarUriHelper
 {
 	private static final Map<String, Object>	OPEN_ZIP_FILE_SYSTEM_PARAMETERS	= ImmutableMap.of("create", "true");
 	private static final String					JAR_SEPARATOR					= "!/";
+	private static final Splitter				JAR_URI_SPLITTER				= Splitter.on(JAR_SEPARATOR);
 
 	public static boolean isApplicable(String scheme) {
 		return "jar".equalsIgnoreCase(scheme) || "zip".equalsIgnoreCase(scheme);
@@ -136,6 +140,9 @@ public class JarUriHelper
 			Path path = Paths.get(uri);
 			return new PathContainerImpl(path, null);
 		} catch (FileSystemNotFoundException e) {
+			if (!archiveUriExists(uri)) {
+				throw e;
+			}
 			// We have to open the ZipFileSystem manually and ensure that it will be closed later
 			FileSystem fileSystem;
 			try {
@@ -155,23 +162,51 @@ public class JarUriHelper
 		}
 	}
 
+	private boolean archiveUriExists(URI uri) {
+		URI archiveUri = getArchiveUri(uri);
+		if (archiveUri == null) {
+			return false;
+		}
+		try {
+			Path path = Paths.get(archiveUri);
+			return Files.exists(path);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	@Nullable
+	private URI getArchiveUri(URI uri) {
+		String rawSchemeSpecificPart = uri.getRawSchemeSpecificPart();
+		List<String> rawSubUriParts = JAR_URI_SPLITTER.splitToList(rawSchemeSpecificPart);
+		if (rawSubUriParts.size() != 2) {
+			// We don't know how to handle this.
+			return null;
+		}
+		try {
+			return new URI(rawSubUriParts.get(0));
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	private URI correctUri(URI uri) {
 		String schemeSpecificPart = uri.getSchemeSpecificPart();
-		String[] subUriParts = schemeSpecificPart.split(JAR_SEPARATOR);
-		if (subUriParts.length != 2) {
+		List<String> subUriParts = JAR_URI_SPLITTER.splitToList(schemeSpecificPart);
+		if (subUriParts.size() != 2) {
 			// We don't know how to handle this.
 			return uri;
 		}
 		String rawSchemeSpecificPart = uri.getRawSchemeSpecificPart();
-		String[] rawSubUriParts = rawSchemeSpecificPart.split(JAR_SEPARATOR);
-		if (rawSubUriParts.length != 2) {
+		List<String> rawSubUriParts = JAR_URI_SPLITTER.splitToList(rawSchemeSpecificPart);
+		if (rawSubUriParts.size() != 2) {
 			// We don't know how to handle this.
 			return uri;
 		}
 		String correctedUriString = uri.getScheme() + ":"
-			+ subUriParts[0]	// decoded once because encoded twice due to a bug in some Java versions
+			+ subUriParts.get(0)	// decoded once because encoded twice due to a bug in some Java versions
 			+ JAR_SEPARATOR
-			+ rawSubUriParts[1];
+			+ rawSubUriParts.get(1);
 		try {
 			URI correctedUri = new URI(correctedUriString);
 			return correctedUri;
@@ -186,12 +221,12 @@ public class JarUriHelper
 	 * {@code expectedUri}.
 	 */
 	private boolean checkUriToPathToUri(URI uri, URI expectedUri) {
-		boolean success = false;
 		try (PathContainer pathContainer = toPath(uri)) {
 			URI resultUri = pathContainer.getPath().toUri();
-			success = Objects.equals(resultUri, expectedUri);
-		} catch (Exception ignored) {}
-		return success;
+			return Objects.equals(resultUri, expectedUri);
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	private WorkaroundState workaroundState = WorkaroundState.UNDEFINED;
