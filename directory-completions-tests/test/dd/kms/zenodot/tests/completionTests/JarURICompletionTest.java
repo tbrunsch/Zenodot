@@ -61,6 +61,7 @@ public class JarURICompletionTest extends CompletionTest
 				test.importClasses("java.net.URI");
 				registerURICompletions(test.getSettingsBuilder());
 			})
+			.addTest("new URI(\"jar:jimfs://jaruri/my", "my%20archive.jar")
 			.addTest("new URI(\"jar:jimfs://jaruri/my%20archive.jar!/", "zenodot")
 			.addTest("new URI(\"jar:jimfs://jaruri/my%20archive.jar!/zen", "zenodot")
 			.addTest("new URI(\"jar:jimfs://jaruri/my%20archive.jar!/zenodot/fr", "framework")
@@ -71,6 +72,7 @@ public class JarURICompletionTest extends CompletionTest
 			.addTest("new URI(\"jar\", \"jimfs://jaruri/my archive.jar!/zenodot/api/Ex", "ExpressionParser")
 			.addTest("new URI(\"jar\", \"jimfs://jaruri/my archive.jar!/zenodot/directory with spaces/f", "file with spaces")
 
+			.addTest("URI.create(\"jar:jimfs://jaruri/my", "my%20archive.jar")
 			.addTest("URI.create(\"jar:jimfs://jaruri/my%20archive.jar!/", "zenodot")
 			.addTest("URI.create(\"jar:jimfs://jaruri/my%20archive.jar!/zen", "zenodot")
 			.addTest("URI.create(\"jar:jimfs://jaruri/my%20archive.jar!/zenodot/fr", "framework")
