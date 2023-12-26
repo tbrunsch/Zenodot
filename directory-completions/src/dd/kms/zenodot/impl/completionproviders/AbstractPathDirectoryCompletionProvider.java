@@ -74,7 +74,7 @@ public abstract class AbstractPathDirectoryCompletionProvider extends AbstractDi
 			for (Path favoriteFile : favoriteFiles) {
 				String relativeFavoriteName = getChildName(favoriteFile, actualParent);
 				if (relativeFavoriteName != null) {
-					CodeCompletion codeCompletion = createCodeCompletion(relativeFavoriteName, childCompletionInfo, completionMode);
+					CodeCompletion codeCompletion = createCodeCompletion(escapeBackslashs(relativeFavoriteName), childCompletionInfo, completionMode, relativeFavoriteName);
 					favoriteCompletions.add(codeCompletion);
 				}
 			}

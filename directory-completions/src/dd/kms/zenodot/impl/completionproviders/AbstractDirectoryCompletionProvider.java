@@ -37,6 +37,10 @@ public abstract class AbstractDirectoryCompletionProvider<P> implements Completi
 		return new CodeCompletionStringLiteralImpl(childName, insertionBegin, insertionEnd, rating, childNameToDisplay);
 	}
 
+	protected String escapeBackslashs(String string) {
+		return string != null ? string.replace("\\", "\\\\") : null;
+	}
+
 	@Override
 	public List<? extends CodeCompletion> getCodeCompletions(CompletionInfo completionInfo, CompletionMode completionMode, CallerContext callerContext) {
 		ChildCompletionInfo childCompletionInfo = new ChildCompletionInfo(completionInfo);
