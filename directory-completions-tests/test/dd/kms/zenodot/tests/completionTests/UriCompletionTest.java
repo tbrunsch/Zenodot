@@ -16,11 +16,11 @@ import java.nio.file.FileSystem;
 import java.util.Collection;
 
 @RunWith(Parameterized.class)
-public class URICompletionTest extends CompletionTest
+public class UriCompletionTest extends CompletionTest
 {
 	private static FileSystem NONE_DEFAULT_FILE_SYSTEM;
 
-	public URICompletionTest(TestData testData) {
+	public UriCompletionTest(TestData testData) {
 		super(testData);
 	}
 
@@ -42,7 +42,7 @@ public class URICompletionTest extends CompletionTest
 			.configurator(test -> {
 				test.stopAtError();
 				test.importClasses("java.net.URI");
-				registerURICompletions(test.getSettingsBuilder());
+				registerUriCompletions(test.getSettingsBuilder());
 			})
 			.addTest("new URI(\"jimfs://uri/", "zenodot")
 			.addTest("new URI(\"jimfs://uri/zen", "zenodot")
@@ -94,7 +94,7 @@ public class URICompletionTest extends CompletionTest
 			.build();
 	}
 
-	private static void registerURICompletions(ParserSettingsBuilder parserSettingsBuilder) {
+	private static void registerUriCompletions(ParserSettingsBuilder parserSettingsBuilder) {
 		DirectoryCompletions.create()
 			.completionTargets(DirectoryCompletions.CompletionTarget.URI_CREATION)
 			.configure(parserSettingsBuilder);

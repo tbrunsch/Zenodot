@@ -49,7 +49,7 @@ public interface DirectoryCompletions
 	 * By default, only children of the specified path will be suggested for completions. Favorite {@link URI}s
 	 * that extend the specified path will always be suggested, even if they are no direct children.
 	 */
-	DirectoryCompletions favoriteURIs(List<URI> favoriteURIs);
+	DirectoryCompletions favoriteUris(List<URI> favoriteUris);
 
 	void configure(ParserSettingsBuilder parserSettingsBuilder);
 

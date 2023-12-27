@@ -2,7 +2,6 @@ package dd.kms.zenodot.tests.completionTests;
 
 import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.DirectoryCompletions;
-import dd.kms.zenodot.api.directories.PathDirectoryStructure;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.framework.FileSystemUtils;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
@@ -17,17 +16,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.*;
-import java.nio.file.attribute.FileAttribute;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.zip.ZipOutputStream;
 
 @RunWith(Parameterized.class)
-public class JarURICompletionTest extends CompletionTest
+public class JarUriCompletionTest extends CompletionTest
 {
 	private static FileSystem NONE_DEFAULT_FILE_SYSTEM;
 
-	public JarURICompletionTest(TestData testData) {
+	public JarUriCompletionTest(TestData testData) {
 		super(testData);
 	}
 
@@ -38,8 +35,8 @@ public class JarURICompletionTest extends CompletionTest
 		try (OutputStream os = Files.newOutputStream(archiveFile, StandardOpenOption.CREATE);
 			ZipOutputStream zos = new ZipOutputStream(os)) {
 			zos.close();
-			URI archiveRootURI = URI.create("jar:jimfs://jaruri/my%20archive.jar!/");
-			try (FileSystem jarFileSystem = FileSystems.newFileSystem(archiveRootURI, ImmutableMap.of("create", "true"))) {
+			URI archiveRootUri = URI.create("jar:jimfs://jaruri/my%20archive.jar!/");
+			try (FileSystem jarFileSystem = FileSystems.newFileSystem(archiveRootUri, ImmutableMap.of("create", "true"))) {
 				FileSystemUtils.setupFileSystem(jarFileSystem, DirectoryCompletionTestUtils.ROOT);
 			}
 		}
@@ -59,7 +56,7 @@ public class JarURICompletionTest extends CompletionTest
 			.configurator(test -> {
 				test.stopAtError();
 				test.importClasses("java.net.URI");
-				registerURICompletions(test.getSettingsBuilder());
+				registerUriCompletions(test.getSettingsBuilder());
 			})
 			.addTest("new URI(\"jar:jimfs://jaruri/my", "my%20archive.jar")
 			.addTest("new URI(\"jar:jimfs://jaruri/my%20archive.jar!/", "zenodot")
@@ -93,7 +90,7 @@ public class JarURICompletionTest extends CompletionTest
 			.build();
 	}
 
-	private static void registerURICompletions(ParserSettingsBuilder parserSettingsBuilder) {
+	private static void registerUriCompletions(ParserSettingsBuilder parserSettingsBuilder) {
 		DirectoryCompletions.create()
 			.completionTargets(DirectoryCompletions.CompletionTarget.URI_CREATION)
 			.configure(parserSettingsBuilder);

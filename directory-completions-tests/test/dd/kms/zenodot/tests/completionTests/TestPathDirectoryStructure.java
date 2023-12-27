@@ -51,7 +51,7 @@ class TestPathDirectoryStructure implements PathDirectoryStructure
 	}
 
 	@Override
-	public URI toURI(Path path) {
+	public URI toUri(Path path) {
 		return path.toUri();
 	}
 

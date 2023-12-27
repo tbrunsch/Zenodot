@@ -30,7 +30,7 @@ public class CachedPathDirectoryStructure implements PathDirectoryStructure
 		this.childCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getChildren, timeUntilEvictionMs);
 		this.rootDirectoryCache = CacheUtils.cacheDelegate(pathDirectoryStructure::getRootDirectories, timeUntilEvictionMs);
 		this.uriToPathContainerCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toPath, timeUntilEvictionMs);
-		this.pathToUriCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toURI, timeUntilEvictionMs);
+		this.pathToUriCache = CacheUtils.cacheDelegate(pathDirectoryStructure::toUri, timeUntilEvictionMs);
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class CachedPathDirectoryStructure implements PathDirectoryStructure
 	}
 
 	@Override
-	public URI toURI(Path path) throws IOException {
+	public URI toUri(Path path) throws IOException {
 		return pathToUriCache.apply(path);
 	}
 

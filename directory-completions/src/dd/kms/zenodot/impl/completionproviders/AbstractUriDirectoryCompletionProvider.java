@@ -20,43 +20,43 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-public abstract class AbstractURIDirectoryCompletionProvider extends AbstractDirectoryCompletionProvider<URI>
+public abstract class AbstractUriDirectoryCompletionProvider extends AbstractDirectoryCompletionProvider<URI>
 {
 	protected final PathDirectoryStructure	pathDirectoryStructure;
-	private final List<URI>					favoriteURIs;
+	private final List<URI>					favoriteUris;
 	private final Function<URI, String>		uriRepresentationFunction;
 	private final boolean					useRawRepresentation;
 
-	protected AbstractURIDirectoryCompletionProvider(PathDirectoryStructure pathDirectoryStructure, List<URI> favoriteURIs, Function<URI, String> uriRepresentationFunction, boolean useRawRepresentation) {
+	protected AbstractUriDirectoryCompletionProvider(PathDirectoryStructure pathDirectoryStructure, List<URI> favoriteUris, Function<URI, String> uriRepresentationFunction, boolean useRawRepresentation) {
 		this.pathDirectoryStructure = pathDirectoryStructure;
-		this.favoriteURIs = ImmutableList.copyOf(favoriteURIs);
+		this.favoriteUris = ImmutableList.copyOf(favoriteUris);
 		this.uriRepresentationFunction = uriRepresentationFunction;
 		this.useRawRepresentation = useRawRepresentation;
 	}
 
 	@Override
-	protected List<CodeCompletion> doGetCodeCompletions(NullableOptional<URI> optParentURI, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, CallerContext callerContext) {
-		if (!optParentURI.isPresent() || optParentURI.get() == null) {
+	protected List<CodeCompletion> doGetCodeCompletions(NullableOptional<URI> optParentUri, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, CallerContext callerContext) {
+		if (!optParentUri.isPresent() || optParentUri.get() == null) {
 			return Collections.emptyList();
 		}
-		URI parentURI = optParentURI.get();
+		URI parentUri = optParentUri.get();
 		String childNamePrefix = "";
-		if (JarUriHelper.isApplicable(parentURI.getScheme())) {
-			String oldParentUriAsString = parentURI.toString();
-			parentURI = JarUriHelper.getCompletableUri(parentURI);
-			String newParentUriAsString = parentURI.toString();
+		if (JarUriHelper.isApplicable(parentUri.getScheme())) {
+			String oldParentUriAsString = parentUri.toString();
+			parentUri = JarUriHelper.getCompletableUri(parentUri);
+			String newParentUriAsString = parentUri.toString();
 			if (oldParentUriAsString.endsWith(newParentUriAsString)) {
 				childNamePrefix = oldParentUriAsString.substring(0, oldParentUriAsString.length() - newParentUriAsString.length());
 			}
 		}
 
 		List<CodeCompletion> codeCompletions = new ArrayList<>();
-		try (PathContainer parentContainer = pathDirectoryStructure.toPath(parentURI)) {
+		try (PathContainer parentContainer = pathDirectoryStructure.toPath(parentUri)) {
 			Path parent = parentContainer.getPath();
 			List<Path> children = pathDirectoryStructure.getChildren(parent);
 			for (Path child : children) {
-				URI childURI = pathDirectoryStructure.toURI(child);
-				handleURI(childURI, childNamePrefix, childCompletionInfo, completionMode, codeCompletions);
+				URI childUri = pathDirectoryStructure.toUri(child);
+				handleUri(childUri, childNamePrefix, childCompletionInfo, completionMode, codeCompletions);
 			}
 		} catch (Throwable ignored) {
 			/* fallthrough to return the code completions gathered so far */
@@ -68,8 +68,8 @@ public abstract class AbstractURIDirectoryCompletionProvider extends AbstractDir
 	protected List<CodeCompletion> doGetFavoriteCompletions(NullableOptional<URI> parent, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, CallerContext callerContext) {
 		List<CodeCompletion> favoriteCompletions = new ArrayList<>();
 		try {
-			for (URI favoriteURI : favoriteURIs) {
-				handleURI(favoriteURI, "", childCompletionInfo, completionMode, favoriteCompletions);
+			for (URI favoriteUri : favoriteUris) {
+				handleUri(favoriteUri, "", childCompletionInfo, completionMode, favoriteCompletions);
 			}
 		} catch (Throwable ignored) {
 			/* fallthrough to return the code completions gathered so far */
@@ -77,7 +77,7 @@ public abstract class AbstractURIDirectoryCompletionProvider extends AbstractDir
 		return favoriteCompletions;
 	}
 
-	private void handleURI(URI uri, String childNamePrefix, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, List<CodeCompletion> codeCompletions) throws UnsupportedEncodingException {
+	private void handleUri(URI uri, String childNamePrefix, ChildCompletionInfo childCompletionInfo, CompletionMode completionMode, List<CodeCompletion> codeCompletions) throws UnsupportedEncodingException {
 		String parentPath = childCompletionInfo.getParentPath();
 		String childName = getChildName(uri, childNamePrefix, parentPath);
 		if (childName == null) {

@@ -22,7 +22,7 @@ public interface PathDirectoryStructure
 	List<Path> getChildren(Path parent) throws IOException;
 	List<Path> getRootDirectories(FileSystem fileSystem) throws IOException;
 
-	URI toURI(Path path) throws IOException;
+	URI toUri(Path path) throws IOException;
 
 	/**
 	 * Essentially returns a {@link Path} for a given {@link URI}. The reason why this method

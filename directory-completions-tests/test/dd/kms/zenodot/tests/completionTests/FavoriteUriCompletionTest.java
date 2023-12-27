@@ -19,11 +19,11 @@ import java.util.Collection;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class FavoriteURICompletionTest extends CompletionTest
+public class FavoriteUriCompletionTest extends CompletionTest
 {
 	private static FileSystem NONE_DEFAULT_FILE_SYSTEM;
 
-	public FavoriteURICompletionTest(TestData testData) {
+	public FavoriteUriCompletionTest(TestData testData) {
 		super(testData);
 	}
 
@@ -45,7 +45,7 @@ public class FavoriteURICompletionTest extends CompletionTest
 			.configurator(test -> {
 				test.stopAtError();
 				test.importClasses("java.net.URI");
-				registerURICompletions(test.getSettingsBuilder());
+				registerUriCompletions(test.getSettingsBuilder());
 			})
 			.addTest("new URI(\"h", "http://github.com")
 			.addTest("new URI(\"http:", "http://github.com")
@@ -83,15 +83,15 @@ public class FavoriteURICompletionTest extends CompletionTest
 			.build();
 	}
 
-	private static void registerURICompletions(ParserSettingsBuilder parserSettingsBuilder) {
-		List<URI> favoriteURIs = ImmutableList.of(
+	private static void registerUriCompletions(ParserSettingsBuilder parserSettingsBuilder) {
+		List<URI> favoriteUris = ImmutableList.of(
 			URI.create("http://github.com"),
 			URI.create("jimfs://xyz/test"),
 			URI.create("jimfs://uri/zenodot/test/test%20with%20spaces")
 		);
 		DirectoryCompletions.create()
 			.completionTargets(DirectoryCompletions.CompletionTarget.URI_CREATION)
-			.favoriteURIs(favoriteURIs)
+			.favoriteUris(favoriteUris)
 			.configure(parserSettingsBuilder);
 	}
 }

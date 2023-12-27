@@ -48,7 +48,7 @@ public class DefaultPathDirectoryStructure implements PathDirectoryStructure
 	}
 
 	@Override
-	public URI toURI(Path path) {
+	public URI toUri(Path path) {
 		URI uri = path.toUri();
 		String scheme = uri.getScheme();
 		if (!JarUriHelper.isApplicable(scheme)) {

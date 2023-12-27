@@ -30,7 +30,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 	private PathDirectoryStructure	pathDirectoryStructure	= PathDirectoryStructure.DEFAULT;
 	private Set<CompletionTarget>	completionTargets		= ImmutableSet.of();
 	private List<String>			favoritePaths			= ImmutableList.of();
-	private List<URI>				favoriteURIs			= ImmutableList.of();
+	private List<URI>				favoriteUris			= ImmutableList.of();
 
 	@Override
 	public DirectoryCompletions fileDirectoryStructure(FileDirectoryStructure fileDirectoryStructure) {
@@ -57,8 +57,8 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 	}
 
 	@Override
-	public DirectoryCompletions favoriteURIs(List<URI> favoriteURIs) {
-		this.favoriteURIs = ImmutableList.copyOf(favoriteURIs);
+	public DirectoryCompletions favoriteUris(List<URI> favoriteUris) {
+		this.favoriteUris = ImmutableList.copyOf(favoriteUris);
 		return this;
 	}
 
@@ -82,7 +82,7 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				configurePathResolution(parserSettingsBuilder);
 				break;
 			case URI_CREATION:
-				configureURICreation(parserSettingsBuilder);
+				configureUriCreation(parserSettingsBuilder);
 				break;
 			default:
 				throw new IllegalArgumentException("Unsupported completion target: " + completionTarget);
@@ -205,22 +205,22 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, pathResolveSibling, 0, completionProviderParameter0);
 	}
 
-	private void configureURICreation(ParserSettingsBuilder parserSettingsBuilder) {
+	private void configureUriCreation(ParserSettingsBuilder parserSettingsBuilder) {
 		try {
-			configureURICreation1String(parserSettingsBuilder);
-			configureURICreation3Strings(parserSettingsBuilder);
-			configureURICreation4Strings(parserSettingsBuilder);
-			configureURICreation5Strings(parserSettingsBuilder);
-			configureURICreation6Strings1Int(parserSettingsBuilder);
-			configureURICreationFactory(parserSettingsBuilder);
+			configureUriCreation1String(parserSettingsBuilder);
+			configureUriCreation3Strings(parserSettingsBuilder);
+			configureUriCreation4Strings(parserSettingsBuilder);
+			configureUriCreation5Strings(parserSettingsBuilder);
+			configureUriCreation6Strings1Int(parserSettingsBuilder);
+			configureUriCreationFactory(parserSettingsBuilder);
 		} catch (NoSuchMethodException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
-	private void configureURICreation1String(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
+	private void configureUriCreation1String(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
 		Executable constructor = URI.class.getConstructor(String.class);
-		CompletionProvider completionProviderParameter0 = new AbstractURIDirectoryCompletionProvider(pathDirectoryStructure, favoriteURIs, URI::toString, true) {
+		CompletionProvider completionProviderParameter0 = new AbstractUriDirectoryCompletionProvider(pathDirectoryStructure, favoriteUris, URI::toString, true) {
 			@Nullable
 			@Override
 			protected URI doGetParent(@Nullable String parentPath, CallerContext callerContext) throws Exception {
@@ -233,9 +233,9 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 0, completionProviderParameter0);
 	}
 
-	private void configureURICreation3Strings(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
+	private void configureUriCreation3Strings(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
 		Executable constructor = URI.class.getConstructor(String.class, String.class, String.class);
-		CompletionProvider completionProviderParameter1 = new AbstractURIDirectoryCompletionProvider(pathDirectoryStructure, favoriteURIs, URI::getSchemeSpecificPart, false) {
+		CompletionProvider completionProviderParameter1 = new AbstractUriDirectoryCompletionProvider(pathDirectoryStructure, favoriteUris, URI::getSchemeSpecificPart, false) {
 			@Override
 			protected URI doGetParent(@Nullable String parentPath, CallerContext callerContext) throws Exception {
 				String scheme = callerContext.getParameter(0, String.class, "scheme");
@@ -245,9 +245,9 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 1, completionProviderParameter1);
 	}
 
-	private void configureURICreation4Strings(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
+	private void configureUriCreation4Strings(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
 		Executable constructor = URI.class.getConstructor(String.class, String.class, String.class, String.class);
-		CompletionProvider completionProviderParameter2 = new AbstractURIDirectoryCompletionProvider(pathDirectoryStructure, favoriteURIs, URI::getPath, false) {
+		CompletionProvider completionProviderParameter2 = new AbstractUriDirectoryCompletionProvider(pathDirectoryStructure, favoriteUris, URI::getPath, false) {
 			@Override
 			protected URI doGetParent(@Nullable String parentPath, CallerContext callerContext) throws Exception {
 				String scheme = callerContext.getParameter(0, String.class, "scheme");
@@ -258,9 +258,9 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 2, completionProviderParameter2);
 	}
 
-	private void configureURICreation5Strings(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
+	private void configureUriCreation5Strings(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
 		Executable constructor = URI.class.getConstructor(String.class, String.class, String.class, String.class, String.class);
-		CompletionProvider completionProviderParameter2 = new AbstractURIDirectoryCompletionProvider(pathDirectoryStructure, favoriteURIs, URI::getPath, false) {
+		CompletionProvider completionProviderParameter2 = new AbstractUriDirectoryCompletionProvider(pathDirectoryStructure, favoriteUris, URI::getPath, false) {
 			@Override
 			protected URI doGetParent(@Nullable String parentPath, CallerContext callerContext) throws Exception {
 				String scheme = callerContext.getParameter(0, String.class, "scheme");
@@ -271,9 +271,9 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 2, completionProviderParameter2);
 	}
 
-	private void configureURICreation6Strings1Int(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
+	private void configureUriCreation6Strings1Int(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
 		Executable constructor = URI.class.getConstructor(String.class, String.class, String.class, int.class, String.class, String.class, String.class);
-		CompletionProvider completionProviderParameter4 = new AbstractURIDirectoryCompletionProvider(pathDirectoryStructure, favoriteURIs, URI::getPath, false) {
+		CompletionProvider completionProviderParameter4 = new AbstractUriDirectoryCompletionProvider(pathDirectoryStructure, favoriteUris, URI::getPath, false) {
 			@Override
 			protected URI doGetParent(@Nullable String parentPath, CallerContext callerContext) throws Exception {
 				String scheme = callerContext.getParameter(0, String.class, "scheme");
@@ -286,9 +286,9 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, constructor, 4, completionProviderParameter4);
 	}
 
-	private void configureURICreationFactory(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
-		Executable createURI = URI.class.getMethod("create", String.class);
-		CompletionProvider completionProviderParameter0 = new AbstractURIDirectoryCompletionProvider(pathDirectoryStructure, favoriteURIs, URI::toString, true) {
+	private void configureUriCreationFactory(ParserSettingsBuilder parserSettingsBuilder) throws NoSuchMethodException {
+		Executable createUri = URI.class.getMethod("create", String.class);
+		CompletionProvider completionProviderParameter0 = new AbstractUriDirectoryCompletionProvider(pathDirectoryStructure, favoriteUris, URI::toString, true) {
 			@Nullable
 			@Override
 			protected URI doGetParent(@Nullable String parentPath, CallerContext callerContext) {
@@ -298,6 +298,6 @@ public class DirectoryCompletionsImpl implements DirectoryCompletions
 				return URI.create(parentPath);
 			}
 		};
-		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, createURI, 0, completionProviderParameter0);
+		parserSettingsBuilder.addStringLiteralCompletionProvider(OWNER, createUri, 0, completionProviderParameter0);
 	}
 }
