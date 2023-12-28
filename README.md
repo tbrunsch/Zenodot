@@ -159,7 +159,14 @@ parser.evaluate("x = 2.72", null);                  // sets x to 2.72
 System.out.println(parser.evaluate("x", null));     // prints 2.72
 ```
 
-## Syntax Extensions
+## Extensions
+
+Zenodot can be extended in different ways that we will discuss in the next subsections. The following extensions are part of the Zenodot project, but must be configured and activated manually:
+
+* Custom Hierarchy Parser: An additional parser that helps to navigate within custom tree structures when typing expressions.
+* Directory Completions: Provides code completions for String literals in file system related methods and constructors like `new File(String)` or `Paths.get(String, String...)`.
+
+### Additional Parsers
 
 Zenodot provides a way to specify additional parsers that will be used for parsing expressions. This allows users to extend the Java syntax that is supported by the basic Zenodot parser. In this section we briefly describe how to do so:
 
@@ -167,7 +174,13 @@ Zenodot provides a way to specify additional parsers that will be used for parsi
 2. Create an instance of `AdditionalParserSettings` that references, among others, the class and specific settings of that parser.
 3. Register this instance via `ParserSettingsBuilder.additionalParserSettings()`.
 
-While the Zenodot API has been kept stable as possible over time, the framework for writing parsers has been considered an internal part of Zenodot until recently. Although many thoughts went into that framework - after all, we had to write quite some parsers with that framework -, it is far from perfect and, hence, more likely to be subject to change. Currently, we consider it more a framework for providing our own additional parsers that are not meant to be part of the basic Zenodot parser, but that could additionally be loaded by users. As of now, we discourage you to write your own parsers with that framework. 
+While the Zenodot API has been kept stable as possible over time, the framework for writing parsers has been considered an internal part of Zenodot until recently. Although many thoughts went into that framework - after all, we had to write quite some parsers with that framework -, it is far from perfect and, hence, more likely to be subject to change. Currently, we consider it more a framework for providing our own additional parsers that are not meant to be part of the basic Zenodot parser, but that could additionally be loaded by users. As of now, we discourage you to write your own parsers with that framework.
+
+The `Custom Hierarchy Parser` (one of the Zenodot modules) is an example of such an additional parser. This parser supports you when navigating through custom tree structures.
+
+### Additional Code Completions
+
+Zenodot does not provide any code completions for, e.g., String literals by default. However, it is possible to specify which code completions to provide for certain parameters of certain methods or constructors. The parser extension `Directory Completions` (one of the Zenodot modules) uses this feature to help you navigating a file system when typing String literals in, e.g., the constructor `new File(String)`.
 
 ## Operators
 
