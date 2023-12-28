@@ -5,6 +5,9 @@ This module extends Zenodot by providing code completions for String literals wi
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 # Table of Contents
 
+- [Registering the Directory Completions Extension](#registering-the-directory-completions-extension)
+- [Further Options](#further-options)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Registering the Directory Completions Extension
