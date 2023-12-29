@@ -10,9 +10,11 @@ import java.util.List;
 
 public class CachedFileDirectoryStructure implements FileDirectoryStructure
 {
-	private final ExceptionalFunction<String, File> fileCache;
+	private static final Object	NOTHING	= new Object();	// caches don't support null keys
+
+	private final ExceptionalFunction<String, File>			fileCache;
 	private final ExceptionalBiFunction<File, String, File> resolveFileCache;
-	private final ExceptionalFunction<Void, List<File>>		rootDirectoryCache;
+	private final ExceptionalFunction<Object, List<File>>	rootDirectoryCache;	// Caches don't support null keys
 	private final ExceptionalFunction<File, List<File>>		childCache;
 
 	public CachedFileDirectoryStructure(FileDirectoryStructure fileDirectoryStructure, long timeUntilEvictionMs) {
@@ -39,6 +41,6 @@ public class CachedFileDirectoryStructure implements FileDirectoryStructure
 
 	@Override
 	public List<File> getRootDirectories() throws IOException {
-		return rootDirectoryCache.apply(null);
+		return rootDirectoryCache.apply(NOTHING);
 	}
 }
