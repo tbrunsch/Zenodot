@@ -2,8 +2,8 @@ package dd.kms.zenodot.samples;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
-import dd.kms.zenodot.api.DirectoryCompletions;
-import dd.kms.zenodot.api.DirectoryCompletions.CompletionTarget;
+import dd.kms.zenodot.api.DirectoryCompletionExtension;
+import dd.kms.zenodot.api.DirectoryCompletionExtension.CompletionTarget;
 import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.Parsers;
 import dd.kms.zenodot.api.result.CodeCompletion;
@@ -48,7 +48,7 @@ public class DirectoryCompletionsSample
 	public static void main(String[] args) throws IOException {
 		try (FileSystem fs = setupFileSystem()){
 			ParserSettingsBuilder parserSettingsBuilder = ParserSettingsBuilder.create();
-			DirectoryCompletions.create()
+			DirectoryCompletionExtension.create()
 				.completionTargets(
 					CompletionTarget.FILE_CREATION,
 					CompletionTarget.PATH_CREATION,

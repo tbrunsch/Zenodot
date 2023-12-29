@@ -6,7 +6,7 @@ import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.CompletionMode;
-import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
+import dd.kms.zenodot.api.settings.extensions.CompletionProvider;
 import dd.kms.zenodot.framework.matching.MatchRatings;
 import dd.kms.zenodot.framework.parsers.CallerContext;
 import dd.kms.zenodot.framework.result.codecompletions.CodeCompletionStringLiteralImpl;

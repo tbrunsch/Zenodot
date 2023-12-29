@@ -56,7 +56,7 @@ static ObjectTreeNode node(String name, ObjectTreeNode... childNodes) {
 }
 
 static ObjectTreeNode leaf(String name, Object value) {
-	return ParserSettingsUtils.createLeafNode(name, value);
+	return ObjectTreeNode.createLeafNode(name, value);
 }
 ```
 
@@ -78,33 +78,31 @@ ObjectTreeNode root = node(null,
 );
 ```
 
-In real-life applications such hierarchies will by dynamic, so you will not hard-code them like in this example.
+In real-life applications such hierarchies will be dynamic, so you will not hard-code them like in this example.
 
 Now consider the following parser code:
 
 ```
-AdditionalParserSettings additionalParserSettings = CustomHierarchyParsers.createCustomHierarchyParserSettings(root);
-ParserSettings settings = ParserSettingsBuilder.create()
-	.additionalParserSettings(additionalParserSettings)
-	.build();
-ExpressionParser parser = Parsers.createExpressionParser(settings);
+ParserSettingsBuilder parserSettingsBuilder = ParserSettingsBuilder.create();
+ParserSettings parserSettings = CustomHierarchyParserExtension.create(root).configure(parserSettingsBuilder).build();
+ExpressionParser parser = Parsers.createExpressionParser(parserSettings);
 String text = "{strings#long strings#ve";
 List<CodeCompletion> completions = new ArrayList<>(parser.getCompletions(text, text.length(), null));
-Collections.sort(completions, Parsers.COMPLETION_COMPARATOR);
+completions.sort(Parsers.COMPLETION_COMPARATOR);
 
-System.out.println("Completion: " + completions.get(0).getTextToInsert());
+System.out.println("Completion: " + completions.get(0).getTextToInsert());	// prints "Completion: very long string"
 
 String expression = "{numbers#e}";
 Object result = parser.evaluate(expression, null);
 
-System.out.println("Result: " + result);
+System.out.println("Result: " + result);	// prints "Result: 2.72"
 ```
 
 The first part of the code requests Zenodot to suggest child nodes of the node for the path "strings" -> "long strings" considering the text "ve". The output will be "Completion: very long string". Note that node names can even contain white spaces. The only forbidden characters are '#' and '}'.
 
 The second part of the code accesses the user object assigned to the node for the path "numbers" -> "e". The output is "Result: 2.72".
 
-Observe that custom hierarchies are a language extension supported by Zenodot that allow semantic instead of syntactic code completions and expression evaluations. In contrast to class hierarchies that are determined at compile time (in most of the cases), custom hierarchies can be build and updated during an application's lifetime. 
+Observe that custom hierarchies are a language extension supported by Zenodot that allows semantic instead of syntactic code completions and expression evaluations. In contrast to class hierarchies that are determined at compile time (in most of the cases), custom hierarchies can be build and updated during an application's lifetime. 
 
 # Customizing the Custom Hierarchy Parser
 
@@ -114,4 +112,4 @@ By default, the custom hierarchy syntax uses the characters
 * `#` as separator between hierarchy levels, and
 * `}` to mark the end of a hierarchy expression.
 
-However, by calling `CustomHierarchyParsers.createCustomHierarchyParserSettings(ObjectTreeNode, char, char, char)` you can define other characters. Note, however, that you must be sure that the syntax extension does not conflict with Java syntax nor with other syntax extensions.
+However, by calling `CustomHierarchyParserExtension.hierarchyCharacters(char, char, char)` you can define other characters. Note, however, that you must be sure that the syntax extension does not conflict with Java syntax or with other syntax extensions.

@@ -2,10 +2,10 @@ package dd.kms.zenodot.api.settings;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
-import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
+import dd.kms.zenodot.api.settings.extensions.ParserExtension;
+import dd.kms.zenodot.api.settings.extensions.ParserExtensionBuilder;
 
-import java.lang.reflect.Executable;
+import javax.annotation.Nullable;
 
 /**
  * Builder for {@link ParserSettings}<br>
@@ -64,22 +64,10 @@ public interface ParserSettingsBuilder
 	ParserSettingsBuilder considerAllClassesForClassCompletions(boolean considerAllClassesForClassCompletions);
 
 	/**
-	 * Call this method if you want to add custom parsers to the Zenodot parser framework.
+	 * Updates the extension with the specified {@code extensionName}. If the specified {@code parserExtension} is
+	 * {@code null}, then the extension is removed. Extensions are created via the {@link ParserExtensionBuilder}.
 	 */
-	ParserSettingsBuilder additionalParserSettings(AdditionalParserSettings additionalParserSettings);
-
-	/**
-	 * Adds a completion provider for the String parameter {@code parameterIndex} of {@code executable}. The
-	 * completion provider is associated with the specified {@code owner}. All completion providers of
-	 * {@code owner} can later be removed by calling {@link #removeStringLiteralCompletionProviders(Object)}.
-	 */
-	ParserSettingsBuilder addStringLiteralCompletionProvider(Object owner, Executable executable, int parameterIndex, CompletionProvider completionProvider);
-
-	/**
-	 * Removes all completion providers registered via {@link #addStringLiteralCompletionProvider(Object, Executable, int, CompletionProvider)}
-	 * for the specified {@code owner}.
-	 */
-	ParserSettingsBuilder removeStringLiteralCompletionProviders(Object owner);
+	ParserSettingsBuilder setParserExtension(String extensionName, @Nullable ParserExtension parserExtension);
 
 	/**
 	 * Specify a logger that receives messages during the parsing process. This is primarily meant for

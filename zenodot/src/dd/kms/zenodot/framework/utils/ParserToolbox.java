@@ -8,7 +8,8 @@ import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.CompletionMode;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
+import dd.kms.zenodot.api.settings.extensions.CompletionProvider;
+import dd.kms.zenodot.api.settings.extensions.ParserExtension;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
 import dd.kms.zenodot.framework.operators.BinaryOperator;
 import dd.kms.zenodot.framework.parsers.AbstractParser;
@@ -144,7 +145,7 @@ public class ParserToolbox
 		int paramIndex = callerContext.getPreviousParameters().size();
 		List<CompletionProvider> completionProviders = new ArrayList<>();
 		for (Executable executable : executables) {
-			List<CompletionProvider> completionProvidersForExecutable = settings.getStringLiteralCompletionProviders(executable, paramIndex);
+			List<CompletionProvider> completionProvidersForExecutable = getStringLiteralCompletionProviders(executable, paramIndex);
 			completionProviders.addAll(completionProvidersForExecutable);
 		}
 		if (completionProviders.isEmpty()) {
@@ -160,6 +161,17 @@ public class ParserToolbox
 			}
 			return new CodeCompletions(completions);
 		};
+	}
+
+	private List<CompletionProvider> getStringLiteralCompletionProviders(Executable executable, int parameterIndex) {
+		List<CompletionProvider> allCompletionProviders = new ArrayList<>();
+		Collection<String> parserExtensionNames = settings.getParserExtensionNames();
+		for (String parserExtensionName : parserExtensionNames) {
+			ParserExtension parserExtension = settings.getParserExtension(parserExtensionName);
+			List<CompletionProvider> completionProviders = parserExtension.getStringLiteralCompletionProviders(executable, parameterIndex);
+			allCompletionProviders.addAll(completionProviders);
+		}
+		return allCompletionProviders;
 	}
 
 	/*

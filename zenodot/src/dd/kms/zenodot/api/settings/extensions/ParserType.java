@@ -1,4 +1,4 @@
-package dd.kms.zenodot.api.settings.parsers;
+package dd.kms.zenodot.api.settings.extensions;
 
 public enum ParserType
 {

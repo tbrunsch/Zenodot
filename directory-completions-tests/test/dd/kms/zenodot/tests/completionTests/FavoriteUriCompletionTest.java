@@ -1,7 +1,7 @@
 package dd.kms.zenodot.tests.completionTests;
 
 import com.google.common.collect.ImmutableList;
-import dd.kms.zenodot.api.DirectoryCompletions;
+import dd.kms.zenodot.api.DirectoryCompletionExtension;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.framework.FileSystemUtils;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
@@ -89,8 +89,8 @@ public class FavoriteUriCompletionTest extends CompletionTest
 			URI.create("jimfs://xyz/test"),
 			URI.create("jimfs://uri/zenodot/test/test%20with%20spaces")
 		);
-		DirectoryCompletions.create()
-			.completionTargets(DirectoryCompletions.CompletionTarget.URI_CREATION)
+		DirectoryCompletionExtension.create()
+			.completionTargets(DirectoryCompletionExtension.CompletionTarget.URI_CREATION)
 			.favoriteUris(favoriteUris)
 			.configure(parserSettingsBuilder);
 	}

@@ -3,16 +3,19 @@ package dd.kms.zenodot.api;
 import dd.kms.zenodot.api.directories.FileDirectoryStructure;
 import dd.kms.zenodot.api.directories.PathDirectoryStructure;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
+import dd.kms.zenodot.impl.DirectoryCompletionExtensionImpl;
 
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 
-public interface DirectoryCompletions
+public interface DirectoryCompletionExtension
 {
-	static DirectoryCompletions create() {
-		return new dd.kms.zenodot.impl.DirectoryCompletionsImpl();
+	String	EXTENSION_NAME	= "Directory Completions";
+
+	static DirectoryCompletionExtension create() {
+		return new DirectoryCompletionExtensionImpl();
 	}
 
 	/**
@@ -22,7 +25,7 @@ public interface DirectoryCompletions
 	 * completions are generated: You can, e.g., cache these accesses
 	 * (see {@link FileDirectoryStructure#cache(FileDirectoryStructure, long)}).
 	 */
-	DirectoryCompletions fileDirectoryStructure(FileDirectoryStructure fileDirectoryStructure);
+	DirectoryCompletionExtension fileDirectoryStructure(FileDirectoryStructure fileDirectoryStructure);
 
 	/**
 	 * By default, all completions for {@link Path}-related operations (see {@link CompletionTarget#PATH_CREATION},
@@ -31,27 +34,27 @@ public interface DirectoryCompletions
 	 * interface {@link PathDirectoryStructure}. That way, you can influence how the completions are generated:
 	 * You can, e.g., cache these accesses (see {@link PathDirectoryStructure#cache(PathDirectoryStructure, long)}).
 	 */
-	DirectoryCompletions pathDirectoryStructure(PathDirectoryStructure pathDirectoryStructure);
+	DirectoryCompletionExtension pathDirectoryStructure(PathDirectoryStructure pathDirectoryStructure);
 
 	/**
 	 * Specify for which methods to provide code completions.
 	 */
-	DirectoryCompletions completionTargets(CompletionTarget... completionTargets);
+	DirectoryCompletionExtension completionTargets(CompletionTarget... completionTargets);
 
 	/**
 	 * By default, only children of the specified path will be suggested for completions. Favorite paths
 	 * (referencing files or directories on the default file system) that extend the specified path will
 	 * always be suggested, even if they are no direct children.
 	 */
-	DirectoryCompletions favoritePaths(List<String> favoritePaths);
+	DirectoryCompletionExtension favoritePaths(List<String> favoritePaths);
 
 	/**
 	 * By default, only children of the specified path will be suggested for completions. Favorite {@link URI}s
 	 * that extend the specified path will always be suggested, even if they are no direct children.
 	 */
-	DirectoryCompletions favoriteUris(List<URI> favoriteUris);
+	DirectoryCompletionExtension favoriteUris(List<URI> favoriteUris);
 
-	void configure(ParserSettingsBuilder parserSettingsBuilder);
+	ParserSettingsBuilder configure(ParserSettingsBuilder parserSettingsBuilder);
 
 	enum CompletionTarget
 	{

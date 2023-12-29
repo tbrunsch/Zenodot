@@ -1,18 +1,14 @@
 package dd.kms.zenodot.impl.settings;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.common.AccessModifier;
-import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.*;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
-import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
+import dd.kms.zenodot.api.settings.extensions.ParserExtension;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Executable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 class ParserSettingsImpl implements ParserSettings
@@ -22,18 +18,16 @@ class ParserSettingsImpl implements ParserSettings
 	private final AccessModifier						minimumAccessModifier;
 	private final EvaluationMode						evaluationMode;
 	private final boolean 								considerAllClassesForClassCompletions;
-	private final List<AdditionalParserSettings>		additionalParserSettings;
-	private final List<StringLiteralCompletionEntry>	stringLiteralCompletionProviders;
+	private final Map<String, ParserExtension>			parserExtensions;
 	private final ParserLogger 							logger;
 
-	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, List<AdditionalParserSettings> additionalParserSettings, List<StringLiteralCompletionEntry> stringLiteralCompletionProviders, ParserLogger logger) {
+	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, Map<String, ParserExtension> parserExtensions, ParserLogger logger) {
 		this.completionMode = completionMode;
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
 		this.minimumAccessModifier = minimumAccessModifier;
 		this.evaluationMode = evaluationMode;
 		this.considerAllClassesForClassCompletions = considerAllClassesForClassCompletions;
-		this.additionalParserSettings = ImmutableList.copyOf(additionalParserSettings);
-		this.stringLiteralCompletionProviders = ImmutableList.copyOf(stringLiteralCompletionProviders);
+		this.parserExtensions = ImmutableMap.copyOf(parserExtensions);
 		this.logger = logger;
 	}
 
@@ -63,29 +57,14 @@ class ParserSettingsImpl implements ParserSettings
 	}
 
 	@Override
+	public Collection<String> getParserExtensionNames() {
+		return parserExtensions.keySet();
+	}
+
 	@Nullable
-	public List<AdditionalParserSettings> getAdditionalParserSettings() {
-		return additionalParserSettings;
-	}
-
 	@Override
-	public List<CompletionProvider> getStringLiteralCompletionProviders(Executable executable, int parameterIndex) {
-		List<CompletionProvider> completionProviders = new ArrayList<>();
-		for (StringLiteralCompletionEntry entry : stringLiteralCompletionProviders) {
-			if (parameterIndex != entry.getParameterIndex()) {
-				continue;
-			}
-			Executable supportedExecutable = entry.getExecutable();
-			if (!Objects.equals(executable, supportedExecutable) && !ReflectionUtils.isOverriddenBy(supportedExecutable, executable)) {
-				continue;
-			}
-			completionProviders.add(entry.getCompletionProvider());
-		}
-		return completionProviders;
-	}
-
-	List<StringLiteralCompletionEntry> getStringLiteralCompletionProviders() {
-		return stringLiteralCompletionProviders;
+	public ParserExtension getParserExtension(String extensionName) {
+		return parserExtensions.get(extensionName);
 	}
 
 	@Override

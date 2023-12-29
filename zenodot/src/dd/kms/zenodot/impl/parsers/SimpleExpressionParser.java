@@ -1,8 +1,8 @@
 package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.Lists;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
-import dd.kms.zenodot.api.settings.parsers.ParserType;
+import dd.kms.zenodot.api.settings.extensions.AdditionalParserSettings;
+import dd.kms.zenodot.api.settings.extensions.ParserType;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
@@ -47,7 +47,7 @@ public class SimpleExpressionParser extends AbstractParser<ObjectInfo, ObjectPar
 		);
 
 		// additional parser classes
-		List<AdditionalParserSettings> additionalParserSettings = parserToolbox.getSettings().getAdditionalParserSettings();
+		List<AdditionalParserSettings> additionalParserSettings = ParseUtils.getAdditionalParserSettings(parserToolbox.getSettings());
 		additionalParserSettings.stream()
 			.filter(settings -> settings.getParserType() == ParserType.ROOT_OBJECT_PARSER)
 			.forEach(settings -> parserClasses.add(settings.getParserClass()));

@@ -1,7 +1,6 @@
 package dd.kms.zenodot.tests.completionTests;
 
-import dd.kms.zenodot.api.CustomHierarchyParsers;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
+import dd.kms.zenodot.api.CustomHierarchyParserExtension;
 import dd.kms.zenodot.tests.common.CustomHierarchy;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
@@ -21,10 +20,10 @@ public class CustomHierarchyTest extends CompletionTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		AdditionalParserSettings customHierarchyParserSettings = CustomHierarchyParsers.createCustomHierarchyParserSettings(CustomHierarchy.ROOT);
+		CustomHierarchyParserExtension customHierarchyParserExtension = CustomHierarchyParserExtension.create(CustomHierarchy.ROOT);
 
 		return new CompletionTestBuilder()
-			.configurator(test -> test.additionalParserSettings(customHierarchyParserSettings))
+			.configurator(test -> customHierarchyParserExtension.configure(test.getSettingsBuilder()))
 			.addTest("{Component Ma",											"Component Manager")
 			.addTest("{Component Manager}.comp",								"components")
 			.addTest("{Excel Imp",												"Excel Importer")

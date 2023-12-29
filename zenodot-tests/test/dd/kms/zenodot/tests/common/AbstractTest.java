@@ -6,7 +6,6 @@ import dd.kms.zenodot.api.debug.ParserConsoleLogger;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import org.junit.Assert;
 
@@ -55,10 +54,6 @@ public class AbstractTest<T extends AbstractTest>
 
 	public void importPackages(String... packageNames) {
 		settingsBuilder.importPackages(Arrays.asList(packageNames));
-	}
-
-	public void additionalParserSettings(AdditionalParserSettings settings) {
-		settingsBuilder.additionalParserSettings(settings);
 	}
 
 	public void evaluationMode(EvaluationMode evaluationMode) {

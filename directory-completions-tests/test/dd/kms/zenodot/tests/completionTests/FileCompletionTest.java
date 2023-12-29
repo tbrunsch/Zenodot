@@ -1,6 +1,6 @@
 package dd.kms.zenodot.tests.completionTests;
 
-import dd.kms.zenodot.api.DirectoryCompletions;
+import dd.kms.zenodot.api.DirectoryCompletionExtension;
 import dd.kms.zenodot.api.directories.FileDirectoryStructure;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.framework.FileSystemUtils;
@@ -85,9 +85,9 @@ public class FileCompletionTest extends CompletionTest
 
 	private static void addFileDirectoryStructure(ParserSettingsBuilder parserSettingsBuilder) {
 		FileDirectoryStructure fileDirectoryStructure = new TestFileDirectoryStructure(DEFAULT_FILE_SYSTEM_REPLACEMENT);
-		DirectoryCompletions.create()
+		DirectoryCompletionExtension.create()
 			.fileDirectoryStructure(fileDirectoryStructure)
-			.completionTargets(DirectoryCompletions.CompletionTarget.FILE_CREATION)
+			.completionTargets(DirectoryCompletionExtension.CompletionTarget.FILE_CREATION)
 			.configure(parserSettingsBuilder);
 	}
 }

@@ -1,18 +1,18 @@
 package dd.kms.zenodot.impl.settings.parsers;
 
-import dd.kms.zenodot.api.settings.CustomHierarchyParserSettings;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
-import dd.kms.zenodot.api.settings.parsers.ParserType;
+import dd.kms.zenodot.api.settings.extensions.AdditionalParserSettings;
+import dd.kms.zenodot.api.settings.extensions.ParserType;
 import dd.kms.zenodot.framework.parsers.AbstractParser;
 import dd.kms.zenodot.impl.parsers.CustomHierarchyParser;
+import dd.kms.zenodot.impl.settings.CustomHierarchyParserSettings;
 
 public class AdditionalCustomHierarchyParserSettings implements AdditionalParserSettings
 {
 	private final CustomHierarchyParserSettings	settings;
 
 	public AdditionalCustomHierarchyParserSettings(ObjectTreeNode customHierarchyRoot, char hierarchyBegin, char hierarchySeparator, char hierarchyEnd) {
-		this.settings = new dd.kms.zenodot.impl.settings.CustomHierarchyParserSettingsImpl(customHierarchyRoot, hierarchyBegin, hierarchySeparator, hierarchyEnd);
+		this.settings = new CustomHierarchyParserSettings(customHierarchyRoot, hierarchyBegin, hierarchySeparator, hierarchyEnd);
 	}
 
 	@Override

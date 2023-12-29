@@ -163,7 +163,9 @@ System.out.println(parser.evaluate("x", null));     // prints 2.72
 
 ## Extensions
 
-Zenodot can be extended in different ways that we will discuss in the next subsections. The following extensions are part of the Zenodot project, but must be configured and activated manually:
+Zenodot can be extended in different ways that we will discuss in the next subsections. To register an extension, you have to call `ParserSettingsBuilder.setParserExtension(String, ParserExtension)` with the name of the extension and the `ParserExtension`. `ParserExtension` instances are created via a `ParserExtensionBuilder`, which you get via `ParserExtensionBuilder.create()` and configure it appropriately. This is, however, mostly relevant for the implementer of an extension. As of now, the available extensions have a method `XyzExtension.configure(ParserSettingsBuilder)` that does all these steps.
+
+The following extensions are part of the Zenodot project, but must be configured and activated manually:
 
 * Custom Hierarchy Parser: An additional parser that helps to navigate within custom tree structures when typing expressions.
 * Directory Completions: Provides code completions for String literals in file system related methods and constructors like `new File(String)` or `Paths.get(String, String...)`.
@@ -173,8 +175,11 @@ Zenodot can be extended in different ways that we will discuss in the next subse
 Zenodot provides a way to specify additional parsers that will be used for parsing expressions. This allows users to extend the Java syntax that is supported by the basic Zenodot parser. In this section we briefly describe how to do so:
 
 1. You have to use an existing additional parser or write your own parser that extends `dd.kms.zenodot.framework.parsers.AbstractParser`.
-2. Create an instance of `AdditionalParserSettings` that references, among others, the class and specific settings of that parser.
-3. Register this instance via `ParserSettingsBuilder.additionalParserSettings()`.
+2. Create an implementation of `AdditionalParserSettings` that references, among others, the class and specific settings of that parser.
+3. Create an extension class with a method `configure(ParserSettingsBuilder)`. In this method you have to do the following:
+   1. Create an instance `additionalParserSettings` of your `AdditionalParserSettings` implementation.
+   2. Create a `ParserExtension` instance via `ParserExtensionBuilder.create().addParser(additionalParserSettings).build()`.
+   3. Call `ParserSettingsBuilder.setParserExtension()` with the name of your extension and the `ParserExtension` instance.
 
 While the Zenodot API has been kept stable as possible over time, the framework for writing parsers has been considered an internal part of Zenodot until recently. Although many thoughts went into that framework - after all, we had to write quite some parsers with that framework -, it is far from perfect and, hence, more likely to be subject to change. Currently, we consider it more a framework for providing our own additional parsers that are not meant to be part of the basic Zenodot parser, but that could additionally be loaded by users. As of now, we discourage you to write your own parsers with that framework.
 
@@ -182,7 +187,12 @@ The `Custom Hierarchy Parser` (one of the Zenodot modules) is an example of such
 
 ### Additional Code Completions
 
-Zenodot does not provide any code completions for, e.g., String literals by default. However, it is possible to specify which code completions to provide for certain parameters of certain methods or constructors. The parser extension `Directory Completions` (one of the Zenodot modules) uses this feature to help you navigating a file system when typing String literals in, e.g., the constructor `new File(String)`.
+Zenodot does not provide any code completions for, e.g., String literals by default. However, it is possible to specify which code completions to provide for certain parameters of certain methods or constructors. For this, you have to write an extension class with a method `configure(ParserSettingsBuilder)`: In this method, you have to do the following things:
+
+1. Create a `ParserExtension` instance via `ParserExtensionBuilder.create().addStringLiteralCompletionProvider(Executable, int, CompletionProvider).build()`. The `Executable` and the `int` describe the parameter of an executable for which you want to provide code completions.
+2. Call `ParserSettingsBuilder.setParserExtension()` with the name of your extension and the `ParserExtension` instance.
+
+The parser extension `Directory Completions` (one of the Zenodot modules) uses this feature to help to navigate a file system when typing String literals in, e.g., the constructor `new File(String)`.
 
 ## Operators
 

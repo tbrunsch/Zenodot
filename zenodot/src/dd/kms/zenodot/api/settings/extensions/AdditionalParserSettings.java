@@ -1,4 +1,4 @@
-package dd.kms.zenodot.api.settings.parsers;
+package dd.kms.zenodot.api.settings.extensions;
 
 import dd.kms.zenodot.framework.parsers.AbstractParser;
 

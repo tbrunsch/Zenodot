@@ -1,8 +1,7 @@
 package dd.kms.zenodot.tests.completionTests;
 
-import dd.kms.zenodot.api.CustomHierarchyParsers;
+import dd.kms.zenodot.api.CustomHierarchyParserExtension;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
 import dd.kms.zenodot.tests.completionTests.framework.TestData;
@@ -34,7 +33,7 @@ public class CustomHierarchyValidExpressionTest extends CompletionTest
 	}
 
 	private static void configureTest(CompletionTest test) {
-		ObjectTreeNode node = CustomHierarchyParsers.createLeafNode("node", 123);
+		ObjectTreeNode node = ObjectTreeNode.createLeafNode("node", 123);
 		ObjectTreeNode root = new ObjectTreeNode() {
 			@Override
 			public String getName() {
@@ -51,7 +50,7 @@ public class CustomHierarchyValidExpressionTest extends CompletionTest
 				return null;
 			}
 		};
-		AdditionalParserSettings additionalParserSettings = CustomHierarchyParsers.createCustomHierarchyParserSettings(root);
-		test.additionalParserSettings(additionalParserSettings);
+		CustomHierarchyParserExtension customHierarchyParserExtension = CustomHierarchyParserExtension.create(root);
+		customHierarchyParserExtension.configure(test.getSettingsBuilder());
 	}
 }

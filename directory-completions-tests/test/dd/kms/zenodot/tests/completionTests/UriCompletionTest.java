@@ -1,6 +1,6 @@
 package dd.kms.zenodot.tests.completionTests;
 
-import dd.kms.zenodot.api.DirectoryCompletions;
+import dd.kms.zenodot.api.DirectoryCompletionExtension;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.framework.FileSystemUtils;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
@@ -95,8 +95,8 @@ public class UriCompletionTest extends CompletionTest
 	}
 
 	private static void registerUriCompletions(ParserSettingsBuilder parserSettingsBuilder) {
-		DirectoryCompletions.create()
-			.completionTargets(DirectoryCompletions.CompletionTarget.URI_CREATION)
+		DirectoryCompletionExtension.create()
+			.completionTargets(DirectoryCompletionExtension.CompletionTarget.URI_CREATION)
 			.configure(parserSettingsBuilder);
 	}
 }

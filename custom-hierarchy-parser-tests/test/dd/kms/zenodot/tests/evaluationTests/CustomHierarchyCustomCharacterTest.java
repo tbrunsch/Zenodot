@@ -1,7 +1,6 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
-import dd.kms.zenodot.api.CustomHierarchyParsers;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
+import dd.kms.zenodot.api.CustomHierarchyParserExtension;
 import dd.kms.zenodot.tests.common.CustomHierarchy;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
@@ -21,9 +20,9 @@ public class CustomHierarchyCustomCharacterTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		AdditionalParserSettings customHierarchyParserSettings = CustomHierarchyParsers.createCustomHierarchyParserSettings(CustomHierarchy.ROOT, '<', '|', '>');
+		CustomHierarchyParserExtension customHierarchyParserExtension = CustomHierarchyParserExtension.create(CustomHierarchy.ROOT).hierarchyCharacters('<', '|', '>');
 
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().configurator(test -> test.additionalParserSettings(customHierarchyParserSettings));
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().configurator(test -> customHierarchyParserExtension.configure(test.getSettingsBuilder()));
 
 		testBuilder
 			.addTest("<Component Manager>",											CustomHierarchy.COMPONENT_MANAGER)
