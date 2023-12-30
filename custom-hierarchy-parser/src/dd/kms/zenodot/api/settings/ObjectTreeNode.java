@@ -7,6 +7,10 @@ package dd.kms.zenodot.api.settings;
  */
 public interface ObjectTreeNode
 {
+	static ObjectTreeNode createLeafNode(String name, Object userObject) {
+		return new dd.kms.zenodot.impl.settings.LeafObjectTreeNode(name, userObject);
+	}
+
 	String getName();
 	Iterable<? extends ObjectTreeNode> getChildNodes();
 	Object getUserObject();

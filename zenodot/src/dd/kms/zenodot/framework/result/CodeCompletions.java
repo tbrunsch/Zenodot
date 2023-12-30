@@ -27,7 +27,7 @@ public class CodeCompletions
 	}
 
 	public CodeCompletions(List<CodeCompletion> completions, ExecutableArgumentInfo executableArgumentInfo) {
-		this.completions = ImmutableList.copyOf(completions);
+		this.completions = completions.stream().distinct().collect(ImmutableList.toImmutableList());
 		this.executableArgumentInfo = executableArgumentInfo;
 	}
 

@@ -2,10 +2,10 @@ package dd.kms.zenodot.api.settings;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
-import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
+import dd.kms.zenodot.api.settings.extensions.ParserExtension;
+import dd.kms.zenodot.api.settings.extensions.ParserExtensionBuilder;
 
-import java.lang.reflect.Executable;
+import javax.annotation.Nullable;
 
 /**
  * Builder for {@link ParserSettings}<br>
@@ -63,9 +63,11 @@ public interface ParserSettingsBuilder
 	 */
 	ParserSettingsBuilder considerAllClassesForClassCompletions(boolean considerAllClassesForClassCompletions);
 
-	ParserSettingsBuilder additionalParserSettings(AdditionalParserSettings additionalParserSettings);
-
-	ParserSettingsBuilder stringLiteralCompletionProvider(Executable executable, int parameterIndex, CompletionProvider completionProvider);
+	/**
+	 * Updates the extension with the specified {@code extensionName}. If the specified {@code parserExtension} is
+	 * {@code null}, then the extension is removed. Extensions are created via the {@link ParserExtensionBuilder}.
+	 */
+	ParserSettingsBuilder setParserExtension(String extensionName, @Nullable ParserExtension parserExtension);
 
 	/**
 	 * Specify a logger that receives messages during the parsing process. This is primarily meant for

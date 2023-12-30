@@ -7,7 +7,8 @@ import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
 import dd.kms.zenodot.api.settings.ParserSettings;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
+import dd.kms.zenodot.api.settings.extensions.AdditionalParserSettings;
+import dd.kms.zenodot.api.settings.extensions.ParserExtension;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
@@ -37,9 +38,24 @@ public class ParseUtils
 	/*
 	 * Settings
 	 */
+	public static List<AdditionalParserSettings> getAdditionalParserSettings(ParserSettings settings) {
+		List<AdditionalParserSettings> additionalParserSettings = new ArrayList<>();
+		for (String extensionName : settings.getParserExtensionNames()) {
+			ParserExtension parserExtension = settings.getParserExtension(extensionName);
+			additionalParserSettings.addAll(parserExtension.getParsers());
+		}
+		return additionalParserSettings;
+	}
+
 	@Nullable
-	public static <T extends AdditionalParserSettings> T getAdditionalParserSettings(ParserSettings settings, Class<T> additionalParserSettingsClass) {
-		return settings.getAdditionalParserSettings().stream()
+	public static <T extends AdditionalParserSettings> T getAdditionalParserSettings(ParserSettings settings, String extensionName, Class<T> additionalParserSettingsClass) {
+		ParserExtension parserExtension;
+		try {
+			parserExtension = settings.getParserExtension(extensionName);
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+		return parserExtension.getParsers().stream()
 			.filter(additionalParserSettingsClass::isInstance)
 			.map(additionalParserSettingsClass::cast)
 			.findFirst()

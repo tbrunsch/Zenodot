@@ -41,7 +41,8 @@ public class ClassTest extends CompletionTest
 			.addTest(packageName + ".dummies.MyO",				"MyOtherClass")
 			.addTest(packageName + ".dummies.Y",				"YetAnotherDummyClass")
 			.addTest(packageName + ".moreDummies.MyDummy",		"MyDummy", "MyDummy2")
-			.addTest(packageName + ".moreDummies.MyDummy2",		"MyDummy2", "MyDummy");
+			.addTest(packageName + ".moreDummies.MyDummy2",		"MyDummy2", "MyDummy")
+			.addInsertionTest(packageName + ".moreDumm^.MyDummy2", '^',	packageName + ".moreDummies.MyDummy2");
 
 		testBuilder
 			.configurator(test -> test.importPackages(packageName))

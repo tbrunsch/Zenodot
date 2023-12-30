@@ -1,9 +1,8 @@
 package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.Iterables;
-import dd.kms.zenodot.api.CustomHierarchyParsers;
+import dd.kms.zenodot.api.CustomHierarchyParserExtension;
 import dd.kms.zenodot.api.debug.LogLevel;
-import dd.kms.zenodot.api.settings.CustomHierarchyParserSettings;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
@@ -20,6 +19,7 @@ import dd.kms.zenodot.framework.utils.ParseUtils;
 import dd.kms.zenodot.framework.utils.ParserToolbox;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.settings.CustomHierarchyParserSettings;
 import dd.kms.zenodot.impl.settings.parsers.AdditionalCustomHierarchyParserSettings;
 import dd.kms.zenodot.impl.utils.dataproviders.ObjectTreeNodeDataProvider;
 
@@ -28,7 +28,7 @@ import java.util.Objects;
 /**
  * Parses expressions of the form {@code {<child level 1>#...#<child level n>}} in
  * the (ignored) context of {@code this}. {@code <child level 1>} refers to a child
- * of the root of the custom hierarchy specified by {@link CustomHierarchyParsers#createCustomHierarchyParserSettings(ObjectTreeNode)}.
+ * of the root of the custom hierarchy specified by {@link CustomHierarchyParserExtension#createCustomHierarchyParserSettings(ObjectTreeNode)}.
  * With each separator {@code #}, the expression descends to the next lower level
  * in the hierarchy.
  */
@@ -40,7 +40,7 @@ public class CustomHierarchyParser extends AbstractParserWithObjectTail<ObjectIn
 
 	@Override
 	protected ObjectParseResult parseNext(TokenStream tokenStream, ObjectInfo contextInfo, ObjectParseResultExpectation expectation) throws SyntaxException, CodeCompletionException, InternalErrorException {
-		CustomHierarchyParserSettings settings = ParseUtils.getAdditionalParserSettings(parserToolbox.getSettings(), AdditionalCustomHierarchyParserSettings.class).getSettings();
+		CustomHierarchyParserSettings settings = ParseUtils.getAdditionalParserSettings(parserToolbox.getSettings(), CustomHierarchyParserExtension.EXTENSION_NAME, AdditionalCustomHierarchyParserSettings.class).getSettings();
 
 		tokenStream.readCharacter(settings.getHierarchyBegin());
 

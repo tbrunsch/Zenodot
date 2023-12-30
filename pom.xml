@@ -16,6 +16,10 @@
         <module>custom-hierarchy-parser</module>
         <module>custom-hierarchy-parser-tests</module>
         <module>custom-hierarchy-parser-samples</module>
+        <module>directory-completions</module>
+        <module>directory-completions-commons</module>
+        <module>directory-completions-tests</module>
+        <module>directory-completions-samples</module>
     </modules>
 
     <properties>

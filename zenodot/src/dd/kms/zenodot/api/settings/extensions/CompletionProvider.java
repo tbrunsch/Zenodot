@@ -1,4 +1,4 @@
-package dd.kms.zenodot.api.settings.parsers;
+package dd.kms.zenodot.api.settings.extensions;
 
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.CompletionMode;

@@ -2,11 +2,9 @@ package dd.kms.zenodot.api.settings;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
-import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
+import dd.kms.zenodot.api.settings.extensions.ParserExtension;
 
-import java.lang.reflect.Executable;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Immutable settings for the parsing process. Can only be created with a {@link ParserSettingsBuilder}.<br>
@@ -20,8 +18,14 @@ public interface ParserSettings
 	AccessModifier getMinimumAccessModifier();
 	EvaluationMode getEvaluationMode();
 	boolean isConsiderAllClassesForClassCompletions();
-	List<AdditionalParserSettings> getAdditionalParserSettings();
-	List<CompletionProvider> getStringLiteralCompletionProviders(Executable executable, int parameterIndex);
+	Collection<String> getParserExtensionNames();
+	/**
+	 * Returns the parser extension registered for the {@code extensionName}.
+	 * @throws IllegalArgumentException if no extension has been registered for the {@code extensionName}.
+	 *                                  This can be tested by checking {@link #getParserExtensionNames()}
+	 *                                  first.
+	 */
+	ParserExtension getParserExtension(String extensionName);
 	ParserLogger getLogger();
 	ParserSettingsBuilder builder();
 }

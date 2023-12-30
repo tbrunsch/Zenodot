@@ -3,6 +3,7 @@ package dd.kms.zenodot.framework.tokenizer;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import dd.kms.zenodot.api.common.RegexUtils;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
@@ -62,7 +63,38 @@ public class TokenStream
 		.put('\\', '\\')
 		.build();
 
+	/**
+	 * Cache for {@link #getOrCreateSingleCharacterPattern(char...)}
+	 */
 	private static final Map<String, Pattern>	CHARACTERS_TO_PATTERN	= new HashMap<>();
+
+	/**
+	 * In the modes {@link dd.kms.zenodot.api.settings.CompletionMode#COMPLETE_AND_REPLACE_WHOLE_WORDS}
+	 * and {@link dd.kms.zenodot.api.settings.CompletionMode#COMPLETE_UNTIL_CARET_REPLACE_WHOLE_WORDS} also
+	 * characters after the caret position are considered, at least for replacement. In most cases it is
+	 * clear when to stop, but in a few cases not. One case are {@code String} literal completions: Let
+	 * us assume that the initial expression is {@code f(^)}. (The {@code ^} marks the caret position.) When
+	 * the user types a {@code String} literal, then the situation might look like {@code f("xyz^)} after a
+	 * while. In that case, we want to use {@code xyz} as basis for code completions and not {@code xyz)},
+	 * whereas in {@code f("sin() is a t^rig)} we want to use {@code sin() is a trig} as basis. A heuristic
+	 * that covers both cases is to stop reading after the caret position at certain special characters
+	 * (in this case {@code )}). This field contains some characters we think reading should be stopped at.
+	 * Note that there is no obvious strategy which characters to stop at. We have to keep two scenarios in mind
+	 * (and how important they are) and decide which character helps in which situation:
+	 * <ol>
+	 *     <li>
+	 *         The user wants to complete the remainder of the expression, but the caret is not at the end:
+	 *         {@code f("I am a String litera^l and '('  and ')' are parentheses}
+	 *     </li>
+	 *     <li>
+	 *         The user wants to complete something inside the expression, but there are already finished parts
+	 *         of the expression somewhere after the caret: {@code Arrays.asList("str^ "int", "float")}
+	 *     </li>
+	 * </ol>
+	 */
+	private static final Set<Character>	STOP_CHARACTERS_AFTER_CARET	= ImmutableSet.of(
+		')', ' ', ','
+	);
 
 	private static Pattern getOrCreateSingleCharacterPattern(char... allowedCharacters) {
 		String s = String.valueOf(allowedCharacters);
@@ -178,10 +210,18 @@ public class TokenStream
 				terminatedStringLiteral = true;
 				break;
 			} else if (c != '\\') {
+				if (position > caretPosition && STOP_CHARACTERS_AFTER_CARET.contains(c)) {
+					terminatedStringLiteral = false;
+					position--;
+					break;
+				}
 				builder.append(c);
 			} else {
 				if (position == expression.length()) {
-					throw new SyntaxException("The literal ends with a backslash '\\'");
+					if (caretPosition == position) {
+						throw new CodeCompletionException(CodeCompletions.NONE);
+					}
+					throw new SyntaxException("Missing '\"'");
 				}
 				char escapedChar = expression.charAt(position++);
 				Character interpretation = INTERPRETATION_OF_ESCAPED_CHARACTERS.get(escapedChar);

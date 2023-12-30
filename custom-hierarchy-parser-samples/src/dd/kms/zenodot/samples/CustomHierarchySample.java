@@ -1,6 +1,6 @@
 package dd.kms.zenodot.samples;
 
-import dd.kms.zenodot.api.CustomHierarchyParsers;
+import dd.kms.zenodot.api.CustomHierarchyParserExtension;
 import dd.kms.zenodot.api.ExpressionParser;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Parsers;
@@ -8,11 +8,9 @@ import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.ObjectTreeNode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -64,21 +62,19 @@ public class CustomHierarchySample
 			)
 		);
 
-		AdditionalParserSettings additionalParserSettings = CustomHierarchyParsers.createCustomHierarchyParserSettings(root);
-		ParserSettings settings = ParserSettingsBuilder.create()
-			.additionalParserSettings(additionalParserSettings)
-			.build();
-		ExpressionParser parser = Parsers.createExpressionParser(settings);
+		ParserSettingsBuilder parserSettingsBuilder = ParserSettingsBuilder.create();
+		ParserSettings parserSettings = CustomHierarchyParserExtension.create(root).configure(parserSettingsBuilder).build();
+		ExpressionParser parser = Parsers.createExpressionParser(parserSettings);
 		String text = "{strings#long strings#ve";
 		List<CodeCompletion> completions = new ArrayList<>(parser.getCompletions(text, text.length(), null));
-		Collections.sort(completions, Parsers.COMPLETION_COMPARATOR);
+		completions.sort(Parsers.COMPLETION_COMPARATOR);
 
-		System.out.println("Completion: " + completions.get(0).getTextToInsert());
+		System.out.println("Completion: " + completions.get(0).getTextToInsert());	// prints "very long string"
 
 		String expression = "{numbers#e}";
 		Object result = parser.evaluate(expression, null);
 
-		System.out.println("Result: " + result);
+		System.out.println("Result: " + result);	// prints "Result: 2.72"
 	}
 
 	private static ObjectTreeNode node(String name, ObjectTreeNode... childNodes) {
@@ -101,6 +97,6 @@ public class CustomHierarchySample
 	}
 
 	private static ObjectTreeNode leaf(String name, Object value) {
-		return CustomHierarchyParsers.createLeafNode(name, value);
+		return ObjectTreeNode.createLeafNode(name, value);
 	}
 }

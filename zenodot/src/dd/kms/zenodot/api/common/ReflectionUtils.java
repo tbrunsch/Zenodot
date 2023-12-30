@@ -182,9 +182,14 @@ public class ReflectionUtils
 		if (potentialOverride.isSynthetic() && potentialOverride instanceof Method && !(((Method) potentialOverride).isBridge())) {
 			return false;
 		}
-		if (baseExecutable.isVarArgs() != potentialOverride.isVarArgs()) {
-			return false;
-		}
+
+		/*
+		 * We would like to check whether baseExecutable.isVarArgs() == potentialOverride.isVarArgs().
+		 * However, for some reason, JimfsFileSystem.getPath() was considered var args in debug mode,
+		 * but not in release mode. As a consequence, this method did not detect that this method
+		 * overrides FileSystem.getPath(). As a workaround, we removed that check.
+		 */
+
 		if (!baseExecutable.getName().equals(potentialOverride.getName())) {
 			return false;
 		}

@@ -7,27 +7,27 @@ import dd.kms.zenodot.api.settings.CompletionMode;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
-import dd.kms.zenodot.api.settings.parsers.CompletionProvider;
+import dd.kms.zenodot.api.settings.extensions.ParserExtension;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodot.impl.utils.ClassUtils;
 
-import java.lang.reflect.Executable;
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 {
-	private CompletionMode												completionMode;
-	private Set<Class<?>>												importedClasses;
-	private Set<String>													importedPackages;
-	private AccessModifier												minimumAccessModifier;
-	private EvaluationMode												evaluationMode;
-	private boolean														considerAllClassesForClassCompletions;
-	private final List<AdditionalParserSettings>						additionalParserSettings;
-	private final List<Triple<Executable, Integer, CompletionProvider>>	stringLiteralCompletionProviders;
-	private ParserLogger												logger;
+	private CompletionMode								completionMode;
+	private Set<Class<?>>								importedClasses;
+	private Set<String>									importedPackages;
+	private AccessModifier								minimumAccessModifier;
+	private EvaluationMode								evaluationMode;
+	private boolean										considerAllClassesForClassCompletions;
+	private final Map<String, ParserExtension>			parserExtensions;
+	private ParserLogger								logger;
 
 	public ParserSettingsBuilderImpl() {
 		completionMode = CompletionMode.COMPLETE_AND_REPLACE_WHOLE_WORDS;
@@ -36,8 +36,7 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		minimumAccessModifier = AccessModifier.PUBLIC;
 		evaluationMode = EvaluationMode.MIXED;
 		considerAllClassesForClassCompletions = false;
-		additionalParserSettings = new ArrayList<>();
-		stringLiteralCompletionProviders = new ArrayList<>();
+		parserExtensions = new HashMap<>();
 		logger = ParserLoggers.createNullLogger();
 	}
 
@@ -48,8 +47,11 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		minimumAccessModifier = settings.getMinimumAccessModifier();
 		evaluationMode = settings.getEvaluationMode();
 		considerAllClassesForClassCompletions = settings.isConsiderAllClassesForClassCompletions();
-		additionalParserSettings = new ArrayList<>(settings.getAdditionalParserSettings());
-		stringLiteralCompletionProviders = new ArrayList<>(((ParserSettingsImpl) settings).getStringLiteralCompletionProviders());
+		parserExtensions = settings.getParserExtensionNames().stream()
+			.collect(Collectors.toMap(
+				Function.identity(),
+				settings::getParserExtension)
+			);
 		logger = settings.getLogger();
 	}
 
@@ -101,14 +103,12 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilder additionalParserSettings(AdditionalParserSettings additionalParserSettings) {
-		this.additionalParserSettings.add(additionalParserSettings);
-		return this;
-	}
-
-	@Override
-	public ParserSettingsBuilder stringLiteralCompletionProvider(Executable executable, int parameterIndex, CompletionProvider completionProvider) {
-		stringLiteralCompletionProviders.add(new Triple<>(executable, parameterIndex, completionProvider));
+	public ParserSettingsBuilder setParserExtension(String extensionName, @Nullable ParserExtension parserExtension) {
+		if (parserExtension == null) {
+			parserExtensions.remove(extensionName);
+		} else {
+			parserExtensions.put(extensionName, parserExtension);
+		}
 		return this;
 	}
 
@@ -119,6 +119,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, additionalParserSettings, stringLiteralCompletionProviders, logger);
+		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, parserExtensions, logger);
 	}
 }

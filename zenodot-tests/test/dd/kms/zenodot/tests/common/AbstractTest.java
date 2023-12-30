@@ -6,7 +6,6 @@ import dd.kms.zenodot.api.debug.ParserConsoleLogger;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
-import dd.kms.zenodot.api.settings.parsers.AdditionalParserSettings;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import org.junit.Assert;
 
@@ -57,10 +56,6 @@ public class AbstractTest<T extends AbstractTest>
 		settingsBuilder.importPackages(Arrays.asList(packageNames));
 	}
 
-	public void additionalParserSettings(AdditionalParserSettings settings) {
-		settingsBuilder.additionalParserSettings(settings);
-	}
-
 	public void evaluationMode(EvaluationMode evaluationMode) {
 		settingsBuilder.evaluationMode(evaluationMode);
 	}
@@ -73,8 +68,16 @@ public class AbstractTest<T extends AbstractTest>
 		stopAtError = true;
 	}
 
+	protected boolean isStopAtError() {
+		return stopAtError;
+	}
+
 	public void printLogEntriesAtError() {
 		printLogEntriesAtError = true;
+	}
+
+	protected boolean isPrintLogEntriesAtError() {
+		return printLogEntriesAtError;
 	}
 
 	protected ParserLogger prepareLogger(boolean printToConsole, int numLoggedEntriesToStopAfter) {
@@ -84,13 +87,5 @@ public class AbstractTest<T extends AbstractTest>
 		logger.stopAfter(numLoggedEntriesToStopAfter);
 		settingsBuilder.logger(logger);
 		return logger;
-	}
-
-	protected boolean isStopAtError() {
-		return stopAtError;
-	}
-
-	protected boolean isPrintLogEntriesAtError() {
-		return printLogEntriesAtError;
 	}
 }

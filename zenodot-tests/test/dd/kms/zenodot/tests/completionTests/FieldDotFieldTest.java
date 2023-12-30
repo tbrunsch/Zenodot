@@ -31,7 +31,8 @@ public class FieldDotFieldTest extends CompletionTest
 
 		testBuilder
 			.addTest("member.otherMember.BA",	"BASE", "DERIVED")
-			.addTest("member.otherMember.DER",	"DERIVED", "BASE");
+			.addTest("member.otherMember.DER",	"DERIVED", "BASE")
+			.addInsertionTest("member.other^.DER", '^', "member.otherMember.DER");
 
 		testBuilder
 			.addTestWithError("member.xy.XY",	-1, IllegalStateException.class)
