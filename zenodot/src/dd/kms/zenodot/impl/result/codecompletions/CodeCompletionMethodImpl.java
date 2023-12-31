@@ -1,5 +1,6 @@
 package dd.kms.zenodot.impl.result.codecompletions;
 
+import dd.kms.zenodot.api.common.GeneralizedMethod;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletionType;
 import dd.kms.zenodot.api.result.codecompletions.CodeCompletionMethod;
@@ -12,15 +13,15 @@ import java.util.stream.IntStream;
 
 class CodeCompletionMethodImpl extends AbstractCodeCompletion implements CodeCompletionMethod
 {
-	private final Method	method;
+	private final GeneralizedMethod method;
 
-	CodeCompletionMethodImpl(Method method, int insertionBegin, int insertionEnd, MatchRating rating) {
+	CodeCompletionMethodImpl(GeneralizedMethod method, int insertionBegin, int insertionEnd, MatchRating rating) {
 		super(CodeCompletionType.METHOD, insertionBegin, insertionEnd, rating);
 		this.method = method;
 	}
 
 	@Override
-	public Method getMethod() {
+	public GeneralizedMethod getMethod() {
 		return method;
 	}
 

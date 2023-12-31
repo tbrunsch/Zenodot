@@ -2,6 +2,7 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.ImmutableList;
 import dd.kms.zenodot.api.Variables;
+import dd.kms.zenodot.api.common.GeneralizedMethod;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.matching.TypeMatch;

@@ -1,6 +1,7 @@
 package dd.kms.zenodot.impl.result.codecompletions;
 
 import dd.kms.zenodot.api.common.ClassInfo;
+import dd.kms.zenodot.api.common.GeneralizedMethod;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.framework.wrappers.ExecutableInfo;
@@ -23,7 +24,7 @@ public class CodeCompletionFactory
 	}
 
 	public static CodeCompletion methodCompletion(ExecutableInfo methodInfo, int insertionBegin, int insertionEnd, MatchRating rating) {
-		return new CodeCompletionMethodImpl((Method) methodInfo.getExecutable(), insertionBegin, insertionEnd, rating);
+		return new CodeCompletionMethodImpl((GeneralizedMethod) methodInfo.getExecutable(), insertionBegin, insertionEnd, rating);
 	}
 
 	public static CodeCompletion packageCompletion(String packageName, int insertionBegin, int insertionEnd, MatchRating rating) {

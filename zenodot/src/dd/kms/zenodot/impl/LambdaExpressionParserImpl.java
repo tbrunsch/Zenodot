@@ -6,6 +6,7 @@ import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.CompiledLambdaExpression;
 import dd.kms.zenodot.api.LambdaExpressionParser;
 import dd.kms.zenodot.api.ParseException;
+import dd.kms.zenodot.api.common.GeneralizedMethod;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.ParserSettings;

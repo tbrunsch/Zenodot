@@ -1,9 +1,10 @@
 package dd.kms.zenodot.framework.wrappers;
 
 import dd.kms.zenodot.api.common.*;
+import dd.kms.zenodot.impl.common.GeneralizedConstructorImpl;
+import dd.kms.zenodot.impl.common.GeneralizedMethodImpl;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,7 +18,7 @@ public class InfoProvider
 
 	public static final ObjectInfo NULL_LITERAL		= createObjectInfo(null, NO_TYPE);
 
-	public static List<ExecutableInfo> getAvailableExecutableInfos(Executable executable) {
+	public static List<ExecutableInfo> getAvailableExecutableInfos(GeneralizedExecutable executable) {
 		return executable.isVarArgs()
 			? Arrays.asList(new RegularExecutableInfo(executable), new VariadicExecutableInfo(executable))
 			: Arrays.asList(new RegularExecutableInfo(executable));
@@ -61,7 +62,8 @@ public class InfoProvider
 		List<Method> methods = methodScanner.getMethods(type);
 		List<ExecutableInfo> executableInfos = new ArrayList<>(methods.size());
 		for (Method method : methods) {
-			executableInfos.addAll(getAvailableExecutableInfos(method));
+			GeneralizedMethod generalizedMethod = new GeneralizedMethodImpl(method);
+			executableInfos.addAll(getAvailableExecutableInfos(generalizedMethod));
 		}
 		return executableInfos;
 	}
@@ -70,7 +72,8 @@ public class InfoProvider
 		List<Constructor<?>> constructors = constructorScanner.getConstructors(type);
 		List<ExecutableInfo> executableInfos = new ArrayList<>(constructors.size());
 		for (Constructor<?> constructor : constructors) {
-			executableInfos.addAll(getAvailableExecutableInfos(constructor));
+			GeneralizedConstructor generalizedConstructor = new GeneralizedConstructorImpl(constructor);
+			executableInfos.addAll(getAvailableExecutableInfos(generalizedConstructor));
 		}
 		return executableInfos;
 	}

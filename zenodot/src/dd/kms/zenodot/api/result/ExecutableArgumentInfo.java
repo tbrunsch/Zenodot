@@ -1,6 +1,7 @@
 package dd.kms.zenodot.api.result;
 
-import java.lang.reflect.Executable;
+import dd.kms.zenodot.api.common.GeneralizedExecutable;
+
 import java.util.Map;
 
 /**
@@ -17,5 +18,5 @@ public interface ExecutableArgumentInfo
 	 * Returns a map from all executable overloads to Boolean. An executable overload is mapped to true
 	 * if and only if it might be applicable for the arguments that have already been parsed (until the caret).
 	 */
-	Map<Executable, Boolean> getApplicableExecutableOverloads();
+	Map<GeneralizedExecutable, Boolean> getApplicableExecutableOverloads();
 }

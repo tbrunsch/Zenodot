@@ -1,6 +1,7 @@
 package dd.kms.zenodot.framework.wrappers;
 
 import com.google.common.base.Joiner;
+import dd.kms.zenodot.api.common.GeneralizedExecutable;
 import dd.kms.zenodot.api.matching.TypeMatch;
 
 import java.lang.reflect.Constructor;
@@ -10,9 +11,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ExecutableInfo extends MemberInfo<Executable>
+public abstract class ExecutableInfo extends MemberInfo<GeneralizedExecutable>
 {
-	ExecutableInfo(Executable executable) {
+	ExecutableInfo(GeneralizedExecutable executable) {
 		super(executable);
 	}
 
@@ -21,7 +22,7 @@ public abstract class ExecutableInfo extends MemberInfo<Executable>
 	abstract TypeMatch doRateArgumentMatch(List<Class<?>> argumentTypes);
 	abstract Object[] doCreateArgumentArray(List<ObjectInfo> argumentInfos);
 
-	public Executable getExecutable() {
+	public GeneralizedExecutable getExecutable() {
 		return member;
 	}
 
@@ -34,7 +35,7 @@ public abstract class ExecutableInfo extends MemberInfo<Executable>
 	}
 
 	public Class<?> getReturnType() {
-		return member instanceof Method ? ((Method) member).getReturnType() : member.getDeclaringClass();
+		return member.getReturnType();
 	}
 
 	public final boolean isArgumentIndexValid(int argIndex) {
@@ -57,9 +58,7 @@ public abstract class ExecutableInfo extends MemberInfo<Executable>
 		if (instance == InfoProvider.INDETERMINATE_VALUE) {
 			return InfoProvider.INDETERMINATE_VALUE;
 		}
-		member.setAccessible(true);
-		return member instanceof Method	? ((Method) member).invoke(instance, arguments)
-											: ((Constructor<?>) member).newInstance(arguments);
+		return member.invoke(instance, arguments);
 	}
 
 	public String formatArguments() {

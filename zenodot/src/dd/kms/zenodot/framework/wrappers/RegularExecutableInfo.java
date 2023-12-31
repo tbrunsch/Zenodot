@@ -1,5 +1,6 @@
 package dd.kms.zenodot.framework.wrappers;
 
+import dd.kms.zenodot.api.common.GeneralizedExecutable;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.framework.matching.MatchRatings;
@@ -15,7 +16,7 @@ import java.util.List;
  */
 public class RegularExecutableInfo extends ExecutableInfo
 {
-	public RegularExecutableInfo(Executable executable) {
+	public RegularExecutableInfo(GeneralizedExecutable executable) {
 		super(executable);
 	}
 

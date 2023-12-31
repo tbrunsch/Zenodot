@@ -8,19 +8,19 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Type;
 
 /**
- * This class is an abstraction of the class {@link Field} that can also represent the field {@code length}
+ * This interface is an abstraction of the class {@link Field} that can also represent the field {@code length}
  * of an array. Except for that single case, it simply wraps a {@code Field} and delegates all methods to it.
  * For the sake of simplicity, this interface does not contain all methods provided by {@code Field}. If you
- * need more methods and the {@code FieldWrapper} is backed up by a {@code Field}, then you can obtain that
+ * need more methods and the {@code GeneralizedField} is backed up by a {@code Field}, then you can obtain that
  * {@code Field} by calling {@link #getWrappedField()}. This method will only return {@code null} if the
  * instance represents the {@code length} field of an array.
  */
 public interface GeneralizedField extends Member
 {
 	/**
-	 * @return The underlying {@code Field}, if available, or {@code null} otherwise. Not that
-	 * there is only one case in which there is no underlying field: If the {@code FieldWrapper}
-	 * represents the field {@code length} of an array.
+	 * @return The underlying {@code Field}, if available, or {@code null} otherwise. Note
+	 * that there is currently only one case in which there is no underlying field: If the
+	 * {@code GeneralizedField} represents the field {@code length} of an array.
 	 */
 	@Nullable
 	Field getWrappedField();

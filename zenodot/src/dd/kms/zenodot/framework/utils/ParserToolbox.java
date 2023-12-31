@@ -3,6 +3,7 @@ package dd.kms.zenodot.framework.utils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.Variables;
+import dd.kms.zenodot.api.common.GeneralizedExecutable;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.CompletionMode;
@@ -141,10 +142,14 @@ public class ParserToolbox
 		if (callerContext == null) {
 			return TokenStream.NO_COMPLETIONS;
 		}
-		Set<Executable> executables = callerContext.getExecutables();
+		Set<GeneralizedExecutable> generalizedExecutables = callerContext.getExecutables();
 		int paramIndex = callerContext.getPreviousParameters().size();
 		List<CompletionProvider> completionProviders = new ArrayList<>();
-		for (Executable executable : executables) {
+		for (GeneralizedExecutable generalizedExecutable : generalizedExecutables) {
+			Executable executable = generalizedExecutable.getWrappedExecutable();
+			if (executable == null) {
+				continue;
+			}
 			List<CompletionProvider> completionProvidersForExecutable = getStringLiteralCompletionProviders(executable, paramIndex);
 			completionProviders.addAll(completionProvidersForExecutable);
 		}

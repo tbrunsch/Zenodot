@@ -3,6 +3,7 @@ package dd.kms.zenodot.impl.common;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import dd.kms.zenodot.api.common.GeneralizedMethod;
 import dd.kms.zenodot.api.common.MethodScanner;
 
 import java.lang.reflect.Method;

@@ -1,6 +1,7 @@
 package dd.kms.zenodot.framework.parsers;
 
 import com.google.common.collect.ImmutableSet;
+import dd.kms.zenodot.api.common.GeneralizedExecutable;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
 
 import java.lang.reflect.Executable;
@@ -8,14 +9,14 @@ import java.util.*;
 
 public class CallerContext
 {
-	private final Set<Executable>	executables;
+	private final Set<GeneralizedExecutable>	executables;
 
 	/**
 	 * Values of the previous parameters of the given {@link #executables}. Note that these
 	 * values can be {@link InfoProvider#INDETERMINATE_VALUE} in case they are not known
 	 * at this point in time.
 	 */
-	private final List<Object>		previousParameters;
+	private final List<Object>					previousParameters;
 
 	/**
 	 * Can be one of the following values:
@@ -32,9 +33,9 @@ public class CallerContext
 	 *     </li>
 	 * </ul>
 	 */
-	private final Object			caller;
+	private final Object						caller;
 
-	public CallerContext(Collection<Executable> executables, List<Object> previousParameters, Object caller) {
+	public CallerContext(Collection<GeneralizedExecutable> executables, List<Object> previousParameters, Object caller) {
 		this.executables = ImmutableSet.copyOf(executables);
 		this.previousParameters = new ArrayList<>(previousParameters);
 		this.caller = caller;
@@ -44,7 +45,7 @@ public class CallerContext
 	 * Returns the executables (methods or constructors) of which the current parser
 	 * is parsing a parameter.
 	 */
-	public Set<Executable> getExecutables() {
+	public Set<GeneralizedExecutable> getExecutables() {
 		return executables;
 	}
 

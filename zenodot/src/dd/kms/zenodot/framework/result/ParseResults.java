@@ -1,11 +1,11 @@
 package dd.kms.zenodot.framework.result;
 
 import dd.kms.zenodot.api.Variables;
+import dd.kms.zenodot.api.common.GeneralizedExecutable;
 import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
 import dd.kms.zenodot.framework.tokenizer.TokenStream;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
-import java.lang.reflect.Executable;
 import java.util.Map;
 
 public class ParseResults
@@ -26,7 +26,7 @@ public class ParseResults
 		return new ConstantObjectParseResult(objectInfo, tokenStream);
 	}
 
-	public static ExecutableArgumentInfo createExecutableArgumentInfo(int currentArgumentIndex, Map<Executable, Boolean> applicableExecutableOverloads) {
+	public static ExecutableArgumentInfo createExecutableArgumentInfo(int currentArgumentIndex, Map<GeneralizedExecutable, Boolean> applicableExecutableOverloads) {
 		return new dd.kms.zenodot.impl.result.ExecutableArgumentInfoImpl(currentArgumentIndex, applicableExecutableOverloads);
 	}
 

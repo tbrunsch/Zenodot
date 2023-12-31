@@ -13,6 +13,8 @@ API changes:
 
   - `CodeCompletion`: Replaced method `getInsertionRange()` by the methods `getInsertionBegin()` and `getInsertionEnd()`.
   - `CodeCompletionClass.getClassInfo()` now returns a `ClassInfo` instead of a `Class` to avoid loading classes unnecessarily.
+  - `CodeCompletionMethod.getMethod()` now returns a `GeneralizedMethod` instead of a `Method` because it can now also represent an extension method.
+  - The key set of the `Map` returned by `ExecutableArgumentInfo.getApplicableExecutableOverloads()` now contains `GeneralizedExecutable`s instead of `Executable`s because it now also supports extension methods.
   - The method `ParserSettingsBuilder.customHierarchyRoot() has been removed`.
 
 ## v0.3.0

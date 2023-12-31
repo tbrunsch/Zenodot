@@ -1,5 +1,6 @@
 package dd.kms.zenodot.impl.utils.dataproviders;
 
+import dd.kms.zenodot.api.common.GeneralizedExecutable;
 import dd.kms.zenodot.api.matching.MatchRating;
 import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
@@ -24,7 +25,6 @@ import dd.kms.zenodot.framework.wrappers.ExecutableInfo;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 
-import java.lang.reflect.Executable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -102,7 +102,7 @@ public class ExecutableDataProvider
 			ObjectParseResult argument_i;
 			try {
 				AbstractParser<ObjectInfo, ObjectParseResult, ObjectParseResultExpectation> expressionParser = parserToolbox.createExpressionParser();
-				Set<Executable> actualExecutables = executables.stream().map(ExecutableInfo::getExecutable).collect(Collectors.toSet());
+				Set<GeneralizedExecutable> actualExecutables = executables.stream().map(ExecutableInfo::getExecutable).collect(Collectors.toSet());
 				List<Object> previousParameters = arguments.stream().map(result -> result.getObjectInfo().getObject()).collect(Collectors.toList());
 				CallerContext callerContext = new CallerContext(actualExecutables, previousParameters, callerObject);
 				expressionParser.setCallerContext(callerContext);
@@ -200,7 +200,7 @@ public class ExecutableDataProvider
 
 	public ExecutableArgumentInfo createExecutableArgumentInfo(List<ExecutableInfo> executableInfos, List<ObjectInfo> argumentInfos) {
 		int currentArgumentIndex = argumentInfos.size();
-		Map<Executable, Boolean> applicableExecutableOverloads = new LinkedHashMap<>(executableInfos.size());
+		Map<GeneralizedExecutable, Boolean> applicableExecutableOverloads = new LinkedHashMap<>(executableInfos.size());
 		for (ExecutableInfo executableInfo : executableInfos) {
 			boolean applicable = IntStream.range(0, argumentInfos.size()).allMatch(i -> acceptsArgument(executableInfo, i, argumentInfos.get(i)));
 			applicableExecutableOverloads.put(executableInfo.getExecutable(), applicable);

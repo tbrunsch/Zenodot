@@ -1,11 +1,11 @@
 package dd.kms.zenodot.framework.wrappers;
 
+import dd.kms.zenodot.api.common.GeneralizedExecutable;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.framework.matching.MatchRatings;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Executable;
 import java.util.List;
 
 /**
@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class VariadicExecutableInfo extends ExecutableInfo
 {
-	public VariadicExecutableInfo(Executable executable) {
+	public VariadicExecutableInfo(GeneralizedExecutable executable) {
 		super(executable);
 
 		assert isVariadic() : "Cannot create VariadicExecutableInfo for non-variadic methods";
