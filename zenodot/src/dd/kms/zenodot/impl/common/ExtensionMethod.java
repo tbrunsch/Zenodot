@@ -1,6 +1,7 @@
 package dd.kms.zenodot.impl.common;
 
 import com.google.common.base.Preconditions;
+import dd.kms.zenodot.api.common.ExtensionMethodBody;
 import dd.kms.zenodot.api.common.GeneralizedMethod;
 
 import javax.annotation.Nullable;
@@ -14,22 +15,23 @@ public class ExtensionMethod implements GeneralizedMethod
 	private static final int	METHOD_MODIFIERS	= ACCESS_MODIFIERS | Modifier.STATIC;
 
 	private final Class<?>				declaringClass;
-	private final Class<?>				returnType;
 	private final String				name;
 	private final int					modifiers;
+	private final Class<?>				returnType;
 	private final Class<?>[]			parameterTypes;
 	private final boolean				varArgs;
-	private final ExtensionMethodBody	extensionMethodBody;
+	private final ExtensionMethodBody extensionMethodBody;
 
-	public ExtensionMethod(Class<?> declaringClass, Class<?> returnType, String name, int modifiers, Class<?>[] parameterTypes, boolean varArgs, ExtensionMethodBody extensionMethodBody) {
+	public ExtensionMethod(Class<?> declaringClass, String name, int modifiers, Class<?> returnType, Class<?>[] parameterTypes, boolean varArgs, ExtensionMethodBody extensionMethodBody) {
+		Preconditions.checkArgument((modifiers & ~METHOD_MODIFIERS) == 0, "Invalid modifiers " + Modifier.toString(modifiers) + ": Only the modifiers " + Modifier.toString(METHOD_MODIFIERS) + " are allowed.");
 		if (varArgs) {
 			Preconditions.checkArgument(parameterTypes.length > 0, "Variadic methods must have at least one parameter");
 			Preconditions.checkArgument(parameterTypes[parameterTypes.length - 1].getComponentType() != null, "The last parameter type of a variadic method must be an array type");
 		}
 		this.declaringClass = declaringClass;
-		this.returnType = returnType;
 		this.name = name;
 		this.modifiers = modifiers;
+		this.returnType = returnType;
 		this.parameterTypes = parameterTypes;
 		this.varArgs = varArgs;
 		this.extensionMethodBody = extensionMethodBody;
@@ -132,7 +134,13 @@ public class ExtensionMethod implements GeneralizedMethod
 			);
 		}
 
-		return extensionMethodBody.execute(obj, args);
+		Object result = extensionMethodBody.execute(obj, args);
+		if (returnType != void.class && returnType.isPrimitive()) {
+			Preconditions.checkState(result != null, "The extension method returned null, but it should return a value of type " + returnType.getName());
+		}
+		Preconditions.checkState(returnType.isInstance(returnType), "The extension method should return a value of type " + returnType.getName() + ", but the returned value is " + (result != null ? "of type " + result.getClass().getName() : "null"));
+
+		return result;
 	}
 
 	/**
@@ -180,11 +188,5 @@ public class ExtensionMethod implements GeneralizedMethod
 		} catch (Exception e) {
 			return "<" + e + ">";
 		}
-	}
-
-	@FunctionalInterface
-	interface ExtensionMethodBody
-	{
-		Object execute(Object obj, Object... args) throws InvocationTargetException;
 	}
 }

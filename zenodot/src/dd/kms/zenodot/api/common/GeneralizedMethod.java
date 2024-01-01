@@ -12,6 +12,10 @@ public interface GeneralizedMethod extends GeneralizedExecutable
 		return new dd.kms.zenodot.impl.common.GeneralizedMethodImpl(method);
 	}
 
+	static GeneralizedMethod createExtensionMethod(Class<?> declaringClass, String name, int modifiers, Class<?> returnType, Class<?>[] parameterTypes, boolean varArgs, ExtensionMethodBody extensionMethodBody) {
+		return new dd.kms.zenodot.impl.common.ExtensionMethod(declaringClass, name, modifiers, returnType, parameterTypes, varArgs, extensionMethodBody);
+	}
+
 	@Nullable
 	@Override
 	default Method getWrappedExecutable() {
