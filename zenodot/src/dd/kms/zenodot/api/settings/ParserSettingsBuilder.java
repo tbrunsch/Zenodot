@@ -2,10 +2,12 @@ package dd.kms.zenodot.api.settings;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.api.settings.extensions.ExtensionMethodDescription;
 import dd.kms.zenodot.api.settings.extensions.ParserExtension;
 import dd.kms.zenodot.api.settings.extensions.ParserExtensionBuilder;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Builder for {@link ParserSettings}<br>
@@ -68,6 +70,11 @@ public interface ParserSettingsBuilder
 	 * {@code null}, then the extension is removed. Extensions are created via the {@link ParserExtensionBuilder}.
 	 */
 	ParserSettingsBuilder setParserExtension(String extensionName, @Nullable ParserExtension parserExtension);
+
+	/**
+	 * Registers extension method descriptions from which Zenodot can create extension methods when required.
+	 */
+	ParserSettingsBuilder extensionMethodDescriptions(List<ExtensionMethodDescription> extensionMethodDescriptions);
 
 	/**
 	 * Specify a logger that receives messages during the parsing process. This is primarily meant for

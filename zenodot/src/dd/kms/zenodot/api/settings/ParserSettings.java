@@ -2,9 +2,11 @@ package dd.kms.zenodot.api.settings;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
+import dd.kms.zenodot.api.settings.extensions.ExtensionMethodDescription;
 import dd.kms.zenodot.api.settings.extensions.ParserExtension;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Immutable settings for the parsing process. Can only be created with a {@link ParserSettingsBuilder}.<br>
@@ -26,6 +28,7 @@ public interface ParserSettings
 	 *                                  first.
 	 */
 	ParserExtension getParserExtension(String extensionName);
+	List<ExtensionMethodDescription> getExtensionMethodDescriptions();
 	ParserLogger getLogger();
 	ParserSettingsBuilder builder();
 }

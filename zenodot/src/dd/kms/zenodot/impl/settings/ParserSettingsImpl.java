@@ -4,10 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.settings.*;
+import dd.kms.zenodot.api.settings.extensions.ExtensionMethodDescription;
 import dd.kms.zenodot.api.settings.extensions.ParserExtension;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,15 +21,17 @@ class ParserSettingsImpl implements ParserSettings
 	private final EvaluationMode						evaluationMode;
 	private final boolean 								considerAllClassesForClassCompletions;
 	private final Map<String, ParserExtension>			parserExtensions;
+	private final List<ExtensionMethodDescription>		extensionMethodDescriptions;
 	private final ParserLogger 							logger;
 
-	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, Map<String, ParserExtension> parserExtensions, ParserLogger logger) {
+	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, Map<String, ParserExtension> parserExtensions, List<ExtensionMethodDescription> extensionMethodDescriptions, ParserLogger logger) {
 		this.completionMode = completionMode;
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
 		this.minimumAccessModifier = minimumAccessModifier;
 		this.evaluationMode = evaluationMode;
 		this.considerAllClassesForClassCompletions = considerAllClassesForClassCompletions;
 		this.parserExtensions = ImmutableMap.copyOf(parserExtensions);
+		this.extensionMethodDescriptions = extensionMethodDescriptions;
 		this.logger = logger;
 	}
 
@@ -65,6 +69,11 @@ class ParserSettingsImpl implements ParserSettings
 	@Override
 	public ParserExtension getParserExtension(String extensionName) {
 		return parserExtensions.get(extensionName);
+	}
+
+	@Override
+	public List<ExtensionMethodDescription> getExtensionMethodDescriptions() {
+		return extensionMethodDescriptions;
 	}
 
 	@Override
