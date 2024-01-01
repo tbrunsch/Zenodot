@@ -12,7 +12,7 @@ import java.lang.reflect.Modifier;
 public class ExtensionMethod implements GeneralizedMethod
 {
 	private static final int	ACCESS_MODIFIERS	= Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE;
-	private static final int	METHOD_MODIFIERS	= ACCESS_MODIFIERS | Modifier.STATIC;
+	public static final int		METHOD_MODIFIERS	= ACCESS_MODIFIERS | Modifier.STATIC;
 
 	private final Class<?>				declaringClass;
 	private final String				name;

@@ -57,10 +57,9 @@ public class InfoProvider
 	}
 
 	public static List<ExecutableInfo> getMethodInfos(Class<?> type, MethodScanner methodScanner) {
-		List<Method> methods = methodScanner.getMethods(type);
-		List<ExecutableInfo> executableInfos = new ArrayList<>(methods.size());
-		for (Method method : methods) {
-			GeneralizedMethod generalizedMethod = GeneralizedMethod.fromMethod(method);
+		List<GeneralizedMethod> generalizedMethods = methodScanner.getMethodsAndExtensionMethods(type);
+		List<ExecutableInfo> executableInfos = new ArrayList<>(generalizedMethods.size());
+		for (GeneralizedMethod generalizedMethod : generalizedMethods) {
 			executableInfos.addAll(getAvailableExecutableInfos(generalizedMethod));
 		}
 		return executableInfos;

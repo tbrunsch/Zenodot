@@ -2,11 +2,9 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.Variables;
-import dd.kms.zenodot.api.common.AccessModifier;
-import dd.kms.zenodot.api.common.MethodScanner;
-import dd.kms.zenodot.api.common.MethodScannerBuilder;
-import dd.kms.zenodot.api.common.StaticMode;
+import dd.kms.zenodot.api.common.*;
 import dd.kms.zenodot.api.debug.LogLevel;
+import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
@@ -19,10 +17,12 @@ import dd.kms.zenodot.framework.result.CodeCompletions;
 import dd.kms.zenodot.framework.result.ObjectParseResult;
 import dd.kms.zenodot.framework.tokenizer.CompletionInfo;
 import dd.kms.zenodot.framework.tokenizer.TokenStream;
+import dd.kms.zenodot.framework.utils.ParseUtils;
 import dd.kms.zenodot.framework.utils.ParserToolbox;
 import dd.kms.zenodot.framework.wrappers.ExecutableInfo;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
+import dd.kms.zenodot.impl.common.ExtensionMemberProviderImpl;
 import dd.kms.zenodot.impl.utils.dataproviders.ExecutableDataProvider;
 
 import java.util.ArrayList;
@@ -108,9 +108,11 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 	private MethodScannerBuilder getMethodScannerBuilder() {
 		StaticMode staticMode = isContextStatic() ? StaticMode.STATIC : StaticMode.BOTH;
 		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
+		ExtensionMemberProvider extensionMemberProvider = parserToolbox.inject(ExtensionMemberProviderImpl.class);
 		return MethodScannerBuilder.create()
 			.staticMode(staticMode)
-			.minimumAccessModifier(minimumAccessModifier);
+			.minimumAccessModifier(minimumAccessModifier)
+			.extensionMemberProvider(extensionMemberProvider);
 	}
 
 	private MethodScanner getMethodScanner() {
