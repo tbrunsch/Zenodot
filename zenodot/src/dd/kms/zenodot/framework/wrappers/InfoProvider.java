@@ -1,8 +1,6 @@
 package dd.kms.zenodot.framework.wrappers;
 
 import dd.kms.zenodot.api.common.*;
-import dd.kms.zenodot.impl.common.GeneralizedConstructorImpl;
-import dd.kms.zenodot.impl.common.GeneralizedMethodImpl;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -62,7 +60,7 @@ public class InfoProvider
 		List<Method> methods = methodScanner.getMethods(type);
 		List<ExecutableInfo> executableInfos = new ArrayList<>(methods.size());
 		for (Method method : methods) {
-			GeneralizedMethod generalizedMethod = new GeneralizedMethodImpl(method);
+			GeneralizedMethod generalizedMethod = GeneralizedMethod.fromMethod(method);
 			executableInfos.addAll(getAvailableExecutableInfos(generalizedMethod));
 		}
 		return executableInfos;
@@ -72,7 +70,7 @@ public class InfoProvider
 		List<Constructor<?>> constructors = constructorScanner.getConstructors(type);
 		List<ExecutableInfo> executableInfos = new ArrayList<>(constructors.size());
 		for (Constructor<?> constructor : constructors) {
-			GeneralizedConstructor generalizedConstructor = new GeneralizedConstructorImpl(constructor);
+			GeneralizedConstructor generalizedConstructor = GeneralizedConstructor.fromConstructor(constructor);
 			executableInfos.addAll(getAvailableExecutableInfos(generalizedConstructor));
 		}
 		return executableInfos;

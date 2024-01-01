@@ -15,5 +15,7 @@ public interface MethodScannerBuilder
 
 	MethodScannerBuilder name(String name);
 
+	MethodScannerBuilder extensionMemberProvider(ExtensionMemberProvider extensionMemberProvider);
+
 	MethodScanner build();
 }

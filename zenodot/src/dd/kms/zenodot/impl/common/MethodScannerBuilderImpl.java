@@ -2,10 +2,7 @@ package dd.kms.zenodot.impl.common;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import dd.kms.zenodot.api.common.AccessModifier;
-import dd.kms.zenodot.api.common.MethodScanner;
-import dd.kms.zenodot.api.common.MethodScannerBuilder;
-import dd.kms.zenodot.api.common.StaticMode;
+import dd.kms.zenodot.api.common.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -19,9 +16,10 @@ import java.util.function.IntPredicate;
  */
 public class MethodScannerBuilderImpl implements MethodScannerBuilder
 {
-	private AccessModifier		minimumAccessModifier	= AccessModifier.PRIVATE;
-	private StaticMode			staticMode				= StaticMode.BOTH;
-	private Optional<String>	name					= Optional.empty();
+	private AccessModifier						minimumAccessModifier	= AccessModifier.PRIVATE;
+	private StaticMode							staticMode				= StaticMode.BOTH;
+	private Optional<String>					name					= Optional.empty();
+	private Optional<ExtensionMemberProvider>	extensionMemberProvider	= Optional.empty();
 
 	@Override
 	public MethodScannerBuilder minimumAccessModifier(AccessModifier minimumAccessModifier) {
@@ -42,31 +40,37 @@ public class MethodScannerBuilderImpl implements MethodScannerBuilder
 	}
 
 	@Override
-	public MethodScanner build() {
-		Predicate<Method> filter = getFilter();
-		return new MethodScannerImpl(filter);
+	public MethodScannerBuilder extensionMemberProvider(ExtensionMemberProvider extensionMemberProvider) {
+		this.extensionMemberProvider = Optional.of(extensionMemberProvider);
+		return this;
 	}
 
-	private Predicate<Method> getFilter() {
-		List<Predicate<Method>> filters = new ArrayList<>();
+	@Override
+	public MethodScanner build() {
+		Predicate<GeneralizedMethod> filter = getFilter();
+		return new MethodScannerImpl(filter, extensionMemberProvider);
+	}
+
+	private Predicate<GeneralizedMethod> getFilter() {
+		List<Predicate<GeneralizedMethod>> filters = new ArrayList<>();
 
 		if (minimumAccessModifier != AccessModifier.PRIVATE) {
 			IntPredicate modifierFilter = ModifierFilters.createMinimumAccessModifierFilter(minimumAccessModifier);
-			Predicate<Method> minimumAccessModifierFilter = method -> modifierFilter.test(method.getModifiers());
+			Predicate<GeneralizedMethod> minimumAccessModifierFilter = method -> modifierFilter.test(method.getModifiers());
 			filters.add(minimumAccessModifierFilter);
 		}
 
 		if (staticMode == StaticMode.STATIC) {
-			Predicate<Method> staticModeFilter = method -> Modifier.isStatic(method.getModifiers());
+			Predicate<GeneralizedMethod> staticModeFilter = method -> Modifier.isStatic(method.getModifiers());
 			filters.add(staticModeFilter);
 		} else if (staticMode == StaticMode.NON_STATIC) {
-			Predicate<Method> staticModeFilter = method -> !Modifier.isStatic(method.getModifiers());
+			Predicate<GeneralizedMethod> staticModeFilter = method -> !Modifier.isStatic(method.getModifiers());
 			filters.add(staticModeFilter);
 		}
 
 		if (name.isPresent()) {
 			String methodName = name.get();
-			Predicate<Method> nameFilter = method -> method.getName().equals(methodName);
+			Predicate<GeneralizedMethod> nameFilter = method -> method.getName().equals(methodName);
 			filters.add(nameFilter);
 		}
 

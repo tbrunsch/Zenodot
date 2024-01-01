@@ -9,6 +9,10 @@ import java.lang.reflect.InvocationTargetException;
  */
 public interface GeneralizedConstructor extends GeneralizedExecutable
 {
+	static GeneralizedConstructor fromConstructor(Constructor<?> constructor) {
+		return new dd.kms.zenodot.impl.common.GeneralizedConstructorImpl(constructor);
+	}
+
 	@Nonnull
 	@Override
 	default Constructor<?> getWrappedExecutable() {

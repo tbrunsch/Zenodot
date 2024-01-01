@@ -8,6 +8,10 @@ import java.lang.reflect.Method;
  */
 public interface GeneralizedMethod extends GeneralizedExecutable
 {
+	static GeneralizedMethod fromMethod(Method method) {
+		return new dd.kms.zenodot.impl.common.GeneralizedMethodImpl(method);
+	}
+
 	@Nullable
 	@Override
 	default Method getWrappedExecutable() {

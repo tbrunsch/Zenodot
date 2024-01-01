@@ -9,4 +9,5 @@ import java.util.List;
 public interface MethodScanner
 {
 	List<Method> getMethods(Class<?> clazz);
+	List<GeneralizedMethod> getMethodsAndExtensionMethods(Class<?> clazz);
 }
