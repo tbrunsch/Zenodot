@@ -23,7 +23,7 @@ public class ObjectConstructorTest extends EvaluationTest
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
 		testBuilder
-			.configurator(test -> test.minimumAccessModifier(AccessModifier.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumMethodAccessModifier(AccessModifier.PACKAGE_PRIVATE))
 			.addTest("new TestClass(5, 6.0f).i",										5)
 			.addTest("new TestClass(5, 6.0f).l",										1L)
 			.addTest("new TestClass(5, 6.0f).f",										6.0f)
@@ -43,7 +43,7 @@ public class ObjectConstructorTest extends EvaluationTest
 			.addTest("new StringBuilder(\"Test\").append('X').append(13).toString()",	"TestX13");
 
 		testBuilder
-			.configurator(test -> test.minimumAccessModifier(AccessModifier.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumMethodAccessModifier(AccessModifier.PACKAGE_PRIVATE))
 			.addTestWithError("new TestClass(0)")
 			.addTestWithError("new TestClass(0, 0)")
 			.addTestWithError("new TestClass(0, 0, 0)")

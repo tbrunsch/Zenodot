@@ -15,7 +15,8 @@ public interface ParserSettings
 {
 	CompletionMode getCompletionMode();
 	Imports getImports();
-	AccessModifier getMinimumAccessModifier();
+	AccessModifier getMinimumFieldAccessModifier();
+	AccessModifier getMinimumMethodAccessModifier();
 	EvaluationMode getEvaluationMode();
 	boolean isConsiderAllClassesForClassCompletions();
 	Collection<String> getParserExtensionNames();

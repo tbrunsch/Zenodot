@@ -180,7 +180,7 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 	}
 
 	private ConstructorScanner getConstructorScanner() {
-		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
+		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumMethodAccessModifier();
 		return ConstructorScannerBuilder.create()
 			.minimumAccessModifier(minimumAccessModifier)
 			.build();

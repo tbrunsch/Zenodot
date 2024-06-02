@@ -31,7 +31,7 @@ public class MethodTestSideEffect
 		TestClass testInstance = new TestClass();
 		String expression = "f(g(), s)";
 		ParserSettings parserSettings = ParserSettingsBuilder.create()
-			.minimumAccessModifier(AccessModifier.PACKAGE_PRIVATE)
+			.minimumMethodAccessModifier(AccessModifier.PACKAGE_PRIVATE)
 			.evaluationMode(evaluationMode)
 			.build();
 		boolean encounteredParseException = false;

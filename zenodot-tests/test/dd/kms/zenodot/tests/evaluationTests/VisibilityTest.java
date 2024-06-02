@@ -15,6 +15,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 @RunWith(Parameterized.class)
 public class VisibilityTest
@@ -47,9 +48,11 @@ public class VisibilityTest
 	}
 
 	private void testVisibility(boolean useQualifiedClass) {
-		ParserSettingsBuilder builder = ParserSettingsBuilder.create().minimumAccessModifier(minimumAccessModifier);
+		ParserSettingsBuilder builder = ParserSettingsBuilder.create()
+			.minimumFieldAccessModifier(minimumAccessModifier)
+			.minimumMethodAccessModifier(minimumAccessModifier);
 		if (!useQualifiedClass) {
-			builder.importPackages(Arrays.asList(VisibilityTestUtils.PACKAGE));
+			builder.importPackages(Collections.singletonList(VisibilityTestUtils.PACKAGE));
 		}
 		ParserSettings settings = builder.build();
 

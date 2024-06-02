@@ -33,7 +33,7 @@ public class ExceptionTest extends CompletionTest
 			.addTestWithError("String.valueOf(x = 2.0).l", ParseException.class);
 
 		testBuilder
-			.configurator(test -> test.minimumAccessModifier(AccessModifier.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumFieldAccessModifier(AccessModifier.PACKAGE_PRIVATE))
 			.addTestWithError("x = 2.0", ParseException.class);
 
 		testBuilder

@@ -14,13 +14,14 @@ import java.util.Arrays;
 /**
  * This test uses {@link EvaluationMode#STATIC_TYPING} by default.
  */
-public class AbstractTest<T extends AbstractTest>
+public class AbstractTest<T extends AbstractTest<?>>
 {
 	public static final boolean	SKIP_UNSTABLE_TESTS	= "true".equalsIgnoreCase(System.getProperty("skipUnstableTests"));
 
 	protected final Object					testInstance;
 	protected final ParserSettingsBuilder	settingsBuilder			= ParserSettingsBuilder.create()
-																			.minimumAccessModifier(AccessModifier.PRIVATE)
+																			.minimumFieldAccessModifier(AccessModifier.PRIVATE)
+																			.minimumMethodAccessModifier(AccessModifier.PRIVATE)
 																			.evaluationMode(EvaluationMode.STATIC_TYPING);
 	protected final Variables				variables				= Variables.create();
 
@@ -40,8 +41,12 @@ public class AbstractTest<T extends AbstractTest>
 		variables.createVariable(name, value, isFinal);
 	}
 
-	public void minimumAccessModifier(AccessModifier minimumAccessModifier) {
-		settingsBuilder.minimumAccessModifier(minimumAccessModifier);
+	public void minimumFieldAccessModifier(AccessModifier minimumAccessModifier) {
+		settingsBuilder.minimumFieldAccessModifier(minimumAccessModifier);
+	}
+
+	public void minimumMethodAccessModifier(AccessModifier minimumAccessModifier) {
+		settingsBuilder.minimumMethodAccessModifier(minimumAccessModifier);
 	}
 
 	public void importClasses(String... classNames) {

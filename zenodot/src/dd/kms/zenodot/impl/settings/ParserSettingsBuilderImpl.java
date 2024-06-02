@@ -23,7 +23,8 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	private CompletionMode								completionMode;
 	private Set<Class<?>>								importedClasses;
 	private Set<String>									importedPackages;
-	private AccessModifier								minimumAccessModifier;
+	private AccessModifier								minimumFieldAccessModifier;
+	private AccessModifier								minimumMethodAccessModifier;
 	private EvaluationMode								evaluationMode;
 	private boolean										considerAllClassesForClassCompletions;
 	private final Map<String, ParserExtension>			parserExtensions;
@@ -33,7 +34,8 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		completionMode = CompletionMode.COMPLETE_AND_REPLACE_WHOLE_WORDS;
 		importedClasses = ImmutableSet.of();
 		importedPackages = ImmutableSet.of();
-		minimumAccessModifier = AccessModifier.PUBLIC;
+		minimumFieldAccessModifier = AccessModifier.PUBLIC;
+		minimumMethodAccessModifier = AccessModifier.PUBLIC;
 		evaluationMode = EvaluationMode.MIXED;
 		considerAllClassesForClassCompletions = false;
 		parserExtensions = new HashMap<>();
@@ -44,7 +46,8 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 		completionMode = settings.getCompletionMode();
 		importedClasses = ImmutableSet.copyOf(settings.getImports().getImportedClasses());
 		importedPackages = ImmutableSet.copyOf(settings.getImports().getImportedPackages());
-		minimumAccessModifier = settings.getMinimumAccessModifier();
+		minimumFieldAccessModifier = settings.getMinimumFieldAccessModifier();
+		minimumMethodAccessModifier = settings.getMinimumMethodAccessModifier();
 		evaluationMode = settings.getEvaluationMode();
 		considerAllClassesForClassCompletions = settings.isConsiderAllClassesForClassCompletions();
 		parserExtensions = settings.getParserExtensionNames().stream()
@@ -85,8 +88,14 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	@Override
-	public ParserSettingsBuilder minimumAccessModifier(AccessModifier minimumAccessModifier) {
-		this.minimumAccessModifier = minimumAccessModifier;
+	public ParserSettingsBuilder minimumFieldAccessModifier(AccessModifier minimumFieldAccessModifier) {
+		this.minimumFieldAccessModifier = minimumFieldAccessModifier;
+		return this;
+	}
+
+	@Override
+	public ParserSettingsBuilder minimumMethodAccessModifier(AccessModifier minimumMethodAccessModifier) {
+		this.minimumMethodAccessModifier = minimumMethodAccessModifier;
 		return this;
 	}
 
@@ -119,6 +128,6 @@ public class ParserSettingsBuilderImpl implements ParserSettingsBuilder
 	}
 
 	public ParserSettings build() {
-		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, minimumAccessModifier, evaluationMode, considerAllClassesForClassCompletions, parserExtensions, logger);
+		return new ParserSettingsImpl(completionMode, importedClasses, importedPackages, minimumFieldAccessModifier, minimumMethodAccessModifier, evaluationMode, considerAllClassesForClassCompletions, parserExtensions, logger);
 	}
 }

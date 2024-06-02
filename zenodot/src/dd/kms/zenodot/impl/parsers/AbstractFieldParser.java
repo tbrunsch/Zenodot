@@ -86,7 +86,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 
 	private FieldScannerBuilder getFieldScannerBuilder() {
 		StaticMode staticMode = isContextStatic() ? StaticMode.STATIC : StaticMode.BOTH;
-		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
+		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumFieldAccessModifier();
 		return FieldScannerBuilder.create()
 			.staticMode(staticMode)
 			.minimumAccessModifier(minimumAccessModifier);

@@ -26,7 +26,7 @@ public class ClassTest extends EvaluationTest
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder();
 
 		testBuilder
-			.configurator(test -> test.minimumAccessModifier(AccessModifier.PACKAGE_PRIVATE))
+			.configurator(test -> test.minimumFieldAccessModifier(AccessModifier.PACKAGE_PRIVATE))
 			.addTest(className + ".l",				-17L)
 			.addTest(className + ".f",				27.5f)
 			.addTest(className + ".getInt()",		0)
@@ -34,7 +34,7 @@ public class ClassTest extends EvaluationTest
 
 		testBuilder
 			.configurator(test -> {
-				test.minimumAccessModifier(AccessModifier.PUBLIC);
+				test.minimumFieldAccessModifier(AccessModifier.PUBLIC);
 				test.importPackages("java.util");
 			})
 			.addTest("Math.pow(1.5, 2.5)",		Math.pow(1.5, 2.5))
@@ -66,7 +66,10 @@ public class ClassTest extends EvaluationTest
 			.addTest("InternalClassStage2.i",	3);
 
 		testBuilder
-			.configurator(test -> test.minimumAccessModifier(AccessModifier.PACKAGE_PRIVATE))
+			.configurator(test -> {
+				test.minimumFieldAccessModifier(AccessModifier.PACKAGE_PRIVATE);
+				test.minimumMethodAccessModifier(AccessModifier.PACKAGE_PRIVATE);
+			})
 			.addTestWithError(className + ".i")
 			.addTestWithError(className + ".b")
 			.addTestWithError(className + ".d")

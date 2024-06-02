@@ -41,11 +41,18 @@ public interface ParserSettingsBuilder
 	ParserSettingsBuilder importPackages(Iterable<String> packageNames);
 
 	/**
-	 * The minimum access modifier affects which fields and methods are suggested for code completion and
-	 * are accepted when evaluating expressions. When setting this to {@link AccessModifier#PRIVATE}, then
-	 * all fields and methods will be considered.
+	 * The minimum access modifier affects which fields are suggested for code completion and are accepted
+	 * when evaluating expressions. When setting this to {@link AccessModifier#PRIVATE}, then all fields
+	 * will be considered.
 	 */
-	ParserSettingsBuilder minimumAccessModifier(AccessModifier minimumAccessModifier);
+	ParserSettingsBuilder minimumFieldAccessModifier(AccessModifier minimumAccessModifier);
+
+	/**
+	 * The minimum method access modifier affects which methods and constructors are suggested for
+	 * code completion and are accepted when evaluating expressions. When setting this to
+	 * {@link AccessModifier#PRIVATE}, then all methods will be considered.
+	 */
+	ParserSettingsBuilder minimumMethodAccessModifier(AccessModifier minimumAccessModifier);
 
 	/**
 	 * Specify how expressions are evaluated, also during code completion. See the different values of

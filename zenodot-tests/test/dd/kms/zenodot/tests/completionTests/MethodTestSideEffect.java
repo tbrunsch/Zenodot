@@ -32,7 +32,7 @@ public class MethodTestSideEffect
 		String expression = "f(g(), s)";
 		int caretPosition = expression.length();
 		ParserSettings parserSettings = ParserSettingsBuilder.create()
-			.minimumAccessModifier(AccessModifier.PACKAGE_PRIVATE)
+			.minimumMethodAccessModifier(AccessModifier.PACKAGE_PRIVATE)
 			.evaluationMode(evaluationMode)
 			.build();
 		boolean encounteredParseException = false;

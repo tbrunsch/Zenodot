@@ -5,6 +5,7 @@
   - The string representation of class code completions now always contains the package and possibly the enclosing class, even if the class has been imported.
   - Inner class names are now also suggested when typing unqualified names.
   - Zenodot can now be extended to provide user-defined code completions for string literals.
+  - The minimum access modifiers for fields and methods can now be specified individually.
   - The custom hierarchy parser has been removed from the Zenodot basic parser. It is now part of a separate module and has to be registered explicitly via `ParserSettingsBuilder.additionalParserSettings()`. This method also allows registering other parsers for extending the Java syntax supported by the basic Zenodot parser.
   - Fixed parsing compound expressions with an `instanceof` expression as operand.
   - Fixed exception when requesting code completions for a variadic method parameter.
@@ -14,6 +15,7 @@ API changes:
   - `CodeCompletion`: Replaced method `getInsertionRange()` by the methods `getInsertionBegin()` and `getInsertionEnd()`.
   - `CodeCompletionClass.getClassInfo()` now returns a `ClassInfo` instead of a `Class` to avoid loading classes unnecessarily.
   - The method `ParserSettingsBuilder.customHierarchyRoot() has been removed`.
+  - The method `ParserSettingsBuilder.minimumAccessModifier()` has been replaced by the methods `ParserSettingsBuilder.minimumFieldAccessModifier()` and `ParserSettingsBuilder.minimumMethodAccessModifier()`. The method `ParserSettings.getMinimumAccessModifier()` has been replaced by the methods `ParserSettings.getMinimumFieldAccessModifier()` and `ParserSettings.getMinimumMethodAccessModifier()`. 
 
 ## v0.3.0
 

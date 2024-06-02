@@ -15,16 +15,19 @@ class ParserSettingsImpl implements ParserSettings
 {
 	private final CompletionMode						completionMode;
 	private final Imports								imports;
-	private final AccessModifier						minimumAccessModifier;
+	private final AccessModifier						minimumFieldAccessModifier;
+	private final AccessModifier						minimumMethodAccessModifier;
 	private final EvaluationMode						evaluationMode;
 	private final boolean 								considerAllClassesForClassCompletions;
 	private final Map<String, ParserExtension>			parserExtensions;
 	private final ParserLogger 							logger;
 
-	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, Map<String, ParserExtension> parserExtensions, ParserLogger logger) {
+
+	ParserSettingsImpl(CompletionMode completionMode, Set<Class<?>> importedClasses, Set<String> importedPackages, AccessModifier minimumFieldAccessModifier, AccessModifier minimumMethodAccessModifier, EvaluationMode evaluationMode, boolean considerAllClassesForClassCompletions, Map<String, ParserExtension> parserExtensions, ParserLogger logger) {
 		this.completionMode = completionMode;
 		this.imports = new ImportsImpl(importedClasses, importedPackages);
-		this.minimumAccessModifier = minimumAccessModifier;
+		this.minimumFieldAccessModifier = minimumFieldAccessModifier;
+		this.minimumMethodAccessModifier = minimumMethodAccessModifier;
 		this.evaluationMode = evaluationMode;
 		this.considerAllClassesForClassCompletions = considerAllClassesForClassCompletions;
 		this.parserExtensions = ImmutableMap.copyOf(parserExtensions);
@@ -42,8 +45,13 @@ class ParserSettingsImpl implements ParserSettings
 	}
 
 	@Override
-	public AccessModifier getMinimumAccessModifier() {
-		return minimumAccessModifier;
+	public AccessModifier getMinimumFieldAccessModifier() {
+		return minimumFieldAccessModifier;
+	}
+
+	@Override
+	public AccessModifier getMinimumMethodAccessModifier() {
+		return minimumMethodAccessModifier;
 	}
 
 	@Override

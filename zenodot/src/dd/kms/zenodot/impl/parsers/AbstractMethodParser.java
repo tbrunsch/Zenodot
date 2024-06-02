@@ -107,7 +107,7 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 
 	private MethodScannerBuilder getMethodScannerBuilder() {
 		StaticMode staticMode = isContextStatic() ? StaticMode.STATIC : StaticMode.BOTH;
-		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumAccessModifier();
+		AccessModifier minimumAccessModifier = parserToolbox.getSettings().getMinimumMethodAccessModifier();
 		return MethodScannerBuilder.create()
 			.staticMode(staticMode)
 			.minimumAccessModifier(minimumAccessModifier);
