@@ -277,4 +277,14 @@ Without dynamic typing, Zenodot would throw a `ParseException` when evaluating t
 
 # Open Source License Acknowledgement
 
-Zenodot utilizes [Guava: Google Core Libraries for Java](https://github.com/google/guava). This library is licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+Zenodot utilizes the following open source projects:
+
+## Guava: Google Core Libraries for Java
+https://github.com/google/guava
+
+Guava is licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+## ClassGraph
+https://github.com/classgraph/classgraph
+
+ClassGraph is licensed under the [MIT License](https://opensource.org/licenses/MIT).
