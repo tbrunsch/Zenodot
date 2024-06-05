@@ -8,9 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -145,6 +143,39 @@ public class ReflectionUtils
 	private static boolean isHashCodeMethod(Method method) {
 		return method.getName().equals("hashCode")
 			&& method.getParameterCount() == 0;
+	}
+
+	public static Collection<Method> getBaseMethods(Method method) {
+		Set<Method> baseMethods = new LinkedHashSet<>();
+		addBaseMethods(method, baseMethods);
+		return baseMethods;
+	}
+
+	private static void addBaseMethods(Method method, Set<Method> baseMethods) {
+		Class<?> declaringClass = method.getDeclaringClass();
+		Class<?> superClass = declaringClass.getSuperclass();
+		if (superClass != null) {
+			addBaseMethods(method, superClass, baseMethods);
+		}
+		Class<?>[] interfaces = declaringClass.getInterfaces();
+		for (Class<?> implementedInterface : interfaces) {
+			addBaseMethods(method, implementedInterface, baseMethods);
+		}
+	}
+
+	private static void addBaseMethods(Method method, Class<?> superType, Set<Method> baseMethods) {
+		String methodName = method.getName();
+		Method[] declaredMethods = superType.getDeclaredMethods();
+		for (Method declaredMethod : declaredMethods) {
+			if (!Objects.equals(declaredMethod.getName(), methodName)) {
+				continue;
+			}
+			if (isOverriddenBy(declaredMethod, method)) {
+				if (baseMethods.add(declaredMethod)) {
+					addBaseMethods(declaredMethod, baseMethods);
+				}
+			}
+		}
 	}
 
 	public static boolean isOverriddenBy(Executable baseExecutable, Executable potentialOverride) {

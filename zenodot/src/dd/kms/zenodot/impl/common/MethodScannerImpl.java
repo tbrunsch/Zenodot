@@ -59,7 +59,7 @@ class MethodScannerImpl implements MethodScanner
 
 		Class<?> superclass = clazz.getSuperclass();
 		addMethods(superclass, methodsByName);
-		for (Class<?> implementedInterfaces :clazz.getInterfaces()){
+		for (Class<?> implementedInterfaces : clazz.getInterfaces()){
 			addMethods(implementedInterfaces, methodsByName);
 		}
 	}

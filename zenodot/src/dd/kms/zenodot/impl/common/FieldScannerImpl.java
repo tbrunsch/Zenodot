@@ -77,7 +77,7 @@ class FieldScannerImpl implements FieldScanner
 
 		Class<?> superclass = clazz.getSuperclass();
 		addFields(superclass, fieldsByName);
-		for (Class<?> implementedInterfaces :clazz.getInterfaces()){
+		for (Class<?> implementedInterfaces : clazz.getInterfaces()){
 			addFields(implementedInterfaces, fieldsByName);
 		}
 	}
