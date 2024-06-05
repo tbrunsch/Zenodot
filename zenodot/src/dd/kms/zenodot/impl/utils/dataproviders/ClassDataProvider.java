@@ -2,7 +2,6 @@ package dd.kms.zenodot.impl.utils.dataproviders;
 
 import com.google.common.collect.*;
 import com.google.common.primitives.Primitives;
-import com.google.common.reflect.ClassPath;
 import dd.kms.zenodot.api.common.ClassInfo;
 import dd.kms.zenodot.api.common.multistringmatching.MultiStringMatcher;
 import dd.kms.zenodot.api.matching.MatchRating;
@@ -19,9 +18,12 @@ import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.utils.ClassUtils;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
 
-import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,10 +43,10 @@ public class ClassDataProvider
 	private static final MultiStringMatcher<ClassInfo>	CLASSES_BY_UNQUALIFIED_NAMES;
 
 	/**
-	 * The utility class {@link ClassPath} also finds classes that cannot be loaded for whatever
-	 * reason. Whenever such a {@link ClassInfo} is encountered (it is not detected immediately
+	 * The scan of the class path my find classes that cannot be loaded for whatever reason.
+	 * Whenever such a {@link ClassInfo} is encountered (it is not detected immediately
 	 * after instantiating a {@code ClassInfo} because this class is meant for referencing classes
-	 * without having to load them), then it is registered in this field. Afterwards, this class
+	 * without having to load them), then it is registered in this field. Afterward, this class
 	 * will not be suggested anymore.
 	 */
 	private static final Set<ClassInfo>					CLASS_INFOS_WITH_ERRORS	= new HashSet<>();
@@ -52,19 +54,24 @@ public class ClassDataProvider
 	static {
 		TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES = HashMultimap.create();
 		CLASSES_BY_UNQUALIFIED_NAMES = new MultiStringMatcher<>();
-		try {
-			ClassPath classPath = ClassPath.from(ClassLoader.getSystemClassLoader());
-			for (ClassPath.ClassInfo clazz : classPath.getAllClasses()) {
+		int parallelism = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
+		try (ScanResult scanResult = new ClassGraph()
+			.enableSystemJarsAndModules()
+			.enableClassInfo()
+			.ignoreClassVisibility()
+			.removeTemporaryFilesAfterScan()
+			.scan(Executors.newFixedThreadPool(parallelism), parallelism)) {
+			ClassInfoList allClasses = scanResult.getAllClasses();
+			for (io.github.classgraph.ClassInfo clazz : allClasses) {
 				String qualifiedClassName = clazz.getName();
 				ClassInfo classInfo = InfoProvider.createClassInfoUnchecked(qualifiedClassName);
-				if (clazz.isTopLevel()) {
+				if (!clazz.isInnerClass()) {
 					String packageName = ClassUtils.getParentPath(classInfo.getNormalizedName());
 					TOP_LEVEL_CLASS_INFOS_BY_PACKAGE_NAMES.put(packageName, classInfo);
 				}
 				String unqualifiedName = ClassUtils.getLeafOfPath(qualifiedClassName);
 				CLASSES_BY_UNQUALIFIED_NAMES.put(unqualifiedName, classInfo);
 			}
-		} catch (IOException e) {
 		}
 
 		Set<String> packageNames = new LinkedHashSet<>();
