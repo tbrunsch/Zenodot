@@ -27,6 +27,8 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
 - [Parser Settings](#parser-settings)
   - [Dynamic Typing Example](#dynamic-typing-example)
 - [Open Source License Acknowledgement](#open-source-license-acknowledgement)
+  - [Guava: Google Core Libraries for Java](#guava-google-core-libraries-for-java)
+  - [ClassGraph](#classgraph)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
