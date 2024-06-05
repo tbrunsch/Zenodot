@@ -9,6 +9,8 @@
   - The custom hierarchy parser has been removed from the Zenodot basic parser. It is now part of a separate module and has to be registered explicitly via `ParserSettingsBuilder.additionalParserSettings()`. This method also allows registering other parsers for extending the Java syntax supported by the basic Zenodot parser.
   - Fixed parsing compound expressions with an `instanceof` expression as operand.
   - Fixed exception when requesting code completions for a variadic method parameter.
+  - Added dependency to library ClassGraph to solve class path scanning problems for Java 11 and Java 17.
+  - Implemented workaround for certain method inaccessibility issues in Java 17.
 
 API changes:
 
