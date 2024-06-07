@@ -8,6 +8,7 @@ import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import org.junit.Assert;
+import org.junit.Assume;
 
 import java.util.Arrays;
 
@@ -71,6 +72,20 @@ public class AbstractTest<T extends AbstractTest<?>>
 
 	public void stopAtError() {
 		stopAtError = true;
+	}
+
+	public void assumeMinimumJavaMajorVersion(int minJavaMajorVersion) {
+		int javaMajorVersion = getJavaMajorVersion();
+		Assume.assumeTrue("Skipping test because Java version " + javaMajorVersion + " is not at least " + minJavaMajorVersion, javaMajorVersion >= minJavaMajorVersion);
+	}
+
+	private int getJavaMajorVersion() {
+		String javaVersionString = System.getProperty("java.version");
+		String[] versionParts = javaVersionString.split("\\.");
+		int majorVersionIndex = "1".equals(versionParts[0])
+			? 1		// e.g. "1.8.0_291"
+			: 0;	// e.g. "17.0.10"
+		return Integer.parseInt(versionParts[majorVersionIndex]);
 	}
 
 	protected boolean isStopAtError() {
