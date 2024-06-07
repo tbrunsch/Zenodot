@@ -72,8 +72,8 @@ abstract class AbstractMethodParser<C> extends AbstractParserWithObjectTail<C>
 				try {
 					log(LogLevel.SUCCESS, "Found unique matching method");
 					methodReturnInfo = parserToolbox.inject(ObjectInfoProvider.class).getExecutableReturnInfo(getContextObject(context), bestMatchingMethod, arguments);
-				} catch (Exception e) {
-					throw new EvaluationException("Exception when evaluating method '" + methodName + "'", e);
+				} catch (ReflectiveOperationException e) {
+					throw new EvaluationException(e.getMessage(), e);
 				}
 				return new MethodParseResult(isContextStatic(), bestMatchingMethod, argumentResults, methodReturnInfo, tokenStream);
 			}

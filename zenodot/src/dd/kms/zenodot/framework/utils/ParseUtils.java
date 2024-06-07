@@ -9,6 +9,7 @@ import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
 import dd.kms.zenodot.api.settings.ParserSettings;
 import dd.kms.zenodot.api.settings.extensions.AdditionalParserSettings;
 import dd.kms.zenodot.api.settings.extensions.ParserExtension;
+import dd.kms.zenodot.framework.common.ExceptionalFunction;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
@@ -27,7 +28,6 @@ import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -137,10 +137,15 @@ public class ParseUtils
 	/*
 	 * Code Completions
 	 */
-	public static <T> List<CodeCompletion> createCodeCompletions(Iterable<? extends T> objects, Function<T, CodeCompletion> completionBuilder) {
+	public static <T> List<CodeCompletion> createCodeCompletions(Iterable<? extends T> objects, ExceptionalFunction<T, CodeCompletion> completionBuilder) {
 		List<CodeCompletion> codeCompletions = new ArrayList<>();
 		for (T object : objects) {
-			CodeCompletion codeCompletion = completionBuilder.apply(object);
+			CodeCompletion codeCompletion;
+			try {
+				codeCompletion = completionBuilder.apply(object);
+			} catch (Exception e) {
+				continue;
+			}
 			codeCompletions.add(codeCompletion);
 		}
 		return codeCompletions;

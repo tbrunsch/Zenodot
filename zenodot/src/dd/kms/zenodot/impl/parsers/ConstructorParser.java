@@ -93,8 +93,8 @@ public class ConstructorParser extends AbstractParserWithObjectTail<ObjectInfo>
 				try {
 					log(LogLevel.SUCCESS, "found unique matching constructor");
 					constructorReturnInfo = parserToolbox.inject(ObjectInfoProvider.class).getExecutableReturnInfo(null, bestMatchingConstructorInfo, argumentInfos);
-				} catch (Exception e) {
-					throw new EvaluationException("Error when trying to invoke constructor of '" + constructorType.getSimpleName() + "': " + e.getMessage(), e);
+				} catch (ReflectiveOperationException e) {
+					throw new EvaluationException(e.getMessage(), e);
 				}
 				return new ObjectConstructorParseResult(bestMatchingConstructorInfo, argumentResults, constructorReturnInfo, tokenStream);
 			}

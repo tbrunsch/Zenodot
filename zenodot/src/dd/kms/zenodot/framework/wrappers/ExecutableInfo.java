@@ -1,12 +1,12 @@
 package dd.kms.zenodot.framework.wrappers;
 
 import com.google.common.base.Joiner;
+import dd.kms.zenodot.api.common.AccessDeniedException;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,7 +55,7 @@ public abstract class ExecutableInfo extends MemberInfo<Executable>
 		return doCreateArgumentArray(argumentInfos);
 	}
 
-	public Object invoke(Object instance, Object[] arguments) throws InvocationTargetException, IllegalAccessException, InstantiationException {
+	public Object invoke(Object instance, Object[] arguments) throws ReflectiveOperationException {
 		if (instance == InfoProvider.INDETERMINATE_VALUE) {
 			return InfoProvider.INDETERMINATE_VALUE;
 		}
@@ -90,7 +90,7 @@ public abstract class ExecutableInfo extends MemberInfo<Executable>
 				}
 			}
 			if (!solvedAccessibilityIssue) {
-				throw e;
+				throw new AccessDeniedException("Access to executable " + executable.getName() + "() has been denied: " + e, e);
 			}
 		}
 		return executable instanceof Method	? ((Method) executable).invoke(instance, arguments)

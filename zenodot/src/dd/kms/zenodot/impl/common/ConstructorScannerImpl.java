@@ -1,6 +1,7 @@
 package dd.kms.zenodot.impl.common;
 
 import dd.kms.zenodot.api.common.ConstructorScanner;
+import dd.kms.zenodot.api.common.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -23,6 +24,7 @@ class ConstructorScannerImpl implements ConstructorScanner
 	public List<Constructor<?>> getConstructors(Class<?> clazz) {
 		return Arrays.stream(clazz.getDeclaredConstructors())
 			.filter(filter)
+			.filter(ReflectionUtils::tryMakeAccessible)
 			.collect(Collectors.toList());
 	}
 }

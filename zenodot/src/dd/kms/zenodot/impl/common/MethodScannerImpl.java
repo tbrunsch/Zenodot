@@ -4,6 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import dd.kms.zenodot.api.common.MethodScanner;
+import dd.kms.zenodot.api.common.ReflectionUtils;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -39,6 +40,10 @@ class MethodScannerImpl implements MethodScanner
 		}
 		for (Method method : clazz.getDeclaredMethods()) {
 			if (!filter.test(method)) {
+				continue;
+			}
+			if (!ReflectionUtils.tryMakeAccessible(method)) {
+				// don't return inaccessible methods
 				continue;
 			}
 			String methodName = method.getName();

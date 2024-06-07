@@ -2,8 +2,10 @@ package dd.kms.zenodot.impl.common;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import dd.kms.zenodot.api.common.AccessDeniedException;
 import dd.kms.zenodot.api.common.FieldScanner;
 import dd.kms.zenodot.api.common.GeneralizedField;
+import dd.kms.zenodot.api.common.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -49,6 +51,10 @@ class FieldScannerImpl implements FieldScanner
 		for (Field field : clazz.getDeclaredFields()) {
 			DefaultGeneralizedField generalizedField = new DefaultGeneralizedField(field);
 			if (!filter.test(generalizedField)) {
+				continue;
+			}
+			if (!ReflectionUtils.tryMakeAccessible(generalizedField)) {
+				// don't return inaccessible fields
 				continue;
 			}
 			String fieldName = field.getName();

@@ -3,6 +3,7 @@ package dd.kms.zenodot.framework.common;
 import com.google.common.base.Preconditions;
 import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.Variables;
+import dd.kms.zenodot.api.common.AccessDeniedException;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.EvaluationMode;
@@ -14,7 +15,10 @@ import dd.kms.zenodot.framework.wrappers.FieldInfo;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -50,14 +54,10 @@ public class ObjectInfoProvider
 			: object.getClass();
 	}
 
-	public ObjectInfo getFieldValueInfo(Object contextObject, FieldInfo fieldInfo) {
+	public ObjectInfo getFieldValueInfo(Object contextObject, FieldInfo fieldInfo) throws AccessDeniedException {
 		Object fieldValue = InfoProvider.INDETERMINATE_VALUE;
 		if (isEvaluate() && contextObject != InfoProvider.INDETERMINATE_VALUE) {
-			try {
-				fieldValue = fieldInfo.get(contextObject);
-			} catch (IllegalAccessException e) {
-				throw new IllegalStateException("Internal error: Unexpected IllegalAccessException: " + e.getMessage());
-			}
+			fieldValue = fieldInfo.get(contextObject);
 		}
 		ObjectInfo.ValueSetter valueSetter = getFieldValueSetter(contextObject, fieldInfo);
 		return InfoProvider.createObjectInfo(fieldValue, fieldInfo.getType(), valueSetter);
@@ -70,21 +70,17 @@ public class ObjectInfoProvider
 		return value -> {
 			try {
 				fieldInfo.set(contextObject, value.getObject());
-			} catch (IllegalAccessException e) {
+			} catch (AccessDeniedException e) {
 				throw new IllegalArgumentException("Could not set field value", e);
 			}
 		};
 	}
 
-	public ObjectInfo getExecutableReturnInfo(Object contextObject, ExecutableInfo executableInfo, List<ObjectInfo> argumentInfos) throws InvocationTargetException, InstantiationException {
+	public ObjectInfo getExecutableReturnInfo(Object contextObject, ExecutableInfo executableInfo, List<ObjectInfo> argumentInfos) throws ReflectiveOperationException {
 		Object methodReturnValue = InfoProvider.INDETERMINATE_VALUE;
 		if (isEvaluateWithSideEffects() && contextObject != InfoProvider.INDETERMINATE_VALUE) {
 			Object[] arguments = executableInfo.createArgumentArray(argumentInfos);
-			try {
-				methodReturnValue = executableInfo.invoke(contextObject, arguments);
-			} catch (IllegalAccessException e) {
-				throw new IllegalStateException("Internal error: Unexpected " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
-			}
+			methodReturnValue = executableInfo.invoke(contextObject, arguments);
 		}
 		Class<?> methodReturnType = getType(methodReturnValue, executableInfo.getReturnType());
 		return InfoProvider.createObjectInfo(methodReturnValue, methodReturnType);

@@ -3,6 +3,7 @@ package dd.kms.zenodot.api.common;
 import sun.reflect.CallerSensitive;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Type;
@@ -173,9 +174,14 @@ public interface GeneralizedField extends Member
 	void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
+	 * @see java.lang.reflect.AccessibleObject#isAccessible()
+	 */
+	boolean isAccessible();
+
+	/**
 	 * @see java.lang.reflect.AccessibleObject#setAccessible(boolean)
 	 */
-	void setAccessible(boolean flag) throws SecurityException;
+	void setAccessible(boolean flag) throws AccessDeniedException;
 
 	/**
 	 * @see Field#equals(Object)

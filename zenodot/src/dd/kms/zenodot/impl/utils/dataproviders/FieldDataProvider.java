@@ -1,5 +1,6 @@
 package dd.kms.zenodot.impl.utils.dataproviders;
 
+import dd.kms.zenodot.api.common.AccessDeniedException;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.api.debug.ParserLogger;
 import dd.kms.zenodot.api.matching.MatchRating;
@@ -48,7 +49,7 @@ public class FieldDataProvider
 		return MatchRatings.rateStringMatch(expectedName, fieldInfo.getName());
 	}
 
-	private TypeMatch rateFieldByTypes(FieldInfo fieldInfo, Object contextObject, ObjectParseResultExpectation expectation) {
+	private TypeMatch rateFieldByTypes(FieldInfo fieldInfo, Object contextObject, ObjectParseResultExpectation expectation) throws AccessDeniedException {
 		ObjectInfo fieldValueInfo = parserToolbox.inject(ObjectInfoProvider.class).getFieldValueInfo(contextObject, fieldInfo);
 		Class<?> type = parserToolbox.inject(ObjectInfoProvider.class).getType(fieldValueInfo);
 		return expectation.rateTypeMatch(type);
@@ -58,7 +59,7 @@ public class FieldDataProvider
 		return fieldInfo.isStatic() && !contextIsStatic;
 	}
 
-	private MatchRating rateField(FieldInfo fieldInfo, Object contextObject, boolean contextIsStatic, String expectedName, ObjectParseResultExpectation expectation) {
+	private MatchRating rateField(FieldInfo fieldInfo, Object contextObject, boolean contextIsStatic, String expectedName, ObjectParseResultExpectation expectation) throws AccessDeniedException {
 		return MatchRatings.create(rateFieldByName(fieldInfo, expectedName), rateFieldByTypes(fieldInfo, contextObject, expectation), isFieldAccessDiscouraged(fieldInfo, contextIsStatic));
 	}
 }

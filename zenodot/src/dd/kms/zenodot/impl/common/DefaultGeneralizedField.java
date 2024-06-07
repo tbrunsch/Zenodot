@@ -1,6 +1,7 @@
 package dd.kms.zenodot.impl.common;
 
 import com.google.common.base.Preconditions;
+import dd.kms.zenodot.api.common.AccessDeniedException;
 import dd.kms.zenodot.api.common.GeneralizedField;
 import sun.reflect.CallerSensitive;
 
@@ -167,8 +168,17 @@ class DefaultGeneralizedField implements GeneralizedField
 	}
 
 	@Override
-	public void setAccessible(boolean flag) throws SecurityException {
-		field.setAccessible(flag);
+	public boolean isAccessible() {
+		return field.isAccessible();
+	}
+
+	@Override
+	public void setAccessible(boolean flag) throws AccessDeniedException {
+		try {
+			field.setAccessible(flag);
+		} catch (Exception e) {
+			throw new AccessDeniedException("Access to field '" + field.getName() + "' has been denied: " + e, e);
+		}
 	}
 
 	@Override

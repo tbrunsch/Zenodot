@@ -4,10 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -258,5 +255,29 @@ public class ReflectionUtils
 			clazz = clazz.getEnclosingClass();
 		}
 		return false;
+	}
+
+	public static boolean tryMakeAccessible(AccessibleObject accessibleObject) {
+		if (accessibleObject.isAccessible()) {
+			return true;
+		}
+		try {
+			accessibleObject.setAccessible(true);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	public static boolean tryMakeAccessible(GeneralizedField generalizedField) {
+		if (generalizedField.isAccessible()) {
+			return true;
+		}
+		try {
+			generalizedField.setAccessible(true);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
 	}
 }
