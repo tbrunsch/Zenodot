@@ -1,6 +1,5 @@
 package dd.kms.zenodot.tests.completionTests;
 
-import dd.kms.zenodot.api.ParseException;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTest;
 import dd.kms.zenodot.tests.completionTests.framework.CompletionTestBuilder;
@@ -25,10 +24,13 @@ public class InaccessibilityTest extends CompletionTest
 
 		testBuilder
 			.configurator(test -> {
-				test.assumeMinimumJavaMajorVersion(17);
 				test.evaluationMode(EvaluationMode.MIXED);
 			})
-			.addTest("");	// encounters JTree.$assertionsDisabled during completion, which is inaccessible
+			/*
+			 * The following test encounters the field JTree.$assertionsDisabled during completion.
+			 * This field cannot be made accessible in Java 17+. This must not lead to an exception.
+			 */
+			.addTest("");
 
 		return testBuilder.build();
 	}
