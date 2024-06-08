@@ -27,6 +27,8 @@ Zenodot is a Java library for parsing Java expressions. Notable features are:
 - [Parser Settings](#parser-settings)
   - [Dynamic Typing Example](#dynamic-typing-example)
 - [Open Source License Acknowledgement](#open-source-license-acknowledgement)
+  - [Guava: Google Core Libraries for Java](#guava-google-core-libraries-for-java)
+  - [ClassGraph](#classgraph)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -277,4 +279,14 @@ Without dynamic typing, Zenodot would throw a `ParseException` when evaluating t
 
 # Open Source License Acknowledgement
 
-Zenodot utilizes [Guava: Google Core Libraries for Java](https://github.com/google/guava). This library is licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+Zenodot utilizes the following open source projects:
+
+## Guava: Google Core Libraries for Java
+https://github.com/google/guava
+
+Guava is licensed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+## ClassGraph
+https://github.com/classgraph/classgraph
+
+ClassGraph is licensed under the [MIT License](https://opensource.org/licenses/MIT).

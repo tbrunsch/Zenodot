@@ -4,6 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import dd.kms.zenodot.api.common.MethodScanner;
+import dd.kms.zenodot.api.common.ReflectionUtils;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -41,6 +42,10 @@ class MethodScannerImpl implements MethodScanner
 			if (!filter.test(method)) {
 				continue;
 			}
+			if (!ReflectionUtils.tryMakeAccessible(method)) {
+				// don't return inaccessible methods
+				continue;
+			}
 			String methodName = method.getName();
 			Collection<Method> methodsWithSameName = methodsByName.get(methodName);
 			Optional<Method> methodWithSameParameters = methodsWithSameName.stream()
@@ -59,7 +64,7 @@ class MethodScannerImpl implements MethodScanner
 
 		Class<?> superclass = clazz.getSuperclass();
 		addMethods(superclass, methodsByName);
-		for (Class<?> implementedInterfaces :clazz.getInterfaces()){
+		for (Class<?> implementedInterfaces : clazz.getInterfaces()){
 			addMethods(implementedInterfaces, methodsByName);
 		}
 	}
@@ -68,22 +73,30 @@ class MethodScannerImpl implements MethodScanner
 		return Arrays.equals(method.getParameterTypes(), other.getParameterTypes());
 	}
 
+	/**
+	 * Assumes that both methods have the same name and the same arguments.
+	 *
+	 * @return true if {@code method} is more specific than {@code other}. This is the case
+	 *         if the declaring class of {@code method} is a subclass of the declaring class
+	 *         of {@code other} or if both are the same and the return type of {@code method}
+	 *         is a subclass of the return type of {@code other}.
+	 */
 	private static boolean methodIsMoreSpecific(Method method, Method other) {
-		assert methodsHaveSameArguments(method, other);
 		Class<?> declaringClass = method.getDeclaringClass();
 		Class<?> otherDeclaringClass = other.getDeclaringClass();
-		if (declaringClass.isAssignableFrom(otherDeclaringClass)) {
+		if (!otherDeclaringClass.isAssignableFrom(declaringClass)) {
 			return false;
 		}
-		if (otherDeclaringClass.isAssignableFrom(declaringClass)) {
+		if (!declaringClass.isAssignableFrom(otherDeclaringClass)) {
 			return true;
 		}
+		// declaring classes are identical
 		Class<?> returnType = method.getReturnType();
 		Class<?> otherReturnType = other.getReturnType();
-		if (returnType.isAssignableFrom(otherReturnType)) {
+
+		if (!otherReturnType.isAssignableFrom(returnType)) {
 			return false;
 		}
-		assert otherReturnType.isAssignableFrom(returnType) : "Encountered two methods with same arguments, but incompatible return types";
-		return true;
+		return !returnType.isAssignableFrom(otherReturnType);
 	}
 }

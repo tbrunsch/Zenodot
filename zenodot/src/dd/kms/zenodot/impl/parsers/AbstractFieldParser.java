@@ -2,10 +2,7 @@ package dd.kms.zenodot.impl.parsers;
 
 import com.google.common.collect.Iterables;
 import dd.kms.zenodot.api.Variables;
-import dd.kms.zenodot.api.common.AccessModifier;
-import dd.kms.zenodot.api.common.FieldScanner;
-import dd.kms.zenodot.api.common.FieldScannerBuilder;
-import dd.kms.zenodot.api.common.StaticMode;
+import dd.kms.zenodot.api.common.*;
 import dd.kms.zenodot.api.debug.LogLevel;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
@@ -58,7 +55,13 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 
 		FieldInfo fieldInfo = Iterables.getOnlyElement(fieldInfos);
 		Object contextObject = getContextObject(context);
-		ObjectInfo matchingFieldInfo = parserToolbox.inject(ObjectInfoProvider.class).getFieldValueInfo(contextObject, fieldInfo);
+
+		ObjectInfo matchingFieldInfo;
+		try {
+			matchingFieldInfo = parserToolbox.inject(ObjectInfoProvider.class).getFieldValueInfo(contextObject, fieldInfo);
+		} catch (AccessDeniedException e) {
+			throw new EvaluationException(e.getMessage(), e);
+		}
 
 		return new FieldParseResult(isContextStatic(), fieldInfo, matchingFieldInfo, tokenStream);
 	}
@@ -120,7 +123,7 @@ abstract class AbstractFieldParser<C> extends AbstractParserWithObjectTail<C>
 		}
 
 		@Override
-		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) {
+		protected ObjectInfo doEvaluate(ObjectInfo thisInfo, ObjectInfo contextInfo, Variables variables) throws AccessDeniedException {
 			Object contextObject = contextStatic ? null : contextInfo.getObject();
 			return ObjectInfoProvider.DYNAMIC_OBJECT_INFO_PROVIDER.getFieldValueInfo(contextObject, fieldInfo);
 		}

@@ -1,7 +1,5 @@
 package dd.kms.zenodot.api.common;
 
-import sun.reflect.CallerSensitive;
-
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -67,115 +65,102 @@ public interface GeneralizedField extends Member
 	/**
 	 * @see Field#get(Object)
 	 */
-	@CallerSensitive
 	Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#getBoolean(Object)
 	 */
-	@CallerSensitive
 	boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#getByte(Object)
 	 */
-	@CallerSensitive
 	byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#getChar(Object)
 	 */
-	@CallerSensitive
 	char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#getShort(Object)
 	 */
-	@CallerSensitive
 	short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;;
 
 	/**
 	 * @see Field#getInt(Object)
 	 */
-	@CallerSensitive
 	int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#getLong(Object)
 	 */
-	@CallerSensitive
 	long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#getFloat(Object)
 	 */
-	@CallerSensitive
 	float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#getDouble(Object)
 	 */
-	@CallerSensitive
 	double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#set(Object, Object)
 	 */
-	@CallerSensitive
 	void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#setBoolean(Object, boolean)
 	 */
-	@CallerSensitive
 	void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#setByte(Object, byte)
 	 */
-	@CallerSensitive
 	void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#setChar(Object, char)
 	 */
-	@CallerSensitive
 	void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#setShort(Object, short)
 	 */
-	@CallerSensitive
 	void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#setInt(Object, int)
 	 */
-	@CallerSensitive
 	void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#setLong(Object, long)
 	 */
-	@CallerSensitive
 	void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#setFloat(Object, float)
 	 */
-	@CallerSensitive
 	void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
 
 	/**
 	 * @see Field#setDouble(Object, double)
 	 */
-	@CallerSensitive
 	void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
+
+	/**
+	 * @see java.lang.reflect.AccessibleObject#isAccessible()
+	 */
+	boolean isAccessible();
 
 	/**
 	 * @see java.lang.reflect.AccessibleObject#setAccessible(boolean)
 	 */
-	void setAccessible(boolean flag) throws SecurityException;
+	void setAccessible(boolean flag) throws AccessDeniedException;
 
 	/**
 	 * @see Field#equals(Object)

@@ -1,13 +1,15 @@
 package dd.kms.zenodot.framework.wrappers;
 
 import com.google.common.base.Joiner;
+import dd.kms.zenodot.api.common.AccessDeniedException;
+import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public abstract class ExecutableInfo extends MemberInfo<Executable>
@@ -53,13 +55,46 @@ public abstract class ExecutableInfo extends MemberInfo<Executable>
 		return doCreateArgumentArray(argumentInfos);
 	}
 
-	public Object invoke(Object instance, Object[] arguments) throws InvocationTargetException, IllegalAccessException, InstantiationException {
+	public Object invoke(Object instance, Object[] arguments) throws ReflectiveOperationException {
 		if (instance == InfoProvider.INDETERMINATE_VALUE) {
 			return InfoProvider.INDETERMINATE_VALUE;
 		}
-		member.setAccessible(true);
-		return member instanceof Method	? ((Method) member).invoke(instance, arguments)
-											: ((Constructor<?>) member).newInstance(arguments);
+		Executable executable = member;
+		try {
+			executable.setAccessible(true);
+		} catch (Exception e) {
+			boolean solvedAccessibilityIssue = false;
+			if (executable instanceof Method) {
+				/*
+				 * It is possible that we cannot make the method accessible because its
+				 * class is not accessible, but it overrides a method of a base class that
+				 * is accessible. Hence, we try all base methods.
+				 *
+				 * Example: Consider a List "list" and the expression "list.stream().filter(o -> true)".
+				 *          "list.stream()" returns some implementation of Stream, e.g., ReferencePipeline$Head,
+				 *          that is most likely inaccessible. The Method ReferencePipeline$Head.filter()
+				 *          cannot be made accessible in Java 17 for this reason. However, the Method
+				 *          Stream.filter() is accessible. Hence, we can replace Method ReferencePipeline$Head.filter()
+				 *          by Method Stream.filter() and invoke that one.
+				 */
+				Collection<Method> baseMethods = ReflectionUtils.getBaseMethods((Method) executable);
+				for (Method baseMethod : baseMethods) {
+					try {
+						baseMethod.setAccessible(true);
+						executable = baseMethod;
+						solvedAccessibilityIssue = true;
+						break;
+					} catch (Exception ignored) {
+						/* try next base method */
+					}
+				}
+			}
+			if (!solvedAccessibilityIssue) {
+				throw new AccessDeniedException("Access to executable " + executable.getName() + "() has been denied: " + e, e);
+			}
+		}
+		return executable instanceof Method	? ((Method) executable).invoke(instance, arguments)
+											: ((Constructor<?>) executable).newInstance(arguments);
 	}
 
 	public String formatArguments() {

@@ -168,6 +168,11 @@ class ArrayLengthField implements GeneralizedField
 	}
 
 	@Override
+	public boolean isAccessible() {
+		return true;
+	}
+
+	@Override
 	public void setAccessible(boolean flag) {
 		/* nothing to do */
 	}

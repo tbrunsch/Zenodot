@@ -22,13 +22,13 @@ public class MethodDotFieldOrMethodTest extends CompletionTest
 		CompletionTestBuilder testBuilder = new CompletionTestBuilder().testInstance(testInstance);
 
 		testBuilder
-			.addTest("getTestClass",									"getTestClass()")
-			.addTest("getTestClass(c).",								"d", "i", "getObject()")
-			.addTest("getTestClass(c).get",								"getObject()")
-			.addTest("getTestClass(c).getObject(",						"c", "s")
-			.addTest("getTestClass(c).getObject(getTestClass(c).d).",	"clone()", "equals()")
-			.addTest("getTestInterface().der",							"derived()")
-			.addTest("getTestInterface().bas",							"base()");
+			.addTest("getTestClass",										"getTestClass()")
+			.addTest("getTestClass(c).",									"d", "i", "getObject()")
+			.addTest("getTestClass(c).get",									"getObject()")
+			.addTest("getTestClass(c).getObject(",							"c", "s")
+			.addTest("getTestClass(c).getObject(getTestClass(c).d).toS",	"toString()")
+			.addTest("getTestInterface().der",								"derived()")
+			.addTest("getTestInterface().bas",								"base()");
 
 		testBuilder
 			.addTestWithError("getTestClazz().",								-1, IllegalStateException.class)

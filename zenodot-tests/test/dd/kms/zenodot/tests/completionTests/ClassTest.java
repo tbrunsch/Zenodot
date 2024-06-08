@@ -86,6 +86,11 @@ public class ClassTest extends CompletionTest
 			.addTest("DummCl",		"dd.kms.zenodot.tests.classesForTest.DummyClass")
 			.addTest("IntClStage1",	"dd.kms.zenodot.tests.classesForTest.DummyClass.InternalClassStage1");
 
+		testBuilder
+			.addTest("java.ut", 					"util")
+			.addTest("java.util.func", 				"function")
+			.addTest("java.util.function.BiFun",	"BiFunction");
+
 		return testBuilder.build();
 	}
 

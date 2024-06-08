@@ -22,16 +22,18 @@ public class ClassObjectTest extends CompletionTest
 		Object testInstance = new TestClass();
 
 		return new CompletionTestBuilder().testInstance(testInstance)
-			.addTest("test(TestClass.cl",							"closed", "class")
+			.addTest("test(TestClass.CL",							"CLOSED")
 			.addTest("test(TestClass.cla",							"class")
-			.addTest("test(TestClass.class.getSimpleName()).cl",	"clone()", "closed")
+			.addTest("test(TestClass.class.getSimpleName()).clos",	"closed")
 			.addInsertionTest("test(TestCla^.class.getSimpleName()).cl", '^', "test(TestClass.class.getSimpleName()).cl")
 			.build();
 	}
 
 	private static class TestClass
 	{
-		private static String closed = "closed";
+		private static String 	CLOSED = "closed";
+
+		private String			closed	= "closed";
 
 		TestClass test(String s) { return null;}
 	}

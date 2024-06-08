@@ -4,13 +4,8 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -147,6 +142,39 @@ public class ReflectionUtils
 			&& method.getParameterCount() == 0;
 	}
 
+	public static Collection<Method> getBaseMethods(Method method) {
+		Set<Method> baseMethods = new LinkedHashSet<>();
+		addBaseMethods(method, baseMethods);
+		return baseMethods;
+	}
+
+	private static void addBaseMethods(Method method, Set<Method> baseMethods) {
+		Class<?> declaringClass = method.getDeclaringClass();
+		Class<?> superClass = declaringClass.getSuperclass();
+		if (superClass != null) {
+			addBaseMethods(method, superClass, baseMethods);
+		}
+		Class<?>[] interfaces = declaringClass.getInterfaces();
+		for (Class<?> implementedInterface : interfaces) {
+			addBaseMethods(method, implementedInterface, baseMethods);
+		}
+	}
+
+	private static void addBaseMethods(Method method, Class<?> superType, Set<Method> baseMethods) {
+		String methodName = method.getName();
+		Method[] declaredMethods = superType.getDeclaredMethods();
+		for (Method declaredMethod : declaredMethods) {
+			if (!Objects.equals(declaredMethod.getName(), methodName)) {
+				continue;
+			}
+			if (isOverriddenBy(declaredMethod, method)) {
+				if (baseMethods.add(declaredMethod)) {
+					addBaseMethods(declaredMethod, baseMethods);
+				}
+			}
+		}
+	}
+
 	public static boolean isOverriddenBy(Executable baseExecutable, Executable potentialOverride) {
 		Class<?> executableClass = baseExecutable.getClass();
 		if (!Objects.equals(executableClass, potentialOverride.getClass())) {
@@ -227,5 +255,29 @@ public class ReflectionUtils
 			clazz = clazz.getEnclosingClass();
 		}
 		return false;
+	}
+
+	public static boolean tryMakeAccessible(AccessibleObject accessibleObject) {
+		if (accessibleObject.isAccessible()) {
+			return true;
+		}
+		try {
+			accessibleObject.setAccessible(true);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	public static boolean tryMakeAccessible(GeneralizedField generalizedField) {
+		if (generalizedField.isAccessible()) {
+			return true;
+		}
+		try {
+			generalizedField.setAccessible(true);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
 	}
 }
