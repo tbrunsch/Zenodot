@@ -67,6 +67,9 @@ public class ObjectInfoProvider
 		if (fieldInfo.isFinal()) {
 			return null;
 		}
+		if (!ReflectionUtils.tryMakeAccessible(fieldInfo.getField())) {
+			return null;
+		}
 		return value -> {
 			try {
 				fieldInfo.set(contextObject, value.getObject());
