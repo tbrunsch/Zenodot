@@ -17,7 +17,16 @@ API changes:
   - `CodeCompletion`: Replaced method `getInsertionRange()` by the methods `getInsertionBegin()` and `getInsertionEnd()`.
   - `CodeCompletionClass.getClassInfo()` now returns a `ClassInfo` instead of a `Class` to avoid loading classes unnecessarily.
   - The method `ParserSettingsBuilder.customHierarchyRoot() has been removed`.
-  - The method `ParserSettingsBuilder.minimumAccessModifier()` has been replaced by the methods `ParserSettingsBuilder.minimumFieldAccessModifier()` and `ParserSettingsBuilder.minimumMethodAccessModifier()`. The method `ParserSettings.getMinimumAccessModifier()` has been replaced by the methods `ParserSettings.getMinimumFieldAccessModifier()` and `ParserSettings.getMinimumMethodAccessModifier()`. 
+  - The method `ParserSettingsBuilder.minimumAccessModifier()` has been replaced by the methods `ParserSettingsBuilder.minimumFieldAccessModifier()` and `ParserSettingsBuilder.minimumMethodAccessModifier()`. The method `ParserSettings.getMinimumAccessModifier()` has been replaced by the methods `ParserSettings.getMinimumFieldAccessModifier()` and `ParserSettings.getMinimumMethodAccessModifier()`.
+  - `GeneralizedField.setAccessible()` now throws a checked `AccessDeniedException` instead of an unchecked `SecurityException`.
+  - `ObjectInfoProvider.getFieldValueInfo()` now throws a checked `AccessDeniedException` instead of an unchecked `IllegalStateException`.
+  - `ObjectInfoProvider.getExecutableReturnInfo()` now throws a general `ReflectiveOperationException`.
+  - `ExecutableInfo.invoke()` now throws a general `ReflectiveOperationException`.
+  - `FieldInfo.get()` and `FieldInfo.set()` now throw an `AccessDeniedException` instead of an `IllegalAccessException`.
+
+Dependency changes:
+
+  - Added dependency to [ClassGraph](https://github.com/classgraph/classgraph)
 
 ## v0.3.0
 
