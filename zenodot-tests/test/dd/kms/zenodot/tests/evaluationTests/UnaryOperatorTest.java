@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -41,6 +42,10 @@ public class UnaryOperatorTest extends EvaluationTest
 			.addTest("!(false || true)",	false)
 			.addTest("!(true && false)",	true)
 			.addTest("~12345", 				~12345);
+
+		testBuilder
+			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
+			.addTest("-\"1234567\".length()",		-"1234567".length());
 
 		testBuilder
 			.addTestWithError("++f")

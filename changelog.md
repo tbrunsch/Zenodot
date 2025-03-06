@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.1
+
+  - Fixed a bug when evaluating an operator in mixed typing mode when one of the operands could not be evaluated without side effect. 
+
 ## v0.4.0
 
   - The string representation of class code completions now always contains the package and possibly the enclosing class, even if the class has been imported.

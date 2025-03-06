@@ -1,5 +1,6 @@
 package dd.kms.zenodot.tests.evaluationTests;
 
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTest;
 import dd.kms.zenodot.tests.evaluationTests.framework.EvaluationTestBuilder;
 import dd.kms.zenodot.tests.evaluationTests.framework.TestData;
@@ -89,6 +90,10 @@ public class BinaryOperatorTest extends EvaluationTest
 			.addTest("o instanceof String && ((String) o).length() == 3",				testInstance.o instanceof String && ((String) testInstance.o).length() == 3)
 			.addTest("\"abc\" instanceof String && Boolean.TRUE instanceof Boolean",	"abc" instanceof String && Boolean.TRUE instanceof Boolean)
 			.addTest("5 + \"3\" instanceof String",										5 + "3" instanceof String);
+
+		testBuilder
+			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
+			.addTest("\"1234567\".length() * 4",		"1234567".length() * 4);
 
 		return testBuilder.build();
 	}
