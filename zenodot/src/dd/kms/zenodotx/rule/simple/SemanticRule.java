@@ -5,7 +5,7 @@ import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.state.State;
 
-public interface SemanticRule<S extends State>
+public interface SemanticRule<S extends State<S>>
 {
 	void evaluate(String parsedString, S state) throws SemanticException, EvaluationException;
 

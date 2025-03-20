@@ -1,6 +1,15 @@
 package dd.kms.zenodotx.state;
 
-public interface State
+import dd.kms.zenodotx.java.ParserSettings;
+import dd.kms.zenodotx.exception.EvaluationException;
+import dd.kms.zenodotx.exception.SemanticException;
+import dd.kms.zenodotx.rule.PreparsedGrammar;
+import dd.kms.zenodotx.rule.simple.SemanticRule;
+
+public interface State<S extends State<S>>
 {
-	State copy();
+	void store();
+	void restore();
+	void evaluate(SemanticRule<S> rule, String text) throws EvaluationException, SemanticException;
+	PreparsedGrammar<S> getPreparsedGrammar();
 }

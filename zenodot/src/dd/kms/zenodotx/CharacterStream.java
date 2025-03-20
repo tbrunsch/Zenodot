@@ -23,8 +23,11 @@ public class CharacterStream
 
 	public Optional<String> readRegex(Pattern regex) {
 		Matcher matcher = regex.matcher(s.substring(position));
-		return matcher.matches()
-			? Optional.of(matcher.group())
-			: Optional.empty();
+		if (matcher.find() && matcher.start() == 0) {
+			String parsedString = matcher.group();
+			position += parsedString.length();
+			return Optional.of(parsedString);
+		}
+		return Optional.empty();
 	}
 }

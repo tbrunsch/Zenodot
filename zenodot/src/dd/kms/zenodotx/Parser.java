@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class Parser<S extends State>
+public class Parser<S extends State<S>>
 {
 	private final CharacterStream	characterStream;
 	private final int				eventPosition;
@@ -32,9 +32,9 @@ public class Parser<S extends State>
 		state = initialState;
 	}
 
-	public void parse(CompoundRule<S> rule) throws SyntaxException, SemanticException, EvaluationException {
+	public void parse(Rule<S> rule) throws SyntaxException, SemanticException, EvaluationException {
 		try {
-			parseCompoundRule(rule);
+			doParseRule(rule);
 		} catch (HandledEventException e) {
 			/*
 			 * Ok: reactions have been collected. This exception is only required to handle the control flow within
@@ -43,7 +43,7 @@ public class Parser<S extends State>
 		}
 	}
 
-	private void parseCompoundRule(CompoundRule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
+	private void doParseCompoundRule(CompoundRule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
 		if (rule instanceof SequenceRule) {
 			parseSequence((SequenceRule<S>) rule);
 		} else if (rule instanceof OrRule) {
@@ -61,14 +61,14 @@ public class Parser<S extends State>
 	private void parseSequence(SequenceRule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
 		List<Rule<S>> sequence = rule.getSequence();
 		int origPosition = characterStream.getPosition();
-		S origState = (S) state.copy();
+		state.store();
 		try {
 			for (Rule<S> element : sequence) {
-				parseRule(element);
+				doParseRule(element);
 			}
 		} catch (SyntaxException | SemanticException e) {
 			characterStream.setPosition(origPosition);
-			state = origState;
+			state.restore();
 			throw e;
 		}
 		/*
@@ -84,9 +84,9 @@ public class Parser<S extends State>
 		boolean handledEvent = false;
 		for (Rule<S> alternative : alternatives) {
 			int origPosition = characterStream.getPosition();
-			S origState = (S) state.copy();
+			state.store();
 			try {
-				parseRule(alternative);
+				doParseRule(alternative);
 				return;
 			} catch (SyntaxException e) {
 				// continue with next alternative
@@ -103,7 +103,7 @@ public class Parser<S extends State>
 			 * the correct alternative.
 			 */
 			characterStream.setPosition(origPosition);
-			state = origState;
+			state.restore();
 		}
 		if (handledEvent) {
 			throw new HandledEventException();
@@ -118,17 +118,21 @@ public class Parser<S extends State>
 		}
 	}
 
-	private void parseRepetition(RepetitionRule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
+	private void parseRepetition(RepetitionRule<S> rule) throws SemanticException, EvaluationException, HandledEventException {
 		Rule<S> ruleToRepeat = rule.getRuleToRepeat();
 		while (true) {
 			int origPosition = characterStream.getPosition();
-			S origState = (S) state.copy();
+			state.store();
 			try {
-				parseRule(ruleToRepeat);
-			} catch (SyntaxException | SemanticException e) {
+				doParseRule(ruleToRepeat);
+			} catch (SyntaxException e) {
 				characterStream.setPosition(origPosition);
-				state = origState;
+				state.restore();
 				return;
+			} catch (SemanticException e) {
+				characterStream.setPosition(origPosition);
+				state.restore();
+				throw e;
 			}
 			/*
 			 * HandledEventException and EvaluationException are propagated directly because it was correct
@@ -137,13 +141,13 @@ public class Parser<S extends State>
 		}
 	}
 
-	private void parseRule(Rule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
+	private void doParseRule(Rule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
 		if (rule instanceof CompoundRule) {
-			parseCompoundRule((CompoundRule<S>) rule);
+			doParseCompoundRule((CompoundRule<S>) rule);
 		} else if (rule instanceof SimpleRule) {
 			parseSimpleRule((SimpleRule<S>) rule);
 		} else {
-			throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getClass().getName()
+			throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getName()
 				+ ". Only " + CompoundRule.class.getName() + " and " + SimpleRule.class.getName() + " are supported.");
 		}
 	}
@@ -170,7 +174,7 @@ public class Parser<S extends State>
 			throw new HandledEventException();
 		}
 
-		semanticRule.evaluate(parsedString, state);
+		state.evaluate(semanticRule, parsedString);
 	}
 
 	/**
