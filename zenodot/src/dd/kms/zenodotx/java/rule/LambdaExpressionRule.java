@@ -1,5 +1,7 @@
 package dd.kms.zenodotx.java.rule;
 
-public class LambdaExpressionRule extends UnimplementedRule
+import dd.kms.zenodotx.java.result.InstanceParseResult;
+
+public class LambdaExpressionRule extends UnimplementedRule<LambdaParameterInfo, InstanceParseResult>
 {
 }

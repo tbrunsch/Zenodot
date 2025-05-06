@@ -1,5 +1,5 @@
 package dd.kms.zenodotx.java.rule;
 
-public class LambdaParameterNameRule extends UnimplementedRule
+public class LambdaParameterNameRule extends UnimplementedRule<LambdaParameterInfo, LambdaParameterInfo>
 {
 }

@@ -6,153 +6,39 @@ import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;
 import dd.kms.zenodotx.rule.Rule;
 import dd.kms.zenodotx.rule.compound.CompoundRule;
-import dd.kms.zenodotx.rule.compound.OrRule;
-import dd.kms.zenodotx.rule.compound.RepetitionRule;
-import dd.kms.zenodotx.rule.compound.SequenceRule;
 import dd.kms.zenodotx.rule.simple.SemanticRule;
 import dd.kms.zenodotx.rule.simple.SimpleRule;
 import dd.kms.zenodotx.rule.simple.SyntaxRule;
-import dd.kms.zenodotx.state.State;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.regex.Pattern;
 
-public class Parser<S extends State<S>>
+public class Parser<S>
 {
 	private final CharacterStream	characterStream;
 	private final int				eventPosition;
 	private final Event				event;
-	private S						state;
+	private final Deque<Integer>	characterStreamPositions	= new ArrayDeque<>();
 
-	public Parser(String text, int eventPosition, Event event, S initialState) {
+	public Parser(String text, int eventPosition, Event event) {
 		characterStream = new CharacterStream(text);
 		this.eventPosition = eventPosition;
 		this.event = event;
-		state = initialState;
 	}
 
-	public void parse(Rule<S> rule) throws SyntaxException, SemanticException, EvaluationException {
-		try {
-			doParseRule(rule);
-		} catch (HandledEventException e) {
-			/*
-			 * Ok: reactions have been collected. This exception is only required to handle the control flow within
-			 * the parser. It is not meant to be propagated to the outside.
-			 */
-		}
-	}
-
-	private void doParseCompoundRule(CompoundRule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
-		if (rule instanceof SequenceRule) {
-			parseSequence((SequenceRule<S>) rule);
-		} else if (rule instanceof OrRule) {
-			parseOr((OrRule<S>) rule);
-		} else if (rule instanceof RepetitionRule) {
-			parseRepetition((RepetitionRule<S>) rule);
-		} else {
-			throw new IllegalStateException("Cannot parse element rule of type " + rule.getClass().getName()
-				+ ". Only " + SequenceRule.class.getName() + " and "
-				+ OrRule.class.getName() + " and "
-				+ RepetitionRule.class.getName() + " are supported.");
-		}
-	}
-
-	private void parseSequence(SequenceRule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
-		List<Rule<S>> sequence = rule.getSequence();
-		int origPosition = characterStream.getPosition();
-		state.store();
-		try {
-			for (Rule<S> element : sequence) {
-				doParseRule(element);
-			}
-		} catch (SyntaxException | SemanticException e) {
-			characterStream.setPosition(origPosition);
-			state.restore();
-			throw e;
-		}
-		/*
-		 * HandledEventException and EvaluationException are propagated directly because it was correct
-		 * to parse this rule again, but now we cannot proceed.
-		 */
-	}
-
-	private void parseOr(OrRule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
-		List<Rule<S>> alternatives = rule.getAlternatives();
-		List<SyntaxException> syntaxExceptions = new ArrayList<>();
-		List<SemanticException> semanticExceptions = new ArrayList<>();
-		boolean handledEvent = false;
-		for (Rule<S> alternative : alternatives) {
-			int origPosition = characterStream.getPosition();
-			state.store();
-			try {
-				doParseRule(alternative);
-				return;
-			} catch (SyntaxException e) {
-				// continue with next alternative
-				syntaxExceptions.add(e);
-			} catch (SemanticException e) {
-				// continue with next alternative
-				semanticExceptions.add(e);
-			} catch (HandledEventException e) {
-				// continue with next alternative
-				handledEvent = true;
-			}
-			/*
-			 * An EvaluationException is directly propagated to the caller because it means that we have found
-			 * the correct alternative.
-			 */
-			characterStream.setPosition(origPosition);
-			state.restore();
-		}
-		if (handledEvent) {
-			throw new HandledEventException();
-		} else if (!semanticExceptions.isEmpty()) {
-			// TODO: Merge them
-			throw semanticExceptions.get(0);
-		} else if (!syntaxExceptions.isEmpty()) {
-			// TODO: Merge them
-			throw syntaxExceptions.get(0);
-		} else {
-			throw new IllegalStateException("Or rule does not have any alternatives");
-		}
-	}
-
-	private void parseRepetition(RepetitionRule<S> rule) throws SemanticException, EvaluationException, HandledEventException {
-		Rule<S> ruleToRepeat = rule.getRuleToRepeat();
-		while (true) {
-			int origPosition = characterStream.getPosition();
-			state.store();
-			try {
-				doParseRule(ruleToRepeat);
-			} catch (SyntaxException e) {
-				characterStream.setPosition(origPosition);
-				state.restore();
-				return;
-			} catch (SemanticException e) {
-				characterStream.setPosition(origPosition);
-				state.restore();
-				throw e;
-			}
-			/*
-			 * HandledEventException and EvaluationException are propagated directly because it was correct
-			 * to parse this rule again, but now we cannot proceed.
-			 */
-		}
-	}
-
-	private void doParseRule(Rule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
+	public <I, O> O parse(Rule<I, O, S> rule, I input, S settings) throws SyntaxException, SemanticException, EvaluationException, EventResultException {
 		if (rule instanceof CompoundRule) {
-			doParseCompoundRule((CompoundRule<S>) rule);
+			return ((CompoundRule<I, O, S>) rule).parse(input, settings, this);
 		} else if (rule instanceof SimpleRule) {
-			parseSimpleRule((SimpleRule<S>) rule);
+			return parseSimpleRule((SimpleRule<I, O, S>) rule, input, settings);
 		} else {
 			throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getName()
 				+ ". Only " + CompoundRule.class.getName() + " and " + SimpleRule.class.getName() + " are supported.");
 		}
 	}
 
-	private void parseSimpleRule(SimpleRule<S> rule) throws SyntaxException, SemanticException, EvaluationException, HandledEventException {
+	private <I, O> O parseSimpleRule(SimpleRule<I, O, S> rule, I input, S settings) throws SyntaxException, SemanticException, EvaluationException, EventResultException {
 		SyntaxRule syntaxRule = rule.getSyntaxRule();
 		// TODO: Whitespace handling
 		// TODO: Not clear whether every case can be handled by a regex. What if code completion is
@@ -164,23 +50,33 @@ public class Parser<S extends State<S>>
 		String parsedString = characterStream.readRegex(regex).orElseThrow(SyntaxException::new);
 		int positionAfterRegex = characterStream.getPosition();
 
-		SemanticRule<S> semanticRule = rule.getSemanticRule();
+		SemanticRule<I, O, S> semanticRule = rule.getSemanticRule();
 
 		// for code completion and method overload proposal
 		if (positionBeforeRegex <= eventPosition && eventPosition < positionAfterRegex) {
 			// TODO: Configure which string the event (e.g. code completion) should be based on: The full parsed
 			//       string or the parsed string until the event position
-			semanticRule.handleEvent(event, parsedString, state);
-			throw new HandledEventException();
+			semanticRule.handleEvent(event, input, parsedString, settings);
+			throw new EventResultException();
 		}
 
-		state.evaluate(semanticRule, parsedString);
+		return semanticRule.evaluate(input, parsedString, settings);
+	}
+
+	public void storeState() {
+		characterStreamPositions.push(characterStream.getPosition());
+	}
+
+	public void restoreState() {
+		characterStream.setPosition(characterStreamPositions.pop());
 	}
 
 	/**
 	 * Internal exception to indicate that an event (e.g. code completion) has handled. This exception is required
 	 * to give callers a chance to react accordingly: Sequence parsing will stop, while Or parsing will try another
 	 * branch to collect event "reactions" (e.g. code completions) from different branches.
+	 *
+	 * TODO: Make top-level class
  	 */
-	private static class HandledEventException extends Exception {}
+	public static class EventResultException extends Exception {}
 }

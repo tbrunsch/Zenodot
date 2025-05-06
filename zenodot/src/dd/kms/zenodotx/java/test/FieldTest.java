@@ -2,38 +2,33 @@ package dd.kms.zenodotx.java.test;
 
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.settings.EvaluationMode;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.Parser;
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;
-import dd.kms.zenodotx.java.JavaState;
-import dd.kms.zenodotx.java.ParserSettings;
+import dd.kms.zenodotx.java.JavaSettings;
+import dd.kms.zenodotx.java.result.InstanceParseResult;
 import dd.kms.zenodotx.java.rule.JavaRuleSet;
-import dd.kms.zenodotx.rule.PreparsedGrammar;
 import dd.kms.zenodotx.rule.Rule;
 
 public class FieldTest
 {
-	public static void main(String[] args) throws SyntaxException, EvaluationException, SemanticException {
+	public static void main(String[] args) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
 		TestClass testInstance = new TestClass();
 
 		String expression = "o.o.l";
 
-		JavaState state = new JavaState(testInstance);
-		state.setParserSettings(new ParserSettings(EvaluationMode.MIXED, AccessModifier.PRIVATE));
+		JavaSettings settings = new JavaSettings(InfoProvider.createObjectInfo(testInstance), EvaluationMode.MIXED, AccessModifier.PRIVATE, AccessModifier.PROTECTED);
 
 		JavaRuleSet javaRuleSet = new JavaRuleSet();
-		Rule<JavaState> fullExpression = javaRuleSet.getFullExpression();
-		Parser<JavaState> parser = new Parser<>(expression, -1, null, state);
-		parser.parse(fullExpression);
-
-		PreparsedGrammar<JavaState> preparsedGrammar = state.getPreparsedGrammar();
-		state = new JavaState(testInstance);
-		state.setParserSettings(new ParserSettings(EvaluationMode.MIXED, AccessModifier.PRIVATE));
-		preparsedGrammar.evaluate(state);
-
-		Object o = state.getEvaluatedObject();
-		System.out.println(o);
+		Rule<Void, InstanceParseResult, JavaSettings> fullExpression = javaRuleSet.getFullExpression();
+		Parser<JavaSettings> parser = new Parser<>(expression, -1, null);
+		InstanceParseResult result = parser.parse(fullExpression, null, settings);
+		ObjectInfo resultInfo = result.getEvaluatedResult();
+		System.out.println(resultInfo.getObject());
+		System.out.println(resultInfo.getDeclaredType());
 	}
 
 	private static class TestClass

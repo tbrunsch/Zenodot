@@ -1,13 +1,34 @@
 package dd.kms.zenodotx.rule.compound;
 
+import dd.kms.zenodotx.Parser;
+import dd.kms.zenodotx.exception.EvaluationException;
+import dd.kms.zenodotx.exception.SemanticException;
+import dd.kms.zenodotx.exception.SyntaxException;
+import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.Rule;
-import dd.kms.zenodotx.rule.simple.SimpleRule;
-import dd.kms.zenodotx.state.State;
 
-public interface RepetitionRule<S extends State<S>> extends CompoundRule<S>
+public class RepetitionRule<IO, S> extends AbstractRule<IO, IO, S> implements CompoundRule<IO, IO, S>
 {
-	Rule<S> getRuleToRepeat();
+	private final Rule<IO, IO, S> ruleToRepeat;
+
+	public RepetitionRule(Rule<IO, IO, S> ruleToRepeat) {
+		this.ruleToRepeat = ruleToRepeat;
+	}
 
 	@Override
-	RepetitionRule<S> replace(SimpleRule<S> oldRule, SimpleRule<S> newRule);
+	public IO parse(IO input, S settings, Parser<S> parser) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
+		IO output = input;
+		while (true) {
+			parser.storeState();
+			try {
+				output = parser.parse(ruleToRepeat, output, settings);
+			} catch (SyntaxException e) {
+				parser.restoreState();
+				return output;
+			} catch (SemanticException e) {
+				parser.restoreState();
+				throw e;
+			}
+		}
+	}
 }

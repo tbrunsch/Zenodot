@@ -1,8 +1,10 @@
 package dd.kms.zenodotx.java.rule;
 
-import dd.kms.zenodotx.java.JavaState;
+import dd.kms.zenodotx.java.JavaSettings;
+import dd.kms.zenodotx.java.result.InstanceParseResult;
 import dd.kms.zenodotx.rule.Rule;
 import dd.kms.zenodotx.rule.Rules;
+import dd.kms.zenodotx.rule.compound.DelegatingRule;
 import dd.kms.zenodotx.rule.compound.OrRule;
 import dd.kms.zenodotx.rule.simple.SimpleRule;
 
@@ -10,244 +12,193 @@ import static dd.kms.zenodotx.rule.Rules.*;
 
 public class JavaRuleSet
 {
-	private final Rule<JavaState>	endOfInput				= new EndOfInputRule();
-	private final OrRule<JavaState>	expression				= or("Expression");
-	private final Rule<JavaState>	fullExpression			= sequence("Expression until end of input", expression, endOfInput);
-	private final Rule<JavaState>	parenthesizedExpression	= 	sequence(
-																	"Expression in parentheses",
-																	character('('),
-																	expression,
-																	character(')')
-																);
+	private final OrRule<Void, InstanceParseResult, JavaSettings>	expression			= Rules.<Void, InstanceParseResult, JavaSettings>or()
+																							.name("Expression");
+	private final Rule<Void, InstanceParseResult, JavaSettings>		fullExpression		= expression
+																							.then(endOfInput())
+																							.name("Full expression");
+	private final Rule<Void, InstanceParseResult, JavaSettings>		parenthesizedExpression
+																		= Rules.<Void, JavaSettings>character('(')
+																			.then(expression)
+																			.then(')')
+																			.name("Expression in parentheses");
 
 	// region Literals
-	private final Rule<JavaState>	integerLiteral			=	new IntegerLiteralRule();
-	private final Rule<JavaState>	floatingPointLiteral	=	new FloatingPointLiteralRule();
-	private final Rule<JavaState>	booleanLiteral			=	new BooleanLiteralRule();
-	private final Rule<JavaState>	characterLiteral		=	new CharacterLiteralRule();
-	private final Rule<JavaState>	stringLiteral			=	new StringLiteralRule();
-	private final Rule<JavaState>	nullLiteral				=	new NullLiteralRule();
-	private final OrRule<JavaState>	literal					=	or(
-																	"Literal",
-																	integerLiteral,
-																	floatingPointLiteral,
-																	booleanLiteral,
-																	characterLiteral,
-																	stringLiteral,
-																	nullLiteral
-																);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		integerLiteral			=	new IntegerLiteralRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		floatingPointLiteral	=	new FloatingPointLiteralRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		booleanLiteral			=	new BooleanLiteralRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		characterLiteral		=	new CharacterLiteralRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		stringLiteral			=	new StringLiteralRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		nullLiteral				=	new NullLiteralRule();
+	private final OrRule<Void, InstanceParseResult, JavaSettings>	literal					=	or(
+																									integerLiteral,
+																									floatingPointLiteral,
+																									booleanLiteral,
+																									characterLiteral,
+																									stringLiteral,
+																									nullLiteral
+																								).name("Literal");
 	// endregion
 
 	// region Packages
-	private final Rule<JavaState>	rootPackage	=	new RootPackageRule();
-	private final Rule<JavaState>	subPackage	=	new SubPackageRule();
-	private final Rule<JavaState>	packageRule	=	sequence(
-														"Package",
-														rootPackage,
-														repeat(
-															sequence(
-																".SubPackage",
-																character('.'),
-																subPackage
-															)
-														)
-													);
+	private final Rule<Void, Package, JavaSettings>		rootPackage	=	new RootPackageRule();
+	private final Rule<Package, Package, JavaSettings>	subPackage	=	new SubPackageRule();
+	private final Rule<Void, Package, JavaSettings>		packageRule	=	rootPackage
+																			.then(
+																				repeat(
+																					Rules.<Package, JavaSettings>character('.')
+																					.then(subPackage)
+																					.name(".SubPackage")
+																				)
+																			).name("Package");
 	// endregion
 
 	// region Classes
-	private final Rule<JavaState>	qualifiedTopLevelClass	=	new QualifiedTopLevelClassRule();
-	private final Rule<JavaState>	nestedClass				=	new NestedClassRule();
-	private final Rule<JavaState>	importedClass			=	new ImportedClassRule();
-	private final Rule<JavaState>	classRule				=	sequence(
-																	"Class",
-																	or(
-																		"Qualified or imported class",
-																		sequence(
-																			"Qualified class",
-																			packageRule,
-																			character('.'),
-																			qualifiedTopLevelClass
-																		),
-																		importedClass
-																	),
-																	repeat(
-																		sequence(
-																			".NestedClass",
-																			character('.'),
-																			nestedClass
-																		)
-																	)
-																);
+	private final Rule<Package, Class<?>, JavaSettings>		qualifiedTopLevelClass	=	new QualifiedTopLevelClassRule();
+	private final Rule<Class<?>, Class<?>, JavaSettings>	nestedClass				=	new NestedClassRule();
+	private final Rule<Void, Class<?>, JavaSettings>		importedClass			=	new ImportedClassRule();
+	private final Rule<Void, Class<?>, JavaSettings>		classRule				=	or(
+																							packageRule.then('.').then(qualifiedTopLevelClass),
+																							importedClass
+																						).name("Qualified or imported class")
+																						.then(
+																							repeat(
+																								Rules.<Class<?>, JavaSettings>character('.')
+																								.then(nestedClass)
+																								.name(".NestedClass")
+																							)
+																						).name("Class");
 	// endregion
 
 	// region Fields and Methods
-	private final Rule<JavaState>		pushThis			=	action(JavaState::pushThis);
+	private final AbstractFieldRule<InstanceParseResult>	instanceField	=	new InstanceFieldRule();
+	private final AbstractFieldRule<Void>					fieldOfThis		=	new FieldOfThisRule();
+	private final AbstractFieldRule<Class<?>>				classField 		=	new ClassFieldRule();
 
-	private final FieldRule				field				=	new FieldRule(false);
-	private final Rule<JavaState>		fieldOfThis			=	sequence("Field of this", pushThis, field);
-	private final FieldRule				staticField			=	new FieldRule(true);
+	private final Rule<ExecutableParseInfo, ExecutableParseInfo, JavaSettings>	methodParameter	= new MethodParameterRule(expression);
+	private final Rule<ExecutableParseInfo, InstanceParseResult, JavaSettings>	invokeMethod	= new InvokeMethodRule();
 
-	private final MethodParameterRule	methodParameter		=	new MethodParameterRule();
-
-	private final MethodNameRule		methodName			=	new MethodNameRule();
-	private final StaticMethodNameRule	staticMethodName	=	new StaticMethodNameRule();
-	private final Rule<JavaState>		method				=	sequence(
-																	"Method",
-																	methodName,
-																	character('('),
-																	or(
-																		"Parameter list",
-																		empty(),
-																		sequence(
-																			"Non-empty parameter list",
-																			methodParameter,
-																			repeat(
-																				sequence(
-																					"Next parameter",
-																					character(','),
-																					methodParameter)
-																				)
-																			)
-																	),
-																	character(')'),
-																	action(JavaRuleSetUtils::executeMethod)
-																);
-	private final Rule<JavaState>		staticMethod		=	Rules.replaceRule(method, methodName, staticMethodName);
-	private final Rule<JavaState>		methodOfThis		=	sequence("Method of this", pushThis, method);
+	private final AbstractMethodNameRule<InstanceParseResult>	instanceMethodName	= new InstanceMethodNameRule();
+	private final AbstractMethodNameRule<Void> 					methodNameOfThis	= new MethodNameOfThisRule();
+	private final AbstractMethodNameRule<Class<?>>				classMethodName		= new ClassMethodNameRule();
+	private final Rule<InstanceParseResult, InstanceParseResult, JavaSettings>	instanceMethod		= methodRule(instanceMethodName);
+	private final Rule<Void, InstanceParseResult, JavaSettings>					methodOfThis		= methodRule(methodNameOfThis);
+	private final Rule<Class<?>, InstanceParseResult, JavaSettings>				classMethod			= methodRule(classMethodName);
 	// endregion
 
 	// region Constructor
-	private final ConstructorParameterRule	constructorParameter	=	new ConstructorParameterRule();
-	private final Rule<JavaState>			constructor				=	sequence(
-																			"Constructor call",
-																			keyword("new"),
-																			space(),
-																			classRule,
-																			character('('),
-																			or(
-																				"Parameter list",
-																				empty(),
-																				sequence(
-																					"Non-empty parameter list",
-																					constructorParameter,
-																					repeat(
-																						sequence(
-																							"Next parameter",
-																							character(','),
-																							constructorParameter
-																						)
-																					)
-																				)
-																			),
-																			character(')'),
-																			action(JavaRuleSetUtils::invokeConstructor)
-																		);
+	private final Rule<Void, ConstructorParseInfo, JavaSettings>				constructorClass			=	new ConstructorClassRule(classRule);
+	private final ConstructorParameterRule										constructorParameter		=	new ConstructorParameterRule(expression);
+	private final Rule<ConstructorParseInfo, InstanceParseResult, JavaSettings>	invokeInstanceConstructor	= new InvokeInstanceConstructorRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		constructor				=	JavaRuleSet.<Void>keyword("new")
+																								.then(space())
+																								.then(constructorClass)
+																								.then(
+																									or(
+																										Rules.<ConstructorParseInfo, JavaSettings>character('(')
+																											.then(
+																												or(
+																													empty(),
+																													constructorParameter
+																														.then(
+																															repeat(
+																																Rules.<ConstructorParseInfo, JavaSettings>character(',')
+																																	.then(constructorParameter)
+																																	.name("Next parameter")
+																															).name("Further parameters")
+																														).name("Non-empty parameter list")
+																												).name("Parameter list")
+																											).then(')')
+																											.then(invokeInstanceConstructor)
+																											.name("Instance constructor")
+																											// TODO: Add array constructor
+																										)
+																								);
 	// endregion
 
 	// region Lambda
-	private final Rule<JavaState>			lambdaParameterName			=	new LambdaParameterNameRule();
-	private final Rule<JavaState>			lambdaParameterDefinition	=	or(
-																				"Lambda parameter list definition",
-																				lambdaParameterName,
-																				sequence(
-																					"Lambda parameter list definition in parentheses",
-																					character('('),
-																					or(
-																						"Lambda parameter list",
-																						empty(),
-																						sequence(
-																							"Non-empty lambda parameter list",
-																							lambdaParameterName,
-																							repeat(
-																								sequence(
-																									"Next lambda parameter",
-																									character(','),
-																									lambdaParameterName
-																								)
-																							)
-																						)
-																					),
-																					character(')')
-																				)
-																			);
-	private final Rule<JavaState>			lambdaExpression			= new LambdaExpressionRule();
-	private final Rule<JavaState>			lambda						=	sequence(
-																				"Lambda",
-																				action(JavaRuleSetUtils::beginParsingLambda),
-																				lambdaParameterDefinition,
-																				character('-'),
-																				character('>'),
-																				lambdaExpression
-																			);
+	private final Rule<Void, LambdaParameterInfo, JavaSettings>					beginLambda 				=	new BeginLambdaRule();
+	private final Rule<LambdaParameterInfo, LambdaParameterInfo, JavaSettings>	lambdaParameterName			=	new LambdaParameterNameRule();
+	private final Rule<Void, LambdaParameterInfo, JavaSettings>					lambdaParameterDefinition	=	beginLambda
+																								.then(
+																									or(
+																										lambdaParameterName,
+																										Rules.<LambdaParameterInfo, JavaSettings>character('(')
+																										.then(
+																											or(
+																												empty(),
+																												lambdaParameterName
+																												.then(
+																													repeat(
+																														Rules.<LambdaParameterInfo, JavaSettings>character('(')
+																														.then(lambdaParameterName)
+																														.name("Next lambda parameter")
+																													).name("Further parameters")
+																												).name("Non-empty lambda parameter list")
+																											).name("Lambda parameter list")
+																										).then(')')
+																									).name("Lambda parameter definition")
+																								);
+	private final Rule<LambdaParameterInfo, InstanceParseResult, JavaSettings>	lambdaExpression	= new LambdaExpressionRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>					lambda				= lambdaParameterDefinition
+																										.then('-')
+																										.then('>')
+																										.then(lambdaExpression)
+																										.name("Lambda");
 	// endregion
 
-	private final SimpleRule<JavaState>		variable		=	 new VariableRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>	variable	=	 new VariableRule();
 
-	private final Rule<JavaState>			arrayIndex		= 	sequence(
-																	"Array index",
-																	expression,
-																	action(s -> JavaRuleSetUtils.checkType(s, int.class))
-																);
-	private final OrRule<JavaState>			classTail		= 	or(
-																	"Class tail",
-																	sequence(
-																		character('.'),
-																		or(
-																			"Static field or method access",
-																			staticField,
-																			staticMethod
-																		)
-																	)
-																);
-	private final OrRule<JavaState>			objectTail		=	or(
-																	"Object tail",
-																	sequence(
-																		".Field or .Method",
-																		character('.'),
-																		or(
-																			"Field or method access",
-																			field,
-																			method
-																		)
-																	),
-																	sequence(
-																		"Array element access",
-																		action(JavaRuleSetUtils::checkArrayType),
-																		character('['),
-																		arrayIndex,
-																		character(']'),
-																		action(JavaRuleSetUtils::accessArrayElement)
-																	)
-																);
+	private final Rule<InstanceParseResult, ArrayAccessInfo, JavaSettings>	arrayIndex			= 	new ArrayIndexRule(expression);
+	private final Rule<ArrayAccessInfo, InstanceParseResult, JavaSettings>	accessArrayElement	=	new AccessArrayElementRule();
+	private final OrRule<Class<?>, InstanceParseResult, JavaSettings>	classTail	= 	or(
+																							Rules.<Class<?>, JavaSettings>character('.')
+																							.then(
+																								or(
+																									classField,
+																									classMethod
+																								).name("Static field or method access")
+																							).name("Class tail")
+																						);
+	private final OrRule<InstanceParseResult, InstanceParseResult, JavaSettings>	objectTail	=	or(
+																										Rules.<InstanceParseResult, JavaSettings>character('.')
+																										.then(
+																											or(
+																												instanceField,
+																												instanceMethod
+																											).name(".field or .method()")
+																										),
+																										Rules.<InstanceParseResult, JavaSettings>character('[')
+																										.then(arrayIndex)
+																										.then(']')
+																										.then(accessArrayElement)
+																										.name("Array element access")
+																									).name("Object tail");
 
-	private final OrRule<JavaState>			simpleExpression	=	or("Simple expression (without binary operators)");
-	private final Rule<JavaState>			castExpression		=	sequence(
-																		"Class cast",
-																		character('('),
-																		classRule,
-																		character(')'),
-																		simpleExpression,
-																		action(JavaRuleSetUtils::performCast)
-																	);
-	private final OrRule<JavaState>	simpleExpressionWithTailPotential		=	or(
-																					"Simple expressions that may have an object tail",
-																					literal,
-																					variable,
-																					fieldOfThis,
-																					methodOfThis,
-																					constructor,
-																					parenthesizedExpression,
-																					sequence(
-																						"Class.Tail",
-																						classRule,
-																						classTail
-																					)
-																				);
-	private final OrRule<JavaState>	simpleExpressionWithoutTailPotential	=	or(
-																					"Simple expressions that may not have an object tail",
-																					castExpression,
-																					lambda
-																				);
+	private final OrRule<Void, InstanceParseResult, JavaSettings>	simpleExpression	= Rules.<Void, InstanceParseResult, JavaSettings>or()
+																							.name("Simple expression (without binary operators)");
+	private final Rule<Class<?>, InstanceParseResult, JavaSettings>	classCastRule		= new ClassCastRule(simpleExpression);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		castExpression		=  Rules.<Void, JavaSettings>character('(')
+																							.then(classRule)
+																							.then(')')
+																							.then(classCastRule)
+																							.name("Class cast");
+	
+	private final OrRule<Void, InstanceParseResult, JavaSettings>	simpleExpressionWithTailPotential	=	or(
+																												literal,
+																												variable,
+																												fieldOfThis,
+																												methodOfThis,
+																												constructor,
+																												parenthesizedExpression,
+																												classRule
+																													.then(classTail)
+																													.name("Class.Tail")
+																											).name("Simple expressions that may have an object tail");
+	private final OrRule<Void, InstanceParseResult, JavaSettings>	simpleExpressionWithoutTailPotential	=	or(
+																													castExpression,
+																													lambda
+																												).name("Simple expressions that may not have an object tail");
 
 	// region Binary and ternary operators
 
@@ -256,45 +207,41 @@ public class JavaRuleSet
 	private final BinaryOperatorParseRule		operator11				= new BinaryOperatorParseRule();	// +, -  (left to right)
 	private final BinaryOperatorParseRule		operator10				= new BinaryOperatorParseRule();	// <<, >>, >>>  (left to right)
 	private final BinaryOperatorParseRule		operator9				= new BinaryOperatorParseRule();	// <, <=, >, >=  (left to right)
+	private final Rule<InstanceParseResult, InstanceParseResult, JavaSettings>	instanceofCheck			= new InstanceOfRule(classRule);
 	private final BinaryOperatorParseRule		operator8				= new BinaryOperatorParseRule();	// ==, != (left to right)
 	private final BinaryOperatorParseRule		operator7				= new BinaryOperatorParseRule();	// & (left to right)
 	private final BinaryOperatorParseRule		operator6				= new BinaryOperatorParseRule();	// ^ (left to right)
 	private final BinaryOperatorParseRule		operator5				= new BinaryOperatorParseRule();	// | (left to right)
 	private final BinaryOperatorParseRule		operator4				= new BinaryOperatorParseRule();	// && (left to right)
 	private final BinaryOperatorParseRule		operator3				= new BinaryOperatorParseRule();	// || (left to right)
-	private final TernaryOperatorParseRule1		operator2_1				= new TernaryOperatorParseRule1();	// ?
-	private final TernaryOperatorParseRule2		operator2_2				= new TernaryOperatorParseRule2();	// : (right-to-left)
 	private final BinaryOperatorParseRule		operator1				= new BinaryOperatorParseRule();	// =, +=, -=, *=, /=, %=, &=, ^=, |=, <<=, >>=, >>>= (right-to-left)
-	private final BinaryOperatorExecuteRule		executeBinaryOperator	= new BinaryOperatorExecuteRule();
-	private final TernaryOperatorExecuteRule	executeTernaryOperator	= new TernaryOperatorExecuteRule();
 
-	private final Rule<JavaState>	expression12	=	binaryOperatorLeftToRight(simpleExpression, operator12);
-	private final Rule<JavaState>	expression11	=	binaryOperatorLeftToRight(expression12, operator11);
-	private final Rule<JavaState>	expression10	=	binaryOperatorLeftToRight(expression11, operator10);
-	private final Rule<JavaState>	expression9		=	or(
-															binaryOperatorLeftToRight(expression10, operator9),
-															sequence(
-																expression10,
-																keyword("instanceof"),
-																space(),
-																classRule
-															)
-														);
-	private final Rule<JavaState>	expression8		=	binaryOperatorLeftToRight(expression9, operator8);
-	private final Rule<JavaState>	expression7		=	binaryOperatorLeftToRight(expression8, operator7);
-	private final Rule<JavaState>	expression6		=	binaryOperatorLeftToRight(expression7, operator6);
-	private final Rule<JavaState>	expression5		=	binaryOperatorLeftToRight(expression6, operator5);
-	private final Rule<JavaState>	expression4		=	binaryOperatorLeftToRight(expression5, operator4);
-	private final Rule<JavaState>	expression3		=	binaryOperatorLeftToRight(expression4, operator3);
-	private final Rule<JavaState>	expression2		=	ternaryOperatorRightToLeft(expression3, operator2_1, operator2_2);
-	private final Rule<JavaState>	expression1		=	binaryOperatorRightToLeft(expression2, operator1);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression12	=	binaryOperatorLeftToRight(simpleExpression, operator12);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression11	=	binaryOperatorLeftToRight(expression12, operator11);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression10	=	binaryOperatorLeftToRight(expression11, operator10);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression9		=	or(
+																						binaryOperatorLeftToRight(expression10, operator9),
+																						expression10
+																							.then(keyword("instanceof"))
+																							.then(space())
+																							.then(instanceofCheck)
+																					);
+
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression8		=	binaryOperatorLeftToRight(expression9, operator8);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression7		=	binaryOperatorLeftToRight(expression8, operator7);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression6		=	binaryOperatorLeftToRight(expression7, operator6);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression5		=	binaryOperatorLeftToRight(expression6, operator5);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression4		=	binaryOperatorLeftToRight(expression5, operator4);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression3		=	binaryOperatorLeftToRight(expression4, operator3);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression2		=	conditionalOperator(expression3);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression1		=	binaryOperatorRightToLeft(expression2, operator1);
 	// endregion
 
 	// TODO: Support unary prefix operator
 	public JavaRuleSet() {
 		simpleExpression.setAlternatives(
-			sequence(
-				simpleExpressionWithTailPotential,
+			simpleExpressionWithTailPotential
+			.then(
 				repeat(objectTail)
 			),
 			simpleExpressionWithoutTailPotential
@@ -303,56 +250,73 @@ public class JavaRuleSet
 		expression.setAlternatives(expression1);
 	}
 
-	public Rule<JavaState> getFullExpression() {
+	public Rule<Void, InstanceParseResult, JavaSettings> getFullExpression() {
 		return fullExpression;
 	}
 
-	private static SimpleRule<JavaState> keyword(String keyword) {
-		return new KeywordRule(keyword);
+	private static <IO> Rule<IO, IO, JavaSettings> endOfInput() {
+		return new EndOfInputRule<IO>();
 	}
 
-	private Rule<JavaState> binaryOperatorLeftToRight(Rule<JavaState> subExpression, Rule<JavaState> operator) {
-		// TODO: Consider lazy evaluation
-		return sequence(
-			"Expression op expression (left to right)",
-			subExpression,
-			repeat(
-				sequence(
-					operator,
-					subExpression,
-					executeBinaryOperator
+	private static <IO> SimpleRule<IO, IO, JavaSettings> keyword(String keyword) {
+		return new KeywordRule<>(keyword);
+	}
+
+	private <C> Rule<C, InstanceParseResult, JavaSettings> methodRule(Rule<C, ExecutableParseInfo, JavaSettings> methodName) {
+		return methodName
+			.then('(')
+			.then(
+				or(
+					empty(),
+					methodParameter
+						.then(
+							repeat(
+								Rules.<ExecutableParseInfo, JavaSettings>character(',')
+									.then(methodParameter)
+									.name("Next parameter")
+							).name("Further parameters")
+						).name("Non-empty parameter list")
+				).name("Parameter list")
+			).then(')')
+			.then(invokeMethod)
+			.name("Method");
+	}
+
+	private Rule<Void, InstanceParseResult, JavaSettings> binaryOperatorLeftToRight(Rule<Void, InstanceParseResult, JavaSettings> subExpression, Rule<Void, String, JavaSettings> operator) {
+		BinaryOperatorExecuteRule binaryOperatorExecuteRule = new BinaryOperatorExecuteRule(operator, subExpression);
+		return subExpression
+			.then(repeat(binaryOperatorExecuteRule))
+			.name("Expression op expression (left to right)");
+	}
+
+	private Rule<Void, InstanceParseResult, JavaSettings> binaryOperatorRightToLeft(Rule<Void, InstanceParseResult, JavaSettings> subExpression, Rule<Void, String, JavaSettings> operator) {
+		DelegatingRule<Void, InstanceParseResult, JavaSettings> expression = Rules.createDelegate();
+		BinaryOperatorExecuteRule binaryOperatorExecuteRule = new BinaryOperatorExecuteRule(operator, expression);
+		expression.setDelegate(
+			subExpression
+			.then(
+				or(
+					empty(),
+					binaryOperatorExecuteRule
 				)
 			)
-		);
-	}
-
-	private Rule<JavaState> binaryOperatorRightToLeft(Rule<JavaState> subExpression, Rule<JavaState> operator) {
-		OrRule<JavaState> expression = or("Expression op expression (right to left)");
-		expression.setAlternatives(
-			subExpression,
-			sequence(
-				subExpression,
-				operator,
-				expression,
-				executeBinaryOperator
-			)
+			.name("Expression op expression (right to left)")
 		);
 		return expression;
 	}
 
-	private Rule<JavaState> ternaryOperatorRightToLeft(Rule<JavaState> subExpression, Rule<JavaState> operatorPart1, Rule<JavaState> operatorPart2) {
-		// TODO: Consider lazy evaluation
-		OrRule<JavaState> expression = or();
-		expression.setAlternatives(
-			expression3,
-			sequence(
-				subExpression,
-				operatorPart1,
-				expression,
-				operatorPart2,
-				expression,
-				executeTernaryOperator
+	private Rule<Void, InstanceParseResult, JavaSettings> conditionalOperator(Rule<Void, InstanceParseResult, JavaSettings> subExpression) {
+		DelegatingRule<Void, InstanceParseResult, JavaSettings> expression = Rules.createDelegate();
+		ConditionalOperatorExecuteRule conditionalOperatorExecuteRule = new ConditionalOperatorExecuteRule(expression);
+		expression.setDelegate(
+			subExpression
+			.then(
+				or(
+					empty(),
+					conditionalOperatorExecuteRule
+				)
 			)
+			.name("Condition ? expression1 : expression2")
 		);
 		return expression;
 	}

@@ -2,13 +2,14 @@ package dd.kms.zenodotx.java.rule;
 
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
-import dd.kms.zenodotx.java.JavaState;
+import dd.kms.zenodotx.java.JavaSettings;
+import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.simple.SemanticRule;
 import dd.kms.zenodotx.rule.simple.SimpleRule;
 import dd.kms.zenodotx.rule.simple.SyntaxRule;
 import dd.kms.zenodotx.rule.simple.SyntaxRules;
 
-public class KeywordRule implements SimpleRule<JavaState>
+public class KeywordRule<IO> extends AbstractRule<IO, IO, JavaSettings> implements SimpleRule<IO, IO, JavaSettings>
 {
 	private final String	keyword;
 
@@ -22,22 +23,21 @@ public class KeywordRule implements SimpleRule<JavaState>
 	}
 
 	@Override
-	public SemanticRule<JavaState> getSemanticRule() {
-		return new AbstractSemanticJavaRule()
-		{
+	public SemanticRule<IO, IO, JavaSettings> getSemanticRule() {
+		return new AbstractSemanticJavaRule<IO, IO>() {
 			@Override
-			public void evaluate(String parsedString, JavaState state) throws SemanticException, EvaluationException {
+			public IO evaluate(IO input, String parsedString, JavaSettings settings) throws SemanticException, EvaluationException {
+				return input;
+			}
+
+			@Override
+			void doSuggestCodeCompletions(IO input, String parsedString, JavaSettings settings) {
+				// TODO
+			}
+
+			@Override
+			void doSuggestMethodParameters(IO input, JavaSettings settings) {
 				/* nothing to do */
-			}
-
-			@Override
-			void doSuggestCodeCompletions(String parsedString, JavaState state) {
-				// TODO
-			}
-
-			@Override
-			void doSuggestMethodParameters(JavaState state) {
-				// TODO
 			}
 		};
 	}

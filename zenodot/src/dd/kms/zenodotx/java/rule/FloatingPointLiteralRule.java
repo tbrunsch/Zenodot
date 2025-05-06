@@ -1,5 +1,7 @@
 package dd.kms.zenodotx.java.rule;
 
-public class FloatingPointLiteralRule extends UnimplementedRule
+import dd.kms.zenodotx.java.result.InstanceParseResult;
+
+public class FloatingPointLiteralRule extends UnimplementedRule<Void, InstanceParseResult>
 {
 }

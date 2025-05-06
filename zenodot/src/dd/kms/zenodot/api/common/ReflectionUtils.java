@@ -50,6 +50,64 @@ public class ReflectionUtils
 				|| (allowNarrowing && PRIMITIVE_NARROWING_CONVERSIONS.contains(sourceClass, targetClass));
 	}
 
+	public static Class<?> getCommonPrimitiveClass(Class<?> class1, Class<?> class2) {
+		Class<?> primitiveClass1 = getPrimitiveClass(class1);
+		Class<?> primitiveClass2 = getPrimitiveClass(class2);
+		if (ReflectionUtils.isPrimitiveConvertibleTo(primitiveClass1, primitiveClass2, false)) {
+			return primitiveClass2;
+		} else if (ReflectionUtils.isPrimitiveConvertibleTo(primitiveClass2, primitiveClass1, false)) {
+			return primitiveClass1;
+		} else {
+			throw new IllegalArgumentException("The classes '" + class1 + "' and '" + class2 + "' are not primitive convertible to each other");
+		}
+	}
+
+	public static Class<?> getPrimitiveClass(Class<?> clazz) throws IllegalArgumentException {
+		if (clazz == null) {
+			throw new IllegalArgumentException("null is not a primitive");
+		}
+		if (clazz.isPrimitive()) {
+			return clazz;
+		}
+		Class<?> primitiveClass = Primitives.unwrap(clazz);
+		if (!primitiveClass.isPrimitive()) {
+			throw new IllegalArgumentException("Class '" + clazz + "' is neither a primitive nor a boxed class");
+		}
+		return primitiveClass;
+	}
+
+	public static Class<?> getCommonSuperClass(Class<?> class1, Class<?> class2) {
+		Set<Class<?>> commonClasses = getSuperClassesAndInterfaces(class1);
+		commonClasses.removeIf(clazz -> !clazz.isAssignableFrom(class2));
+		return getBestMatchingClass(class1, commonClasses);
+	}
+
+	private static Set<Class<?>> getSuperClassesAndInterfaces(Class<?> clazz) {
+		List<Class<?>> superClasses = new ArrayList<>();
+		Set<Class<?>> superInterfaces = new LinkedHashSet<>();
+		for (Class<?> superClass = clazz; superClass != null; superClass = superClass.getSuperclass()) {
+			superClasses.add(superClass);
+			superInterfaces.addAll(Arrays.asList(superClass.getInterfaces()));
+		}
+		Set<Class<?>> result = new LinkedHashSet<>();
+		result.addAll(superClasses);
+		result.addAll(superInterfaces);
+		return result;
+	}
+
+	private static Class<?> getBestMatchingClass(Class<?> clazz, Iterable<Class<?>> candidateClasses) {
+		Class<?> bestClass = null;
+		for (Class<?> candidateClass : candidateClasses) {
+			if (!candidateClass.isAssignableFrom(clazz)) {
+				continue;
+			}
+			if (bestClass == null || bestClass.isAssignableFrom(candidateClass)) {
+				bestClass = candidateClass;
+			}
+		}
+		return bestClass;
+	}
+
 	public static <T> T convertTo(Object value, Class<T> targetClass, boolean allowNarrowing) {
 		if (value == null) {
 			return null;

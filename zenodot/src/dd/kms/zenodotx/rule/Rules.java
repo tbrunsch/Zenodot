@@ -1,95 +1,51 @@
 package dd.kms.zenodotx.rule;
 
 import dd.kms.zenodotx.rule.compound.*;
-import dd.kms.zenodotx.rule.simple.*;
-import dd.kms.zenodotx.state.State;
+import dd.kms.zenodotx.rule.simple.CharacterRule;
+import dd.kms.zenodotx.rule.simple.EmptyRule;
+import dd.kms.zenodotx.rule.simple.SimpleRule;
+import dd.kms.zenodotx.rule.simple.SpaceRule;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
 
 public class Rules
 {
 	@SafeVarargs
 	@SuppressWarnings("varargs")
-	public static <S extends State<S>> SequenceRule<S> sequence(Rule<S>... sequence) {
-		return sequence(null, sequence);
+	public static <I, O, S> OrRule<I, O, S> or(Rule<I, O, S>... alternatives) {
+		return or(Arrays.asList(alternatives));
 	}
 
-	public static <S extends State<S>> SequenceRule<S> sequence(List<Rule<S>> sequence) {
-		return sequence(null, sequence);
-	}
-
-	@SafeVarargs
-	@SuppressWarnings("varargs")
-	public static <S extends State<S>> SequenceRule<S> sequence(String name, Rule<S>... sequence) {
-		return sequence(name, Arrays.asList(sequence));
-	}
-
-	public static <S extends State<S>> SequenceRule<S> sequence(String name, List<Rule<S>> sequence) {
-		SequenceRule<S> sequenceRule = new SequenceRuleImpl<>();
-		sequenceRule.setName(name);
-		sequenceRule.setSequence(sequence);
-		return sequenceRule;
-	}
-
-	@SafeVarargs
-	@SuppressWarnings("varargs")
-	public static <S extends State<S>> OrRule<S> or(Rule<S>... alternatives) {
-		return or(null, alternatives);
-	}
-
-	public static <S extends State<S>> OrRule<S> or(List<Rule<S>> alternatives) {
-		return or(null, alternatives);
-	}
-
-	@SafeVarargs
-	@SuppressWarnings("varargs")
-	public static <S extends State<S>> OrRule<S> or(String name, Rule<S>... alternatives) {
-		return or(name, Arrays.asList(alternatives));
-	}
-
-	public static <S extends State<S>> OrRule<S> or(String name, List<Rule<S>> alternatives) {
-		OrRule<S> orRule = new OrRuleImpl<>();
-		orRule.setName(name);
+	public static <I, O, S> OrRule<I, O, S> or(List<Rule<I, O, S>> alternatives) {
+		OrRule<I, O, S> orRule = new OrRuleImpl<>();
 		orRule.setAlternatives(alternatives);
 		return orRule;
 	}
 
-	public static <S extends State<S>> RepetitionRule<S> repeat(Rule<S> ruleToRepeat) {
+	public static <IO, S> Rule<IO, IO, S> repeat(Rule<IO, IO, S> ruleToRepeat) {
 		return repeat(null, ruleToRepeat);
 	}
 
-	public static <S extends State<S>> RepetitionRule<S> repeat(String name, Rule<S> ruleToRepeat) {
-		RepetitionRule<S> repetitionRule = new RepetitionRuleImpl<>(ruleToRepeat);
-		repetitionRule.setName(name);
+	public static <IO, S> Rule<IO, IO, S> repeat(String name, Rule<IO, IO, S> ruleToRepeat) {
+		RepetitionRule<IO, S> repetitionRule = new RepetitionRule<>(ruleToRepeat);
+		repetitionRule.name(name);
 		return repetitionRule;
 	}
 
-	public static <S extends State<S>> SimpleRule<S> character(char character) {
+	public static <I, O, S> DelegatingRule<I, O, S> createDelegate() {
+		return new DelegatingRuleImpl<>();
+	}
+
+	public static <IO, S> SimpleRule<IO, IO, S> character(char character) {
 		return new CharacterRule<>(character);
 	}
 
-	public static <S extends State<S>> SimpleRule<S> space() {
+	public static <IO, S> SimpleRule<IO, IO, S> space() {
 		return new SpaceRule<>();
 	}
 
-	public static <S extends State<S>> SimpleRule<S> empty() {
+	public static <IO, S> SimpleRule<IO, IO, S> empty() {
 		return new EmptyRule<>();
-	}
-
-	public static <S extends State<S>> SimpleRule<S> action(Consumer<S> action) {
-		return new ActionRule<>(action);
-	}
-
-	public static <S extends State<S>> Rule<S> replaceRule(Rule<S> rule, SimpleRule<S> oldRule, SimpleRule<S> newRule) {
-		if (rule instanceof CompoundRule) {
-			return ((CompoundRule<S>) rule).replace(oldRule, newRule);
-		} else if (rule instanceof SimpleRule) {
-			return Objects.equals(rule, oldRule) ? newRule : rule;
-		} else {
-			throw new IllegalStateException("Unsupported rule type " + rule.getClass().getName() + ": Only CompoundRules and SimpleRules are supported.");
-		}
 	}
 }

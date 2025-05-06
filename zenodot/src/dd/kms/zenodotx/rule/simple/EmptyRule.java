@@ -1,11 +1,9 @@
 package dd.kms.zenodotx.rule.simple;
 
 import dd.kms.zenodotx.event.Event;
-import dd.kms.zenodotx.exception.EvaluationException;
-import dd.kms.zenodotx.exception.SemanticException;
-import dd.kms.zenodotx.state.State;
+import dd.kms.zenodotx.rule.AbstractRule;
 
-public class EmptyRule<S extends State<S>> implements SimpleRule<S>
+public class EmptyRule<IO, S> extends AbstractRule<IO, IO, S> implements SimpleRule<IO, IO, S>
 {
 	@Override
 	public SyntaxRule getSyntaxRule() {
@@ -13,15 +11,15 @@ public class EmptyRule<S extends State<S>> implements SimpleRule<S>
 	}
 
 	@Override
-	public SemanticRule<S> getSemanticRule() {
-		return new SemanticRule<S>() {
+	public SemanticRule<IO, IO, S> getSemanticRule() {
+		return new SemanticRule<IO, IO, S>() {
 			@Override
-			public void evaluate(String parsedString, S state) throws SemanticException, EvaluationException {
-				/* don't do anything */
+			public IO evaluate(IO input, String parsedString, S settings) {
+				return input;
 			}
 
 			@Override
-			public void handleEvent(Event event, String parsedString, S state) {
+			public void handleEvent(Event event, IO input, String parsedString, S state) {
 				/* don't do anything */
 			}
 		};

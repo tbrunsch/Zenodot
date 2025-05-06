@@ -1,9 +1,8 @@
 package dd.kms.zenodotx.java.rule;
 
 import dd.kms.zenodotx.event.Event;
-import dd.kms.zenodotx.exception.EvaluationException;
-import dd.kms.zenodotx.exception.SemanticException;
-import dd.kms.zenodotx.java.JavaState;
+import dd.kms.zenodotx.java.JavaSettings;
+import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.simple.SemanticRule;
 import dd.kms.zenodotx.rule.simple.SimpleRule;
 import dd.kms.zenodotx.rule.simple.SyntaxRule;
@@ -11,7 +10,7 @@ import dd.kms.zenodotx.rule.simple.SyntaxRule;
 import java.util.regex.Pattern;
 
 // TODO: Remove after all rules have been implemented
-class UnimplementedRule implements SimpleRule<JavaState>
+class UnimplementedRule<I, O> extends AbstractRule<I, O, JavaSettings> implements SimpleRule<I, O, JavaSettings>
 {
 	@Override
 	public SyntaxRule getSyntaxRule() {
@@ -19,8 +18,8 @@ class UnimplementedRule implements SimpleRule<JavaState>
 	}
 
 	@Override
-	public SemanticRule<JavaState> getSemanticRule() {
-		return null;
+	public SemanticRule<I, O, JavaSettings> getSemanticRule() {
+		return new UnimplementedSemanticRule<>();
 	}
 
 	private static class UnimplementedSyntaxRule implements SyntaxRule
@@ -33,15 +32,15 @@ class UnimplementedRule implements SimpleRule<JavaState>
 		}
 	}
 
-	private static class UnimplementedSemanticRule implements SemanticRule<JavaState>
+	private static class UnimplementedSemanticRule<I, O> implements SemanticRule<I, O, JavaSettings>
 	{
 		@Override
-		public void evaluate(String parsedString, JavaState state) throws SemanticException, EvaluationException {
-			/* don't do anything */
+		public O evaluate(I input, String parsedString, JavaSettings settings) {
+			return null;
 		}
 
 		@Override
-		public void handleEvent(Event event, String parsedString, JavaState state) {
+		public void handleEvent(Event event, I input, String parsedString, JavaSettings settings) {
 			/* don't do anything */
 		}
 	}

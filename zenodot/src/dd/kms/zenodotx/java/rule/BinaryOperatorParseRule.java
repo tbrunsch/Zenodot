@@ -1,5 +1,5 @@
 package dd.kms.zenodotx.java.rule;
 
-public class BinaryOperatorParseRule extends UnimplementedRule
+public class BinaryOperatorParseRule extends UnimplementedRule<Void, String>
 {
 }

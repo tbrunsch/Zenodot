@@ -1,11 +1,9 @@
 package dd.kms.zenodotx.rule.simple;
 
-import dd.kms.zenodotx.event.Event;
 import dd.kms.zenodotx.rule.Rule;
-import dd.kms.zenodotx.state.State;
 
-public interface SimpleRule<S extends State<S>> extends Rule<S>
+public interface SimpleRule<I, O, S> extends Rule<I, O, S>
 {
 	SyntaxRule getSyntaxRule();
-	SemanticRule<S> getSemanticRule();
+	SemanticRule<I, O, S> getSemanticRule();
 }

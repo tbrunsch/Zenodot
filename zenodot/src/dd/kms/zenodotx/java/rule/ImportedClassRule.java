@@ -1,5 +1,5 @@
 package dd.kms.zenodotx.java.rule;
 
-public class ImportedClassRule extends UnimplementedRule
+public class ImportedClassRule extends UnimplementedRule<Void, Class<?>>
 {
 }

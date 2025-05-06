@@ -3,7 +3,6 @@ package dd.kms.zenodot.impl.utils.dataproviders;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
-import com.google.common.primitives.Primitives;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
@@ -412,17 +411,11 @@ public class OperatorResultProvider
 	}
 
 	private static Class<?> getPrimitiveClass(Class<?> clazz) throws OperatorException {
-		if (clazz == null) {
-			throw new OperatorException("null is not a primitive");
+		try {
+			return ReflectionUtils.getPrimitiveClass(clazz);
+		} catch (IllegalArgumentException e) {
+			throw new OperatorException(e.getMessage());
 		}
-		if (clazz.isPrimitive()) {
-			return clazz;
-		}
-		Class<?> primitiveClass = Primitives.unwrap(clazz);
-		if (!primitiveClass.isPrimitive()) {
-			throw new OperatorException("Class '" + clazz + "' is neither a primitive nor a boxed class");
-		}
-		return primitiveClass;
 	}
 
 	/*
@@ -481,13 +474,9 @@ public class OperatorResultProvider
 	 * Utility Methods for Binary Operators
 	 */
 	private static Class<?> getCommonPrimitiveClass(Class<?> class1, Class<?> class2) throws OperatorException {
-		Class<?> primitiveClass1 = getPrimitiveClass(class1);
-		Class<?> primitiveClass2 = getPrimitiveClass(class2);
-		if (ReflectionUtils.isPrimitiveConvertibleTo(primitiveClass1, primitiveClass2, false)) {
-			return primitiveClass2;
-		} else if (ReflectionUtils.isPrimitiveConvertibleTo(primitiveClass2, primitiveClass1, false)) {
-			return primitiveClass1;
-		} else {
+		try {
+			return ReflectionUtils.getCommonPrimitiveClass(class1, class2);
+		} catch (IllegalArgumentException e) {
 			throw new OperatorException("Operator cannot be applied to '" + class1 + "' and '" + class2 + "'");
 		}
 	}

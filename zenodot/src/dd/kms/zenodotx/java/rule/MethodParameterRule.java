@@ -1,5 +1,27 @@
 package dd.kms.zenodotx.java.rule;
 
-public class MethodParameterRule extends UnimplementedRule
+import dd.kms.zenodotx.Parser;
+import dd.kms.zenodotx.exception.EvaluationException;
+import dd.kms.zenodotx.exception.SemanticException;
+import dd.kms.zenodotx.exception.SyntaxException;
+import dd.kms.zenodotx.java.JavaSettings;
+import dd.kms.zenodotx.java.result.InstanceParseResult;
+import dd.kms.zenodotx.rule.AbstractRule;
+import dd.kms.zenodotx.rule.Rule;
+import dd.kms.zenodotx.rule.compound.CompoundRule;
+
+public class MethodParameterRule extends AbstractRule<ExecutableParseInfo, ExecutableParseInfo, JavaSettings> implements CompoundRule<ExecutableParseInfo, ExecutableParseInfo, JavaSettings>
 {
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expressionRule;
+
+	public MethodParameterRule(Rule<Void, InstanceParseResult, JavaSettings> expressionRule) {
+		this.expressionRule = expressionRule;
+	}
+
+	@Override
+	public ExecutableParseInfo parse(ExecutableParseInfo input, JavaSettings settings, Parser<JavaSettings> parser) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
+		InstanceParseResult parameter = parser.parse(expressionRule, null, settings);
+		input.addParameter(parameter);
+		return input;
+	}
 }
