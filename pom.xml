@@ -11,7 +11,9 @@
     <name>Zenodot Maven Parent</name>
     <modules>
         <module>zenodot</module>
+        <module>zenodot-x</module>
         <module>zenodot-tests</module>
+        <module>zenodot-x-tests</module>
         <module>zenodot-samples</module>
         <module>custom-hierarchy-parser</module>
         <module>custom-hierarchy-parser-tests</module>
