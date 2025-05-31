@@ -11,11 +11,11 @@ import java.util.List;
 
 public class InfoProvider
 {
-	public static final Object 		INDETERMINATE_VALUE = new Object();
+	public static final Object 		INDETERMINATE_VALUE = new IndeterminateValue();
 
 	public static final Class<?>	NO_TYPE				= null;
 
-	public static final ObjectInfo NULL_LITERAL		= createObjectInfo(null, NO_TYPE);
+	public static final ObjectInfo	NULL_LITERAL		= createObjectInfo(null, NO_TYPE);
 
 	public static List<ExecutableInfo> getAvailableExecutableInfos(Executable executable) {
 		return executable.isVarArgs()
@@ -73,5 +73,13 @@ public class InfoProvider
 			executableInfos.addAll(getAvailableExecutableInfos(constructor));
 		}
 		return executableInfos;
+	}
+
+	private static class IndeterminateValue
+	{
+		@Override
+		public String toString() {
+			return "indeterminate";
+		}
 	}
 }
