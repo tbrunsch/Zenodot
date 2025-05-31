@@ -19,8 +19,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
@@ -67,30 +66,30 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		}
 	}
 
-	void testEvaluationWithError(String expression, boolean compile) {
-		/*
-		TODO
-		Class<? extends Exception> expectedExceptionClass = ParseException.class;
+	void testEvaluationWithError(String expression, Class<? extends Exception> expectedExceptionClass, boolean compile) {
+		if (compile) {
+			settingsBuilder.evaluationMode(EvaluationMode.STATIC_TYPING);
+		} else {
+			settingsBuilder.evaluationMode(EvaluationMode.DYNAMIC_TYPING);
+		}
+
+		Parser<JavaSettings> parser = new Parser<>(expression, -1, null);
+
 		try {
-			ExpressionParser expressionParser = Parsers.createExpressionParserBuilder(settings)
-				.variables(variables)
-				.createExpressionParser();
+			InstanceParseResult result = parser.parse(FULL_EXPRESSION, null, settingsBuilder.build());
 			if (compile) {
-				CompiledExpression compiledExpression = expressionParser.compile(expression, testInstance);
-				compiledExpression.evaluate(testInstance);
+				result.evaluate(settingsBuilder.evaluationMode(EvaluationMode.DYNAMIC_TYPING).build());
 			} else {
-				expressionParser.evaluate(expression, testInstance);
+				result.getEvaluatedResult();
 			}
 			fail("Expression: " + expression + " - Expected an exception");
-		} catch (ParseException | IllegalStateException e) {
+		} catch (SyntaxException | SemanticException | EvaluationException | Parser.EventResultException e) {
 			assertTrue("Expression: " + expression + " - Expected exception of class '" + expectedExceptionClass.getSimpleName() + "', but caught an exception of class '" + e.getClass().getSimpleName() + "'", expectedExceptionClass.isInstance(e));
 		} catch (AssertionError e) {
 			throw e;
 		} catch (Throwable t) {
 			Assume.assumeNoException("Skipped test. Reason: We cannot be sure whether this exception is expected or not", t);
 		}
-
-		 */
 	}
 
 	private boolean runTest(String expression, boolean executeAssertions, Object expectedValue, boolean compile) {

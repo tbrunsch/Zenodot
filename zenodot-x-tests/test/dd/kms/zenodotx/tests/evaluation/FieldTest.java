@@ -1,5 +1,7 @@
 package dd.kms.zenodotx.tests.evaluation;
 
+import dd.kms.zenodotx.exception.SemanticException;
+import dd.kms.zenodotx.exception.SyntaxException;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTest;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTestBuilder;
 import dd.kms.zenodotx.tests.evaluation.framework.TestData;
@@ -28,9 +30,9 @@ public class FieldTest extends EvaluationTest
 			.addTest("l", (long) 1);
 
 		testBuilder
-			.addTestWithError("")
-			.addTestWithError("xyz")
-			.addTestWithError("d,");
+			.addTestWithError("",		SyntaxException.class)
+			.addTestWithError("xyz",	SemanticException.class)
+			.addTestWithError("d,",		SyntaxException.class);
 
 		return testBuilder.build();
 	}

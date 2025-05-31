@@ -34,8 +34,8 @@ public class EvaluationTestBuilder
 		return this;
 	}
 
-	public EvaluationTestBuilder addTestWithError(String expression) {
-		return addTest(new EvaluationTestWithError(expression));
+	public EvaluationTestBuilder addTestWithError(String expression, Class<? extends Exception> expectedExceptionClass) {
+		return addTest(new EvaluationTestWithError(expression, expectedExceptionClass));
 	}
 
 	private EvaluationTestBuilder addTest(TestExecutor testExecutor) {
