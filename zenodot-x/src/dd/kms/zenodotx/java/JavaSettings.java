@@ -35,9 +35,16 @@ public class JavaSettings
 	}
 
 	public JavaSettings withoutEvaluation() {
-		EvaluationMode targetEvaluationMode = EvaluationMode.STATIC_TYPING;
-		return evaluationMode == targetEvaluationMode
+		return forEvaluationMode(EvaluationMode.STATIC_TYPING);
+	}
+
+	public JavaSettings withFullEvaluation() {
+		return forEvaluationMode(EvaluationMode.DYNAMIC_TYPING);
+	}
+
+	private JavaSettings forEvaluationMode(EvaluationMode newEvaluationMode) {
+		return newEvaluationMode == evaluationMode
 			? this
-			: new JavaSettings(thisInfo, targetEvaluationMode, minimumFieldAccessModifier, minimumMethodAccessModifier);
+			: new JavaSettings(thisInfo, newEvaluationMode, minimumFieldAccessModifier, minimumMethodAccessModifier);
 	}
 }
