@@ -1,16 +1,14 @@
 package dd.kms.zenodotx.tests.evaluation.framework;
 
 import dd.kms.zenodot.api.debug.ParserLogger;
-import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.Parser;
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;
+import dd.kms.zenodotx.java.ExpressionParser;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
-import dd.kms.zenodotx.java.rule.JavaRuleSet;
-import dd.kms.zenodotx.rule.Rule;
 import dd.kms.zenodotx.tests.common.AbstractTest;
 import org.junit.Assume;
 import org.junit.Test;
@@ -24,9 +22,6 @@ import static org.junit.Assert.*;
 @RunWith(Parameterized.class)
 public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 {
-	private static final JavaRuleSet									RULE_SET		= new JavaRuleSet();
-	private static final Rule<Void, InstanceParseResult, JavaSettings>	FULL_EXPRESSION = RULE_SET.getFullExpression();
-
 	private final TestExecutor	testExecutor;
 
 	private boolean				testCompilation	= true;
@@ -67,20 +62,13 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 	}
 
 	void testEvaluationWithError(String expression, Class<? extends Exception> expectedExceptionClass, boolean compile) {
-		if (compile) {
-			settingsBuilder.evaluationMode(EvaluationMode.STATIC_TYPING);
-		} else {
-			settingsBuilder.evaluationMode(EvaluationMode.DYNAMIC_TYPING);
-		}
-
-		Parser<JavaSettings> parser = new Parser<>(expression, -1, null);
-
 		try {
-			InstanceParseResult result = parser.parse(FULL_EXPRESSION, null, settingsBuilder.build());
+			JavaSettings settings = settingsBuilder.build();
 			if (compile) {
-				result.evaluate(settingsBuilder.evaluationMode(EvaluationMode.DYNAMIC_TYPING).build());
+				InstanceParseResult instanceParseResult = ExpressionParser.compile(expression, -1, null, settings);
+				instanceParseResult.evaluate(settings.withFullEvaluation());
 			} else {
-				result.getEvaluatedResult();
+				ExpressionParser.evaluate(expression, -1, null, settings);
 			}
 			fail("Expression: " + expression + " - Expected an exception");
 		} catch (SyntaxException | SemanticException | EvaluationException | Parser.EventResultException e) {
@@ -93,23 +81,16 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 	}
 
 	private boolean runTest(String expression, boolean executeAssertions, Object expectedValue, boolean compile) {
-		if (compile) {
-			settingsBuilder.evaluationMode(EvaluationMode.STATIC_TYPING);
-		} else {
-			settingsBuilder.evaluationMode(EvaluationMode.DYNAMIC_TYPING);
-		}
-
-		Parser<JavaSettings> parser = new Parser<>(expression, -1, null);
-
 		try {
-			InstanceParseResult result = parser.parse(FULL_EXPRESSION, null, settingsBuilder.build());
-			ObjectInfo resultInfo;
+			JavaSettings settings = settingsBuilder.build();
+			Object actualValue;
 			if (compile) {
-				resultInfo = result.evaluate(settingsBuilder.evaluationMode(EvaluationMode.DYNAMIC_TYPING).build());
+				InstanceParseResult instanceParseResult = ExpressionParser.compile(expression, -1, null, settings);
+				ObjectInfo resultInfo = instanceParseResult.evaluate(settings.withFullEvaluation());
+				actualValue = resultInfo.getObject();
 			} else {
-				resultInfo = result.getEvaluatedResult();
+				actualValue = ExpressionParser.evaluate(expression, -1, null, settings);
 			}
-			Object actualValue = resultInfo.getObject();
 			if (executeAssertions) {
 				assertEquals("Expression: " + expression, expectedValue, actualValue);
 			}
