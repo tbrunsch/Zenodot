@@ -1,5 +1,6 @@
 package dd.kms.zenodotx.java.rule;
 
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
@@ -25,7 +26,7 @@ public class InstanceOfRule extends AbstractRule<InstanceParseResult, InstancePa
 	@Override
 	public InstanceParseResult parse(InstanceParseResult instance, JavaSettings settings, Parser<JavaSettings> parser) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
 		Class<?> clazz = parser.parse(classRule, null, settings);
-		return new InstanceOfParseResult(instance, clazz, settings);
+		return new InstanceOfParseResult(instance, clazz, settings.getEvaluationMode());
 	}
 
 	private static class InstanceOfParseResult implements InstanceParseResult
@@ -34,10 +35,10 @@ public class InstanceOfRule extends AbstractRule<InstanceParseResult, InstancePa
 		private final Class<?>				clazz;
 		private final ObjectInfo			evaluatedResult;
 
-		private InstanceOfParseResult(InstanceParseResult instance, Class<?> clazz, JavaSettings settings) throws EvaluationException {
+		private InstanceOfParseResult(InstanceParseResult instance, Class<?> clazz, EvaluationMode evaluationMode) throws EvaluationException {
 			this.instance = instance;
 			this.clazz = clazz;
-			this.evaluatedResult = evaluate(instance.getEvaluatedResult(), settings);
+			this.evaluatedResult = evaluate(instance.getEvaluatedResult(), evaluationMode);
 		}
 
 		@Override
@@ -46,12 +47,11 @@ public class InstanceOfRule extends AbstractRule<InstanceParseResult, InstancePa
 		}
 
 		@Override
-		public ObjectInfo evaluate(JavaSettings settings) throws EvaluationException {
-			return evaluate(instance.evaluate(settings), settings);
+		public ObjectInfo evaluate(ObjectInfo thisInfo, Variables variables, EvaluationMode evaluationMode) throws EvaluationException {
+			return evaluate(instance.evaluate(thisInfo, variables, evaluationMode), evaluationMode);
 		}
 
-		private ObjectInfo evaluate(ObjectInfo instanceInfo, JavaSettings settings) throws EvaluationException {
-			EvaluationMode evaluationMode = settings.getEvaluationMode();
+		private ObjectInfo evaluate(ObjectInfo instanceInfo, EvaluationMode evaluationMode) throws EvaluationException {
 			ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
 			OperatorResultProvider operatorResultProvider = new OperatorResultProvider(objectInfoProvider, evaluationMode);
 			try {

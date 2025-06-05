@@ -1,10 +1,10 @@
 package dd.kms.zenodotx.java.rule;
 
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.exception.EvaluationException;
-import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
 import dd.kms.zenodotx.rule.AbstractRule;
@@ -34,10 +34,10 @@ public class AccessArrayElementRule extends AbstractRule<ArrayAccessInfo, Instan
 			}
 
 			@Override
-			public InstanceParseResult evaluate(ArrayAccessInfo arrayAccessInfo, String parsedString, JavaSettings settings) throws SemanticException, EvaluationException {
+			public InstanceParseResult evaluate(ArrayAccessInfo arrayAccessInfo, String parsedString, JavaSettings settings) {
 				InstanceParseResult array = arrayAccessInfo.getArray();
 				InstanceParseResult index = arrayAccessInfo.getIndex();
-				return new ArrayElementAccessParseResult(array, index, settings);
+				return new ArrayElementAccessParseResult(array, index, settings.getEvaluationMode());
 			}
 		};
 	}
@@ -48,10 +48,10 @@ public class AccessArrayElementRule extends AbstractRule<ArrayAccessInfo, Instan
 		private final InstanceParseResult	indexParseResult;
 		private final ObjectInfo			evaluatedResult;
 
-		ArrayElementAccessParseResult(InstanceParseResult arrayParseResult, InstanceParseResult indexParseResult, JavaSettings settings) {
+		ArrayElementAccessParseResult(InstanceParseResult arrayParseResult, InstanceParseResult indexParseResult, EvaluationMode evaluationMode) {
 			this.arrayParseResult = arrayParseResult;
 			this.indexParseResult = indexParseResult;
-			this.evaluatedResult = evaluate(arrayParseResult.getEvaluatedResult(), indexParseResult.getEvaluatedResult(), settings);
+			this.evaluatedResult = evaluate(arrayParseResult.getEvaluatedResult(), indexParseResult.getEvaluatedResult(), evaluationMode);
 		}
 
 		@Override
@@ -60,14 +60,13 @@ public class AccessArrayElementRule extends AbstractRule<ArrayAccessInfo, Instan
 		}
 
 		@Override
-		public ObjectInfo evaluate(JavaSettings settings) throws EvaluationException {
-			ObjectInfo arrayInfo = arrayParseResult.evaluate(settings);
-			ObjectInfo indexInfo = indexParseResult.evaluate(settings);
-			return evaluate(arrayInfo, indexInfo, settings);
+		public ObjectInfo evaluate(ObjectInfo thisInfo, Variables variables, EvaluationMode evaluationMode) throws EvaluationException {
+			ObjectInfo arrayInfo = arrayParseResult.evaluate(thisInfo, variables, evaluationMode);
+			ObjectInfo indexInfo = indexParseResult.evaluate(thisInfo, variables, evaluationMode);
+			return evaluate(arrayInfo, indexInfo, evaluationMode);
 		}
 
-		private ObjectInfo evaluate(ObjectInfo arrayInfo, ObjectInfo indexInfo, JavaSettings settings) {
-			EvaluationMode evaluationMode = settings.getEvaluationMode();
+		private ObjectInfo evaluate(ObjectInfo arrayInfo, ObjectInfo indexInfo, EvaluationMode evaluationMode) {
 			ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
 			return objectInfoProvider.getArrayElementInfo(arrayInfo, indexInfo);
 		}

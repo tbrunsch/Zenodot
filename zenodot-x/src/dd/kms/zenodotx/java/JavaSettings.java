@@ -38,10 +38,6 @@ public class JavaSettings
 		return forEvaluationMode(EvaluationMode.STATIC_TYPING);
 	}
 
-	public JavaSettings withFullEvaluation() {
-		return forEvaluationMode(EvaluationMode.DYNAMIC_TYPING);
-	}
-
 	private JavaSettings forEvaluationMode(EvaluationMode newEvaluationMode) {
 		return newEvaluationMode == evaluationMode
 			? this

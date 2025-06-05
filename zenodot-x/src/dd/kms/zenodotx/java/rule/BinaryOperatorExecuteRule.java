@@ -1,5 +1,7 @@
 package dd.kms.zenodotx.java.rule;
 
+import dd.kms.zenodot.api.Variables;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.Parser;
 import dd.kms.zenodotx.exception.EvaluationException;
@@ -28,7 +30,7 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 		boolean shortCircuitEvaluation = isApplyShortCircuitEvaluation(lhs.getEvaluatedResult(), operator);
 		JavaSettings rhsSettings = getRightHandSideSettings(settings, shortCircuitEvaluation);
 		InstanceParseResult rhs = parser.parse(rightHandSideRule, null, rhsSettings);
-		return new BinaryOperatorInstanceParseResult(lhs, rhs, operator, settings);
+		return new BinaryOperatorInstanceParseResult(lhs, rhs, operator, settings.getEvaluationMode());
 	}
 
 	private static boolean isApplyShortCircuitEvaluation(ObjectInfo lhsInfo, String operator) {
@@ -49,11 +51,11 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 		private final String				operator;
 		private final ObjectInfo			evaluatedResult;
 
-		private BinaryOperatorInstanceParseResult(InstanceParseResult lhs, InstanceParseResult rhs, String operator, JavaSettings rhsSettings) {
+		private BinaryOperatorInstanceParseResult(InstanceParseResult lhs, InstanceParseResult rhs, String operator, EvaluationMode evaluationMode) {
 			this.lhs = lhs;
 			this.rhs = rhs;
 			this.operator = operator;
-			this.evaluatedResult = evaluate(lhs.getEvaluatedResult(), rhs.getEvaluatedResult(), rhsSettings);
+			this.evaluatedResult = evaluate(lhs.getEvaluatedResult(), rhs.getEvaluatedResult(), evaluationMode);
 		}
 
 		@Override
@@ -62,15 +64,15 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 		}
 
 		@Override
-		public ObjectInfo evaluate(JavaSettings settings) throws EvaluationException {
-			ObjectInfo lhsInfo = lhs.evaluate(settings);
+		public ObjectInfo evaluate(ObjectInfo thisInfo, Variables variables, EvaluationMode evaluationMode) throws EvaluationException {
+			ObjectInfo lhsInfo = lhs.evaluate(thisInfo, variables, evaluationMode);
 			boolean shortCircuitEvaluation = isApplyShortCircuitEvaluation(lhsInfo, operator);
-			JavaSettings rhsSettings = getRightHandSideSettings(settings, shortCircuitEvaluation);
-			ObjectInfo rhsInfo = rhs.evaluate(rhsSettings);
-			return evaluate(lhsInfo, rhsInfo, settings);
+			EvaluationMode rhsEvaluationMode = shortCircuitEvaluation ? EvaluationMode.STATIC_TYPING : EvaluationMode.DYNAMIC_TYPING;
+			ObjectInfo rhsInfo = rhs.evaluate(thisInfo, variables, rhsEvaluationMode);
+			return evaluate(lhsInfo, rhsInfo, evaluationMode);
 		}
 
-		private ObjectInfo evaluate(ObjectInfo lhsInfo, ObjectInfo rhsInfo, JavaSettings settings) {
+		private ObjectInfo evaluate(ObjectInfo lhsInfo, ObjectInfo rhsInfo, EvaluationMode evaluationMode) {
 			// TODO: Evaluate operator (which should not be a String anymore, but some functor)
 			return null;
 		}

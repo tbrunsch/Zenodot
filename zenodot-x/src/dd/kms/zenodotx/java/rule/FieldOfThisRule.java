@@ -20,7 +20,7 @@ public class FieldOfThisRule extends AbstractFieldRule<Void>
 
 	@Override
 	protected InstanceParseResult getContextInstanceEvaluation(Void context, JavaSettings settings) {
-		return new ThisParseResult(settings);
+		return new ThisParseResult(settings.getThisInfo());
 	}
 
 	@Override

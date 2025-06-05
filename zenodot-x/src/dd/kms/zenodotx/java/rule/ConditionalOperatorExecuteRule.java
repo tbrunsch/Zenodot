@@ -1,6 +1,7 @@
 package dd.kms.zenodotx.java.rule;
 
 import com.google.common.primitives.Primitives;
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.EvaluationMode;
@@ -52,7 +53,7 @@ public class ConditionalOperatorExecuteRule extends AbstractRule<InstanceParseRe
 
 		InstanceParseResult part2 = parser.parse(partExpressionRule, null, partToEvaluate == PartToEvaluate.SECOND ? settings : settingsWithoutEvaluation);
 
-		return new ConditionalOperatorParseResult(condition, part1, part2, partToEvaluate, settings);
+		return new ConditionalOperatorParseResult(condition, part1, part2, partToEvaluate, settings.getEvaluationMode());
 	}
 
 	private static PartToEvaluate getPartToEvaluate(Object conditionValue) {
@@ -68,7 +69,7 @@ public class ConditionalOperatorExecuteRule extends AbstractRule<InstanceParseRe
 		private final InstanceParseResult	part2;
 		private final ObjectInfo			evaluatedResult;
 
-		private ConditionalOperatorParseResult(InstanceParseResult condition, InstanceParseResult part1, InstanceParseResult part2, PartToEvaluate partToEvaluate, JavaSettings settings) {
+		private ConditionalOperatorParseResult(InstanceParseResult condition, InstanceParseResult part1, InstanceParseResult part2, PartToEvaluate partToEvaluate, EvaluationMode evaluationMode) {
 			this.condition = condition;
 			this.part1 = part1;
 			this.part2 = part2;
@@ -78,7 +79,7 @@ public class ConditionalOperatorExecuteRule extends AbstractRule<InstanceParseRe
 			Object evaluatedResultValue =	partToEvaluate == PartToEvaluate.FIRST	? part1Info.getObject() :
 											partToEvaluate == PartToEvaluate.SECOND	? part2Info.getObject()
 																					: InfoProvider.INDETERMINATE_VALUE;
-			ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(settings.getEvaluationMode());
+			ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
 			Class<?> evaluatedType = getCommonClass(objectInfoProvider.getType(part1Info), objectInfoProvider.getType(part2Info));
 			this.evaluatedResult = InfoProvider.createObjectInfo(evaluatedResultValue, evaluatedType);
 		}
@@ -89,10 +90,9 @@ public class ConditionalOperatorExecuteRule extends AbstractRule<InstanceParseRe
 		}
 
 		@Override
-		public ObjectInfo evaluate(JavaSettings settings) throws EvaluationException {
-			EvaluationMode evaluationMode = settings.getEvaluationMode();
+		public ObjectInfo evaluate(ObjectInfo thisInfo, Variables variables, EvaluationMode evaluationMode) throws EvaluationException {
 			ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
-			ObjectInfo conditionInfo = condition.evaluate(settings);
+			ObjectInfo conditionInfo = condition.evaluate(thisInfo, variables, evaluationMode);
 			Class<?> type = objectInfoProvider.getType(conditionInfo);
 			TypeMatch typeMatch = MatchRatings.rateTypeMatch(boolean.class, type);
 			if (typeMatch == TypeMatch.NONE) {
@@ -102,9 +102,9 @@ public class ConditionalOperatorExecuteRule extends AbstractRule<InstanceParseRe
 			PartToEvaluate partToEvaluate = getPartToEvaluate(conditionValue);
 			switch (partToEvaluate) {
 				case FIRST:
-					return part1.evaluate(settings);
+					return part1.evaluate(thisInfo, variables, evaluationMode);
 				case SECOND:
-					return part2.evaluate(settings);
+					return part2.evaluate(thisInfo, variables, evaluationMode);
 				case NONE:
 					throw new IllegalStateException("Internal error: The result of the condition of the conditional expression is neither \"true\" nor \"false\"");
 				default:

@@ -1,14 +1,13 @@
 package dd.kms.zenodotx.tests.evaluation.framework;
 
 import dd.kms.zenodot.api.debug.ParserLogger;
-import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.Parser;
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;
+import dd.kms.zenodotx.java.CompiledExpression;
 import dd.kms.zenodotx.java.ExpressionParser;
 import dd.kms.zenodotx.java.JavaSettings;
-import dd.kms.zenodotx.java.result.InstanceParseResult;
 import dd.kms.zenodotx.tests.common.AbstractTest;
 import org.junit.Assume;
 import org.junit.Test;
@@ -65,8 +64,9 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 		try {
 			JavaSettings settings = settingsBuilder.build();
 			if (compile) {
-				InstanceParseResult instanceParseResult = ExpressionParser.compile(expression, -1, null, settings);
-				instanceParseResult.evaluate(settings.withFullEvaluation());
+				CompiledExpression compiledExpression = ExpressionParser.compile(expression, -1, null, settings);
+				// TODO: Consider variables
+				compiledExpression.evaluate(settings.getThisInfo().getObject(), null);
 			} else {
 				ExpressionParser.evaluate(expression, -1, null, settings);
 			}
@@ -85,9 +85,9 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 			JavaSettings settings = settingsBuilder.build();
 			Object actualValue;
 			if (compile) {
-				InstanceParseResult instanceParseResult = ExpressionParser.compile(expression, -1, null, settings);
-				ObjectInfo resultInfo = instanceParseResult.evaluate(settings.withFullEvaluation());
-				actualValue = resultInfo.getObject();
+				CompiledExpression compiledExpression = ExpressionParser.compile(expression, -1, null, settings);
+				// TODO: Consider variables
+				actualValue = compiledExpression.evaluate(settings.getThisInfo().getObject(), null);
 			} else {
 				actualValue = ExpressionParser.evaluate(expression, -1, null, settings);
 			}

@@ -1,6 +1,8 @@
 package dd.kms.zenodotx.java.rule;
 
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.common.*;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.wrappers.FieldInfo;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
@@ -58,7 +60,7 @@ public abstract class AbstractFieldRule<C> extends AbstractRule<C, InstanceParse
 				}
 
 				FieldInfo fieldInfo = fieldInfos.get(0);
-				return new FieldParseResult(contextParseResult, fieldInfo, settings);
+				return new FieldParseResult(contextParseResult, fieldInfo, settings.getEvaluationMode());
 			}
 
 			private FieldScanner getFieldScanner(String name, AccessModifier minimumAccessModifier) {
@@ -81,10 +83,10 @@ public abstract class AbstractFieldRule<C> extends AbstractRule<C, InstanceParse
 		private final FieldInfo				fieldInfo;
 		private final ObjectInfo			evaluatedResult;
 
-		FieldParseResult(InstanceParseResult contextParseResult, FieldInfo fieldInfo, JavaSettings settings) throws EvaluationException {
+		FieldParseResult(InstanceParseResult contextParseResult, FieldInfo fieldInfo, EvaluationMode evaluationMode) throws EvaluationException {
 			this.contextParseResult = contextParseResult;
 			this.fieldInfo = fieldInfo;
-			this.evaluatedResult = evaluate(contextParseResult.getEvaluatedResult(), settings);
+			this.evaluatedResult = evaluate(contextParseResult.getEvaluatedResult(), evaluationMode);
 		}
 
 		@Override
@@ -93,13 +95,13 @@ public abstract class AbstractFieldRule<C> extends AbstractRule<C, InstanceParse
 		}
 
 		@Override
-		public ObjectInfo evaluate(JavaSettings settings) throws EvaluationException {
-			ObjectInfo context = contextParseResult.evaluate(settings);
-			return evaluate(context, settings);
+		public ObjectInfo evaluate(ObjectInfo thisInfo, Variables variables, EvaluationMode evaluationMode) throws EvaluationException {
+			ObjectInfo context = contextParseResult.evaluate(thisInfo, variables, evaluationMode);
+			return evaluate(context, evaluationMode);
 		}
 
-		private ObjectInfo evaluate(ObjectInfo context, JavaSettings settings) throws EvaluationException {
-			ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(settings.getEvaluationMode());
+		private ObjectInfo evaluate(ObjectInfo context, EvaluationMode evaluationMode) throws EvaluationException {
+			ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
 			ObjectInfo fieldValueInfo;
 			try {
 				fieldValueInfo = objectInfoProvider.getFieldValueInfo(context.getObject(), fieldInfo);

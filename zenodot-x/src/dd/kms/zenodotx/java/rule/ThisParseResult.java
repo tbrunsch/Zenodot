@@ -1,14 +1,15 @@
 package dd.kms.zenodotx.java.rule;
 
+import dd.kms.zenodot.api.Variables;
+import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
-import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
 
 class ThisParseResult implements InstanceParseResult {
 	private final ObjectInfo evaluatedResult;
 
-	ThisParseResult(JavaSettings settings) {
-		this.evaluatedResult = evaluate(settings);
+	ThisParseResult(ObjectInfo thisInfo) {
+		this.evaluatedResult = thisInfo;
 	}
 
 	@Override
@@ -17,7 +18,7 @@ class ThisParseResult implements InstanceParseResult {
 	}
 
 	@Override
-	public ObjectInfo evaluate(JavaSettings settings) {
-		return settings.getThisInfo();
+	public ObjectInfo evaluate(ObjectInfo thisInfo, Variables variables, EvaluationMode evaluationMode) {
+		return thisInfo;
 	}
 }
