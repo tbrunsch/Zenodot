@@ -1,57 +1,112 @@
 package dd.kms.zenodotx.java.rule;
 
-import dd.kms.zenodot.api.matching.MatchRating;
-import dd.kms.zenodot.api.matching.StringMatch;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.api.result.CodeCompletion;
-import dd.kms.zenodot.api.result.ExecutableArgumentInfo;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
-import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
-import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
-import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
-import dd.kms.zenodot.framework.flowcontrol.SyntaxException;
-import dd.kms.zenodot.framework.matching.MatchRatings;
-import dd.kms.zenodot.framework.parsers.AbstractParser;
-import dd.kms.zenodot.framework.parsers.CallerContext;
-import dd.kms.zenodot.framework.parsers.expectations.ObjectParseResultExpectation;
-import dd.kms.zenodot.framework.result.CodeCompletions;
-import dd.kms.zenodot.framework.result.ObjectParseResult;
-import dd.kms.zenodot.framework.result.ParseResults;
-import dd.kms.zenodot.framework.tokenizer.TokenStream;
-import dd.kms.zenodot.framework.utils.ParseUtils;
-import dd.kms.zenodot.framework.utils.ParserToolbox;
 import dd.kms.zenodot.framework.wrappers.ExecutableInfo;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
-import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
+import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.java.JavaSettings;
 
-import java.lang.reflect.Executable;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Utility class for providing information about executables (methods, constructors)
  */
 public class ExecutableDataProvider
 {
-//	// defines a priority when determining which overloaded executable (method/constructor) to call
-//	private static final List<List<TypeMatch>>	ALLOWED_EXECUTABLE_RATINGS_BY_PHASE = Arrays.asList(
-//		Arrays.asList(TypeMatch.FULL),
-//		Arrays.asList(TypeMatch.INHERITANCE, TypeMatch.PRIMITIVE_CONVERSION),
-//		Arrays.asList(TypeMatch.BOXED, TypeMatch.BOXED_AND_CONVERSION, TypeMatch.BOXED_AND_INHERITANCE)
-//	);
-//
-//	private final JavaSettings	settings;
-//
-//	public ExecutableDataProvider(JavaSettings settings) {
-//		this.settings = settings;
-//	}
-//
-//	public void getExecutableToInvoke(List<ExecutableInfo> methodInfos, List<ObjectInfo> parameterInfos) {
-//		// TODO
-//	}
-//
+	private static final Map<TypeMatch, Integer>	PARAMETER_TYPE_MATCH_RATING	= ImmutableMap.of(
+		TypeMatch.FULL,						3,
+		TypeMatch.INHERITANCE,				2,
+		TypeMatch.PRIMITIVE_CONVERSION,		2,
+		TypeMatch.BOXED,					1,
+		TypeMatch.BOXED_AND_CONVERSION,		1,
+		TypeMatch.BOXED_AND_INHERITANCE,	1
+	);
+
+	// TODO: Do we need this? Does the EvaluationMode suffice?
+	private final JavaSettings	settings;
+
+	public ExecutableDataProvider(JavaSettings settings) {
+		this.settings = settings;
+	}
+
+	public ExecutableInfo getExecutableToInvoke(List<ExecutableInfo> executables, List<ObjectInfo> parameters) throws SemanticException {
+		Preconditions.checkState(!executables.isEmpty(), "Internal error: No executables available. This case should have been handled before.");
+		String executableName = executables.get(0).getName();
+		Map<ExecutableInfo, Integer> executableRatings = rateExecutables(executables, parameters, true);
+		int bestRating = executableRatings.values().stream().max(Integer::compareTo).orElse(0);
+		if (bestRating == 0) {
+			// no matching executable found
+			throw new SemanticException("None of the overloads of method '" + executableName + "()' match the given parameters");
+		}
+		List<ExecutableInfo> bestMatchingExecutables = executableRatings.keySet().stream()
+			.filter(executable -> executableRatings.get(executable) == bestRating)
+			.collect(Collectors.toList());
+		if (bestMatchingExecutables.size() == 1) {
+			return bestMatchingExecutables.get(0);
+		}
+		// ambiguous call
+		throw new SemanticException("The call '" + executableName + "(...)' is ambiguous.");
+	}
+
+	private Map<ExecutableInfo, Integer> rateExecutables(List<ExecutableInfo> executables, List<ObjectInfo> parameters, boolean allParametersSpecified) {
+		return executables.stream()
+			.collect(Collectors.toMap(
+				executable -> executable,
+				executable -> rateExecutable(executable, parameters, allParametersSpecified)
+			));
+	}
+
+	private int rateExecutable(ExecutableInfo executable, List<ObjectInfo> parameters, boolean allParametersSpecified) {
+		int numArguments = executable.getNumberOfArguments();
+		boolean variadic = executable.isVariadic();
+		IntPredicate numParameterCheck;
+		if (allParametersSpecified) {
+			numParameterCheck = variadic
+				? n -> n >= numArguments - 1
+				: n -> n == numArguments;
+		} else {
+			numParameterCheck = variadic
+				? n -> true
+				: n -> n <= numArguments;
+		}
+		int numParameters = parameters.size();
+		if (!numParameterCheck.test(numParameters)) {
+			// the number of specified parameters does not fit the executable -> worst rating
+			return 0;
+		}
+		ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(settings.getEvaluationMode());
+
+		// start with the best possible rating and optionally decrease it further
+		int rating = getParameterRating(TypeMatch.FULL, variadic);
+		for (int i = 0; i < numParameters; i++) {
+			ObjectInfo parameter = parameters.get(i);
+			Class<?> parameterType = objectInfoProvider.getType(parameter);
+			TypeMatch typeMatch = executable.rateArgumentTypeMatch(i, parameterType);
+			int parameterRating = getParameterRating(typeMatch, variadic);
+			rating = Math.min(rating, parameterRating);
+		}
+		return rating;
+	}
+
+	private int getParameterRating(TypeMatch typeMatch, boolean isVariadic) {
+		int typeMatchRating = PARAMETER_TYPE_MATCH_RATING.getOrDefault(typeMatch, 0);
+		if (typeMatchRating == 0) {
+			// type does not match
+			return 0;
+		}
+		/*
+		 * Ensure that the result is positive and that variadic methods always get a worse rating than
+		 * non-variadic methods, independent of their type match ratings.
+		 */
+		return typeMatchRating + (isVariadic ? 0 : 3);
+	}
+
 //	public CodeCompletions completeMethod(List<ExecutableInfo> methodInfos, boolean contextIsStatic, String expectedName, ObjectParseResultExpectation expectation, int insertionBegin, int insertionEnd) {
 //		List<CodeCompletion> codeCompletions = ParseUtils.createCodeCompletions(
 //			methodInfos,
@@ -226,5 +281,4 @@ public class ExecutableDataProvider
 //	private MatchRating rateMethod(ExecutableInfo methodInfo, String methodName, boolean contextIsStatic, ObjectParseResultExpectation expectation) {
 //		return MatchRatings.create(rateMethodByName(methodInfo, methodName), rateMethodByTypes(methodInfo, expectation), isMethodAccessDiscouraged(methodInfo, contextIsStatic));
 //	}
-
 }
