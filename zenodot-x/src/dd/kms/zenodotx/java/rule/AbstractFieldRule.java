@@ -102,13 +102,11 @@ public abstract class AbstractFieldRule<C> extends AbstractRule<C, InstanceParse
 
 		private ObjectInfo evaluate(ObjectInfo context, EvaluationMode evaluationMode) throws EvaluationException {
 			ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
-			ObjectInfo fieldValueInfo;
 			try {
-				fieldValueInfo = objectInfoProvider.getFieldValueInfo(context.getObject(), fieldInfo);
+				return objectInfoProvider.getFieldValueInfo(context.getObject(), fieldInfo);
 			} catch (AccessDeniedException e) {
 				throw new EvaluationException("Cannot access field '" + fieldInfo.getName() + "': " + e.getMessage());
 			}
-			return fieldValueInfo;
 		}
 	}
 }
