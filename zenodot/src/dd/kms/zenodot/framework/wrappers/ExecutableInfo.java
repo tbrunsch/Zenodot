@@ -21,6 +21,7 @@ public abstract class ExecutableInfo extends MemberInfo<Executable>
 	abstract boolean doIsArgumentIndexValid(int argIndex);
 	abstract Class<?> doGetExpectedArgumentType(int argIndex);
 	abstract TypeMatch doRateArgumentMatch(List<Class<?>> argumentTypes);
+	abstract TypeMatch doRateArgumentTypeMatch(int argIndex, Class<?> argumentType);
 	abstract Object[] doCreateArgumentArray(List<ObjectInfo> argumentInfos);
 
 	public Executable getExecutable() {
@@ -47,8 +48,13 @@ public abstract class ExecutableInfo extends MemberInfo<Executable>
 		return doGetExpectedArgumentType(argIndex);
 	}
 
+	// TODO: Do we still need this method?
 	public final TypeMatch rateArgumentMatch(List<Class<?>> argumentTypes) {
 		return doRateArgumentMatch(argumentTypes);
+	}
+
+	public final TypeMatch rateArgumentTypeMatch(int argIndex, Class<?> argumentType) {
+		return doRateArgumentTypeMatch(argIndex, argumentType);
 	}
 
 	public final Object[] createArgumentArray(List<ObjectInfo> argumentInfos) {

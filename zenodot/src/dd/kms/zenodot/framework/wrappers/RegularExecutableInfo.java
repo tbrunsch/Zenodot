@@ -39,13 +39,14 @@ public class RegularExecutableInfo extends ExecutableInfo
 		}
 		TypeMatch worstArgumentClassMatchRating = TypeMatch.FULL;
 		for (int i = 0; i < argumentTypes.size(); i++) {
-			TypeMatch argumentClassMatchRating = rateArgumentTypeMatch(i, argumentTypes.get(i));
+			TypeMatch argumentClassMatchRating = doRateArgumentTypeMatch(i, argumentTypes.get(i));
 			worstArgumentClassMatchRating = MatchRatings.worstOf(worstArgumentClassMatchRating, argumentClassMatchRating);
 		}
 		return worstArgumentClassMatchRating;
 	}
 
-	private TypeMatch rateArgumentTypeMatch(int argIndex, Class<?> argumentType) {
+	@Override
+	TypeMatch doRateArgumentTypeMatch(int argIndex, Class<?> argumentType) {
 		Class<?> expectedArgumentType = getExpectedArgumentType(argIndex);
 		return MatchRatings.rateTypeMatch(expectedArgumentType, argumentType);
 	}

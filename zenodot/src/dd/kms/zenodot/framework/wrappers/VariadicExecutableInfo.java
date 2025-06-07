@@ -47,13 +47,14 @@ public class VariadicExecutableInfo extends ExecutableInfo
 		}
 		TypeMatch worstArgumentClassMatchRating = TypeMatch.FULL;
 		for (int i = 0; i < argumentTypes.size(); i++) {
-			TypeMatch argumentClassMatchRating = rateArgumentTypeMatch(i, argumentTypes.get(i));
+			TypeMatch argumentClassMatchRating = doRateArgumentTypeMatch(i, argumentTypes.get(i));
 			worstArgumentClassMatchRating = MatchRatings.worstOf(worstArgumentClassMatchRating, argumentClassMatchRating);
 		}
 		return worstArgumentClassMatchRating;
 	}
 
-	private TypeMatch rateArgumentTypeMatch(int argIndex, Class<?> argumentType) {
+	@Override
+	TypeMatch doRateArgumentTypeMatch(int argIndex, Class<?> argumentType) {
 		int lastArgIndex = getNumberOfArguments() - 1;
 		if (argIndex == lastArgIndex && argumentType == InfoProvider.NO_TYPE) {
 			/*
