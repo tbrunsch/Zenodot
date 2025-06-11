@@ -21,7 +21,7 @@ predefined `SimpleRule`s: ...
 
 ### Recursive Expressions
 
-Sometimes, expressions are defined recursively, referencing themselves. This is not trivial to realize. One can achieve this by declaring a mutable rule and initializing it somehow. Afterwards, one can define it recursively because in this definition the rule can now be referenced. Rules for which such a workaround can be applied are `OrRule`s, which should be used when the expression consists if different alternatives anyway, and `DelegatingRule`s, which are meant to use if there are no alternatives.
+Sometimes, expressions are defined recursively, referencing themselves. This is not trivial to realize. One can achieve this by declaring a mutable rule and initializing it somehow. Afterward, one can define it recursively because in this definition the rule can now be referenced. Rules for which such a workaround can be applied are `OrRule`s, which should be used when the expression consists if different alternatives anyway, and `DelegatingRule`s, which are meant to use if there are no alternatives.
 
 ## Events
 
@@ -51,7 +51,7 @@ The `InstanceParseResult` covers two related functions:
 
 * It contains information about the currently parsed/evaluated instance in form of an `ObjectInfo` (cf. `InstanceParseResult.getEvaluatedResult()`). The return value contains at least the class of the parse result and in some cases (for dynamic typing always, for mixed typing only if possible without side effects) the evaluated instance.
 
-* It contains a method via which one can reproduce the evaluated result (cf. `InstanceParseResult.evaluate(JavaSettings)`). However, it is never called to reproduce exactly this result. Instead, the settings are slighly modified when evaluating the expression again as demonstrated by the following workflows where this method is called:
+* It contains a method via which one can reproduce the evaluated result (cf. `InstanceParseResult.evaluate(JavaSettings)`). However, it is never called to reproduce exactly this result. Instead, the settings are slightly modified when evaluating the expression again as demonstrated by the following workflows where this method is called:
 
   * Actual expression evaluation: As mentioned in the previous point, the evaluated result returned by `InstanceParseResult.getEvaluatedResult()` does not always contain the evaluated instance. For static typing it usually only contains type information, and for mixed typing it only contains the evaluated instance if the evaluation did not cause any side effects. To obtain the evaluated object, the method `InstanceParseResult.evaluate(JavaSettings)` is called with almost the same settings, but with a mode that forces the evaluation of all subexpressions.
 
