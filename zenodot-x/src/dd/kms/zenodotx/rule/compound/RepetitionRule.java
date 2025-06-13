@@ -26,7 +26,6 @@ public class RepetitionRule<IO, S> extends AbstractRule<IO, IO, S> implements Co
 				parser.restoreState();
 				return output;
 			} catch (SemanticException e) {
-				parser.restoreState();
 				throw e;
 			}
 			parser.dropStoredState();
