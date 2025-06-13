@@ -5,27 +5,20 @@ import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
-import dd.kms.zenodotx.Parser;
 import dd.kms.zenodotx.exception.EvaluationException;
-import dd.kms.zenodotx.exception.SemanticException;
-import dd.kms.zenodotx.exception.SyntaxException;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
-import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.Rule;
-import dd.kms.zenodotx.rule.compound.CompoundRule;
+import dd.kms.zenodotx.rule.compound.AbstractCombineRule;
 
-public class InstanceOfRule extends AbstractRule<InstanceParseResult, InstanceParseResult, JavaSettings> implements CompoundRule<InstanceParseResult, InstanceParseResult, JavaSettings>
+public class InstanceOfRule extends AbstractCombineRule<InstanceParseResult, Class<?>, InstanceParseResult, JavaSettings>
 {
-	private final Rule<Void, Class<?>, JavaSettings>	classRule;
-
 	public InstanceOfRule(Rule<Void, Class<?>, JavaSettings> classRule) {
-		this.classRule = classRule;
+		super(classRule);
 	}
 
 	@Override
-	public InstanceParseResult parse(InstanceParseResult instance, JavaSettings settings, Parser<JavaSettings> parser) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
-		Class<?> clazz = parser.parse(classRule, null, settings);
+	protected InstanceParseResult combine(InstanceParseResult instance, Class<?> clazz, JavaSettings settings) throws EvaluationException {
 		return new InstanceOfParseResult(instance, clazz, settings.getEvaluationMode());
 	}
 

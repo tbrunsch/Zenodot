@@ -1,28 +1,20 @@
 package dd.kms.zenodotx.java.rule;
 
-import dd.kms.zenodotx.Parser;
-import dd.kms.zenodotx.exception.EvaluationException;
-import dd.kms.zenodotx.exception.SemanticException;
-import dd.kms.zenodotx.exception.SyntaxException;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
-import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.Rule;
-import dd.kms.zenodotx.rule.compound.CompoundRule;
+import dd.kms.zenodotx.rule.compound.AbstractCombineRule;
 
-public class MethodParameterRule extends AbstractRule<ExecutableParseInfo, ExecutableParseInfo, JavaSettings> implements CompoundRule<ExecutableParseInfo, ExecutableParseInfo, JavaSettings>
+public class MethodParameterRule extends AbstractCombineRule<ExecutableParseInfo, InstanceParseResult, ExecutableParseInfo, JavaSettings>
 {
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expressionRule;
-
 	public MethodParameterRule(Rule<Void, InstanceParseResult, JavaSettings> expressionRule) {
-		this.expressionRule = expressionRule;
+		super(expressionRule);
 	}
 
 	@Override
-	public ExecutableParseInfo parse(ExecutableParseInfo input, JavaSettings settings, Parser<JavaSettings> parser) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
-		InstanceParseResult parameter = parser.parse(expressionRule, null, settings);
-		input.addParameter(parameter);
-		return input;
+	protected ExecutableParseInfo combine(ExecutableParseInfo executableParseInfo, InstanceParseResult parameter, JavaSettings settings) {
+		executableParseInfo.addParameter(parameter);
+		return executableParseInfo;
 	}
 
 	@Override
