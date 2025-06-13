@@ -19,14 +19,8 @@ public class ThenRule<I, O, T, S> extends AbstractRule<I, T, S> implements Compo
 
 	@Override
 	public T parse(I input, S settings, Parser<S> parser) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
-		parser.storeState();
-		try {
-			O interimOutput = parser.parse(firstRule, input, settings);
-			return parser.parse(secondRule, interimOutput, settings);
-		} catch (Throwable t) {
-			parser.restoreState();
-			throw t;
-		}
+		O interimOutput = parser.parse(firstRule, input, settings);
+		return parser.parse(secondRule, interimOutput, settings);
 	}
 
 	@Override
