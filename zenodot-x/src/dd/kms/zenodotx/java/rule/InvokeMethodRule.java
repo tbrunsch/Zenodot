@@ -53,6 +53,11 @@ public class InvokeMethodRule extends AbstractRule<ExecutableParseInfo, Instance
 		};
 	}
 
+	@Override
+	protected String getGenericName() {
+		return "invoke method";
+	}
+
 	private static class MethodParseResult implements InstanceParseResult
 	{
 		private final InstanceParseResult		contextParseResult;

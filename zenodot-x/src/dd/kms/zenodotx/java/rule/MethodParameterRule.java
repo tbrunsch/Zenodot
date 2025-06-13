@@ -24,4 +24,9 @@ public class MethodParameterRule extends AbstractRule<ExecutableParseInfo, Execu
 		input.addParameter(parameter);
 		return input;
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "method(..., parameter, ...)";
+	}
 }

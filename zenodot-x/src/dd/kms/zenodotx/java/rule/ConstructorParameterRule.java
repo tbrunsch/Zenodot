@@ -24,4 +24,9 @@ public class ConstructorParameterRule extends AbstractRule<ConstructorParseInfo,
 		input.addParameter(parameter);
 		return input;
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "new Class(..., parameter, ...)";
+	}
 }

@@ -27,4 +27,9 @@ public class MethodNameOfThisRule extends AbstractMethodNameRule<Void>
 	protected boolean isContextStatic() {
 		return false;
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "method(...)";
+	}
 }

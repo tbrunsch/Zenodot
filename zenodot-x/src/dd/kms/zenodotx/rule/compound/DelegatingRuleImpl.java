@@ -18,18 +18,10 @@ public class DelegatingRuleImpl<I, O, S> extends AbstractRule<I, O, S> implement
 	}
 
 	@Override
-	public String name() {
-		String name = super.name();
-		if (name != null) {
-			return name;
-		}
-		if (delegate != null) {
-			name = delegate.name();
-			if (name != null) {
-				return "Delegate to \"" + name + "\"";
-			}
-		}
-		return null;
+	protected String getGenericName() {
+		return delegate != null
+			? "Delegate to \"" + delegate + "\""
+			: null;
 	}
 
 	@Override

@@ -41,4 +41,9 @@ public class KeywordRule<IO> extends AbstractRule<IO, IO, JavaSettings> implemen
 			}
 		};
 	}
+
+	@Override
+	protected String getGenericName() {
+		return keyword;
+	}
 }

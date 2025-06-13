@@ -15,8 +15,19 @@ public abstract class AbstractRule<I, O, S> implements Rule<I, O, S>
 		return name;
 	}
 
+	protected String getGenericName() {
+		return null;
+	}
+
 	@Override
 	public String toString() {
-		return name != null ? name : super.toString();
+		if (name != null) {
+			return name;
+		}
+		String genericName = getGenericName();
+		if (genericName != null) {
+			return genericName;
+		}
+		return super.toString();
 	}
 }

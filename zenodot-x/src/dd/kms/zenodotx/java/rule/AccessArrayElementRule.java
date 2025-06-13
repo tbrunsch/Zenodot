@@ -42,6 +42,11 @@ public class AccessArrayElementRule extends AbstractRule<ArrayAccessInfo, Instan
 		};
 	}
 
+	@Override
+	protected String getGenericName() {
+		return "evaluate array[index]";
+	}
+
 	private static class ArrayElementAccessParseResult implements InstanceParseResult
 	{
 		private final InstanceParseResult	arrayParseResult;

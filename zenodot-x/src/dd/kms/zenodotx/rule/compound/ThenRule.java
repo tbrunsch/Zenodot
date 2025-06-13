@@ -28,4 +28,9 @@ public class ThenRule<I, O, T, S> extends AbstractRule<I, T, S> implements Compo
 			throw t;
 		}
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "rule 1, then rule 2";
+	}
 }

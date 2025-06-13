@@ -28,6 +28,11 @@ public class ClassCastRule extends AbstractRule<Class<?>, InstanceParseResult, J
 		return new CastParseResult(targetClass, expression, settings.getEvaluationMode());
 	}
 
+	@Override
+	protected String getGenericName() {
+		return "evaluate (Class) expression";
+	}
+
 	private static class CastParseResult implements InstanceParseResult
 	{
 		private final Class<?>				targetClass;

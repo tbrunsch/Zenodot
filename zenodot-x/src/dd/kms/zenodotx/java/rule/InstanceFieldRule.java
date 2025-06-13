@@ -28,4 +28,9 @@ public class InstanceFieldRule extends AbstractFieldRule<InstanceParseResult>
 	protected boolean isContextStatic() {
 		return false;
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "instance.field";
+	}
 }

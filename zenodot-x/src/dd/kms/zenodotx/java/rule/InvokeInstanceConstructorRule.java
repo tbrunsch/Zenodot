@@ -37,4 +37,9 @@ public class InvokeInstanceConstructorRule extends AbstractRule<ConstructorParse
 			}
 		};
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "evaluate new Class(...)";
+	}
 }

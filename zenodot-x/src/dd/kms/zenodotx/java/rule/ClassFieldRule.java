@@ -23,4 +23,9 @@ public class ClassFieldRule extends AbstractFieldRule<Class<?>>
 	protected boolean isContextStatic() {
 		return false;
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "Class.field";
+	}
 }

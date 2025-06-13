@@ -44,6 +44,11 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 				: settings;
 	}
 
+	@Override
+	protected String getGenericName() {
+		return "evaluate ... op rhs";
+	}
+
 	private static class BinaryOperatorInstanceParseResult implements InstanceParseResult
 	{
 		private final InstanceParseResult	lhs;

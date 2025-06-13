@@ -42,4 +42,9 @@ public class ArrayIndexRule extends AbstractRule<InstanceParseResult, ArrayAcces
 		}
 		return new ArrayAccessInfo(array, index);
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "...[index]";
+	}
 }

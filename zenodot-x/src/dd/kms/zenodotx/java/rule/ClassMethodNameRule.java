@@ -23,4 +23,9 @@ public class ClassMethodNameRule extends AbstractMethodNameRule<Class<?>>
 	protected boolean isContextStatic() {
 		return false;
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "Class.method(...)";
+	}
 }

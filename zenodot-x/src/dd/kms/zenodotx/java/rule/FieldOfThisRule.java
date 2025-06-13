@@ -27,4 +27,9 @@ public class FieldOfThisRule extends AbstractFieldRule<Void>
 	protected boolean isContextStatic() {
 		return false;
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "field";
+	}
 }

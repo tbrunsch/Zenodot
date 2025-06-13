@@ -31,4 +31,9 @@ public class EndOfInputRule<IO> extends AbstractRule<IO, IO, JavaSettings> imple
 			}
 		};
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "end of input";
+	}
 }

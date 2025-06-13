@@ -31,4 +31,9 @@ public class RepetitionRule<IO, S> extends AbstractRule<IO, IO, S> implements Co
 			}
 		}
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "(rule)*";
+	}
 }

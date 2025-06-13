@@ -29,6 +29,11 @@ public class InstanceOfRule extends AbstractRule<InstanceParseResult, InstancePa
 		return new InstanceOfParseResult(instance, clazz, settings.getEvaluationMode());
 	}
 
+	@Override
+	protected String getGenericName() {
+		return "evaluate ... instanceof Class";
+	}
+
 	private static class InstanceOfParseResult implements InstanceParseResult
 	{
 		private final InstanceParseResult	instance;

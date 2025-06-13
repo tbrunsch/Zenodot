@@ -75,4 +75,9 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 	public List<Rule<I, O, S>> getAlternatives() {
 		return alternatives;
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "rule 1 or rule 2 or ...";
+	}
 }

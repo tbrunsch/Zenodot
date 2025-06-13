@@ -27,4 +27,9 @@ public class InstanceMethodNameRule extends AbstractMethodNameRule<InstanceParse
 	protected boolean isContextStatic() {
 		return false;
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "instance.method(...)";
+	}
 }

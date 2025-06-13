@@ -24,4 +24,9 @@ public class SpaceRule<IO, S> extends AbstractRule<IO, IO, S> implements SimpleR
 			}
 		};
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "Space";
+	}
 }

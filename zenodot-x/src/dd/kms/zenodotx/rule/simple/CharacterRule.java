@@ -30,4 +30,9 @@ public class CharacterRule<IO, S> extends AbstractRule<IO, IO, S> implements Sim
 			}
 		};
 	}
+
+	@Override
+	protected String getGenericName() {
+		return "'" + c + "'";
+	}
 }

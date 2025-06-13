@@ -62,6 +62,11 @@ public class ConditionalOperatorExecuteRule extends AbstractRule<InstanceParseRe
 														: PartToEvaluate.NONE;
 	}
 
+	@Override
+	protected String getGenericName() {
+		return "... ? part 1 : part 2";
+	}
+
 	private static class ConditionalOperatorParseResult implements InstanceParseResult
 	{
 		private final InstanceParseResult	condition;
