@@ -71,6 +71,10 @@ public class Parser<S>
 		characterStream.setPosition(characterStreamPositions.pop());
 	}
 
+	public void dropStoredState() {
+		characterStreamPositions.pop();
+	}
+
 	/**
 	 * Internal exception to indicate that an event (e.g. code completion) has handled. This exception is required
 	 * to give callers a chance to react accordingly: Sequence parsing will stop, while Or parsing will try another
