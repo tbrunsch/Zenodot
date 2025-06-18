@@ -219,13 +219,30 @@ public class JavaRuleSet
 	private final Rule<Void, InstanceParseResult, JavaSettings>	expression12	=	binaryOperatorLeftToRight(simpleExpression, operator12);
 	private final Rule<Void, InstanceParseResult, JavaSettings>	expression11	=	binaryOperatorLeftToRight(expression12, operator11);
 	private final Rule<Void, InstanceParseResult, JavaSettings>	expression10	=	binaryOperatorLeftToRight(expression11, operator10);
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression9		=	or(
-																						binaryOperatorLeftToRight(expression10, operator9),
-																						expression10
-																							.then(keyword("instanceof"))
-																							.then(space())
-																							.then(instanceofCheck)
-																					);
+
+	/*
+	 * Originally, we wrote
+	 *	private final Rule<Void, InstanceParseResult, JavaSettings>	expression9		=	or(
+	 *																						binaryOperatorLeftToRight(expression10, operator9),
+	 *																						expression10
+	 *																							.then(keyword("instanceof"))
+	 *																							.then(space())
+	 *																							.then(instanceofCheck)
+	 *																					);
+	 *
+	 * but that way the first expression10 is evaluated in both cases of the or(). If the evaluation
+	 * of expression10 causes side effects, then this side effect would occur multiple times that way.
+	 */
+	private final BinaryOperatorExecuteRule 					operator9ExecuteRule	= new BinaryOperatorExecuteRule(operator9, expression10);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression9				= expression10
+																							.then(
+																								or(
+																									repeat(operator9ExecuteRule),
+																									JavaRuleSet.<InstanceParseResult>keyword("instanceof")
+																										.then(space())
+																										.then(instanceofCheck)
+																								)
+																							).name("Expression op expression (left to right) or expression instanceof Class");
 
 	private final Rule<Void, InstanceParseResult, JavaSettings>	expression8		=	binaryOperatorLeftToRight(expression9, operator8);
 	private final Rule<Void, InstanceParseResult, JavaSettings>	expression7		=	binaryOperatorLeftToRight(expression8, operator7);
