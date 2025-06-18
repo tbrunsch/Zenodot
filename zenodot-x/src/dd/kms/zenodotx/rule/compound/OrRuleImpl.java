@@ -60,6 +60,34 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 		}
 	}
 
+	@Override
+	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
+		if (alternatives.isEmpty()) {
+			// TODO: Add error message: No alternatives defined for this or rule
+			throw new SyntaxException();
+		}
+		SyntaxException syntaxException = null;
+		int maxParsePosition = -1;
+		for (Rule<I, O, S> alternative : alternatives) {
+			parser.storeState();
+			SyntaxException exception = null;
+			try {
+				parser.parseSyntactically(alternative);
+			} catch (SyntaxException e) {
+				exception = e;
+			}
+			int parsePosition = parser.getParsePosition();
+			if (parsePosition > maxParsePosition) {
+				maxParsePosition = parsePosition;
+				syntaxException = exception;
+			}
+			parser.restoreState();
+		}
+		parser.setParsePosition(maxParsePosition);
+		if (syntaxException != null) {
+			throw syntaxException;
+		}
+	}
 
 	@Override
 	public void setAlternatives(Rule<I, O, S>... rules) {

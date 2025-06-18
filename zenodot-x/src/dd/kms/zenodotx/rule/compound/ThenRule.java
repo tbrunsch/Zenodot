@@ -24,6 +24,12 @@ public class ThenRule<I, O, T, S> extends AbstractRule<I, T, S> implements Compo
 	}
 
 	@Override
+	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
+		parser.parseSyntactically(firstRule);
+		parser.parseSyntactically(secondRule);
+	}
+
+	@Override
 	protected String getGenericName() {
 		return "rule 1, then rule 2";
 	}

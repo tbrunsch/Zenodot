@@ -33,6 +33,20 @@ public class RepetitionRule<IO, S> extends AbstractRule<IO, IO, S> implements Co
 	}
 
 	@Override
+	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
+		while (true) {
+			parser.storeState();
+			try {
+				parser.parseSyntactically(ruleToRepeat);
+			} catch (SyntaxException e) {
+				parser.restoreState();
+				return;
+			}
+			parser.dropStoredState();
+		}
+	}
+
+	@Override
 	protected String getGenericName() {
 		return "(rule)*";
 	}

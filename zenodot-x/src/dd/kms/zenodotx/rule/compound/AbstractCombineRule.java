@@ -31,4 +31,9 @@ public abstract class AbstractCombineRule<I, O, Combined, S> extends AbstractRul
 		O output = parser.parse(ruleToCombine, null, settings);
 		return combine(input, output, settings);
 	}
+
+	@Override
+	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
+		parser.parseSyntactically(ruleToCombine);
+	}
 }

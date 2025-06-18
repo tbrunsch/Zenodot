@@ -33,6 +33,12 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 		return new BinaryOperatorInstanceParseResult(lhs, rhs, operator, settings.getEvaluationMode());
 	}
 
+	@Override
+	public void parseSyntactically(Parser<JavaSettings> parser) throws SyntaxException {
+		parser.parseSyntactically(operatorRule);
+		parser.parseSyntactically(rightHandSideRule);
+	}
+
 	private static boolean isApplyShortCircuitEvaluation(ObjectInfo lhsInfo, String operator) {
 		// TODO
 		return false;

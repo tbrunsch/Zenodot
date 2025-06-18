@@ -44,6 +44,11 @@ public class ArrayIndexRule extends AbstractRule<InstanceParseResult, ArrayAcces
 	}
 
 	@Override
+	public void parseSyntactically(Parser<JavaSettings> parser) throws SyntaxException {
+		parser.parseSyntactically(expressionRule);
+	}
+
+	@Override
 	protected String getGenericName() {
 		return "...[index]";
 	}

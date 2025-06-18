@@ -26,10 +26,18 @@ public class DelegatingRuleImpl<I, O, S> extends AbstractRule<I, O, S> implement
 
 	@Override
 	public O parse(I input, S settings, Parser<S> parser) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
-		if (delegate != null) {
-			return parser.parse(delegate, input, settings);
+		if (delegate == null) {
+			throw new IllegalStateException("No delegate has been set for this " + DelegatingRule.class.getSimpleName());
 		}
-		throw new IllegalStateException("No delegate has been set for this " + DelegatingRule.class.getSimpleName());
+		return parser.parse(delegate, input, settings);
+	}
+
+	@Override
+	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
+		if (delegate == null) {
+			throw new IllegalStateException("No delegate has been set for this " + DelegatingRule.class.getSimpleName());
+		}
+		parser.parseSyntactically(delegate);
 	}
 
 	@Override
