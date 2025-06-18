@@ -39,39 +39,53 @@ Therefore, Zenodot X uses an I-O-approach: Each rule gets an input (initially `n
 
 It turned out that a single type of rule does not suffice to represent complex languages: Some rules are more for defining the flow of the parsing process, while others are responsible for parsing concrete parts of the expression. The former rules do not actually parse anything directly, but are composed of rules and know when to parse which, how to set the inputs of each of these rules, and what to do with their outputs. These rules are therefore called "compound rules". The latter are called "simple rules". The most relevant compound rules are the "or rule", which gets an input and successively tries to use it as input for the rules it contains until one succeeds, and the "then rule", which gets and input, uses it as input for its first rule, then uses the output of the first rule as input for the second rule, and then returns the output of the second rule.   
 
-## Ambiguous Alternatives
+## Handling Alternatives in the Or-Rule
+
+### Ambiguous Alternatives
 
 Let's consider the syntax for a parameter list of a method or a constructor. It is
 
 a. either empty
 b. or a parameter, followed by an arbitrary number of a comma and a further parameter
 
-When a non-empty parameter list is provided, then both alternatives match. The problem is that currently we have to decide now which path to take without having the information of subsequent rules, particularly the subsequent rule that expects a closing parenthesis `)`.
+When a non-empty parameter list is provided, then both alternatives match. The problem is that, as of now, we have to decide which path to take without having the information of subsequent rules, particularly the subsequent rule that expects a closing parenthesis `)`.
 
-The problem can be solved in different ways:
+The initial idea was that the "or rule" returns the result of the first matching rule (if any). Based on this, the problem can be solved in different ways:
 
-1. Keep the framework and the ambiguity, but ensure that the preferred alternative is considered first. In this case we could first consider the non-empty parameter list and, if it does not match, then the empty parameter list, relying on the framework to stop at the first alternative that matches. This approach has the following rules:
-** It is not clear whether this simple trick works in other cases as well.
-** The solution does not work if there is a non-empty parameter list, but with a syntax error. In this case, the framework will next try to parse the empty parameter list and parse it successfully. The resulting error will be something like "')' is missing", which is incorrect. 
+1. Keep the framework and the ambiguity, but ensure that the preferred alternative is considered first. In this case we could first consider the non-empty parameter list and, if it does not match, then the empty parameter list, relying on the framework to stop at the first alternative that matches. This approach has the following drawbacks:
+   ** It is not clear whether this simple trick works in other cases as well.
+   ** The solution does not work if there is a non-empty parameter list, but with a syntax error. In this case, the framework will next try to parse the empty parameter list and parse it successfully. The resulting error will be something like "')' is missing", which is incorrect.
+
 2. Keep the framework, but resolve the ambiguity: We could make the framework unambiguous by requiring that after the empty parameter list there is a closing parenthesis `)`. Note that we don't want to parse it (this is the responsibility of the subsequent rule), but we only want to look ahead. This approach requires extending the framework by some `peek` rule or similar. The drawback of this approach is that some rules must now know in which context they are applied, making it less likely that we can reuse it.
+ 
 3. Rework the framework to handle ambiguity: This would probably be the cleanest approach, but we could not yet come up with a new concept that could handle this. The "or rule" could return multiple possible outputs, but it is not clear yet how to proceed with this. All other compound rules would have to deal with multiple results and produce multiple results themselves. Additionally, a syntax error when parsing one alternative does not necessarily mean that this is the wrong path though another alternative could be parsed without error (cf. aforementioned example). Therefore, the caller of the "or rule" must be aware of the successful parse result, which it tries to parse further, and the syntax error. Then he can decide whether the syntax error or a potentially new syntax error has higher priority. The drawback of this approach is obviously that it requires a rework of the concept and that it is currently unclear whether this will work in the end.
 
-The current favorite is the second approach, but the third approach is appealing because those who define a grammar for a language then don't have to think about ambiguity much.
+### Yielding correct errors
 
-## Yielding correct errors
-
-As we have discussed before, first we parse the syntax of a partial expression, and then we evaluate it semantically. The original idea was that, when we have alternatives and none of them can be parsed successfully, then a semantic error is more reliable than a syntax error because it means that we have already parsed the syntax before. Hence, the idea was to return the semantic error instead of the syntax error for describing why the expression could not be parsed. It turned out that this approach does not work reliably. Consider, e.g., the following expression: `f(§`. Though it looks like a method call, we would get a semantic error that there is no field `f`. The reason is that, currently, the field rule only expects an identifier, which is `f`. The syntax for the field rule can be parsed, but then we get a semantic error that the field `f` is unknown. On the other hand, when applying the method rule, then we might either stop when evaluating `f` semantically because the method does not exist, or even worse, if it exists, then we get a syntax error when parsing `§`. This syntax error is the correct one, but the semantic error of the field has been preferred initially.
+As we have discussed before, first we parse the syntax of a partial expression, and then we evaluate it semantically. The original idea was that, when we have alternatives and none of them can be parsed successfully, then a semantic error is more reliable than a syntax error because it means that we have already parsed the syntax successfully before. Hence, the idea was to return the semantic error instead of the syntax error for describing why the expression could not be parsed. It turned out that this approach does not work reliably. Consider, e.g., the following expression: `f(§`. Though it looks like a method call, we would get a semantic error that there is no field `f`. The reason is that, currently, the field rule only expects an identifier, which is `f`. The syntax for the field rule can be parsed, but then we get a semantic error that the field `f` is unknown. On the other hand, when applying the method rule, then we might either stop when evaluating `f` semantically because the method does not exist, or even worse, if it exists, then we get a syntax error when parsing `§`. This syntax error is the correct one, but the semantic error of the field has been preferred initially.
 
 There are different approaches to handle this issue:
 
-1. The field rule could be extended by expecting no `)` afterward (similar as approach 2 for resolving ambiguity). With this, we would get a syntax error rather than a semantic error, but still this alone would not completely resolve the issue in the case that we also get a syntax error when parsing the expression as method call.
+a. The field rule could be extended by expecting no `)` afterward (similar as Approach 2 for resolving ambiguity). With this, we would get a syntax error rather than a semantic error, but still this alone would not completely resolve the issue in the case that we also get a syntax error when parsing the expression as method call.
 
-2. When creating syntax and semantic errors, we should add an information how far we have parse the expression. We could then prefer paths for which we reached positions closer to the end of the expression. This alone would not completely resolve the issue in the case that `f` is no method.
+b. When creating syntax and semantic errors, we should add an information how far we have parse the expression. We could then prefer paths for which we reached positions closer to the end of the expression. This alone would not completely resolve the issue in the case that `f` is no method.
 
-3. When getting a semantic error, we could continue parsing at least the syntax of subsequent rules to see how far we can come in order to get a higher position that we can assign to the semantic error.
+c. When getting a semantic error, we could continue parsing at least the syntax of subsequent rules to see how far we can come in order to get a higher position that we can assign to the semantic error.
 
-Approaches 1 and 2 together would solve the issue in our example when preferring semantic errors over syntactic errors if we reached the same position with both because for the field rule we would get a syntax error, but for the method rule we would either get a semantic error for the same position (which would then be preferred) or a syntax error at a later position, which would be preferred. However, having to add a not-`)` rule to the field rule feels about dirty.
+Approaches a and b together would solve the issue in our example when preferring semantic errors over syntactic errors if we reached the same position with both because for the field rule we would get a syntax error, but for the method rule we would either get a semantic error for the same position (which would then be preferred) or a syntax error at a later position, which would be preferred. However, having to add a not-`)` rule to the field rule feels a bit dirty.
 
-Approaches 2 and 3 together would solve the issue in our example too: For the method rule we would either get a semantic error or a syntactic error, depending on whether there is a method `f`, but in any case the syntax can be parsed further. While approach 3 could be realized for some basic rules, we don't want implementers of all other compound rules carry such a burden. Hence, a feasible realization of approach 3 would be to implement it partially, which is also not very clean.
+Approaches b and c together would solve the issue in our example too: For the method rule we would either get a semantic error or a syntactic error, depending on whether there is a method `f`, but in any case the syntax can be parsed further.
 
 Note that the problem is related to the ambiguity problem mentioned one section before, so we will have to consider both when deciding for a solution.
+
+### Current Solution
+
+We solved the problem of yielding correct errors with Approaches b and c. Additionally, we changed the handling of results when parsing the "or rule" and applied the same logic as for determining the correct errors. This seemed to be a consistent approach. The current solution can be described as follows:
+
+* The "or rule" does not return the first matching alternative (if any), but collects everything: results, syntax errors, semantic errors, and code completions. That way, the order of the alternatives does not matter anymore, which is a clear decision against Approach 1. With this, we have the chance to consider the parameter list alternative though the empty rule always matches.
+* We determine how far we could parse an alternative purely syntactically. This does not affect the outcome of that alternative, but how it is weighted: The further we could parse an alternative, the more "likely" it is that it is chosen as the correct alternative. This is Approach c. Note that, when an alternative could be parsed successfully or when we get a syntax error, then we don't need to parse syntactically again, but we already know how far we could parse. It is only relevant when we obtain a semantic error to determine the correct error message.  
+* The aggregation logic is now as follows:
+  * When there are code completions, then these will be returned.
+  * Otherwise, the outcome will be that of the alternative for which we could parse furthest (Approach b). Ties are (partially) broken as follows:
+    * Results are favored over semantic errors, which are favored over syntactic errors.
+    * If the outcome is still ambiguous, then we must merge the possible outcomes.
