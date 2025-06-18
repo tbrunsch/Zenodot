@@ -71,12 +71,10 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 				ExpressionParser.evaluate(expression, -1, null, settings);
 			}
 			fail("Expression: " + expression + " - Expected an exception");
-		} catch (SyntaxException | SemanticException | EvaluationException | Parser.EventResultException e) {
-			assertTrue("Expression: " + expression + " - Expected exception of class '" + expectedExceptionClass.getSimpleName() + "', but caught an exception of class '" + e.getClass().getSimpleName() + "'", expectedExceptionClass.isInstance(e));
 		} catch (AssertionError e) {
 			throw e;
-		} catch (Throwable t) {
-			Assume.assumeNoException("Skipped test. Reason: We cannot be sure whether this exception is expected or not", t);
+		} catch (Exception e) {
+			assertTrue("Expression: " + expression + " - Expected exception of class '" + expectedExceptionClass.getSimpleName() + "', but caught an exception of class '" + e.getClass().getSimpleName() + "'", expectedExceptionClass.isInstance(e));
 		}
 	}
 
