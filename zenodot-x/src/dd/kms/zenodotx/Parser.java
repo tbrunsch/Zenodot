@@ -98,6 +98,11 @@ public class Parser<S>
 		characterStream.setPosition(parsePosition);
 	}
 
+	@Override
+	public String toString() {
+		return characterStream.toString();
+	}
+
 	/**
 	 * Internal exception to indicate that an event (e.g. code completion) has handled. This exception is required
 	 * to give callers a chance to react accordingly: Sequence parsing will stop, while Or parsing will try another

@@ -30,4 +30,11 @@ public class CharacterStream
 		}
 		return Optional.empty();
 	}
+
+	@Override
+	public String toString() {
+		return s.substring(0, position)
+			+ "^"
+			+ s.substring(position);
+	}
 }
