@@ -154,12 +154,17 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 
 		public void addResult(O result, int parsePosition) {
 			if (!eventResultExceptions.isEmpty()) {
-				// eventResultExceptions have the highest priority
+				// event result exceptions have the highest priority
 				return;
+			}
+			if (parsePosition > maxParsePosition) {
+				// prefer new result to previously found results
+				results.clear();
 			}
 			if (parsePosition >= maxParsePosition) {
 				maxParsePosition = parsePosition;
 				results.add(result);
+				// prefer result to semantic exceptions and syntax exceptions
 				semanticExceptions.clear();
 				syntaxExceptions.clear();
 			}
@@ -171,9 +176,15 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 				return;
 			}
 			int parsePosition = parsePositionSupplier.getAsInt();
-			if (parsePosition > maxParsePosition || parsePosition == maxParsePosition && results.isEmpty()) {
+			if (parsePosition > maxParsePosition) {
+				// prefer semantic exception to previously found results and semantic exceptions
+				results.clear();
+				semanticExceptions.clear();
+			}
+			if (parsePosition >= maxParsePosition && results.isEmpty()) {
 				maxParsePosition = parsePosition;
 				semanticExceptions.add(semanticException);
+				// prefer semantic exception to syntax exceptions
 				syntaxExceptions.clear();
 			}
 		}
@@ -183,7 +194,13 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 				// eventResultExceptions have the highest priority
 				return;
 			}
-			if (parsePosition > maxParsePosition || parsePosition == maxParsePosition && results.isEmpty() && semanticExceptions.isEmpty()) {
+			if (parsePosition > maxParsePosition) {
+				// prefer syntax exception to previously found results, semantic exceptions, and syntax exceptions
+				results.clear();
+				semanticExceptions.clear();
+				syntaxExceptions.clear();
+			}
+			if (parsePosition >= maxParsePosition && results.isEmpty() && semanticExceptions.isEmpty()) {
 				maxParsePosition = parsePosition;
 				syntaxExceptions.add(syntaxException);
 			}
