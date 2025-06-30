@@ -5,21 +5,21 @@ import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
 
-class ThisParseResult implements InstanceParseResult
+class ConstantParseResult implements InstanceParseResult
 {
-	private final ObjectInfo evaluatedResult;
+	private final ObjectInfo	constantInfo;
 
-	ThisParseResult(ObjectInfo thisInfo) {
-		this.evaluatedResult = thisInfo;
+	ConstantParseResult(ObjectInfo constantInfo) {
+		this.constantInfo = constantInfo;
 	}
 
 	@Override
 	public ObjectInfo getEvaluatedResult() {
-		return evaluatedResult;
+		return constantInfo;
 	}
 
 	@Override
 	public ObjectInfo evaluate(ObjectInfo thisInfo, Variables variables, EvaluationMode evaluationMode) {
-		return thisInfo;
+		return constantInfo;
 	}
 }

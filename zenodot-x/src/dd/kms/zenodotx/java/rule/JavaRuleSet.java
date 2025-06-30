@@ -1,5 +1,6 @@
 package dd.kms.zenodotx.java.rule;
 
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
 import dd.kms.zenodotx.rule.Rule;
@@ -26,14 +27,16 @@ public class JavaRuleSet
 	// region Literals
 	private final Rule<Void, InstanceParseResult, JavaSettings>		integerLiteral			=	new IntegerLiteralRule();
 	private final Rule<Void, InstanceParseResult, JavaSettings>		floatingPointLiteral	=	new FloatingPointLiteralRule();
-	private final Rule<Void, InstanceParseResult, JavaSettings>		booleanLiteral			=	new BooleanLiteralRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		falseLiteral			=	new KeywordLiteralRule("false", InfoProvider.createObjectInfo(false, boolean.class));
+	private final Rule<Void, InstanceParseResult, JavaSettings>		trueLiteral				=	new KeywordLiteralRule("true", InfoProvider.createObjectInfo(false, boolean.class));
 	private final Rule<Void, InstanceParseResult, JavaSettings>		characterLiteral		=	new CharacterLiteralRule();
 	private final Rule<Void, InstanceParseResult, JavaSettings>		stringLiteral			=	new StringLiteralRule();
-	private final Rule<Void, InstanceParseResult, JavaSettings>		nullLiteral				=	new NullLiteralRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		nullLiteral				=	new KeywordLiteralRule("null", InfoProvider.NULL_LITERAL);
 	private final OrRule<Void, InstanceParseResult, JavaSettings>	literal					=	or(
 																									integerLiteral,
 																									floatingPointLiteral,
-																									booleanLiteral,
+																									falseLiteral,
+																									trueLiteral,
 																									characterLiteral,
 																									stringLiteral,
 																									nullLiteral
