@@ -13,6 +13,11 @@ import static dd.kms.zenodotx.rule.Rules.*;
 
 public class JavaRuleSet
 {
+	private static final String	INTEGER_LITERAL_REGEX	= "0|[1-9][0-9]*";
+	private static final String	LONG_LITERAL_REGEX		= "(0|[1-9][0-9]*)[lL]";
+	private static final String	FLOAT_LITERAL_REGEX 	= "([0-9]+([eE][+-]?[0-9]+)?|\\.[0-9]+([eE][+-]?[0-9]+)?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?)[fF]";
+	private static final String	DOUBLE_LITERAL_REGEX 	= "[0-9]+([eE][+-]?[0-9]+)?[dD]|[eE][+-]?[0-9]+[dD]?|\\.[0-9]+([eE][+-]?[0-9]+)?[dD]?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?[dD]?";
+
 	private final OrRule<Void, InstanceParseResult, JavaSettings>	expression			= Rules.<Void, InstanceParseResult, JavaSettings>or()
 																							.name("Expression");
 	private final Rule<Void, InstanceParseResult, JavaSettings>		fullExpression		= expression
@@ -25,8 +30,10 @@ public class JavaRuleSet
 																			.name("Expression in parentheses");
 
 	// region Literals
-	private final Rule<Void, InstanceParseResult, JavaSettings>		integerLiteral			=	new IntegerLiteralRule();
-	private final Rule<Void, InstanceParseResult, JavaSettings>		floatingPointLiteral	=	new FloatingPointLiteralRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		integerLiteral			=	new NumericLiteralRule<>(int.class, INTEGER_LITERAL_REGEX, Integer::parseInt);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		longLiteral				=	new NumericLiteralRule<>(long.class, LONG_LITERAL_REGEX, Long::parseLong);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		floatLiteral			=	new NumericLiteralRule<>(float.class, FLOAT_LITERAL_REGEX, Float::parseFloat);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		doubleLiteral			=	new NumericLiteralRule<>(double.class, DOUBLE_LITERAL_REGEX, Double::parseDouble);
 	private final Rule<Void, InstanceParseResult, JavaSettings>		falseLiteral			=	new KeywordLiteralRule("false", InfoProvider.createObjectInfo(false, boolean.class));
 	private final Rule<Void, InstanceParseResult, JavaSettings>		trueLiteral				=	new KeywordLiteralRule("true", InfoProvider.createObjectInfo(false, boolean.class));
 	private final Rule<Void, InstanceParseResult, JavaSettings>		characterLiteral		=	new CharacterLiteralRule();
@@ -35,7 +42,9 @@ public class JavaRuleSet
 	private final Rule<Void, InstanceParseResult, JavaSettings>		thisLiteral				=	new ThisRule();
 	private final OrRule<Void, InstanceParseResult, JavaSettings>	literal					=	or(
 																									integerLiteral,
-																									floatingPointLiteral,
+																									longLiteral,
+																									floatLiteral,
+																									doubleLiteral,
 																									falseLiteral,
 																									trueLiteral,
 																									characterLiteral,
