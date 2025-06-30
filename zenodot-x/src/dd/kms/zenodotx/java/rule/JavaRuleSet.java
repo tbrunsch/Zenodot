@@ -32,6 +32,7 @@ public class JavaRuleSet
 	private final Rule<Void, InstanceParseResult, JavaSettings>		characterLiteral		=	new CharacterLiteralRule();
 	private final Rule<Void, InstanceParseResult, JavaSettings>		stringLiteral			=	new StringLiteralRule();
 	private final Rule<Void, InstanceParseResult, JavaSettings>		nullLiteral				=	new KeywordLiteralRule("null", InfoProvider.NULL_LITERAL);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		thisLiteral				=	new ThisRule();
 	private final OrRule<Void, InstanceParseResult, JavaSettings>	literal					=	or(
 																									integerLiteral,
 																									floatingPointLiteral,
@@ -39,7 +40,8 @@ public class JavaRuleSet
 																									trueLiteral,
 																									characterLiteral,
 																									stringLiteral,
-																									nullLiteral
+																									nullLiteral,
+																									thisLiteral
 																								).name("Literal");
 	// endregion
 
