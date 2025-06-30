@@ -35,7 +35,7 @@ public class JavaRuleSet
 	private final Rule<Void, InstanceParseResult, JavaSettings>		floatLiteral			=	new NumericLiteralRule<>(float.class, FLOAT_LITERAL_REGEX, Float::parseFloat);
 	private final Rule<Void, InstanceParseResult, JavaSettings>		doubleLiteral			=	new NumericLiteralRule<>(double.class, DOUBLE_LITERAL_REGEX, Double::parseDouble);
 	private final Rule<Void, InstanceParseResult, JavaSettings>		falseLiteral			=	new KeywordLiteralRule("false", InfoProvider.createObjectInfo(false, boolean.class));
-	private final Rule<Void, InstanceParseResult, JavaSettings>		trueLiteral				=	new KeywordLiteralRule("true", InfoProvider.createObjectInfo(false, boolean.class));
+	private final Rule<Void, InstanceParseResult, JavaSettings>		trueLiteral				=	new KeywordLiteralRule("true", InfoProvider.createObjectInfo(true, boolean.class));
 	private final Rule<Void, InstanceParseResult, JavaSettings>		characterLiteral		=	new CharacterLiteralRule();
 	private final Rule<Void, InstanceParseResult, JavaSettings>		stringLiteral			=	new StringLiteralRule();
 	private final Rule<Void, InstanceParseResult, JavaSettings>		nullLiteral				=	new KeywordLiteralRule("null", InfoProvider.NULL_LITERAL);
