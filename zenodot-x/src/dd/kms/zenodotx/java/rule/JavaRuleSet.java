@@ -13,10 +13,39 @@ import static dd.kms.zenodotx.rule.Rules.*;
 
 public class JavaRuleSet
 {
-	private static final String	INTEGER_LITERAL_REGEX	= "0|[1-9][0-9]*";
-	private static final String	LONG_LITERAL_REGEX		= "(0|[1-9][0-9]*)[lL]";
-	private static final String	FLOAT_LITERAL_REGEX 	= "([0-9]+([eE][+-]?[0-9]+)?|\\.[0-9]+([eE][+-]?[0-9]+)?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?)[fF]";
-	private static final String	DOUBLE_LITERAL_REGEX 	= "[0-9]+([eE][+-]?[0-9]+)?[dD]|[eE][+-]?[0-9]+[dD]?|\\.[0-9]+([eE][+-]?[0-9]+)?[dD]?|[0-9]+\\.[0-9]*([eE][+-]?[0-9]+)?[dD]?";
+	private static final String	INTEGER_LITERAL_REGEX				= regexOr("0", "[1-9][0-9]*");
+	private static final String	LONG_LITERAL_REGEX					= "(" + INTEGER_LITERAL_REGEX + ")" + "[lL]";
+	private static final String	DECIMALS_REGEX						= "\\.[0-9]+";
+	private static final String	POTENTIALLY_EMPTY_DECIMALS_REGEX	= "\\.[0-9]*";
+	private static final String EXPONENT_REGEX						= "[eE][+-]?[0-9]+";
+	private static final String	FLOAT_LITERAL_REGEX 				= regexOr(
+																			// 123f; suffix required to distinguish from int
+																			"(" + INTEGER_LITERAL_REGEX + ")" + "[fF]",
+																			"(" +
+																			// suffix required to distinguish from double
+																			regexOr(
+																				// 123E-4f
+																				INTEGER_LITERAL_REGEX + EXPONENT_REGEX,
+																				// 123.f, 123.45E6f
+																				INTEGER_LITERAL_REGEX + POTENTIALLY_EMPTY_DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?",
+																				// .123f, .123E-4f
+																				DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?"
+																			) + ")" + "[fF]"
+																		);
+	private static final String	DOUBLE_LITERAL_REGEX 				= regexOr(
+																			// 123d; suffix required to distinguish from int
+																			"(" + INTEGER_LITERAL_REGEX + ")" + "[dD]",
+																			"(" +
+																			// suffix optional
+																			regexOr(
+																				// 123E-4f
+																				INTEGER_LITERAL_REGEX + EXPONENT_REGEX,
+																				// 123.f, 123.45E6f
+																				INTEGER_LITERAL_REGEX + POTENTIALLY_EMPTY_DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?",
+																				// .123f, .123E-4f
+																				DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?"
+																			) + ")" + "[dD]?"
+																		);
 
 	private final OrRule<Void, InstanceParseResult, JavaSettings>	expression			= Rules.<Void, InstanceParseResult, JavaSettings>or()
 																							.name("Expression");
@@ -350,5 +379,9 @@ public class JavaRuleSet
 			.name("Condition ? expression1 : expression2")
 		);
 		return expression;
+	}
+
+	private static String regexOr(String... alternatives) {
+		return String.join("|", alternatives);
 	}
 }
