@@ -59,10 +59,10 @@ public class JavaRuleSet
 																			.name("Expression in parentheses");
 
 	// region Literals
-	private final Rule<Void, InstanceParseResult, JavaSettings>		integerLiteral			=	new NumericLiteralRule<>(int.class, INTEGER_LITERAL_REGEX, Integer::parseInt);
-	private final Rule<Void, InstanceParseResult, JavaSettings>		longLiteral				=	new NumericLiteralRule<>(long.class, LONG_LITERAL_REGEX, Long::parseLong);
-	private final Rule<Void, InstanceParseResult, JavaSettings>		floatLiteral			=	new NumericLiteralRule<>(float.class, FLOAT_LITERAL_REGEX, Float::parseFloat);
-	private final Rule<Void, InstanceParseResult, JavaSettings>		doubleLiteral			=	new NumericLiteralRule<>(double.class, DOUBLE_LITERAL_REGEX, Double::parseDouble);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		integerLiteral			=	new NumericLiteralRule<>(int.class, INTEGER_LITERAL_REGEX, Integer::parseInt, 0);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		longLiteral				=	new NumericLiteralRule<>(long.class, LONG_LITERAL_REGEX, Long::parseLong, 1);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		floatLiteral			=	new NumericLiteralRule<>(float.class, FLOAT_LITERAL_REGEX, Float::parseFloat, 1, 2);
+	private final Rule<Void, InstanceParseResult, JavaSettings>		doubleLiteral			=	new NumericLiteralRule<>(double.class, DOUBLE_LITERAL_REGEX, Double::parseDouble, 1, 2);
 	private final Rule<Void, InstanceParseResult, JavaSettings>		falseLiteral			=	new KeywordLiteralRule("false", InfoProvider.createObjectInfo(false, boolean.class));
 	private final Rule<Void, InstanceParseResult, JavaSettings>		trueLiteral				=	new KeywordLiteralRule("true", InfoProvider.createObjectInfo(true, boolean.class));
 	private final Rule<Void, InstanceParseResult, JavaSettings>		characterLiteral		=	new CharacterLiteralRule();
