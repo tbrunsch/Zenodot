@@ -9,13 +9,10 @@ import dd.kms.zenodot.api.matching.StringMatch;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.result.CodeCompletion;
 import dd.kms.zenodot.api.settings.Imports;
-import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.matching.MatchRatings;
 import dd.kms.zenodot.framework.result.CodeCompletions;
 import dd.kms.zenodot.framework.utils.ParseUtils;
-import dd.kms.zenodot.framework.utils.ParserToolbox;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
-import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.result.codecompletions.CodeCompletionFactory;
 import dd.kms.zenodot.impl.utils.ClassUtils;
 import io.github.classgraph.ClassGraph;
@@ -96,10 +93,9 @@ public class ClassDataProvider
 	private final Imports	imports;
 	private final Class<?>	thisClass;
 
-	public ClassDataProvider(ParserToolbox parserToolbox) {
-		this.imports = parserToolbox.getSettings().getImports();
-		ObjectInfo thisInfo = parserToolbox.getThisInfo();
-		this.thisClass = parserToolbox.inject(ObjectInfoProvider.class).getType(thisInfo);
+	public ClassDataProvider(Imports imports, Class<?> thisClass) {
+		this.imports = imports;
+		this.thisClass = thisClass;
 	}
 
 	public static boolean packageExists(String packageName) {

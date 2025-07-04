@@ -1,7 +1,9 @@
 package dd.kms.zenodot.impl.parsers;
 
 import dd.kms.zenodot.api.debug.LogLevel;
+import dd.kms.zenodot.api.settings.Imports;
 import dd.kms.zenodot.api.settings.ParserSettingsBuilder;
+import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.flowcontrol.CodeCompletionException;
 import dd.kms.zenodot.framework.flowcontrol.EvaluationException;
 import dd.kms.zenodot.framework.flowcontrol.InternalErrorException;
@@ -43,7 +45,7 @@ public class UnqualifiedClassParser<T extends ParseResult, S extends ParseResult
 	protected ParseResult doParse(TokenStream tokenStream, ObjectInfo contextInfo, S expectation) throws SyntaxException, CodeCompletionException, InternalErrorException, EvaluationException {
 		String className = tokenStream.readClass(this::suggestClasses);
 
-		ClassDataProvider classDataProvider = parserToolbox.inject(ClassDataProvider.class);
+		ClassDataProvider classDataProvider = getClassDataProvider();
 		Class<?> importedClass = classDataProvider.getImportedClass(className);
 
 		increaseConfidence(ParserConfidence.POTENTIALLY_RIGHT_PARSER);
@@ -64,7 +66,14 @@ public class UnqualifiedClassParser<T extends ParseResult, S extends ParseResult
 
 		log(LogLevel.SUCCESS, "suggesting classes matching '" + nameToComplete + "'");
 
-		ClassDataProvider classDataProvider = parserToolbox.inject(ClassDataProvider.class);
+		ClassDataProvider classDataProvider = getClassDataProvider();
 		return classDataProvider.completeClassName(insertionBegin, insertionEnd, nameToComplete, considerAllClassesForCompletions);
+	}
+
+	private ClassDataProvider getClassDataProvider() {
+		Imports imports = parserToolbox.getSettings().getImports();
+		ObjectInfo thisInfo = parserToolbox.getThisInfo();
+		Class<?> thisClass = parserToolbox.inject(ObjectInfoProvider.class).getType(thisInfo);
+		return new ClassDataProvider(imports, thisClass);
 	}
 }
