@@ -89,3 +89,16 @@ We solved the problem of yielding correct errors with Approaches b and c. Additi
   * Otherwise, the outcome will be that of the alternative for which we could parse furthest (Approach b). Ties are (partially) broken as follows:
     * Results are favored over semantic errors, which are favored over syntactic errors.
     * If the outcome is still ambiguous, then we must merge the possible outcomes.
+
+### Required Adaptions of this Approach
+
+Consider the invalid expression "(byte)". There are (at least) two conflicting alternatives when trying to parse this expression:
+
+1. The expression could be interpreted as field "byte" wrapped in parentheses. This interpretation would lead to a semantic error because "byte" is no field.
+2. The expression could be interpreted as casting something to "byte". This interpretation would lead to a syntax error because the expression that shall be cast to byte is missing.
+
+With our solution, after detecting that "byte" is no field, the "or rule" will nevertheless parse the expression syntactically until reaching the end of the expression. Hence, both interpretations can be parsed syntactically to the end. Since the first interpretation "only" yields a semantic error and no syntactic error like the second interpretation, the former one would be preferred, which is not what we want. The problem is that our current solution does not consider how far both expressions could be parsed semantically.
+
+As a workaround we still compare the maximum positions until which the expression can be parsed syntactically, but if both are the same, then we compare how far the expression could be parsed semantically with these interpretations. This solves the problem in our example because for the first interpretation the semantic error already occurs at "byte", whereas for the second interpretation no semantic error occurs at all.
+
+Only if two alternatives have identical semantic and syntactic parse positions, then we break ties as described in the previous section: Results are favored over semantic errors, which are favored over syntactic errors. 

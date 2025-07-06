@@ -10,7 +10,6 @@ import dd.kms.zenodotx.rule.Rule;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.IntSupplier;
 
 public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule<I, O, S>
 {
@@ -34,9 +33,9 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 				O result = parser.parse(alternative, input, settings);
 				resultAggregator.addResult(result, parser.getParsePosition());
 			} catch (SyntaxException e) {
-				resultAggregator.addSyntaxException(e, parser.getParsePosition());
+				resultAggregator.addSyntaxException(e);
 			} catch (SemanticException e) {
-				resultAggregator.addSemanticException(e, () -> {
+				if (e.getSyntacticParsePosition() < 0) {
 					parser.restoreState();
 					parser.storeState();
 					try {
@@ -44,8 +43,9 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 					} catch (SyntaxException ignored) {
 						/* does not matter */
 					}
-					return parser.getParsePosition();
-				});
+					e.setSyntacticParsePosition(parser.getParsePosition());
+				}
+				resultAggregator.addSemanticException(e);
 			} catch (Parser.EventResultException e) {
 				resultAggregator.addEventResultException(e);
 			}
@@ -117,15 +117,22 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 	 *         these have the highest priority.
 	 *     </li>
 	 *     <li>
-	 *         Otherwise, the outcome(s) with the highest parse position win(s). It is not clear that this heuristic
-	 *         always yields the correct result, but it will work very often, and we hope that rules can be formulated
-	 *         such that this heuristic works correctly.<br>
+	 *         Otherwise, the outcome(s) with the highest syntactic parse position win(s). It is not clear that this
+	 *         heuristic always yields the correct result, but it will work very often, and we hope that rules can be
+	 *         formulated such that this heuristic works correctly.<br>
 	 *         <br>
 	 *         Note that an alternative that returns a result is not necessarily the correct one. The empty rule, which
 	 *         is used, e.g., as alternative in method and constructor parameter lists, always succeeds, but this is not
 	 *         always the correct rule to use.<br>
 	 *         <br>
-	 *         When multiple types of outcomes have the same parse position, ties are broken as follows:
+	 *         When multiple types of outcomes have the same parse position, then the one with the highest regular parse
+	 *         position wins. Note that only for {@code SemanticException}s there is a difference between these two:
+	 *         The "regular" parse position at which the {@code SemanticException} has occurred. The {@code OrRule}
+	 *         will then try to parse the input further syntactically-only, potentially leading to a higher syntactic
+	 *         parse position.
+	 *         <br>
+	 *         If multiple types of outcomes are equal with respect to the aforementioned metrics, then ties are broken
+	 *         as follows:
 	 *         <ol>
 	 *             <li>Results have the highest priority.</li>
 	 *             <li>{@link SemanticException}s have medium priority.</li>
@@ -141,7 +148,7 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 		private final List<SemanticException>				semanticExceptions		= new ArrayList<>();
 		private final List<SyntaxException>					syntaxExceptions		= new ArrayList<>();
 
-		private int	maxParsePosition	= -1;
+		private ParseProgress	bestParseProgress	= new ParseProgress(-1);
 
 		public void addEventResultException(Parser.EventResultException eventResultException) {
 			eventResultExceptions.add(eventResultException);
@@ -155,12 +162,15 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 				// event result exceptions have the highest priority
 				return;
 			}
-			if (parsePosition > maxParsePosition) {
+			ParseProgress parseProgress = new ParseProgress(parsePosition);
+			int comparison = parseProgress.compareTo(bestParseProgress);
+
+			if (comparison > 0) {
 				// prefer new result to previously found results
 				results.clear();
 			}
-			if (parsePosition >= maxParsePosition) {
-				maxParsePosition = parsePosition;
+			if (comparison >= 0) {
+				bestParseProgress = parseProgress;
 				results.add(result);
 				// prefer result to semantic exceptions and syntax exceptions
 				semanticExceptions.clear();
@@ -168,44 +178,49 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			}
 		}
 
-		public void addSemanticException(SemanticException semanticException, IntSupplier parsePositionSupplier) {
+		public void addSemanticException(SemanticException semanticException) {
 			if (!eventResultExceptions.isEmpty()) {
 				// eventResultExceptions have the highest priority
 				return;
 			}
-			int parsePosition = parsePositionSupplier.getAsInt();
-			if (parsePosition > maxParsePosition) {
+			ParseProgress parseProgress = new ParseProgress(semanticException.getParsePosition(), semanticException.getSyntacticParsePosition());
+			int comparison = parseProgress.compareTo(bestParseProgress);
+
+			if (comparison > 0) {
 				// prefer semantic exception to previously found results and semantic exceptions
 				results.clear();
 				semanticExceptions.clear();
 			}
-			if (parsePosition >= maxParsePosition && results.isEmpty()) {
-				maxParsePosition = parsePosition;
+			if (comparison >= 0 && results.isEmpty()) {
+				bestParseProgress = parseProgress;
 				semanticExceptions.add(semanticException);
 				// prefer semantic exception to syntax exceptions
 				syntaxExceptions.clear();
 			}
 		}
 
-		public void addSyntaxException(SyntaxException syntaxException, int parsePosition) {
+		public void addSyntaxException(SyntaxException syntaxException) {
 			if (!eventResultExceptions.isEmpty()) {
 				// eventResultExceptions have the highest priority
 				return;
 			}
-			if (parsePosition > maxParsePosition) {
+			ParseProgress parseProgress = new ParseProgress(syntaxException.getParsePosition());
+			int comparison = parseProgress.compareTo(bestParseProgress);
+
+			if (comparison > 0) {
 				// prefer syntax exception to previously found results, semantic exceptions, and syntax exceptions
 				results.clear();
 				semanticExceptions.clear();
 				syntaxExceptions.clear();
 			}
-			if (parsePosition >= maxParsePosition && results.isEmpty() && semanticExceptions.isEmpty()) {
-				maxParsePosition = parsePosition;
+			if (comparison >= 0 && results.isEmpty() && semanticExceptions.isEmpty()) {
+				bestParseProgress = parseProgress;
 				syntaxExceptions.add(syntaxException);
 			}
 		}
 
 		public int getAggregatedParsePosition() {
-			return maxParsePosition;
+			return bestParseProgress.getParsePosition();
 		}
 
 		public O aggregate() throws Parser.EventResultException, SemanticException, SyntaxException {
@@ -226,6 +241,40 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 				throw syntaxExceptions.get(0);
 			} else {
 				throw new IllegalStateException("The or rule seems to have no alternatives, but this case should have been handled before.");
+			}
+		}
+
+		private static class ParseProgress implements Comparable<ParseProgress>
+		{
+			private final int	parsePosition;
+			private final int	syntacticParsePosition;
+
+			ParseProgress(int parsePosition) {
+				this(parsePosition, parsePosition);
+			}
+
+			ParseProgress(int parsePosition, int syntacticParsePosition) {
+				this.parsePosition = parsePosition;
+				this.syntacticParsePosition = syntacticParsePosition;
+			}
+
+			int getParsePosition() {
+				return parsePosition;
+			}
+
+			@Override
+			public int compareTo(ParseProgress that) {
+				if (syntacticParsePosition < that.syntacticParsePosition) {
+					return -1;
+				} else if (syntacticParsePosition > that.syntacticParsePosition) {
+					return 1;
+				}
+				if (parsePosition < that.parsePosition) {
+					return -1;
+				} else if (parsePosition > that.parsePosition) {
+					return 1;
+				}
+				return 0;
 			}
 		}
 	}
