@@ -25,8 +25,7 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 	@Override
 	public O parse(I input, S settings, Parser<S> parser) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
 		if (alternatives.isEmpty()) {
-			// TODO: Add error message: No alternatives defined for this or rule
-			throw new SyntaxException();
+			throw new SyntaxException("No alternatives have been defined for this or rule");
 		}
 		ResultAggregator<O> resultAggregator = new ResultAggregator<>();
 		for (Rule<I, O, S> alternative : alternatives) {
@@ -64,8 +63,7 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 	@Override
 	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
 		if (alternatives.isEmpty()) {
-			// TODO: Add error message: No alternatives defined for this or rule
-			throw new SyntaxException();
+			throw new SyntaxException("No alternatives have been defined for this or rule");
 		}
 		SyntaxException syntaxException = null;
 		int maxParsePosition = -1;

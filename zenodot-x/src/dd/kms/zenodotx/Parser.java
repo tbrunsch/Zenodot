@@ -28,13 +28,25 @@ public class Parser<S>
 	}
 
 	public <I, O> O parse(Rule<I, O, S> rule, I input, S settings) throws SyntaxException, SemanticException, EvaluationException, EventResultException {
-		if (rule instanceof CompoundRule) {
-			return ((CompoundRule<I, O, S>) rule).parse(input, settings, this);
-		} else if (rule instanceof SimpleRule) {
-			return parseSimpleRule((SimpleRule<I, O, S>) rule, input, settings);
-		} else {
-			throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getName()
-				+ ". Only " + CompoundRule.class.getName() + " and " + SimpleRule.class.getName() + " are supported.");
+		try {
+			if (rule instanceof CompoundRule) {
+				return ((CompoundRule<I, O, S>) rule).parse(input, settings, this);
+			} else if (rule instanceof SimpleRule) {
+				return parseSimpleRule((SimpleRule<I, O, S>) rule, input, settings);
+			} else {
+				throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getName()
+					+ ". Only " + CompoundRule.class.getName() + " and " + SimpleRule.class.getName() + " are supported.");
+			}
+		} catch (SyntaxException e) {
+			if (e.getParsePosition() < 0) {
+				e.setParsePosition(getParsePosition());
+			}
+			throw e;
+		} catch (SemanticException e) {
+			if (e.getParsePosition() < 0) {
+				e.setParsePosition(getParsePosition());
+			}
+			throw e;
 		}
 	}
 
@@ -57,13 +69,20 @@ public class Parser<S>
 	}
 
 	public void parseSyntactically(Rule<?, ?, S> rule) throws SyntaxException {
-		if (rule instanceof CompoundRule) {
-			((CompoundRule<?, ?, S>) rule).parseSyntactically(this);
-		} else if (rule instanceof SimpleRule) {
-			parseSimpleRuleSyntactically((SimpleRule<?, ?, S>) rule);
-		} else {
-			throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getName()
-				+ ". Only " + CompoundRule.class.getName() + " and " + SimpleRule.class.getName() + " are supported.");
+		try {
+			if (rule instanceof CompoundRule) {
+				((CompoundRule<?, ?, S>) rule).parseSyntactically(this);
+			} else if (rule instanceof SimpleRule) {
+				parseSimpleRuleSyntactically((SimpleRule<?, ?, S>) rule);
+			} else {
+				throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getName()
+					+ ". Only " + CompoundRule.class.getName() + " and " + SimpleRule.class.getName() + " are supported.");
+			}
+		} catch (SyntaxException e) {
+			if (e.getParsePosition() < 0) {
+				e.setParsePosition(getParsePosition());
+			}
+			throw e;
 		}
 	}
 
