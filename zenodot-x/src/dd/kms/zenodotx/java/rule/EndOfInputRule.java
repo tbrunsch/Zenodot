@@ -14,7 +14,17 @@ public class EndOfInputRule<IO> extends AbstractRule<IO, IO, JavaSettings> imple
 	@Override
 	public SyntaxRule getSyntaxRule() {
 		Pattern pattern = Pattern.compile("\\s*$");
-		return () -> pattern;
+		return new SyntaxRule() {
+			@Override
+			public Pattern getRegex() {
+				return pattern;
+			}
+
+			@Override
+			public String getSyntaxDescription() {
+				return "End of input";
+			}
+		};
 	}
 
 	@Override

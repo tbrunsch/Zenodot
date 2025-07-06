@@ -94,7 +94,7 @@ public class Parser<S>
 		//       on then?
 		Pattern regex = syntaxRule.getRegex();
 		// TODO: What should the message be?
-		return characterStream.readRegex(regex).orElseThrow(SyntaxException::new);
+		return characterStream.readRegex(regex).orElseThrow(() -> new SyntaxException("Unexpected characters. Expected: " + syntaxRule.getSyntaxDescription()));
 	}
 
 	public void storeState() {

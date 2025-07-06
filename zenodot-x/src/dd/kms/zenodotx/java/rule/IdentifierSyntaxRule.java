@@ -14,4 +14,9 @@ public class IdentifierSyntaxRule implements SyntaxRule
 	public Pattern getRegex() {
 		return IDENTIFIER_PATTERN;
 	}
+
+	@Override
+	public String getSyntaxDescription() {
+		return "Identifier";
+	}
 }

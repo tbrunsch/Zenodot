@@ -19,7 +19,17 @@ public class ThisRule extends AbstractRule<Void, InstanceParseResult, JavaSettin
 
 	@Override
 	public SyntaxRule getSyntaxRule() {
-		return () -> THIS_PATTERN;
+		return new SyntaxRule() {
+			@Override
+			public Pattern getRegex() {
+				return THIS_PATTERN;
+			}
+
+			@Override
+			public String getSyntaxDescription() {
+				return "this";
+			}
+		};
 	}
 
 	@Override

@@ -5,4 +5,5 @@ import java.util.regex.Pattern;
 public interface SyntaxRule
 {
 	Pattern getRegex();
+	String getSyntaxDescription();
 }

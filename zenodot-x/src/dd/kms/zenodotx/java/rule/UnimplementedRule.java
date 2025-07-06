@@ -30,6 +30,11 @@ class UnimplementedRule<I, O> extends AbstractRule<I, O, JavaSettings> implement
 		public Pattern getRegex() {
 			return Pattern.compile("---");
 		}
+
+		@Override
+		public String getSyntaxDescription() {
+			return "Unimplemented rule";
+		}
 	}
 
 	private static class UnimplementedSemanticRule<I, O> implements SemanticRule<I, O, JavaSettings>

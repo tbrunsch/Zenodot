@@ -25,7 +25,17 @@ public class KeywordLiteralRule extends AbstractRule<Void, InstanceParseResult, 
 
 	@Override
 	public SyntaxRule getSyntaxRule() {
-		return () -> pattern;
+		return new SyntaxRule() {
+			@Override
+			public Pattern getRegex() {
+				return pattern;
+			}
+
+			@Override
+			public String getSyntaxDescription() {
+				return "Keyword \"" + keyword + "\"";
+			}
+		};
 	}
 
 	@Override

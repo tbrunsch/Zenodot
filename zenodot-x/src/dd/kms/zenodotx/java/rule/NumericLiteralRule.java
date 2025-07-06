@@ -32,7 +32,17 @@ public class NumericLiteralRule<T> extends AbstractRule<Void, InstanceParseResul
 
 	@Override
 	public SyntaxRule getSyntaxRule() {
-		return () -> pattern;
+		return new SyntaxRule() {
+			@Override
+			public Pattern getRegex() {
+				return pattern;
+			}
+
+			@Override
+			public String getSyntaxDescription() {
+				return "Literal of type \"" + literalClass.getSimpleName() + "\"";
+			}
+		};
 	}
 
 	@Override
