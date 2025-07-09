@@ -243,6 +243,10 @@ public class JavaRuleSet
 																													lambda
 																												).name("Simple expressions that may not have an object tail");
 
+	private final UnaryPrefixOperatorRegistry						unaryPrefixOperatorRegistry		= new UnaryPrefixOperatorRegistry();
+	private final Rule<Void, String, JavaSettings>					unaryPrefixOperator				= new UnaryPrefixOperatorParseRule(unaryPrefixOperatorRegistry);
+	private final Rule<String, InstanceParseResult, JavaSettings>	unaryPrefixOperatorExecuteRule	= new UnaryPrefixOperatorExecuteRule(unaryPrefixOperatorRegistry, simpleExpression);
+
 	// region Binary and ternary operators
 
 	// TODO: Support lazy evaluation/short circuit evaluation!
@@ -304,10 +308,32 @@ public class JavaRuleSet
 			.then(
 				repeat(objectTail)
 			),
-			simpleExpressionWithoutTailPotential
+			simpleExpressionWithoutTailPotential,
+			unaryPrefixOperator
+				.then(unaryPrefixOperatorExecuteRule)
 		);
 
 		expression.setAlternatives(expression1);
+
+		registerUnaryPrefixOperators();
+	}
+
+	protected void registerUnaryPrefixOperators() {
+		registerUnaryPrefixOperatorsWithAssignment();
+		registerSignOperators();
+		registerNegationOperators();
+	}
+
+	protected void registerUnaryPrefixOperatorsWithAssignment() {
+		UnaryOperators.registerOperatorsWithAssignment(unaryPrefixOperatorRegistry);
+	}
+
+	protected void registerSignOperators() {
+		UnaryOperators.registerSignOperators(unaryPrefixOperatorRegistry);
+	}
+
+	protected void registerNegationOperators() {
+		UnaryOperators.registerNegationOperators(unaryPrefixOperatorRegistry);
 	}
 
 	public Rule<Void, InstanceParseResult, JavaSettings> getFullExpression() {

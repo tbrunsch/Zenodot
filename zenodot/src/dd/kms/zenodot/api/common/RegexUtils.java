@@ -14,6 +14,16 @@ public class RegexUtils
 		return SPECIAL_REGEX_CHARACTERS.contains(c) ? "\\" + c : String.valueOf(c);
 	}
 
+	public static String escapeIfSpecial(String s) {
+		StringBuilder builder = new StringBuilder(s.length());
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			String escapedCharacter = RegexUtils.escapeIfSpecial(c);
+			builder.append(escapedCharacter);
+		}
+		return builder.toString();
+	}
+
 	/**
 	 * Returns a regex pattern for a wildcard string.<br>
 	 * <br>

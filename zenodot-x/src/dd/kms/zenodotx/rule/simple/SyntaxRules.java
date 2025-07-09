@@ -2,7 +2,9 @@ package dd.kms.zenodotx.rule.simple;
 
 import dd.kms.zenodot.api.common.RegexUtils;
 
+import java.util.Collection;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class SyntaxRules
 {
@@ -35,25 +37,16 @@ public class SyntaxRules
 		};
 	}
 
-	public static SyntaxRule forString(String s) {
-		StringBuilder builder = new StringBuilder(s.length());
-		for (int i = 0; i < s.length(); i++) {
-			char c = s.charAt(i);
-			String escapedCharacter = RegexUtils.escapeIfSpecial(c);
-			builder.append(escapedCharacter);
-		}
-		Pattern pattern = Pattern.compile(builder.toString());
-		return new SyntaxRule() {
-			@Override
-			public Pattern getRegex() {
-				return pattern;
-			}
+	public static Pattern getPatternForString(String s) {
+		String regex = RegexUtils.escapeIfSpecial(s);
+		return Pattern.compile(regex);
+	}
 
-			@Override
-			public String getSyntaxDescription() {
-				return "\"" + s + "\"";
-			}
-		};
+	public static Pattern getPatternForStringAlternatives(Collection<String> strings) {
+		String regex = strings.stream()
+			.map(s -> "(" + RegexUtils.escapeIfSpecial(s) + ")")
+			.collect(Collectors.joining("|"));
+		return Pattern.compile(regex);
 	}
 
 	public static SyntaxRule space() {

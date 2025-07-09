@@ -9,6 +9,8 @@ import dd.kms.zenodotx.rule.simple.SimpleRule;
 import dd.kms.zenodotx.rule.simple.SyntaxRule;
 import dd.kms.zenodotx.rule.simple.SyntaxRules;
 
+import java.util.regex.Pattern;
+
 public class KeywordRule<IO> extends AbstractRule<IO, IO, JavaSettings> implements SimpleRule<IO, IO, JavaSettings>
 {
 	private final String	keyword;
@@ -19,7 +21,18 @@ public class KeywordRule<IO> extends AbstractRule<IO, IO, JavaSettings> implemen
 
 	@Override
 	public SyntaxRule getSyntaxRule() {
-		return SyntaxRules.forString(keyword);
+		Pattern pattern = SyntaxRules.getPatternForString(keyword);
+		return new SyntaxRule() {
+			@Override
+			public Pattern getRegex() {
+				return pattern;
+			}
+
+			@Override
+			public String getSyntaxDescription() {
+				return "\"" + keyword + "\"";
+			}
+		};
 	}
 
 	@Override
