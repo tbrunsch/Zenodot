@@ -243,9 +243,9 @@ public class JavaRuleSet
 																													lambda
 																												).name("Simple expressions that may not have an object tail");
 
-	private final UnaryPrefixOperatorRegistry						unaryPrefixOperatorRegistry		= new UnaryPrefixOperatorRegistry();
-	private final Rule<Void, String, JavaSettings>					unaryPrefixOperator				= new UnaryPrefixOperatorParseRule(unaryPrefixOperatorRegistry);
-	private final Rule<String, InstanceParseResult, JavaSettings>	unaryPrefixOperatorExecuteRule	= new UnaryPrefixOperatorExecuteRule(unaryPrefixOperatorRegistry, simpleExpression);
+	private final UnaryOperatorRegistry unaryOperatorRegistry = new UnaryOperatorRegistry();
+	private final Rule<Void, String, JavaSettings>					unaryPrefixOperator				= new UnaryPrefixOperatorParseRule(unaryOperatorRegistry);
+	private final Rule<String, InstanceParseResult, JavaSettings>	unaryPrefixOperatorExecuteRule	= new UnaryPrefixOperatorExecuteRule(unaryOperatorRegistry, simpleExpression);
 
 	// region Binary and ternary operators
 
@@ -325,15 +325,15 @@ public class JavaRuleSet
 	}
 
 	protected void registerUnaryPrefixOperatorsWithAssignment() {
-		UnaryOperators.registerOperatorsWithAssignment(unaryPrefixOperatorRegistry);
+		UnaryOperators.registerPrefixOperatorsWithAssignment(unaryOperatorRegistry);
 	}
 
 	protected void registerSignOperators() {
-		UnaryOperators.registerSignOperators(unaryPrefixOperatorRegistry);
+		UnaryOperators.registerSignOperators(unaryOperatorRegistry);
 	}
 
 	protected void registerNegationOperators() {
-		UnaryOperators.registerNegationOperators(unaryPrefixOperatorRegistry);
+		UnaryOperators.registerNegationOperators(unaryOperatorRegistry);
 	}
 
 	public Rule<Void, InstanceParseResult, JavaSettings> getFullExpression() {

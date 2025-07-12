@@ -14,9 +14,9 @@ import java.util.regex.Pattern;
 
 public class UnaryPrefixOperatorParseRule extends AbstractRule<Void, String, JavaSettings> implements SimpleRule<Void, String, JavaSettings>
 {
-	private final UnaryPrefixOperatorRegistry	registry;
+	private final UnaryOperatorRegistry registry;
 
-	public UnaryPrefixOperatorParseRule(UnaryPrefixOperatorRegistry registry) {
+	public UnaryPrefixOperatorParseRule(UnaryOperatorRegistry registry) {
 		this.registry = registry;
 	}
 
