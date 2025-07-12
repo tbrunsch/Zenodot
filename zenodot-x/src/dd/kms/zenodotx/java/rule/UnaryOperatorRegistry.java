@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import dd.kms.zenodot.api.common.ReflectionUtils;
 import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.framework.matching.MatchRatings;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodotx.exception.SemanticException;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class UnaryOperatorRegistry
 		List<UnaryOperatorInfo> bestMatchingOperatorInfos = new ArrayList<>();
 		for (UnaryOperatorInfo operatorInfo : operatorInfos) {
 			Class<?> operandClass = operatorInfo.getOperandClass();
-			TypeMatch typeMatch = MatchRatings.rateTypeMatch(instanceType, operandClass);
+			TypeMatch typeMatch = MatchRatings.rateTypeMatch(operandClass, instanceType);
 			int comparisonResult = typeMatch.compareTo(bestTypeMatch);
 			if (comparisonResult < 0) {
 				bestMatchingOperatorInfos.clear();
@@ -42,7 +43,11 @@ public class UnaryOperatorRegistry
 			}
 		}
 		if (bestTypeMatch == TypeMatch.NONE) {
-			throw new SemanticException("Unary operator '" + operator + "' cannot be applied to instances of type '" + instanceType.getSimpleName() + "'");
+			if (instanceType == InfoProvider.NO_TYPE) {
+				throw new SemanticException("Unary operator '" + operator + "' cannot be applied to null");
+			} else {
+				throw new SemanticException("Unary operator '" + operator + "' cannot be applied to instances of type '" + instanceType.getSimpleName() + "'");
+			}
 		}
 		if (bestMatchingOperatorInfos.size() > 1) {
 			Class<?> operandClass1 = bestMatchingOperatorInfos.get(0).getOperandClass();
