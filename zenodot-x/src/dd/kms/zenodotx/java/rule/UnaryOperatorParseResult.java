@@ -56,13 +56,15 @@ public class UnaryOperatorParseResult implements InstanceParseResult {
 				throw new IllegalStateException("Unsupported operator mode: " + operatorMode);
 		}
 
-		if (operatorMode.isWithAssignment() && evaluationMode == EvaluationMode.DYNAMIC_TYPING) {
+		if (operatorMode.isWithAssignment()) {
 			if (operandSetter == null) {
 				String operator = operatorInfo.getOperator();
 				throw new EvaluationException("Operator \"" + operator + "\" cannot be applied because the operand does not permit assignments");
 			}
-			ObjectInfo assignInfo = InfoProvider.createObjectInfo(operatorResult, operatorResultClass, operandSetter);
-			operandSetter.setObjectInfo(assignInfo);
+			if (evaluationMode == EvaluationMode.DYNAMIC_TYPING) {
+				ObjectInfo assignInfo = InfoProvider.createObjectInfo(operatorResult, operatorResultClass, operandSetter);
+				operandSetter.setObjectInfo(assignInfo);
+			}
 		}
 
 		return resultInfo;
