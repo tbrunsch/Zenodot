@@ -190,6 +190,12 @@ public class JavaRuleSet
 																										.name("Lambda");
 	// endregion
 
+	/*
+	 * TODO: Rework grammar according to https://introcs.cs.princeton.edu/java/11precedence/
+	 *
+	 * For example, unary operators are in the precedence between cast and, e.g., object creation,
+	 * but this is not represented by the current grammar.
+	 */
 	private final Rule<Void, InstanceParseResult, JavaSettings>	variable	=	 new VariableRule();
 
 	private final Rule<InstanceParseResult, ArrayAccessInfo, JavaSettings>	arrayIndex			= 	new ArrayIndexRule(expression);
@@ -301,7 +307,7 @@ public class JavaRuleSet
 	private final Rule<Void, InstanceParseResult, JavaSettings>	expression1		=	binaryOperatorRightToLeft(expression2, operator1);
 	// endregion
 
-	// TODO: Support unary prefix operator
+	// TODO: Support unary postfix operator
 	public JavaRuleSet() {
 		simpleExpression.setAlternatives(
 			simpleExpressionWithTailPotential
