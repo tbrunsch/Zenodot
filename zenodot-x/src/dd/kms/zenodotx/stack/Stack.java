@@ -1,9 +1,6 @@
 package dd.kms.zenodotx.stack;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EmptyStackException;
-import java.util.List;
+import java.util.*;
 
 /**
  * A linked list based implementation of a stack that provides a cheap {@link #copy()} method that does not
@@ -11,7 +8,7 @@ import java.util.List;
  * <br>
  * The elements on the stack must be immutable or at least the caller guarantees not to modify them.
  */
-public class Stack<T>
+public class Stack<T> extends AbstractList<T>
 {
 	private StackElement<T>	top	= null;
 
@@ -42,12 +39,21 @@ public class Stack<T>
 		return copy;
 	}
 
-	public List<T> asList() {
-		List<T> list = new ArrayList<>();
-		for (StackElement<T> element = top; element != null; element = element.getPrevious()) {
-			list.add(element.getValue());
-		}
-		Collections.reverse(list);
-		return list;
+	@Override
+	public int size() {
+		return size(top);
+	}
+
+	private int size(StackElement<T> top) {
+		return top == null ? 0 : 1 + size(top.getPrevious());
+	}
+
+	@Override
+	public T get(int index) {
+		return get(top, size() - 1 - index);
+	}
+
+	private T get(StackElement<T> top, int indexFromBehind) {
+		return indexFromBehind == 0 ? top.getValue() : get(top.getPrevious(), indexFromBehind - 1);
 	}
 }

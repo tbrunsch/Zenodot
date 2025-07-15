@@ -1,11 +1,13 @@
 package dd.kms.zenodotx.rule.compound;
 
 import dd.kms.zenodotx.Parser;
+import dd.kms.zenodotx.ParserState;
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;
 import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.Rule;
+import dd.kms.zenodotx.stack.Stack;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,10 +33,13 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			parser.storeState();
 			try {
 				O result = parser.parse(alternative, input, settings);
-				resultAggregator.addResult(result, parser.getParsePosition());
+				ParserState parserState = parser.getParserState();
+				resultAggregator.addResult(result, parserState);
 			} catch (SyntaxException e) {
-				resultAggregator.addSyntaxException(e);
+				ParserState parserState = parser.getParserState();
+				resultAggregator.addSyntaxException(e, parserState);
 			} catch (SemanticException e) {
+				ParserState parserState = parser.getParserState();
 				if (e.getSyntacticParsePosition() < 0) {
 					parser.restoreState();
 					parser.storeState();
@@ -45,7 +50,7 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 					}
 					e.setSyntacticParsePosition(parser.getParsePosition());
 				}
-				resultAggregator.addSemanticException(e);
+				resultAggregator.addSemanticException(e, parserState);
 			} catch (Parser.EventResultException e) {
 				resultAggregator.addEventResultException(e);
 			}
@@ -55,8 +60,8 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			 */
 			parser.restoreState();
 		}
-		int aggregatedParsePosition = resultAggregator.getAggregatedParsePosition();
-		parser.setParsePosition(aggregatedParsePosition);
+		ParserState aggregatedParserState = resultAggregator.getAggregatedParserState();
+		parser.setParserState(aggregatedParserState);
 		return resultAggregator.aggregate();
 	}
 
@@ -66,7 +71,7 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			throw new SyntaxException("No alternatives have been defined for this or rule");
 		}
 		SyntaxException syntaxException = null;
-		int maxParsePosition = -1;
+		ParseProgress bestParseProgress	= new ParseProgress();
 		for (Rule<I, O, S> alternative : alternatives) {
 			parser.storeState();
 			SyntaxException exception = null;
@@ -75,14 +80,15 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			} catch (SyntaxException e) {
 				exception = e;
 			}
-			int parsePosition = parser.getParsePosition();
-			if (parsePosition > maxParsePosition) {
-				maxParsePosition = parsePosition;
+			ParserState parserState = parser.getParserState();
+			ParseProgress parseProgress = new ParseProgress(parserState);
+			if (parseProgress.compareTo(bestParseProgress) > 0) {
+				bestParseProgress = parseProgress;
 				syntaxException = exception;
 			}
 			parser.restoreState();
 		}
-		parser.setParsePosition(maxParsePosition);
+		parser.setParserState(bestParseProgress.getParserState());
 		if (syntaxException != null) {
 			throw syntaxException;
 		}
@@ -148,7 +154,7 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 		private final List<SemanticException>				semanticExceptions		= new ArrayList<>();
 		private final List<SyntaxException>					syntaxExceptions		= new ArrayList<>();
 
-		private ParseProgress	bestParseProgress	= new ParseProgress(-1);
+		private ParseProgress	bestParseProgress	= new ParseProgress();
 
 		public void addEventResultException(Parser.EventResultException eventResultException) {
 			eventResultExceptions.add(eventResultException);
@@ -157,12 +163,12 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			syntaxExceptions.clear();
 		}
 
-		public void addResult(O result, int parsePosition) {
+		public void addResult(O result, ParserState parserState) {
 			if (!eventResultExceptions.isEmpty()) {
 				// event result exceptions have the highest priority
 				return;
 			}
-			ParseProgress parseProgress = new ParseProgress(parsePosition);
+			ParseProgress parseProgress = new ParseProgress(parserState);
 			int comparison = parseProgress.compareTo(bestParseProgress);
 
 			if (comparison > 0) {
@@ -178,12 +184,12 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			}
 		}
 
-		public void addSemanticException(SemanticException semanticException) {
+		public void addSemanticException(SemanticException semanticException, ParserState parserState) {
 			if (!eventResultExceptions.isEmpty()) {
 				// eventResultExceptions have the highest priority
 				return;
 			}
-			ParseProgress parseProgress = new ParseProgress(semanticException.getParsePosition(), semanticException.getSyntacticParsePosition());
+			ParseProgress parseProgress = new ParseProgress(parserState, semanticException.getSyntacticParsePosition());
 			int comparison = parseProgress.compareTo(bestParseProgress);
 
 			if (comparison > 0) {
@@ -199,12 +205,12 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			}
 		}
 
-		public void addSyntaxException(SyntaxException syntaxException) {
+		public void addSyntaxException(SyntaxException syntaxException, ParserState parserState) {
 			if (!eventResultExceptions.isEmpty()) {
 				// eventResultExceptions have the highest priority
 				return;
 			}
-			ParseProgress parseProgress = new ParseProgress(syntaxException.getParsePosition());
+			ParseProgress parseProgress = new ParseProgress(parserState);
 			int comparison = parseProgress.compareTo(bestParseProgress);
 
 			if (comparison > 0) {
@@ -219,8 +225,8 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			}
 		}
 
-		public int getAggregatedParsePosition() {
-			return bestParseProgress.getParsePosition();
+		public ParserState getAggregatedParserState() {
+			return bestParseProgress.getParserState();
 		}
 
 		public O aggregate() throws Parser.EventResultException, SemanticException, SyntaxException {
@@ -243,39 +249,45 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 				throw new IllegalStateException("The or rule seems to have no alternatives, but this case should have been handled before.");
 			}
 		}
+	}
 
-		private static class ParseProgress implements Comparable<ParseProgress>
-		{
-			private final int	parsePosition;
-			private final int	syntacticParsePosition;
+	private static class ParseProgress implements Comparable<ParseProgress>
+	{
+		private final ParserState	parserState;
+		private final int			syntacticParsePosition;
 
-			ParseProgress(int parsePosition) {
-				this(parsePosition, parsePosition);
+		ParseProgress() {
+			this(new ParserState(-1, new Stack<>()));
+		}
+
+		ParseProgress(ParserState parserState) {
+			this(parserState, parserState.getParsePosition());
+		}
+
+		ParseProgress(ParserState parserState, int syntacticParsePosition) {
+			this.parserState = parserState;
+			this.syntacticParsePosition = syntacticParsePosition;
+		}
+
+		ParserState getParserState() {
+			return parserState;
+		}
+
+		@Override
+		public int compareTo(ParseProgress that) {
+			if (syntacticParsePosition < that.syntacticParsePosition) {
+				return -1;
+			} else if (syntacticParsePosition > that.syntacticParsePosition) {
+				return 1;
 			}
-
-			ParseProgress(int parsePosition, int syntacticParsePosition) {
-				this.parsePosition = parsePosition;
-				this.syntacticParsePosition = syntacticParsePosition;
+			int parsePosition = parserState.getParsePosition();
+			int thatParsePosition = that.parserState.getParsePosition();
+			if (parsePosition < thatParsePosition) {
+				return -1;
+			} else if (parsePosition > thatParsePosition) {
+				return 1;
 			}
-
-			int getParsePosition() {
-				return parsePosition;
-			}
-
-			@Override
-			public int compareTo(ParseProgress that) {
-				if (syntacticParsePosition < that.syntacticParsePosition) {
-					return -1;
-				} else if (syntacticParsePosition > that.syntacticParsePosition) {
-					return 1;
-				}
-				if (parsePosition < that.parsePosition) {
-					return -1;
-				} else if (parsePosition > that.parsePosition) {
-					return 1;
-				}
-				return 0;
-			}
+			return 0;
 		}
 	}
 }

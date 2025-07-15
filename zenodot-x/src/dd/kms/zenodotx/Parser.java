@@ -9,6 +9,7 @@ import dd.kms.zenodotx.rule.compound.CompoundRule;
 import dd.kms.zenodotx.rule.simple.SemanticRule;
 import dd.kms.zenodotx.rule.simple.SimpleRule;
 import dd.kms.zenodotx.rule.simple.SyntaxRule;
+import dd.kms.zenodotx.stack.Stack;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -16,12 +17,15 @@ import java.util.regex.Pattern;
 
 public class Parser<S>
 {
-	private final CharacterStream	characterStream;
-	private final int				eventPosition;
-	private final Event				event;
-	private final Deque<Integer>	characterStreamPositions	= new ArrayDeque<>();
+	private final String				text;
+	private final CharacterStream		characterStream;
+	private final int					eventPosition;
+	private final Event					event;
+	private Stack<RuleInfo>				parsedRules			= new Stack<>();
+	private final Deque<ParserState>	parserStates		= new ArrayDeque<>();
 
 	public Parser(String text, int eventPosition, Event event) {
+		this.text = text;
 		characterStream = new CharacterStream(text);
 		this.eventPosition = eventPosition;
 		this.event = event;
@@ -65,7 +69,10 @@ public class Parser<S>
 			throw new EventResultException();
 		}
 
-		return semanticRule.evaluate(input, parsedString, settings);
+		O result = semanticRule.evaluate(input, parsedString, settings);
+		RuleInfo ruleInfo = new RuleInfo(positionBeforeRegex, positionAfterRegex, text, rule);
+		parsedRules.push(ruleInfo);
+		return result;
 	}
 
 	public void parseSyntactically(Rule<?, ?, S> rule) throws SyntaxException {
@@ -98,22 +105,33 @@ public class Parser<S>
 	}
 
 	public void storeState() {
-		characterStreamPositions.push(characterStream.getPosition());
+		ParserState parserState = getParserState();
+		parserStates.push(parserState);
 	}
 
 	public void restoreState() {
-		characterStream.setPosition(characterStreamPositions.pop());
+		ParserState parserState = parserStates.pop();
+		setParserState(parserState);
 	}
 
 	public void dropStoredState() {
-		characterStreamPositions.pop();
+		parserStates.pop();
+	}
+
+	public ParserState getParserState() {
+		return new ParserState(getParsePosition(), parsedRules);
+	}
+
+	public void setParserState(ParserState parserState) {
+		setParsePosition(parserState.getParsePosition());
+		parsedRules = parserState.getParsedRules();
 	}
 
 	public int getParsePosition() {
 		return characterStream.getPosition();
 	}
 
-	public void setParsePosition(int parsePosition) {
+	private void setParsePosition(int parsePosition) {
 		characterStream.setPosition(parsePosition);
 	}
 

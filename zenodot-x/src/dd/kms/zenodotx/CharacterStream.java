@@ -6,11 +6,11 @@ import java.util.regex.Pattern;
 
 public class CharacterStream
 {
-	private final String	s;
+	private final String	text;
 	private int				position;
 
-	public CharacterStream(String s) {
-		this.s = s;
+	public CharacterStream(String text) {
+		this.text = text;
 	}
 
 	public int getPosition() {
@@ -22,7 +22,7 @@ public class CharacterStream
 	}
 
 	public Optional<String> readRegex(Pattern regex) {
-		Matcher matcher = regex.matcher(s.substring(position));
+		Matcher matcher = regex.matcher(text.substring(position));
 		if (matcher.find() && matcher.start() == 0) {
 			String parsedString = matcher.group();
 			position += parsedString.length();
@@ -33,8 +33,8 @@ public class CharacterStream
 
 	@Override
 	public String toString() {
-		return s.substring(0, position)
+		return text.substring(0, position)
 			+ "^"
-			+ s.substring(position);
+			+ text.substring(position);
 	}
 }
