@@ -10,19 +10,25 @@ import java.util.*;
  */
 public class Stack<T> extends AbstractList<T>
 {
-	private StackElement<T>	top	= null;
+	private StackElement<T>	top				= null;
+	private int				size			= 0;
+	private List<T>			cachedListView	= null;
 
 	public boolean isEmpty() {
-		return top == null;
+		return size == 0;
 	}
 
 	public void push(T value) {
 		top = new StackElement<>(value, top);
+		size++;
+		cachedListView = null;
 	}
 
 	public T pop() {
 		T value = peek();
 		top = top.getPrevious();
+		size--;
+		cachedListView = null;
 		return value;
 	}
 
@@ -36,24 +42,31 @@ public class Stack<T> extends AbstractList<T>
 	public Stack<T> copy() {
 		Stack<T> copy = new Stack<>();
 		copy.top = top;
+		copy.size = size;
+		copy.cachedListView = cachedListView;
+
 		return copy;
 	}
 
 	@Override
 	public int size() {
-		return size(top);
-	}
-
-	private int size(StackElement<T> top) {
-		return top == null ? 0 : 1 + size(top.getPrevious());
+		return size;
 	}
 
 	@Override
 	public T get(int index) {
-		return get(top, size() - 1 - index);
+		if (cachedListView == null) {
+			cachedListView = createListView();
+		}
+		return cachedListView.get(index);
 	}
 
-	private T get(StackElement<T> top, int indexFromBehind) {
-		return indexFromBehind == 0 ? top.getValue() : get(top.getPrevious(), indexFromBehind - 1);
+	private List<T> createListView() {
+		Object[] elements = new Object[size];
+		int index = size;
+		for (StackElement<T> elem = top; elem != null; elem = elem.getPrevious()) {
+			elements[--index] = elem.getValue();
+		}
+		return Arrays.asList((T[]) elements);
 	}
 }
