@@ -1,9 +1,10 @@
 package dd.kms.zenodotx.rule.simple;
 
+import dd.kms.zenodotx.GrammarSettings;
 import dd.kms.zenodotx.event.Event;
 import dd.kms.zenodotx.rule.AbstractRule;
 
-public class EmptyRule<IO, S> extends AbstractRule<IO, IO, S> implements SimpleRule<IO, IO, S>
+public class EmptyRule<IO, S extends GrammarSettings> extends AbstractRule<IO, IO, S> implements SimpleRule<IO, IO, S>
 {
 	@Override
 	public SyntaxRule getSyntaxRule() {

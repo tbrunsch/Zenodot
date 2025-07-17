@@ -1,5 +1,6 @@
 package dd.kms.zenodotx.rule.compound;
 
+import dd.kms.zenodotx.GrammarSettings;
 import dd.kms.zenodotx.Parser;
 import dd.kms.zenodotx.ParserState;
 import dd.kms.zenodotx.exception.EvaluationException;
@@ -8,7 +9,7 @@ import dd.kms.zenodotx.exception.SyntaxException;
 import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.Rule;
 
-public class RepetitionRule<IO, S> extends AbstractRule<IO, IO, S> implements CompoundRule<IO, IO, S>
+public class RepetitionRule<IO, S extends GrammarSettings> extends AbstractRule<IO, IO, S> implements CompoundRule<IO, IO, S>
 {
 	private final Rule<IO, IO, S> ruleToRepeat;
 

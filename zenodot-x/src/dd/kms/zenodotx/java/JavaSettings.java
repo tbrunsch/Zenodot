@@ -3,9 +3,14 @@ package dd.kms.zenodotx.java;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
+import dd.kms.zenodotx.GrammarSettings;
 
-public class JavaSettings
+import java.util.regex.Pattern;
+
+public class JavaSettings implements GrammarSettings
 {
+	private static final Pattern	CHARACTERS_TO_IGNORE_PATTERN	= Pattern.compile("\\s*");
+
 	private final ObjectInfo		thisInfo;
 	private final EvaluationMode	evaluationMode;
 	private final AccessModifier	minimumFieldAccessModifier;
@@ -16,6 +21,11 @@ public class JavaSettings
 		this.evaluationMode = evaluationMode;
 		this.minimumFieldAccessModifier = minimumFieldAccessModifier;
 		this.minimumMethodAccessModifier = minimumMethodAccessModifier;
+	}
+
+	@Override
+	public Pattern getCharactersToIgnorePattern() {
+		return CHARACTERS_TO_IGNORE_PATTERN;
 	}
 
 	public ObjectInfo getThisInfo() {

@@ -1,5 +1,6 @@
 package dd.kms.zenodotx.rule.compound;
 
+import dd.kms.zenodotx.GrammarSettings;
 import dd.kms.zenodotx.Parser;
 import dd.kms.zenodotx.ParserState;
 import dd.kms.zenodotx.exception.EvaluationException;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule<I, O, S>
+public class OrRuleImpl<I, O, S extends GrammarSettings> extends AbstractRule<I, O, S> implements OrRule<I, O, S>
 {
 	private List<Rule<I, O, S>> 	alternatives	= new ArrayList<>();
 

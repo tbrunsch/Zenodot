@@ -1,10 +1,11 @@
 package dd.kms.zenodotx.rule.compound;
 
+import dd.kms.zenodotx.GrammarSettings;
 import dd.kms.zenodotx.rule.Rule;
 
 import java.util.List;
 
-public interface OrRule<I, O, S> extends CompoundRule<I, O, S>
+public interface OrRule<I, O, S extends GrammarSettings> extends CompoundRule<I, O, S>
 {
 	@Override
 	OrRule<I, O, S> name(String name);

@@ -1,5 +1,6 @@
 package dd.kms.zenodotx.rule.compound;
 
+import dd.kms.zenodotx.GrammarSettings;
 import dd.kms.zenodotx.Parser;
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
@@ -16,7 +17,7 @@ import dd.kms.zenodotx.rule.Rule;
  * The input is the class to cast to, the wrapped rule represents the expression, and combining the class
  * and the parsed expression yields the cast expression.
  */
-public abstract class AbstractCombineRule<I, O, Combined, S> extends AbstractRule<I, Combined, S> implements CompoundRule<I, Combined, S>
+public abstract class AbstractCombineRule<I, O, Combined, S extends GrammarSettings> extends AbstractRule<I, Combined, S> implements CompoundRule<I, Combined, S>
 {
 	private final Rule<Void, O, S>	ruleToCombine;
 

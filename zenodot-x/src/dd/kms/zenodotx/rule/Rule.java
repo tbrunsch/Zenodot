@@ -1,9 +1,10 @@
 package dd.kms.zenodotx.rule;
 
+import dd.kms.zenodotx.GrammarSettings;
 import dd.kms.zenodotx.rule.compound.ThenRule;
 import dd.kms.zenodotx.rule.simple.CharacterRule;
 
-public interface Rule<I, O, S>
+public interface Rule<I, O, S extends GrammarSettings>
 {
 	Rule<I, O, S> name(String name);
 	String name();

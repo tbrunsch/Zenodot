@@ -1,6 +1,8 @@
 package dd.kms.zenodotx.rule;
 
-public abstract class AbstractRule<I, O, S> implements Rule<I, O, S>
+import dd.kms.zenodotx.GrammarSettings;
+
+public abstract class AbstractRule<I, O, S extends GrammarSettings> implements Rule<I, O, S>
 {
 	private String	name;
 

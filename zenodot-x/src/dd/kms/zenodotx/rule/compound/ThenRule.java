@@ -1,5 +1,6 @@
 package dd.kms.zenodotx.rule.compound;
 
+import dd.kms.zenodotx.GrammarSettings;
 import dd.kms.zenodotx.Parser;
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
@@ -7,7 +8,7 @@ import dd.kms.zenodotx.exception.SyntaxException;
 import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.Rule;
 
-public class ThenRule<I, O, T, S> extends AbstractRule<I, T, S> implements CompoundRule<I, T, S>
+public class ThenRule<I, O, T, S extends GrammarSettings> extends AbstractRule<I, T, S> implements CompoundRule<I, T, S>
 {
 	private final Rule<I, O, S> firstRule;
 	private final Rule<O, T, S>	secondRule;
