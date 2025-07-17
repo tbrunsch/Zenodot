@@ -145,3 +145,32 @@ One could try to rescue the parser-state-stack-approach by checking that no comp
 * This approach does not address the other issues mentioned above: Setters and getters remain necessary in addition to store, restore, and drop operations.
 
 As a result, we decided against a stack-based approach in favor of a pur getter-setter approach.
+
+## Storing the successfully parsed simple Rules
+
+It turned out that debugging the parsing framework of Zenodot X is even more complex than debugging the parsing framework of Zenodot: We have tried to provide reusable compound rules like the "or rule", the "then rule", and the "repetition rule". This partially eliminates the need for writing custom compound rules for parsing structures as it was the case in Zenodot. The drawback of this is that when stopping at a breakpoint it is much harder to see where we currently are in the parsing process because one will often be in the parser or in one of the aforementioned compound rules. To improve here, the parser now holds a collection of the simple rules parsed so far and which part of the expression each covers. Since this information is only required for debugging purposes, it is important that keeping this information up-to-date must not cost much time. To achieve this, an appropriate data structure is required, and therefore we need to understand the operations the data structure needs to support:
+
+* Appending an element to the data structure must be efficient: Whenever we have successfully parsed a new simple rule, it will be appended to that data structure.
+* Creating a copy of the data structure must be efficient: Since the collection of parsed simple rules is part of the parsers state and since we must be able to get and set the state, it must be efficient to copy that data structure. A state must not only keep a reference to the data structure since the original data structure is going to change. 
+
+Under the assumption that the elements of the data structure are not changed, which is valid in our case and which would otherwise force creating copies of each element, it is possible to come up with a data structure that allows appending and even copying in constant time. The solution is a reverse linked list, i.e., a list in which the elements are linked from tail to head. Despite the term "linked list" it can actually serve as a stack:
+
+* The stack wraps all its elements in a stack element instance, which contains the element and has a link to the previous stack element.
+* The stack itself only holds a reference to the last element in the stack (the top-most).
+* When pushing an element onto the stack, we wrap it in a new stack element instance, which points to the previously last element, and make it that the last element of the stack.
+* When popping an element (not required for our use cases), we move to the second to the last element and consider that one the new last element of the stack.
+* For creating a copy of the stack, we create a new stack instance that simply references the last element of the original copy. Both stacks now share the same wrapped elements, which is why the copy could be created in constant time.
+
+Note that stack operations on both stacks, the original one and the copy, don't interfer with each other:
+* By assumption, the elements itself don't get modified.
+* Independent of what the stacks do, the stack elements remain linked the way they are:
+  * Pushing an element to one of the stacks only adds a new stack element, which references an existing one. The links of the existing ones remain. The only thing that changes is that the modified stack now references another stack element. This does not affect the other stack.
+  * Popping an element from one of the stacks does not change existing links either. The modified stack now only references the previous stack element.
+
+Note that over their life times such stacks create trees of stack elements. At any time, the stack represents a path from some tree node to the root. By copying the stack, one can represent multiple paths in this tree.
+
+### Drawback of the Stack of parsed Simple Rules
+
+We have introduced a collection of parsed simple rules to help orienting within the parsing process when debugging. The selected data structure allows this with constant overhead per operation. However, IDEs understandably don't have a helpful representation of this data structure: One must move from stack element to stack element, starting at the last one, and step into the stack elements to see the actual elements. This is unacceptable for debugging.
+
+Therefore, we decided to add a read-only `List` view to the stack element data structure by letting it extend that interface. This caused the next problems: Accessing the first element already costs linear time because we start at the last stack element and then move to the first one by passing all other stack elements once. Iterating the whole list once (from front to back) would cast quadratic time, which is again unacceptable. Therefore, we decided to create and cache the whole list view at the first read access. This implies that independent of whether one element or all elements are accessed, the total access time is linear. For a random access `List` implementation this a linear access time for one element is not ok, but during debugging the IDE will access many (or all) elements of the data structure anyway, so the access time is ok in that case. 
