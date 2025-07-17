@@ -34,7 +34,7 @@ public abstract class AbstractCombineRule<I, O, Combined, S extends GrammarSetti
 	}
 
 	@Override
-	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
-		parser.parseSyntactically(ruleToCombine);
+	public void parseSyntactically(Parser<S> parser, S settings) throws SyntaxException {
+		parser.parseSyntactically(ruleToCombine, settings);
 	}
 }

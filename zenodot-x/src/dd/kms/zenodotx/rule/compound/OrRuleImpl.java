@@ -45,7 +45,7 @@ public class OrRuleImpl<I, O, S extends GrammarSettings> extends AbstractRule<I,
 				if (e.getSyntacticParsePosition() < 0) {
 					parser.setParserState(initialState);
 					try {
-						parser.parseSyntactically(alternative);
+						parser.parseSyntactically(alternative, settings);
 					} catch (SyntaxException ignored) {
 						/* does not matter */
 					}
@@ -66,7 +66,7 @@ public class OrRuleImpl<I, O, S extends GrammarSettings> extends AbstractRule<I,
 	}
 
 	@Override
-	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
+	public void parseSyntactically(Parser<S> parser, S settings) throws SyntaxException {
 		if (alternatives.isEmpty()) {
 			throw new SyntaxException("No alternatives have been defined for this or rule");
 		}
@@ -77,7 +77,7 @@ public class OrRuleImpl<I, O, S extends GrammarSettings> extends AbstractRule<I,
 			parser.setParserState(initialState);
 			SyntaxException exception = null;
 			try {
-				parser.parseSyntactically(alternative);
+				parser.parseSyntactically(alternative, settings);
 			} catch (SyntaxException e) {
 				exception = e;
 			}

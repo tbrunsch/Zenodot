@@ -32,11 +32,11 @@ public class RepetitionRule<IO, S extends GrammarSettings> extends AbstractRule<
 	}
 
 	@Override
-	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
+	public void parseSyntactically(Parser<S> parser, S settings) throws SyntaxException {
 		while (true) {
 			ParserState stateBeforeNextRepetition = parser.getParserState();
 			try {
-				parser.parseSyntactically(ruleToRepeat);
+				parser.parseSyntactically(ruleToRepeat, settings);
 			} catch (SyntaxException e) {
 				parser.setParserState(stateBeforeNextRepetition);
 				return;

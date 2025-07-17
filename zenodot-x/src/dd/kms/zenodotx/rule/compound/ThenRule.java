@@ -25,9 +25,9 @@ public class ThenRule<I, O, T, S extends GrammarSettings> extends AbstractRule<I
 	}
 
 	@Override
-	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
-		parser.parseSyntactically(firstRule);
-		parser.parseSyntactically(secondRule);
+	public void parseSyntactically(Parser<S> parser, S settings) throws SyntaxException {
+		parser.parseSyntactically(firstRule, settings);
+		parser.parseSyntactically(secondRule, settings);
 	}
 
 	@Override

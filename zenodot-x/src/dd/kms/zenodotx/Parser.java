@@ -11,9 +11,10 @@ import dd.kms.zenodotx.rule.simple.SimpleRule;
 import dd.kms.zenodotx.rule.simple.SyntaxRule;
 import dd.kms.zenodotx.stack.Stack;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
-public class Parser<S>
+public class Parser<S extends GrammarSettings>
 {
 	private final String				text;
 	private final CharacterStream		characterStream;
@@ -53,7 +54,7 @@ public class Parser<S>
 
 	private <I, O> O parseSimpleRule(SimpleRule<I, O, S> rule, I input, S settings) throws SyntaxException, SemanticException, EvaluationException, EventResultException {
 		int positionBeforeRegex = characterStream.getPosition();
-		String parsedString = parseSimpleRuleSyntactically(rule);
+		String parsedString = parseSimpleRuleSyntactically(rule, settings);
 		int positionAfterRegex = characterStream.getPosition();
 
 		SemanticRule<I, O, S> semanticRule = rule.getSemanticRule();
@@ -72,12 +73,12 @@ public class Parser<S>
 		return result;
 	}
 
-	public void parseSyntactically(Rule<?, ?, S> rule) throws SyntaxException {
+	public void parseSyntactically(Rule<?, ?, S> rule, S settings) throws SyntaxException {
 		try {
 			if (rule instanceof CompoundRule) {
-				((CompoundRule<?, ?, S>) rule).parseSyntactically(this);
+				((CompoundRule<?, ?, S>) rule).parseSyntactically(this, settings);
 			} else if (rule instanceof SimpleRule) {
-				parseSimpleRuleSyntactically((SimpleRule<?, ?, S>) rule);
+				parseSimpleRuleSyntactically((SimpleRule<?, ?, S>) rule, settings);
 			} else {
 				throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getName()
 					+ ". Only " + CompoundRule.class.getName() + " and " + SimpleRule.class.getName() + " are supported.");
@@ -90,15 +91,40 @@ public class Parser<S>
 		}
 	}
 
-	private String parseSimpleRuleSyntactically(SimpleRule<?, ?, S> rule) throws SyntaxException {
+	private String parseSimpleRuleSyntactically(SimpleRule<?, ?, S> rule, S settings) throws SyntaxException {
 		SyntaxRule syntaxRule = rule.getSyntaxRule();
-		// TODO: Whitespace handling
 		// TODO: Not clear whether every case can be handled by a regex. What if code completion is
 		//       requested, but the regex does not match the current string? What to do the code completion
 		//       on then?
 		Pattern regex = syntaxRule.getRegex();
-		// TODO: What should the message be?
-		return characterStream.readRegex(regex).orElseThrow(() -> new SyntaxException("Unexpected characters. Expected: " + syntaxRule.getSyntaxDescription()));
+
+		Pattern charactersToIgnorePattern = settings.getCharactersToIgnorePattern();
+		ParserState initialState = getParserState();
+
+		Optional<String> skippedCharacters = characterStream.readRegex(charactersToIgnorePattern);
+
+		Optional<String> parsedString = characterStream.readRegex(regex);
+		if (parsedString.isPresent()) {
+			return parsedString.get();
+		}
+		ParserState stateAfterParsingRegex = getParserState();
+
+		if (skippedCharacters.isPresent() && !skippedCharacters.get().isEmpty()) {
+			/*
+			 * We had skipped the characters to ignore, but in some cases this might be wrong.
+			 * Example: In Java, whitespaces can usually be ignored. This is not the case for, e.g.,
+			 * "new XYZ()", where "XYZ" is a class name. Here, the space between "new" and "XYZ()" is
+			 * relevant. The whitespace must not be skipped in this case.
+			 */
+			setParserState(initialState);
+
+			parsedString = characterStream.readRegex(regex);
+			if (parsedString.isPresent()) {
+				return parsedString.get();
+			}
+		}
+		setParserState(stateAfterParsingRegex);
+		throw new SyntaxException("Unexpected characters. Expected: " + syntaxRule.getSyntaxDescription(), stateAfterParsingRegex.getParsePosition());
 	}
 
 	public ParserState getParserState() {

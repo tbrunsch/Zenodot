@@ -57,11 +57,11 @@ public class ConditionalOperatorExecuteRule extends AbstractRule<InstanceParseRe
 	}
 
 	@Override
-	public void parseSyntactically(Parser<JavaSettings> parser) throws SyntaxException {
-		parser.parseSyntactically(OPERATOR_PART_1);
-		parser.parseSyntactically(partExpressionRule);
-		parser.parseSyntactically(OPERATOR_PART_2);
-		parser.parseSyntactically(partExpressionRule);
+	public void parseSyntactically(Parser<JavaSettings> parser, JavaSettings settings) throws SyntaxException {
+		parser.parseSyntactically(OPERATOR_PART_1, settings);
+		parser.parseSyntactically(partExpressionRule, settings);
+		parser.parseSyntactically(OPERATOR_PART_2, settings);
+		parser.parseSyntactically(partExpressionRule, settings);
 	}
 
 	private static PartToEvaluate getPartToEvaluate(Object conditionValue) {

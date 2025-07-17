@@ -34,9 +34,9 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 	}
 
 	@Override
-	public void parseSyntactically(Parser<JavaSettings> parser) throws SyntaxException {
-		parser.parseSyntactically(operatorRule);
-		parser.parseSyntactically(rightHandSideRule);
+	public void parseSyntactically(Parser<JavaSettings> parser, JavaSettings settings) throws SyntaxException {
+		parser.parseSyntactically(operatorRule, settings);
+		parser.parseSyntactically(rightHandSideRule, settings);
 	}
 
 	private static boolean isApplyShortCircuitEvaluation(ObjectInfo lhsInfo, String operator) {

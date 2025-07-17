@@ -34,11 +34,11 @@ public class DelegatingRuleImpl<I, O, S extends GrammarSettings> extends Abstrac
 	}
 
 	@Override
-	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
+	public void parseSyntactically(Parser<S> parser, S settings) throws SyntaxException {
 		if (delegate == null) {
 			throw new IllegalStateException("No delegate has been set for this " + DelegatingRule.class.getSimpleName());
 		}
-		parser.parseSyntactically(delegate);
+		parser.parseSyntactically(delegate, settings);
 	}
 
 	@Override
