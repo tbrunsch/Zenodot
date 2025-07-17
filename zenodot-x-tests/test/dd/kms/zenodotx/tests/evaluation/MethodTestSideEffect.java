@@ -33,8 +33,7 @@ public class MethodTestSideEffect
 	@Test
 	public void testSideEffect() {
 		TestClass testInstance = new TestClass();
-		// TODO: Add space after "," once whitespaces are supported
-		String expression = "f(g(),s)";
+		String expression = "f(g(), s)";
 
 		JavaSettings settings = new JavaSettingsBuilder(InfoProvider.createObjectInfo(testInstance))
 			.minimumMethodAccessModifier(AccessModifier.PACKAGE_PRIVATE)
