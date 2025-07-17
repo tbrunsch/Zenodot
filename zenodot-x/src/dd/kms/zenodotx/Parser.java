@@ -11,8 +11,6 @@ import dd.kms.zenodotx.rule.simple.SimpleRule;
 import dd.kms.zenodotx.rule.simple.SyntaxRule;
 import dd.kms.zenodotx.stack.Stack;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.regex.Pattern;
 
 public class Parser<S>
@@ -21,8 +19,7 @@ public class Parser<S>
 	private final CharacterStream		characterStream;
 	private final int					eventPosition;
 	private final Event					event;
-	private Stack<RuleInfo>				parsedRules			= new Stack<>();
-	private final Deque<ParserState>	parserStates		= new ArrayDeque<>();
+	private Stack<RuleInfo>				parsedRules		= new Stack<>();
 
 	public Parser(String text, int eventPosition, Event event) {
 		this.text = text;
@@ -102,20 +99,6 @@ public class Parser<S>
 		Pattern regex = syntaxRule.getRegex();
 		// TODO: What should the message be?
 		return characterStream.readRegex(regex).orElseThrow(() -> new SyntaxException("Unexpected characters. Expected: " + syntaxRule.getSyntaxDescription()));
-	}
-
-	public void storeState() {
-		ParserState parserState = getParserState();
-		parserStates.push(parserState);
-	}
-
-	public void restoreState() {
-		ParserState parserState = parserStates.pop();
-		setParserState(parserState);
-	}
-
-	public void dropStoredState() {
-		parserStates.pop();
 	}
 
 	public ParserState getParserState() {

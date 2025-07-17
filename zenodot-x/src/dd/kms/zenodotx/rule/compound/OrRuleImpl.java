@@ -29,8 +29,9 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			throw new SyntaxException("No alternatives have been defined for this or rule");
 		}
 		ResultAggregator<O> resultAggregator = new ResultAggregator<>();
+		ParserState initialState = parser.getParserState();
 		for (Rule<I, O, S> alternative : alternatives) {
-			parser.storeState();
+			parser.setParserState(initialState);
 			try {
 				O result = parser.parse(alternative, input, settings);
 				ParserState parserState = parser.getParserState();
@@ -41,8 +42,7 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			} catch (SemanticException e) {
 				ParserState parserState = parser.getParserState();
 				if (e.getSyntacticParsePosition() < 0) {
-					parser.restoreState();
-					parser.storeState();
+					parser.setParserState(initialState);
 					try {
 						parser.parseSyntactically(alternative);
 					} catch (SyntaxException ignored) {
@@ -58,7 +58,6 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 			 * There is no catch for EvaluationExceptions because such Exceptions mean that we already found the
 			 * correct alternative, but it could not be evaluated.
 			 */
-			parser.restoreState();
 		}
 		ParserState aggregatedParserState = resultAggregator.getAggregatedParserState();
 		parser.setParserState(aggregatedParserState);
@@ -72,8 +71,9 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 		}
 		SyntaxException syntaxException = null;
 		ParseProgress bestParseProgress	= new ParseProgress();
+		ParserState initialState = parser.getParserState();
 		for (Rule<I, O, S> alternative : alternatives) {
-			parser.storeState();
+			parser.setParserState(initialState);
 			SyntaxException exception = null;
 			try {
 				parser.parseSyntactically(alternative);
@@ -86,7 +86,6 @@ public class OrRuleImpl<I, O, S> extends AbstractRule<I, O, S> implements OrRule
 				bestParseProgress = parseProgress;
 				syntaxException = exception;
 			}
-			parser.restoreState();
 		}
 		parser.setParserState(bestParseProgress.getParserState());
 		if (syntaxException != null) {

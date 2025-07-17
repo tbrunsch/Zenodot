@@ -102,3 +102,46 @@ With our solution, after detecting that "byte" is no field, the "or rule" will n
 As a workaround we still compare the maximum positions until which the expression can be parsed syntactically, but if both are the same, then we compare how far the expression could be parsed semantically with these interpretations. This solves the problem in our example because for the first interpretation the semantic error already occurs at "byte", whereas for the second interpretation no semantic error occurs at all.
 
 Only if two alternatives have identical semantic and syntactic parse positions, then we break ties as described in the previous section: Results are favored over semantic errors, which are favored over syntactic errors. 
+
+## Managing Parser States
+In some cases it is important that compound rules can influence the parser's state:
+
+* The "or rule" tests several alternatives and eventually decides which was the most likely one. For this, the following operations are required:
+  * Storing and restoring the parser state: Restoring the initial state must be done before testing any of the alternatives.
+  * Getting and setting the parser state: Setting the state is required when deciding for the most likely alternative. In that case, the state after parsing that alternative must be restored.
+* The "repetition rule" greedily tries to apply a rule as many times as possible. For this, the following operations are required:
+  * Storing and restoring the parser state: When the rule detects that is has been trying to repeat the rule once too often, then it must restore the state before applying the last repetition. That state must have been stored before.
+  * Dropping a parser state: The state must be stored before trying the next repetition. However, when a repetition succeeds, then the stored state must be dropped (not applied).
+
+### Problems with Using a Stack for managing the stored States
+
+As the terms "store" and "restore" may suggest, the initial idea was to manage the stored states in a stack. Restoring a state meant to remove the top-most state from that stack and to apply it. The motivation was that parser states should not be handed over to rules. However, several reasons led to a reconsideration:
+
+* Initially, the "or rule" was greedy: It chose the first matching alternative. At that time it was not necessary to get or set a parser state: Either an alternative was considered ok, in which case the current state remained unchanged, or not, in which case the initial state had been restored. With the new solution to consider all alternatives and eventually decide for the best one, getting and setting parser states became necessary because this could not be resembled by storing and restoring states. Hence, it became necessary to hand parser states over to compound rules.
+* The stack of parser states is yet another point of failure via which faulty rules could influence other rules negatively: If a rule forgets to drop a state it has stored earlier, then everything works fine as long as the next rule tries to restore its state, which would then restore the other rule's state unintentionally. That way, the bug in one rule would manifest as incorrect behavior of another rule, contradicting a desired fail-fast strategy.
+* Working with a generic stack is much less expressive than using getters and setters because there you could use meaningful names for the stored states:
+
+```
+parser.storeState();
+// ...
+parser.restoreState();
+```
+
+vs.
+
+```
+ParserState initialState = parser.getState();
+// ...
+parser.setState(initialState);
+```
+
+* Restoring the initial state in an "or rule" everytime before trying an alternative is much easier to achieve with setters and getters compared to storing and restoring states. Additionally, it obsoletes the necessity for dropping states in the "repetition rule".  
+
+### New Approach for handling Parser States
+
+One could try to rescue the parser-state-stack-approach by checking that no compound rule may drop or restore a rule it hasn't stored before. Additionally, when a compound rule finishes parsing, one could automatically remove all states from the stack the rule had pushed onto it. This approach still has several flaws:
+
+* It checks integrity at runtime instead of preventing inconsistency in the first place.
+* This approach does not address the other issues mentioned above: Setters and getters remain necessary in addition to store, restore, and drop operations.
+
+As a result, we decided against a stack-based approach in favor of a pur getter-setter approach.

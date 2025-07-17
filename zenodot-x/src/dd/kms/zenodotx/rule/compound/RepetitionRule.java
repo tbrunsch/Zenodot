@@ -1,6 +1,7 @@
 package dd.kms.zenodotx.rule.compound;
 
 import dd.kms.zenodotx.Parser;
+import dd.kms.zenodotx.ParserState;
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;
@@ -19,30 +20,26 @@ public class RepetitionRule<IO, S> extends AbstractRule<IO, IO, S> implements Co
 	public IO parse(IO input, S settings, Parser<S> parser) throws SyntaxException, EvaluationException, SemanticException, Parser.EventResultException {
 		IO output = input;
 		while (true) {
-			parser.storeState();
+			ParserState stateBeforeNextRepetition = parser.getParserState();
 			try {
 				output = parser.parse(ruleToRepeat, output, settings);
 			} catch (SyntaxException e) {
-				parser.restoreState();
+				parser.setParserState(stateBeforeNextRepetition);
 				return output;
-			} catch (SemanticException e) {
-				throw e;
 			}
-			parser.dropStoredState();
 		}
 	}
 
 	@Override
 	public void parseSyntactically(Parser<S> parser) throws SyntaxException {
 		while (true) {
-			parser.storeState();
+			ParserState stateBeforeNextRepetition = parser.getParserState();
 			try {
 				parser.parseSyntactically(ruleToRepeat);
 			} catch (SyntaxException e) {
-				parser.restoreState();
+				parser.setParserState(stateBeforeNextRepetition);
 				return;
 			}
-			parser.dropStoredState();
 		}
 	}
 
