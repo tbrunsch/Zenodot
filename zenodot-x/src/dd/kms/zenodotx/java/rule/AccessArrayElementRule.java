@@ -24,12 +24,12 @@ public class AccessArrayElementRule extends AbstractRule<ArrayAccessInfo, Instan
 	public SemanticRule<ArrayAccessInfo, InstanceParseResult, JavaSettings> getSemanticRule() {
 		return new AbstractSemanticJavaRule<ArrayAccessInfo, InstanceParseResult>() {
 			@Override
-			void doSuggestCodeCompletions(ArrayAccessInfo input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(ArrayAccessInfo input, String parsedString, JavaSettings settings) {
 				/* nothing to do */
 			}
 
 			@Override
-			void doSuggestMethodParameters(ArrayAccessInfo input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(ArrayAccessInfo input, JavaSettings settings) {
 				/* nothing to do */
 			}
 

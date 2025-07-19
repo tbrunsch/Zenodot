@@ -33,12 +33,12 @@ public abstract class AbstractFieldRule<C> extends AbstractRule<C, InstanceParse
 	public SemanticRule<C, InstanceParseResult, JavaSettings> getSemanticRule() {
 		return new AbstractSemanticJavaRule<C, InstanceParseResult>() {
 			@Override
-			void doSuggestCodeCompletions(C context, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(C context, String parsedString, JavaSettings settings) {
 				// TODO
 			}
 
 			@Override
-			void doSuggestMethodParameters(C context, JavaSettings settings) {
+			protected void doSuggestMethodParameters(C context, JavaSettings settings) {
 				// TODO
 			}
 

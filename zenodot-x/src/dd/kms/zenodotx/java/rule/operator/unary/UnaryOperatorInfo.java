@@ -1,4 +1,4 @@
-package dd.kms.zenodotx.java.rule;
+package dd.kms.zenodotx.java.rule.operator.unary;
 
 import java.util.function.Function;
 

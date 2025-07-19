@@ -33,12 +33,12 @@ public abstract class AbstractMethodNameRule<C> extends AbstractRule<C, Executab
 		return new AbstractSemanticJavaRule<C, ExecutableParseInfo>() {
 
 			@Override
-			void doSuggestCodeCompletions(C input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(C input, String parsedString, JavaSettings settings) {
 				// TODO
 			}
 
 			@Override
-			void doSuggestMethodParameters(C input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(C input, JavaSettings settings) {
 				// TODO
 			}
 

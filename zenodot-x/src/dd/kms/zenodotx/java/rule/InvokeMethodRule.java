@@ -30,13 +30,13 @@ public class InvokeMethodRule extends AbstractRule<ExecutableParseInfo, Instance
 	public SemanticRule<ExecutableParseInfo, InstanceParseResult, JavaSettings> getSemanticRule() {
 		return new AbstractSemanticJavaRule<ExecutableParseInfo, InstanceParseResult>() {
 			@Override
-			void doSuggestCodeCompletions(ExecutableParseInfo input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(ExecutableParseInfo input, String parsedString, JavaSettings settings) {
 				/* nothing to do */
 				return;
 			}
 
 			@Override
-			void doSuggestMethodParameters(ExecutableParseInfo input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(ExecutableParseInfo input, JavaSettings settings) {
 				/* nothing to do */
 				return;
 			}

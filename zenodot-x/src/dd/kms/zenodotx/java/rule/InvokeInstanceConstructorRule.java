@@ -21,12 +21,12 @@ public class InvokeInstanceConstructorRule extends AbstractRule<ConstructorParse
 	public SemanticRule<ConstructorParseInfo, InstanceParseResult, JavaSettings> getSemanticRule() {
 		return new AbstractSemanticJavaRule<ConstructorParseInfo, InstanceParseResult>() {
 			@Override
-			void doSuggestCodeCompletions(ConstructorParseInfo input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(ConstructorParseInfo input, String parsedString, JavaSettings settings) {
 				/* nothing to do */
 			}
 
 			@Override
-			void doSuggestMethodParameters(ConstructorParseInfo input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(ConstructorParseInfo input, JavaSettings settings) {
 				/* nothing to do */
 			}
 

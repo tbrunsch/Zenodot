@@ -44,12 +44,12 @@ public class KeywordRule<IO> extends AbstractRule<IO, IO, JavaSettings> implemen
 			}
 
 			@Override
-			void doSuggestCodeCompletions(IO input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(IO input, String parsedString, JavaSettings settings) {
 				// TODO
 			}
 
 			@Override
-			void doSuggestMethodParameters(IO input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(IO input, JavaSettings settings) {
 				/* nothing to do */
 			}
 		};

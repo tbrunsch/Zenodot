@@ -50,12 +50,12 @@ public class NumericLiteralRule<T> extends AbstractRule<Void, InstanceParseResul
 		return new AbstractSemanticJavaRule<Void, InstanceParseResult>()
 		{
 			@Override
-			void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
 				/* nothing to do */
 			}
 
 			@Override
-			void doSuggestMethodParameters(Void input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(Void input, JavaSettings settings) {
 				/* nothing to do */
 			}
 

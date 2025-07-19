@@ -42,12 +42,12 @@ public class KeywordLiteralRule extends AbstractRule<Void, InstanceParseResult, 
 	public SemanticRule<Void, InstanceParseResult, JavaSettings> getSemanticRule() {
 		return new AbstractSemanticJavaRule<Void, InstanceParseResult>() {
 			@Override
-			void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
 				/* TODO: Return keyword */
 			}
 
 			@Override
-			void doSuggestMethodParameters(Void input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(Void input, JavaSettings settings) {
 				/* TODO */
 			}
 

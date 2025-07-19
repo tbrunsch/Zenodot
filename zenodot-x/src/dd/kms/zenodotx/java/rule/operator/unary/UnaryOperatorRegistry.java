@@ -1,4 +1,4 @@
-package dd.kms.zenodotx.java.rule;
+package dd.kms.zenodotx.java.rule.operator.unary;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;

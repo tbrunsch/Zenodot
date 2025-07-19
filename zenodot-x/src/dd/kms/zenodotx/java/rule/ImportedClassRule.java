@@ -31,12 +31,12 @@ public class ImportedClassRule extends AbstractRule<Void, Class<?>, JavaSettings
 	public SemanticRule<Void, Class<?>, JavaSettings> getSemanticRule() {
 		return new AbstractSemanticJavaRule<Void, Class<?>>() {
 			@Override
-			void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
 				// TODO
 			}
 
 			@Override
-			void doSuggestMethodParameters(Void input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(Void input, JavaSettings settings) {
 				// TODO
 			}
 

@@ -18,13 +18,13 @@ public class BeginLambdaRule extends AbstractRule<Void, LambdaParameterInfo, Jav
 	public SemanticRule<Void, LambdaParameterInfo, JavaSettings> getSemanticRule() {
 		return new AbstractSemanticJavaRule<Void, LambdaParameterInfo>() {
 			@Override
-			void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
 				/* nothing to do */
 				return;
 			}
 
 			@Override
-			void doSuggestMethodParameters(Void input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(Void input, JavaSettings settings) {
 				/* nothing to do */
 				return;
 			}

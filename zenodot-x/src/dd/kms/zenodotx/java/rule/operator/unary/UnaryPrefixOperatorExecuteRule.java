@@ -1,4 +1,4 @@
-package dd.kms.zenodotx.java.rule;
+package dd.kms.zenodotx.java.rule.operator.unary;
 
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;

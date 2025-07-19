@@ -36,12 +36,12 @@ public class ThisRule extends AbstractRule<Void, InstanceParseResult, JavaSettin
 	public SemanticRule<Void, InstanceParseResult, JavaSettings> getSemanticRule() {
 		return new AbstractSemanticJavaRule<Void, InstanceParseResult>() {
 			@Override
-			void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
 				/* TODO: Suggest "this" */
 			}
 
 			@Override
-			void doSuggestMethodParameters(Void input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(Void input, JavaSettings settings) {
 				/* TODO */
 			}
 

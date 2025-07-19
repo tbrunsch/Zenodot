@@ -3,6 +3,10 @@ package dd.kms.zenodotx.java.rule;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
+import dd.kms.zenodotx.java.rule.operator.unary.UnaryOperatorRegistry;
+import dd.kms.zenodotx.java.rule.operator.unary.UnaryOperators;
+import dd.kms.zenodotx.java.rule.operator.unary.UnaryPrefixOperatorExecuteRule;
+import dd.kms.zenodotx.java.rule.operator.unary.UnaryPrefixOperatorParseRule;
 import dd.kms.zenodotx.rule.Rule;
 import dd.kms.zenodotx.rule.Rules;
 import dd.kms.zenodotx.rule.compound.DelegatingRule;
@@ -249,7 +253,7 @@ public class JavaRuleSet
 																													lambda
 																												).name("Simple expressions that may not have an object tail");
 
-	private final UnaryOperatorRegistry unaryOperatorRegistry = new UnaryOperatorRegistry();
+	private final UnaryOperatorRegistry								unaryOperatorRegistry			= new UnaryOperatorRegistry();
 	private final Rule<Void, String, JavaSettings>					unaryPrefixOperator				= new UnaryPrefixOperatorParseRule(unaryOperatorRegistry);
 	private final Rule<String, InstanceParseResult, JavaSettings>	unaryPrefixOperatorExecuteRule	= new UnaryPrefixOperatorExecuteRule(unaryOperatorRegistry, simpleExpression);
 

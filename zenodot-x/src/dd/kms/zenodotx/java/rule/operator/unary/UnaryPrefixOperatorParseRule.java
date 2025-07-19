@@ -1,8 +1,9 @@
-package dd.kms.zenodotx.java.rule;
+package dd.kms.zenodotx.java.rule.operator.unary;
 
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.java.JavaSettings;
+import dd.kms.zenodotx.java.rule.AbstractSemanticJavaRule;
 import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.simple.SemanticRule;
 import dd.kms.zenodotx.rule.simple.SimpleRule;
@@ -43,12 +44,12 @@ public class UnaryPrefixOperatorParseRule extends AbstractRule<Void, String, Jav
 	public SemanticRule<Void, String, JavaSettings> getSemanticRule() {
 		return new AbstractSemanticJavaRule<Void, String>() {
 			@Override
-			void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
+			protected void doSuggestCodeCompletions(Void input, String parsedString, JavaSettings settings) {
 				// TODO
 			}
 
 			@Override
-			void doSuggestMethodParameters(Void input, JavaSettings settings) {
+			protected void doSuggestMethodParameters(Void input, JavaSettings settings) {
 				/* nothing to do */
 			}
 

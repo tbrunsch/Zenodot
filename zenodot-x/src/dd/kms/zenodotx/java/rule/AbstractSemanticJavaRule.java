@@ -7,8 +7,8 @@ import dd.kms.zenodotx.rule.simple.SemanticRule;
 
 public abstract class AbstractSemanticJavaRule<I, O> implements SemanticRule<I, O, JavaSettings>
 {
-	abstract void doSuggestCodeCompletions(I input, String parsedString, JavaSettings settings);
-	abstract void doSuggestMethodParameters(I input, JavaSettings settings);
+	protected abstract void doSuggestCodeCompletions(I input, String parsedString, JavaSettings settings);
+	protected abstract void doSuggestMethodParameters(I input, JavaSettings settings);
 
 	@Override
 	public final void handleEvent(Event event, I input, String parsedString, JavaSettings settings) {
