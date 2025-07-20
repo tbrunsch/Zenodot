@@ -112,8 +112,6 @@ public class Parser<S extends GrammarSettings>
 		if (parsedString.isPresent()) {
 			return parsedString.get();
 		}
-		ParserState stateAfterParsingRegex = getParserState();
-
 		if (skippedCharacters.isPresent() && !skippedCharacters.get().isEmpty()) {
 			/*
 			 * We had skipped the characters to ignore, but in some cases this might be wrong.
@@ -128,8 +126,8 @@ public class Parser<S extends GrammarSettings>
 				return parsedString.get();
 			}
 		}
-		setParserState(stateAfterParsingRegex);
-		throw new SyntaxException("Unexpected characters. Expected: " + syntaxRule.getSyntaxDescription(), stateAfterParsingRegex.getParsePosition());
+		setParserState(initialState);
+		throw new SyntaxException("Unexpected characters. Expected: " + syntaxRule.getSyntaxDescription(), initialState.getParsePosition());
 	}
 
 	public ParserState getParserState() {
