@@ -2,6 +2,7 @@ package dd.kms.zenodotx.rule.compound;
 
 import dd.kms.zenodotx.GrammarSettings;
 import dd.kms.zenodotx.Parser;
+import dd.kms.zenodotx.common.Pair;
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;

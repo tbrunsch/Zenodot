@@ -1,8 +1,12 @@
 package dd.kms.zenodotx.java.rule;
 
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
+import dd.kms.zenodotx.common.Pair;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
+import dd.kms.zenodotx.java.rule.operator.binary.BinaryOperatorExecuteRule;
+import dd.kms.zenodotx.java.rule.operator.binary.BinaryOperatorRegistry;
+import dd.kms.zenodotx.java.rule.operator.binary.BinaryOperators;
 import dd.kms.zenodotx.java.rule.operator.unary.UnaryOperatorRegistry;
 import dd.kms.zenodotx.java.rule.operator.unary.UnaryOperators;
 import dd.kms.zenodotx.java.rule.operator.unary.UnaryPrefixOperatorExecuteRule;
@@ -11,7 +15,6 @@ import dd.kms.zenodotx.rule.Rule;
 import dd.kms.zenodotx.rule.Rules;
 import dd.kms.zenodotx.rule.compound.DelegatingRule;
 import dd.kms.zenodotx.rule.compound.OrRule;
-import dd.kms.zenodotx.rule.compound.Pair;
 import dd.kms.zenodotx.rule.simple.SimpleRule;
 
 import static dd.kms.zenodotx.rule.Rules.*;
@@ -268,27 +271,27 @@ public class JavaRuleSet
 	// region Binary and ternary operators
 
 	// TODO: Support lazy evaluation/short circuit evaluation!
-	private final BinaryOperatorParseRule		operator12				= new BinaryOperatorParseRule();	// *, /, %  (left to right)
-	private final BinaryOperatorParseRule		operator11				= new BinaryOperatorParseRule();	// +, -  (left to right)
-	private final BinaryOperatorParseRule		operator10				= new BinaryOperatorParseRule();	// <<, >>, >>>  (left to right)
-	private final BinaryOperatorParseRule		operator9				= new BinaryOperatorParseRule();	// <, <=, >, >=  (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry12		= new BinaryOperatorRegistry();		// *, /, %  (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry11		= new BinaryOperatorRegistry();		// +, -  (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry10		= new BinaryOperatorRegistry();		// <<, >>, >>>  (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry9			= new BinaryOperatorRegistry();		// <, <=, >, >=  (left to right)
 	private final Rule<Pair<InstanceParseResult, Class<?>>, InstanceParseResult, JavaSettings>	instanceofCheck			= new InstanceOfRule();
-	private final BinaryOperatorParseRule		operator8				= new BinaryOperatorParseRule();	// ==, != (left to right)
-	private final BinaryOperatorParseRule		operator7				= new BinaryOperatorParseRule();	// & (left to right)
-	private final BinaryOperatorParseRule		operator6				= new BinaryOperatorParseRule();	// ^ (left to right)
-	private final BinaryOperatorParseRule		operator5				= new BinaryOperatorParseRule();	// | (left to right)
-	private final BinaryOperatorParseRule		operator4				= new BinaryOperatorParseRule();	// && (left to right)
-	private final BinaryOperatorParseRule		operator3				= new BinaryOperatorParseRule();	// || (left to right)
-	private final BinaryOperatorParseRule		operator1				= new BinaryOperatorParseRule();	// =, +=, -=, *=, /=, %=, &=, ^=, |=, <<=, >>=, >>>= (right-to-left)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry8			= new BinaryOperatorRegistry();		// ==, != (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry7			= new BinaryOperatorRegistry();		// & (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry6			= new BinaryOperatorRegistry();		// ^ (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry5			= new BinaryOperatorRegistry();		// | (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry4			= new BinaryOperatorRegistry();		// && (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry3			= new BinaryOperatorRegistry();		// || (left to right)
+	private final BinaryOperatorRegistry						binaryOperatorRegistry1			= new BinaryOperatorRegistry();		// =, +=, -=, *=, /=, %=, &=, ^=, |=, <<=, >>=, >>>= (right-to-left)
 
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression12	=	binaryOperatorLeftToRight(simpleExpression, operator12);
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression11	=	binaryOperatorLeftToRight(expression12, operator11);
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression10	=	binaryOperatorLeftToRight(expression11, operator10);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression12	=	binaryOperatorLeftToRight(simpleExpression, binaryOperatorRegistry12);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression11	=	binaryOperatorLeftToRight(expression12, binaryOperatorRegistry11);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression10	=	binaryOperatorLeftToRight(expression11, binaryOperatorRegistry10);
 
 	/*
 	 * Originally, we wrote
 	 *	private final Rule<Void, InstanceParseResult, JavaSettings>	expression9		=	or(
-	 *																						binaryOperatorLeftToRight(expression10, operator9),
+	 *																						binaryOperatorLeftToRight(expression10, binaryOperatorRegistry9),
 	 *																						expression10
 	 *																							.then(keyword("instanceof"))
 	 *																							.then(space())
@@ -298,7 +301,7 @@ public class JavaRuleSet
 	 * but that way the first expression10 is evaluated in both cases of the or(). If the evaluation
 	 * of expression10 causes side effects, then this side effect would occur multiple times that way.
 	 */
-	private final BinaryOperatorExecuteRule 					operator9ExecuteRule	= new BinaryOperatorExecuteRule(operator9, expression10);
+	private final BinaryOperatorExecuteRule operator9ExecuteRule	= new BinaryOperatorExecuteRule(binaryOperatorRegistry9, expression10);
 	private final Rule<Void, InstanceParseResult, JavaSettings>	expression9				= expression10
 																							.then(
 																								or(
@@ -310,14 +313,14 @@ public class JavaRuleSet
 																								)
 																							).name("Expression op expression (left to right) or expression instanceof Class");
 
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression8		=	binaryOperatorLeftToRight(expression9, operator8);
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression7		=	binaryOperatorLeftToRight(expression8, operator7);
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression6		=	binaryOperatorLeftToRight(expression7, operator6);
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression5		=	binaryOperatorLeftToRight(expression6, operator5);
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression4		=	binaryOperatorLeftToRight(expression5, operator4);
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression3		=	binaryOperatorLeftToRight(expression4, operator3);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression8		=	binaryOperatorLeftToRight(expression9, binaryOperatorRegistry8);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression7		=	binaryOperatorLeftToRight(expression8, binaryOperatorRegistry7);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression6		=	binaryOperatorLeftToRight(expression7, binaryOperatorRegistry6);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression5		=	binaryOperatorLeftToRight(expression6, binaryOperatorRegistry5);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression4		=	binaryOperatorLeftToRight(expression5, binaryOperatorRegistry4);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression3		=	binaryOperatorLeftToRight(expression4, binaryOperatorRegistry3);
 	private final Rule<Void, InstanceParseResult, JavaSettings>	expression2		=	conditionalOperator(expression3);
-	private final Rule<Void, InstanceParseResult, JavaSettings>	expression1		=	binaryOperatorRightToLeft(expression2, operator1);
+	private final Rule<Void, InstanceParseResult, JavaSettings>	expression1		=	binaryOperatorRightToLeft(expression2, binaryOperatorRegistry1);
 	// endregion
 
 	// TODO: Support unary postfix operator
@@ -336,6 +339,7 @@ public class JavaRuleSet
 		expression.setAlternatives(expression1);
 
 		registerUnaryPrefixOperators();
+		registerBinaryOperators();
 	}
 
 	protected void registerUnaryPrefixOperators() {
@@ -354,6 +358,64 @@ public class JavaRuleSet
 
 	protected void registerNegationOperators() {
 		UnaryOperators.registerNegationOperators(unaryOperatorRegistry);
+	}
+
+	protected void registerBinaryOperators() {
+		registerBinaryOperators12();
+		registerBinaryOperators11();
+		registerBinaryOperators10();
+		registerBinaryOperators9();
+		registerBinaryOperators8();
+		registerBinaryOperators7();
+		registerBinaryOperators6();
+		registerBinaryOperators5();
+		registerBinaryOperators4();
+		registerBinaryOperators3();
+		registerBinaryOperators1();
+	}
+
+	protected void registerBinaryOperators12() {
+		BinaryOperators.registerBinaryOperators12(binaryOperatorRegistry12);
+	}
+
+	protected void registerBinaryOperators11() {
+		BinaryOperators.registerBinaryOperators11(binaryOperatorRegistry11);
+	}
+
+	protected void registerBinaryOperators10() {
+		BinaryOperators.registerBinaryOperators10(binaryOperatorRegistry10);
+	}
+
+	protected void registerBinaryOperators9() {
+		BinaryOperators.registerBinaryOperators9(binaryOperatorRegistry9);
+	}
+
+	protected void registerBinaryOperators8() {
+		BinaryOperators.registerBinaryOperators8(binaryOperatorRegistry8);
+	}
+
+	protected void registerBinaryOperators7() {
+		BinaryOperators.registerBinaryOperators7(binaryOperatorRegistry7);
+	}
+
+	protected void registerBinaryOperators6() {
+		BinaryOperators.registerBinaryOperators6(binaryOperatorRegistry6);
+	}
+
+	protected void registerBinaryOperators5() {
+		BinaryOperators.registerBinaryOperators5(binaryOperatorRegistry5);
+	}
+
+	protected void registerBinaryOperators4() {
+		BinaryOperators.registerBinaryOperators4(binaryOperatorRegistry4);
+	}
+
+	protected void registerBinaryOperators3() {
+		BinaryOperators.registerBinaryOperators3(binaryOperatorRegistry3);
+	}
+
+	protected void registerBinaryOperators1() {
+		BinaryOperators.registerBinaryOperators1(binaryOperatorRegistry1);
 	}
 
 	public Rule<Void, InstanceParseResult, JavaSettings> getFullExpression() {
@@ -388,16 +450,16 @@ public class JavaRuleSet
 			.name("Method");
 	}
 
-	private Rule<Void, InstanceParseResult, JavaSettings> binaryOperatorLeftToRight(Rule<Void, InstanceParseResult, JavaSettings> subExpression, Rule<Void, String, JavaSettings> operator) {
-		BinaryOperatorExecuteRule binaryOperatorExecuteRule = new BinaryOperatorExecuteRule(operator, subExpression);
+	private Rule<Void, InstanceParseResult, JavaSettings> binaryOperatorLeftToRight(Rule<Void, InstanceParseResult, JavaSettings> subExpression, BinaryOperatorRegistry binaryOperatorRegistry) {
+		BinaryOperatorExecuteRule binaryOperatorExecuteRule = new BinaryOperatorExecuteRule(binaryOperatorRegistry, subExpression);
 		return subExpression
 			.then(repeat(binaryOperatorExecuteRule))
 			.name("Expression op expression (left to right)");
 	}
 
-	private Rule<Void, InstanceParseResult, JavaSettings> binaryOperatorRightToLeft(Rule<Void, InstanceParseResult, JavaSettings> subExpression, Rule<Void, String, JavaSettings> operator) {
+	private Rule<Void, InstanceParseResult, JavaSettings> binaryOperatorRightToLeft(Rule<Void, InstanceParseResult, JavaSettings> subExpression, BinaryOperatorRegistry binaryOperatorRegistry) {
 		DelegatingRule<Void, InstanceParseResult, JavaSettings> expression = Rules.createDelegate();
-		BinaryOperatorExecuteRule binaryOperatorExecuteRule = new BinaryOperatorExecuteRule(operator, expression);
+		BinaryOperatorExecuteRule binaryOperatorExecuteRule = new BinaryOperatorExecuteRule(binaryOperatorRegistry, expression);
 		expression.setDelegate(
 			subExpression
 			.then(

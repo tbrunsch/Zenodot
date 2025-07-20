@@ -1,7 +1,7 @@
 package dd.kms.zenodotx.rule;
 
 import dd.kms.zenodotx.GrammarSettings;
-import dd.kms.zenodotx.rule.compound.Pair;
+import dd.kms.zenodotx.common.Pair;
 import dd.kms.zenodotx.rule.compound.ThenRule;
 import dd.kms.zenodotx.rule.simple.CharacterRule;
 

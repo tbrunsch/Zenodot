@@ -18,7 +18,7 @@ public class UnaryOperators
 	}
 
 	private static <S> void registerPrefixOperatorWithAssignment(UnaryOperatorRegistry registry, String operator, Class<S> operandClass, Function<S, S> implementation) {
-		registry.register(operator, operandClass, operandClass, UnaryOperatorInfo.UnaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT, implementation);
+		registry.register(operator, operandClass, operandClass, UnaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT, implementation);
 	}
 
 	public static void registerSignOperators(UnaryOperatorRegistry registry) {

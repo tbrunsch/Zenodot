@@ -10,7 +10,7 @@ import dd.kms.zenodotx.rule.simple.SyntaxRule;
 import java.util.regex.Pattern;
 
 // TODO: Remove after all rules have been implemented
-class UnimplementedRule<I, O> extends AbstractRule<I, O, JavaSettings> implements SimpleRule<I, O, JavaSettings>
+public class UnimplementedRule<I, O> extends AbstractRule<I, O, JavaSettings> implements SimpleRule<I, O, JavaSettings>
 {
 	@Override
 	public SyntaxRule getSyntaxRule() {

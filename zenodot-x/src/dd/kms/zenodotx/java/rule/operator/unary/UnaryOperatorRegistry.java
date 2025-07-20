@@ -61,10 +61,10 @@ public class UnaryOperatorRegistry
 	}
 
 	public <T> void register(String operator, Class<T> operandClass, Class<?> resultClass, Function<T, ?> operatorImplementation) {
-		register(operator, operandClass, resultClass, UnaryOperatorInfo.UnaryOperatorMode.RETURN_RESULT, operatorImplementation);
+		register(operator, operandClass, resultClass, UnaryOperatorMode.RETURN_RESULT, operatorImplementation);
 	}
 
-	public <T> void register(String operator, Class<T> operandClass, Class<?> resultClass, UnaryOperatorInfo.UnaryOperatorMode operatorMode, Function<T, ?> operatorImplementation) {
+	public <T> void register(String operator, Class<T> operandClass, Class<?> resultClass, UnaryOperatorMode operatorMode, Function<T, ?> operatorImplementation) {
 		Function<Object, Object> wrappedImplementation = o -> operatorImplementation.apply(ReflectionUtils.convertTo(o, operandClass, false));
 		UnaryOperatorInfo operatorInfo = new UnaryOperatorInfo(operator, operandClass, resultClass, operatorMode, wrappedImplementation);
 		operatorInfos.put(operator, operatorInfo);

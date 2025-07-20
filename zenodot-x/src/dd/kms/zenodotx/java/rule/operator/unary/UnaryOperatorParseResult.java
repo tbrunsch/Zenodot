@@ -33,7 +33,7 @@ public class UnaryOperatorParseResult implements InstanceParseResult {
 
 	private ObjectInfo evaluate(ObjectInfo operandInfo, EvaluationMode evaluationMode) throws EvaluationException {
 		ObjectInfo.ValueSetter operandSetter = operandInfo.getValueSetter();
-		UnaryOperatorInfo.UnaryOperatorMode operatorMode = operatorInfo.getOperatorMode();
+		UnaryOperatorMode operatorMode = operatorInfo.getOperatorMode();
 		Function<Object, Object> operatorImplementation = operatorInfo.getImplementation();
 		Object operand = operandInfo.getObject();
 		Object operatorResult = evaluationMode != EvaluationMode.STATIC_TYPING && operand != InfoProvider.INDETERMINATE_VALUE
@@ -61,6 +61,7 @@ public class UnaryOperatorParseResult implements InstanceParseResult {
 				String operator = operatorInfo.getOperator();
 				throw new EvaluationException("Operator \"" + operator + "\" cannot be applied because the operand does not permit assignments");
 			}
+			// TODO: Check that type of value to assign is assignable to target type
 			if (evaluationMode == EvaluationMode.DYNAMIC_TYPING) {
 				ObjectInfo assignInfo = InfoProvider.createObjectInfo(operatorResult, operatorResultClass, operandSetter);
 				operandSetter.setObjectInfo(assignInfo);

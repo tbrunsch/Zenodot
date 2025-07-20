@@ -1,6 +1,9 @@
 package dd.kms.zenodotx.stack;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.Arrays;
+import java.util.EmptyStackException;
+import java.util.List;
 
 /**
  * A linked list based implementation of a stack that provides a cheap {@link #copy()} method that does not

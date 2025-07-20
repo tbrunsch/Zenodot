@@ -1,4 +1,4 @@
-package dd.kms.zenodotx.java.rule;
+package dd.kms.zenodotx.java.rule.operator.binary;
 
 import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.settings.EvaluationMode;
@@ -15,11 +15,13 @@ import dd.kms.zenodotx.rule.compound.CompoundRule;
 
 public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult, InstanceParseResult, JavaSettings> implements CompoundRule<InstanceParseResult, InstanceParseResult, JavaSettings>
 {
+	private final BinaryOperatorRegistry						registry;
 	private final Rule<Void, String, JavaSettings>				operatorRule;
 	private final Rule<Void, InstanceParseResult, JavaSettings>	rightHandSideRule;
 
-	public BinaryOperatorExecuteRule(Rule<Void, String, JavaSettings> operatorRule, Rule<Void, InstanceParseResult, JavaSettings> rightHandSideRule) {
-		this.operatorRule = operatorRule;
+	public BinaryOperatorExecuteRule(BinaryOperatorRegistry registry, Rule<Void, InstanceParseResult, JavaSettings> rightHandSideRule) {
+		this.registry = registry;
+		this.operatorRule = new BinaryOperatorParseRule(registry);
 		this.rightHandSideRule = rightHandSideRule;
 	}
 

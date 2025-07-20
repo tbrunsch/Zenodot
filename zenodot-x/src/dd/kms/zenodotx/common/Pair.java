@@ -1,4 +1,4 @@
-package dd.kms.zenodotx.rule.compound;
+package dd.kms.zenodotx.common;
 
 public class Pair<S, T>
 {
