@@ -9,10 +9,11 @@ import dd.kms.zenodotx.java.result.InstanceParseResult;
 
 import java.util.function.Function;
 
-public class UnaryOperatorParseResult implements InstanceParseResult {
-	private final UnaryOperatorInfo operatorInfo;
-	private final InstanceParseResult operandParseResult;
-	private final ObjectInfo evaluatedResult;
+public class UnaryOperatorParseResult implements InstanceParseResult
+{
+	private final UnaryOperatorInfo		operatorInfo;
+	private final InstanceParseResult	operandParseResult;
+	private final ObjectInfo			evaluatedResult;
 
 	public UnaryOperatorParseResult(UnaryOperatorInfo operatorInfo, InstanceParseResult operandParseResult, EvaluationMode evaluationMode) throws EvaluationException {
 		this.operandParseResult = operandParseResult;
@@ -34,6 +35,12 @@ public class UnaryOperatorParseResult implements InstanceParseResult {
 	private ObjectInfo evaluate(ObjectInfo operandInfo, EvaluationMode evaluationMode) throws EvaluationException {
 		ObjectInfo.ValueSetter operandSetter = operandInfo.getValueSetter();
 		UnaryOperatorMode operatorMode = operatorInfo.getOperatorMode();
+
+		if (operatorMode.isWithAssignment() && operandSetter == null) {
+			String operator = operatorInfo.getOperator();
+			throw new EvaluationException("Operator \"" + operator + "\" cannot be applied because the operand does not permit assignments");
+		}
+
 		Function<Object, Object> operatorImplementation = operatorInfo.getImplementation();
 		Object operand = operandInfo.getObject();
 		Object operatorResult = evaluationMode != EvaluationMode.STATIC_TYPING && operand != InfoProvider.INDETERMINATE_VALUE
@@ -57,10 +64,6 @@ public class UnaryOperatorParseResult implements InstanceParseResult {
 		}
 
 		if (operatorMode.isWithAssignment()) {
-			if (operandSetter == null) {
-				String operator = operatorInfo.getOperator();
-				throw new EvaluationException("Operator \"" + operator + "\" cannot be applied because the operand does not permit assignments");
-			}
 			// TODO: Check that type of value to assign is assignable to target type
 			if (evaluationMode == EvaluationMode.DYNAMIC_TYPING) {
 				ObjectInfo assignInfo = InfoProvider.createObjectInfo(operatorResult, operatorResultClass, operandSetter);

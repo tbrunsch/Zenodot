@@ -451,9 +451,9 @@ public class JavaRuleSet
 	}
 
 	private Rule<Void, InstanceParseResult, JavaSettings> binaryOperatorLeftToRight(Rule<Void, InstanceParseResult, JavaSettings> subExpression, BinaryOperatorRegistry binaryOperatorRegistry) {
-		BinaryOperatorExecuteRule binaryOperatorExecuteRule = new BinaryOperatorExecuteRule(binaryOperatorRegistry, subExpression);
+		BinaryOperatorExecuteRule applyBinaryOperator = new BinaryOperatorExecuteRule(binaryOperatorRegistry, subExpression);
 		return subExpression
-			.then(repeat(binaryOperatorExecuteRule))
+			.then(repeat(applyBinaryOperator))
 			.name("Expression op expression (left to right)");
 	}
 

@@ -17,7 +17,10 @@ public class BinaryOperatorInfo
 	@Nullable
 	private final Function<Object, NullableOptional<? extends Object>>	shortCircuitImplementation;
 
-	public BinaryOperatorInfo(String operator, Class<?> lhsOperandClass, Class<?> rhsOperandClass, Class<?> resultClass, BinaryOperatorMode operatorMode, BiFunction<Object, Object, Object> implementation, Function<Object, NullableOptional<? extends Object>> shortCircuitImplementation) {
+	public BinaryOperatorInfo(String operator, Class<?> lhsOperandClass, Class<?> rhsOperandClass, Class<?> resultClass, BinaryOperatorMode operatorMode, BiFunction<Object, Object, Object> implementation, @Nullable Function<Object, NullableOptional<? extends Object>> shortCircuitImplementation) {
+		if (shortCircuitImplementation != null && operatorMode == BinaryOperatorMode.RETURN_RIGHT_OPERAND_ASSIGN_RESULT_RIGHT) {
+			throw new IllegalArgumentException("Binary operators that support short circuit evaluation must not return the right operand");
+		}
 		this.operator = operator;
 		this.lhsOperandClass = lhsOperandClass;
 		this.rhsOperandClass = rhsOperandClass;

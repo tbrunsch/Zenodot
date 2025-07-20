@@ -25,9 +25,9 @@ public class UnaryPrefixOperatorExecuteRule extends AbstractRule<Pair<String, In
 		InstanceParseResult operandParseResult = pair.getSecond();
 		EvaluationMode evaluationMode = settings.getEvaluationMode();
 		ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
-		ObjectInfo instanceInfo = operandParseResult.getEvaluatedResult();
-		Class<?> instanceType = objectInfoProvider.getType(instanceInfo);
-		UnaryOperatorInfo operatorInfo = registry.getBestMatchingOperatorInfo(unaryPrefixOperator, instanceType);
+		ObjectInfo operandInfo = operandParseResult.getEvaluatedResult();
+		Class<?> operandType = objectInfoProvider.getType(operandInfo);
+		UnaryOperatorInfo operatorInfo = registry.getBestMatchingOperatorInfo(unaryPrefixOperator, operandType);
 		try {
 			return new UnaryOperatorParseResult(operatorInfo, operandParseResult, settings.getEvaluationMode());
 		} catch (EvaluationException e) {

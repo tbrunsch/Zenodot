@@ -25,14 +25,14 @@ public class UnaryOperatorRegistry
 		return operatorInfos.get(operator);
 	}
 
-	public UnaryOperatorInfo getBestMatchingOperatorInfo(String operator, Class<?> instanceType) throws SemanticException {
+	public UnaryOperatorInfo getBestMatchingOperatorInfo(String operator, Class<?> operandType) throws SemanticException {
 		Collection<UnaryOperatorInfo> operatorInfos = getOperatorInfos(operator);
 
 		TypeMatch bestTypeMatch = TypeMatch.NONE;
 		List<UnaryOperatorInfo> bestMatchingOperatorInfos = new ArrayList<>();
 		for (UnaryOperatorInfo operatorInfo : operatorInfos) {
 			Class<?> operandClass = operatorInfo.getOperandClass();
-			TypeMatch typeMatch = MatchRatings.rateTypeMatch(operandClass, instanceType);
+			TypeMatch typeMatch = MatchRatings.rateTypeMatch(operandClass, operandType);
 			int comparisonResult = typeMatch.compareTo(bestTypeMatch);
 			if (comparisonResult < 0) {
 				bestMatchingOperatorInfos.clear();
@@ -43,16 +43,16 @@ public class UnaryOperatorRegistry
 			}
 		}
 		if (bestTypeMatch == TypeMatch.NONE) {
-			if (instanceType == InfoProvider.NO_TYPE) {
+			if (operandType == InfoProvider.NO_TYPE) {
 				throw new SemanticException("Unary operator '" + operator + "' cannot be applied to null");
 			} else {
-				throw new SemanticException("Unary operator '" + operator + "' cannot be applied to instances of type '" + instanceType.getSimpleName() + "'");
+				throw new SemanticException("Unary operator '" + operator + "' cannot be applied to instances of type '" + operandType.getSimpleName() + "'");
 			}
 		}
 		if (bestMatchingOperatorInfos.size() > 1) {
 			Class<?> operandClass1 = bestMatchingOperatorInfos.get(0).getOperandClass();
 			Class<?> operandClass2 = bestMatchingOperatorInfos.get(1).getOperandClass();
-			throw new SemanticException("Unary operator '" + operator + "' is ambiguous for type '" + instanceType.getSimpleName() + "': Implementations are available for '" + operandClass1 + "' and '" + operandClass2 + "'");
+			throw new SemanticException("Unary operator '" + operator + "' is ambiguous for type '" + operandType.getSimpleName() + "': Implementations are available for '" + operandClass1.getSimpleName() + "' and '" + operandClass2.getSimpleName() + "'");
 		}
 		if (bestMatchingOperatorInfos.isEmpty()) {
 			throw new IllegalStateException("Internal error: No best unary operator implementation found though there should be");
