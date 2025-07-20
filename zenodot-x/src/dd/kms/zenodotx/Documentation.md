@@ -2,8 +2,8 @@
 
 `Rule`s take an input of type `I` (and settings of type `S` that can control the parsing process) and produce an output of type `O`. The outmost rule is often a rule that does not have any input (type `Void`) and produce the desired output. Rules are often meant to be executed one after another (a sequence): The output of one rule is then the input for the next rule. Details will become clear when considering a concrete rule set (see section [Java Rules](#java-rules)).
 
-## SimpleRules and CompoundRules:
-There are essentially two types of `Rule`s: `SimpleRule`s and `CompoundRule`s.
+## SimpleRules, CompoundRules, and EvaluationRules:
+There are essentially three types of `Rule`s: `SimpleRule`s, `CompoundRule`s, and `EvaluationRule`s.
 
 * `CompoundRule`s have access to the `Parser` that they can use to parse rules they are composed of (not themselves, because this would cause a stack overflow). `CompoundRule`s can therefore control the parsing process and decide when to parse which rule and how. It is possible to implement custom `CompoundRule`s, but the hope is that many use cases can be covered by implementing `SimpleRule`s or using predefined `CompoundRule`s. The predefined `CompoundRule`s are as follows:
 
@@ -15,9 +15,12 @@ There are essentially two types of `Rule`s: `SimpleRule`s and `CompoundRule`s.
 
   * `DelegatingRule`: This rule wraps another `CompoundRule` and delegates to it. This rule can be used when rules have to be defined recursively (see Section [Recursive Expressions](#recursive-expressions)).
 
-* `SimpleRule`s describe their syntax (`SyntaxRule`) and 
+* `SimpleRule`s describe their syntax (`SyntaxRule`) and ... TODO
 
-predefined `SimpleRule`s: ...
+
+TODO: predefined `SimpleRule`s: ...
+
+* `EvaluationRule`s ... TODO
 
 ### Recursive Expressions
 

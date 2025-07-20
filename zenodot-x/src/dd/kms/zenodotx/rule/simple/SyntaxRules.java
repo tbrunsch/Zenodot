@@ -8,19 +8,6 @@ import java.util.stream.Collectors;
 
 public class SyntaxRules
 {
-	private static final Pattern	EMPTY_PATTERN	= Pattern.compile("");
-	public static final SyntaxRule	EMPTY			= new SyntaxRule() {
-		@Override
-		public Pattern getRegex() {
-			return EMPTY_PATTERN;
-		}
-
-		@Override
-		public String getSyntaxDescription() {
-			return "Empty string";
-		}
-	};
-
 	public static SyntaxRule forCharacter(char c) {
 		String escapedCharacter = RegexUtils.escapeIfSpecial(c);
 		Pattern pattern = Pattern.compile(escapedCharacter);

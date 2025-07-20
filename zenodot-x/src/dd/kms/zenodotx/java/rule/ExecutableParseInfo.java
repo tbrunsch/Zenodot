@@ -29,7 +29,10 @@ public class ExecutableParseInfo
 		return parameters;
 	}
 
-	public void addParameter(InstanceParseResult parameter) {
-		parameters.add(parameter);
+	public ExecutableParseInfo addParameter(InstanceParseResult parameter) {
+		ExecutableParseInfo executableParseInfo = new ExecutableParseInfo(executableInfos, context);
+		executableParseInfo.parameters.addAll(parameters);
+		executableParseInfo.parameters.add(parameter);
+		return executableParseInfo;
 	}
 }

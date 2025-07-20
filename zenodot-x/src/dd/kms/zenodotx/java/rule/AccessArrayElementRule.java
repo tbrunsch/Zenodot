@@ -5,41 +5,19 @@ import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.exception.EvaluationException;
+import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
 import dd.kms.zenodotx.rule.AbstractRule;
-import dd.kms.zenodotx.rule.simple.SemanticRule;
-import dd.kms.zenodotx.rule.simple.SimpleRule;
-import dd.kms.zenodotx.rule.simple.SyntaxRule;
-import dd.kms.zenodotx.rule.simple.SyntaxRules;
+import dd.kms.zenodotx.rule.EvaluationRule;
 
-public class AccessArrayElementRule extends AbstractRule<ArrayAccessInfo, InstanceParseResult, JavaSettings> implements SimpleRule<ArrayAccessInfo, InstanceParseResult, JavaSettings>
+public class AccessArrayElementRule extends AbstractRule<ArrayAccessInfo, InstanceParseResult, JavaSettings> implements EvaluationRule<ArrayAccessInfo, InstanceParseResult, JavaSettings>
 {
 	@Override
-	public SyntaxRule getSyntaxRule() {
-		return SyntaxRules.EMPTY;
-	}
-
-	@Override
-	public SemanticRule<ArrayAccessInfo, InstanceParseResult, JavaSettings> getSemanticRule() {
-		return new AbstractSemanticJavaRule<ArrayAccessInfo, InstanceParseResult>() {
-			@Override
-			protected void doSuggestCodeCompletions(ArrayAccessInfo input, String parsedString, JavaSettings settings) {
-				/* nothing to do */
-			}
-
-			@Override
-			protected void doSuggestMethodParameters(ArrayAccessInfo input, JavaSettings settings) {
-				/* nothing to do */
-			}
-
-			@Override
-			public InstanceParseResult evaluate(ArrayAccessInfo arrayAccessInfo, String parsedString, JavaSettings settings) {
-				InstanceParseResult array = arrayAccessInfo.getArray();
-				InstanceParseResult index = arrayAccessInfo.getIndex();
-				return new ArrayElementAccessParseResult(array, index, settings.getEvaluationMode());
-			}
-		};
+	public InstanceParseResult evaluate(ArrayAccessInfo arrayAccessInfo, JavaSettings settings) throws SemanticException, EvaluationException {
+		InstanceParseResult array = arrayAccessInfo.getArray();
+		InstanceParseResult index = arrayAccessInfo.getIndex();
+		return new ArrayElementAccessParseResult(array, index, settings.getEvaluationMode());
 	}
 
 	@Override

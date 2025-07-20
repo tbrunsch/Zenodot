@@ -11,6 +11,7 @@ import dd.kms.zenodotx.rule.Rule;
 import dd.kms.zenodotx.rule.Rules;
 import dd.kms.zenodotx.rule.compound.DelegatingRule;
 import dd.kms.zenodotx.rule.compound.OrRule;
+import dd.kms.zenodotx.rule.compound.Pair;
 import dd.kms.zenodotx.rule.simple.SimpleRule;
 
 import static dd.kms.zenodotx.rule.Rules.*;
@@ -122,8 +123,11 @@ public class JavaRuleSet
 	private final AbstractFieldRule<Void>					fieldOfThis		=	new FieldOfThisRule();
 	private final AbstractFieldRule<Class<?>>				classField 		=	new ClassFieldRule();
 
-	private final Rule<ExecutableParseInfo, ExecutableParseInfo, JavaSettings>	methodParameter	= new MethodParameterRule(expression);
-	private final Rule<ExecutableParseInfo, InstanceParseResult, JavaSettings>	invokeMethod	= new InvokeMethodRule();
+	private final Rule<Pair<ExecutableParseInfo, InstanceParseResult>, ExecutableParseInfo, JavaSettings>	addMethodParameter	= new AddMethodParameterRule();
+	private final Rule<ExecutableParseInfo, ExecutableParseInfo, JavaSettings>								methodParameter		= Rules.<ExecutableParseInfo, InstanceParseResult, JavaSettings>combineWithInput(expression)
+																																	.then(addMethodParameter);
+
+	private final Rule<ExecutableParseInfo, InstanceParseResult, JavaSettings>								invokeMethod	= new InvokeMethodRule();
 
 	private final AbstractMethodNameRule<InstanceParseResult>	instanceMethodName	= new InstanceMethodNameRule();
 	private final AbstractMethodNameRule<Void> 					methodNameOfThis	= new MethodNameOfThisRule();
@@ -134,33 +138,36 @@ public class JavaRuleSet
 	// endregion
 
 	// region Constructor
-	private final Rule<Void, ConstructorParseInfo, JavaSettings>				constructorClass			=	new ConstructorClassRule(classRule);
-	private final ConstructorParameterRule										constructorParameter		=	new ConstructorParameterRule(expression);
-	private final Rule<ConstructorParseInfo, InstanceParseResult, JavaSettings>	invokeInstanceConstructor	= new InvokeInstanceConstructorRule();
-	private final Rule<Void, InstanceParseResult, JavaSettings>		constructor				=	JavaRuleSet.<Void>keyword("new")
-																								.then(space())
-																								.then(constructorClass)
-																								.then(
-																									or(
-																										Rules.<ConstructorParseInfo, JavaSettings>character('(')
-																											.then(
-																												or(
-																													empty(),
-																													constructorParameter
-																														.then(
-																															repeat(
-																																Rules.<ConstructorParseInfo, JavaSettings>character(',')
-																																	.then(constructorParameter)
-																																	.name("Next parameter")
-																															).name("Further parameters")
-																														).name("Non-empty parameter list")
-																												).name("Parameter list")
-																											).then(')')
-																											.then(invokeInstanceConstructor)
-																											.name("Instance constructor")
-																											// TODO: Add array constructor
-																										)
-																								);
+	private final Rule<Class<?>, ConstructorParseInfo, JavaSettings>											constructorClass			= new ConstructorClassRule();
+	private final Rule<Pair<ConstructorParseInfo, InstanceParseResult>, ConstructorParseInfo, JavaSettings>		addConstructorParameter 	= new AddConstructorParameterRule();
+	private final Rule<ConstructorParseInfo, ConstructorParseInfo, JavaSettings>								constructorParameter		= Rules.<ConstructorParseInfo, InstanceParseResult, JavaSettings>combineWithInput(expression)
+																																				.then(addConstructorParameter);
+	private final Rule<ConstructorParseInfo, InstanceParseResult, JavaSettings>									invokeInstanceConstructor	= new InvokeInstanceConstructorRule();
+	private final Rule<Void, InstanceParseResult, JavaSettings>		constructor	=	JavaRuleSet.<Void>keyword("new")
+																						.then(space())
+																						.then(classRule)
+																						.then(constructorClass)
+																						.then(
+																							or(
+																								Rules.<ConstructorParseInfo, JavaSettings>character('(')
+																									.then(
+																										or(
+																											empty(),
+																											constructorParameter
+																												.then(
+																													repeat(
+																														Rules.<ConstructorParseInfo, JavaSettings>character(',')
+																															.then(constructorParameter)
+																															.name("Next parameter")
+																													).name("Further parameters")
+																												).name("Non-empty parameter list")
+																										).name("Parameter list")
+																									).then(')')
+																									.then(invokeInstanceConstructor)
+																									.name("Instance constructor")
+																									// TODO: Add array constructor
+																								)
+																						);
 	// endregion
 
 	// region Lambda
@@ -230,10 +237,11 @@ public class JavaRuleSet
 
 	private final OrRule<Void, InstanceParseResult, JavaSettings>	simpleExpression	= Rules.<Void, InstanceParseResult, JavaSettings>or()
 																							.name("Simple expression (without binary operators)");
-	private final Rule<Class<?>, InstanceParseResult, JavaSettings>	classCastRule		= new ClassCastRule(simpleExpression);
+	private final Rule<Pair<Class<?>, InstanceParseResult>, InstanceParseResult, JavaSettings>	classCastRule		= new ClassCastRule();
 	private final Rule<Void, InstanceParseResult, JavaSettings>		castExpression		=  Rules.<Void, JavaSettings>character('(')
 																							.then(classRule)
 																							.then(')')
+																							.combineWith(simpleExpression)
 																							.then(classCastRule)
 																							.name("Class cast");
 	
@@ -253,9 +261,9 @@ public class JavaRuleSet
 																													lambda
 																												).name("Simple expressions that may not have an object tail");
 
-	private final UnaryOperatorRegistry								unaryOperatorRegistry			= new UnaryOperatorRegistry();
-	private final Rule<Void, String, JavaSettings>					unaryPrefixOperator				= new UnaryPrefixOperatorParseRule(unaryOperatorRegistry);
-	private final Rule<String, InstanceParseResult, JavaSettings>	unaryPrefixOperatorExecuteRule	= new UnaryPrefixOperatorExecuteRule(unaryOperatorRegistry, simpleExpression);
+	private final UnaryOperatorRegistry															unaryOperatorRegistry			= new UnaryOperatorRegistry();
+	private final Rule<Void, String, JavaSettings>												unaryPrefixOperator				= new UnaryPrefixOperatorParseRule(unaryOperatorRegistry);
+	private final Rule<Pair<String, InstanceParseResult>, InstanceParseResult, JavaSettings>	applyUnaryPrefixOperator = new UnaryPrefixOperatorExecuteRule(unaryOperatorRegistry);
 
 	// region Binary and ternary operators
 
@@ -264,7 +272,7 @@ public class JavaRuleSet
 	private final BinaryOperatorParseRule		operator11				= new BinaryOperatorParseRule();	// +, -  (left to right)
 	private final BinaryOperatorParseRule		operator10				= new BinaryOperatorParseRule();	// <<, >>, >>>  (left to right)
 	private final BinaryOperatorParseRule		operator9				= new BinaryOperatorParseRule();	// <, <=, >, >=  (left to right)
-	private final Rule<InstanceParseResult, InstanceParseResult, JavaSettings>	instanceofCheck			= new InstanceOfRule(classRule);
+	private final Rule<Pair<InstanceParseResult, Class<?>>, InstanceParseResult, JavaSettings>	instanceofCheck			= new InstanceOfRule();
 	private final BinaryOperatorParseRule		operator8				= new BinaryOperatorParseRule();	// ==, != (left to right)
 	private final BinaryOperatorParseRule		operator7				= new BinaryOperatorParseRule();	// & (left to right)
 	private final BinaryOperatorParseRule		operator6				= new BinaryOperatorParseRule();	// ^ (left to right)
@@ -297,6 +305,7 @@ public class JavaRuleSet
 																									repeat(operator9ExecuteRule),
 																									JavaRuleSet.<InstanceParseResult>keyword("instanceof")
 																										.then(space())
+																										.combineWith(classRule)
 																										.then(instanceofCheck)
 																								)
 																							).name("Expression op expression (left to right) or expression instanceof Class");
@@ -320,7 +329,8 @@ public class JavaRuleSet
 			),
 			simpleExpressionWithoutTailPotential,
 			unaryPrefixOperator
-				.then(unaryPrefixOperatorExecuteRule)
+				.combineWith(simpleExpression)
+				.then(applyUnaryPrefixOperator)
 		);
 
 		expression.setAlternatives(expression1);

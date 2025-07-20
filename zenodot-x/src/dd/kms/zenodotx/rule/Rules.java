@@ -34,6 +34,10 @@ public class Rules
 		return repetitionRule;
 	}
 
+	public static <I, O, S extends GrammarSettings> Rule<I, Pair<I, O>, S> combineWithInput(Rule<Void, O, S> rule) {
+		return new CombineWithInputRule<>(rule);
+	}
+
 	public static <I, O, S extends GrammarSettings> DelegatingRule<I, O, S> createDelegate() {
 		return new DelegatingRuleImpl<>();
 	}

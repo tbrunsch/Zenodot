@@ -5,24 +5,27 @@ import dd.kms.zenodotx.java.result.InstanceParseResult;
 import java.util.ArrayList;
 import java.util.List;
 
-class ConstructorParseInfo
+public class ConstructorParseInfo
 {
 	private final Class<?>					constructorClass;
 	private final List<InstanceParseResult>	parameters			= new ArrayList<>();
 
-	ConstructorParseInfo(Class<?> constructorClass) {
+	public ConstructorParseInfo(Class<?> constructorClass) {
 		this.constructorClass = constructorClass;
 	}
 
-	Class<?> getConstructorClass() {
+	public Class<?> getConstructorClass() {
 		return constructorClass;
 	}
 
-	List<InstanceParseResult> getParameters() {
+	public List<InstanceParseResult> getParameters() {
 		return parameters;
 	}
 
-	void addParameter(InstanceParseResult parameter) {
-		parameters.add(parameter);
+	public ConstructorParseInfo addParameter(InstanceParseResult parameter) {
+		ConstructorParseInfo constructorParseInfo = new ConstructorParseInfo(constructorClass);
+		constructorParseInfo.parameters.addAll(parameters);
+		constructorParseInfo.parameters.add(parameter);
+		return constructorParseInfo;
 	}
 }

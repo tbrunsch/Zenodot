@@ -6,19 +6,19 @@ import dd.kms.zenodot.framework.common.ObjectInfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodot.impl.utils.dataproviders.OperatorResultProvider;
 import dd.kms.zenodotx.exception.EvaluationException;
+import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
-import dd.kms.zenodotx.rule.Rule;
-import dd.kms.zenodotx.rule.compound.AbstractCombineRule;
+import dd.kms.zenodotx.rule.AbstractRule;
+import dd.kms.zenodotx.rule.EvaluationRule;
+import dd.kms.zenodotx.rule.compound.Pair;
 
-public class InstanceOfRule extends AbstractCombineRule<InstanceParseResult, Class<?>, InstanceParseResult, JavaSettings>
+public class InstanceOfRule extends AbstractRule<Pair<InstanceParseResult, Class<?>>, InstanceParseResult, JavaSettings> implements EvaluationRule<Pair<InstanceParseResult, Class<?>>, InstanceParseResult, JavaSettings>
 {
-	public InstanceOfRule(Rule<Void, Class<?>, JavaSettings> classRule) {
-		super(classRule);
-	}
-
 	@Override
-	protected InstanceParseResult combine(InstanceParseResult instance, Class<?> clazz, JavaSettings settings) throws EvaluationException {
+	public InstanceParseResult evaluate(Pair<InstanceParseResult, Class<?>> pair, JavaSettings settings) throws SemanticException, EvaluationException {
+		InstanceParseResult instance = pair.getFirst();
+		Class<?> clazz = pair.getSecond();
 		return new InstanceOfParseResult(instance, clazz, settings.getEvaluationMode());
 	}
 

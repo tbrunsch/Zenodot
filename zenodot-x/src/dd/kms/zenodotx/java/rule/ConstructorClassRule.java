@@ -1,17 +1,15 @@
 package dd.kms.zenodotx.java.rule;
 
+import dd.kms.zenodotx.exception.EvaluationException;
+import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.java.JavaSettings;
-import dd.kms.zenodotx.rule.Rule;
-import dd.kms.zenodotx.rule.compound.AbstractCombineRule;
+import dd.kms.zenodotx.rule.AbstractRule;
+import dd.kms.zenodotx.rule.EvaluationRule;
 
-public class ConstructorClassRule extends AbstractCombineRule<Void, Class<?>, ConstructorParseInfo, JavaSettings>
+public class ConstructorClassRule extends AbstractRule<Class<?>, ConstructorParseInfo, JavaSettings> implements EvaluationRule<Class<?>, ConstructorParseInfo, JavaSettings>
 {
-	public ConstructorClassRule(Rule<Void, Class<?>, JavaSettings> classRule) {
-		super(classRule);
-	}
-
 	@Override
-	protected ConstructorParseInfo combine(Void ignored, Class<?> constructorClass, JavaSettings settings) {
+	public ConstructorParseInfo evaluate(Class<?> constructorClass, JavaSettings settings) throws SemanticException, EvaluationException {
 		return new ConstructorParseInfo(constructorClass);
 	}
 }

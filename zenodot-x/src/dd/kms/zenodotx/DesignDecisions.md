@@ -35,9 +35,21 @@ Zenodot X started with a stack-based evaluation approach: Rules could, whenever 
 
 Therefore, Zenodot X uses an I-O-approach: Each rule gets an input (initially `null`) and produces and output. Some rules, e.g., plain character rules, simply pass the input to the successor rule without any transformation. In the expression `variable.field` the variable rule gets `null` as input and produces something representing the value of the variable. This value is given the character rule for `.` as input, which returns it again. Then the value is further passed to the field rule, which uses it to evaluate the field. As often with type-safety, this approach bloats the rule definitions syntactically because it forces implementers to define the input and the output type, which is not necessary with a stack-based approach.
 
-## Two Kinds of Rules
+## Three Kinds of Rules
 
-It turned out that a single type of rule does not suffice to represent complex languages: Some rules are more for defining the flow of the parsing process, while others are responsible for parsing concrete parts of the expression. The former rules do not actually parse anything directly, but are composed of rules and know when to parse which, how to set the inputs of each of these rules, and what to do with their outputs. These rules are therefore called "compound rules". The latter are called "simple rules". The most relevant compound rules are the "or rule", which gets an input and successively tries to use it as input for the rules it contains until one succeeds, and the "then rule", which gets and input, uses it as input for its first rule, then uses the output of the first rule as input for the second rule, and then returns the output of the second rule.   
+It turned out that a single type of rule does not suffice to represent complex languages:
+
+1. Some rules are responsible for defining the flow of the parsing process. They do not actually parse anything directly, but they are composed of rules and know when to parse which, how to set the inputs of each of these rules, and what to do with their outputs. These rules are called "compound rules".
+2. Some other rules are responsible for parsing concrete parts of the expression. These are called "simple rules".
+3. The third type of rule is a rule that just evaluates the results produced by previous rules. These are called "evaluation rules". 
+
+The most relevant compound rules are the "or rule", which gets an input and successively tries to use it as input for the rules it contains until one succeeds, and the "then rule", which gets and input, uses it as input for its first rule, then uses the output of the first rule as input for the second rule, and then returns the output of the second rule.
+
+
+
+TODO: Explain combine-with rule:
+
+
 
 ## Handling Alternatives in the Or-Rule
 

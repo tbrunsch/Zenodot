@@ -4,6 +4,7 @@ import dd.kms.zenodotx.event.Event;
 import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;
+import dd.kms.zenodotx.rule.EvaluationRule;
 import dd.kms.zenodotx.rule.Rule;
 import dd.kms.zenodotx.rule.compound.CompoundRule;
 import dd.kms.zenodotx.rule.simple.SemanticRule;
@@ -35,6 +36,8 @@ public class Parser<S extends GrammarSettings>
 				return ((CompoundRule<I, O, S>) rule).parse(input, settings, this);
 			} else if (rule instanceof SimpleRule) {
 				return parseSimpleRule((SimpleRule<I, O, S>) rule, input, settings);
+			} else if (rule instanceof EvaluationRule) {
+				return ((EvaluationRule<I, O, S>) rule).evaluate(input, settings);
 			} else {
 				throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getName()
 					+ ". Only " + CompoundRule.class.getName() + " and " + SimpleRule.class.getName() + " are supported.");
@@ -79,6 +82,8 @@ public class Parser<S extends GrammarSettings>
 				((CompoundRule<?, ?, S>) rule).parseSyntactically(this, settings);
 			} else if (rule instanceof SimpleRule) {
 				parseSimpleRuleSyntactically((SimpleRule<?, ?, S>) rule, settings);
+			} else if (rule instanceof EvaluationRule) {
+				// evaluation rules don't have a syntax
 			} else {
 				throw new IllegalStateException("Cannot parse rule of type " + rule.getClass().getName()
 					+ ". Only " + CompoundRule.class.getName() + " and " + SimpleRule.class.getName() + " are supported.");

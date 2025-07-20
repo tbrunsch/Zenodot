@@ -10,47 +10,22 @@ import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
 import dd.kms.zenodotx.rule.AbstractRule;
-import dd.kms.zenodotx.rule.simple.SemanticRule;
-import dd.kms.zenodotx.rule.simple.SimpleRule;
-import dd.kms.zenodotx.rule.simple.SyntaxRule;
-import dd.kms.zenodotx.rule.simple.SyntaxRules;
+import dd.kms.zenodotx.rule.EvaluationRule;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class InvokeMethodRule extends AbstractRule<ExecutableParseInfo, InstanceParseResult, JavaSettings> implements SimpleRule<ExecutableParseInfo, InstanceParseResult, JavaSettings>
+public class InvokeMethodRule extends AbstractRule<ExecutableParseInfo, InstanceParseResult, JavaSettings> implements EvaluationRule<ExecutableParseInfo, InstanceParseResult, JavaSettings>
 {
 	@Override
-	public SyntaxRule getSyntaxRule() {
-		return SyntaxRules.EMPTY;
-	}
-
-	@Override
-	public SemanticRule<ExecutableParseInfo, InstanceParseResult, JavaSettings> getSemanticRule() {
-		return new AbstractSemanticJavaRule<ExecutableParseInfo, InstanceParseResult>() {
-			@Override
-			protected void doSuggestCodeCompletions(ExecutableParseInfo input, String parsedString, JavaSettings settings) {
-				/* nothing to do */
-				return;
-			}
-
-			@Override
-			protected void doSuggestMethodParameters(ExecutableParseInfo input, JavaSettings settings) {
-				/* nothing to do */
-				return;
-			}
-
-			@Override
-			public InstanceParseResult evaluate(ExecutableParseInfo methodParseInfo, String parsedString, JavaSettings settings) throws SemanticException, EvaluationException {
-				List<ExecutableInfo> methodInfos = methodParseInfo.getExecutableInfos();
-				List<InstanceParseResult> parameters = methodParseInfo.getParameters();
-				List<ObjectInfo> parameterInfos = parameters.stream().map(InstanceParseResult::getEvaluatedResult).collect(Collectors.toList());
-				ExecutableDataProvider executableDataProvider = new ExecutableDataProvider(settings);
-				ExecutableInfo executable = executableDataProvider.getExecutableToInvoke(methodInfos, parameterInfos);
-				return new MethodParseResult(methodParseInfo.getContext(), executable, parameters, settings.getEvaluationMode());
-			}
-		};
+	public InstanceParseResult evaluate(ExecutableParseInfo methodParseInfo, JavaSettings settings) throws SemanticException, EvaluationException {
+		List<ExecutableInfo> methodInfos = methodParseInfo.getExecutableInfos();
+		List<InstanceParseResult> parameters = methodParseInfo.getParameters();
+		List<ObjectInfo> parameterInfos = parameters.stream().map(InstanceParseResult::getEvaluatedResult).collect(Collectors.toList());
+		ExecutableDataProvider executableDataProvider = new ExecutableDataProvider(settings);
+		ExecutableInfo executable = executableDataProvider.getExecutableToInvoke(methodInfos, parameterInfos);
+		return new MethodParseResult(methodParseInfo.getContext(), executable, parameters, settings.getEvaluationMode());
 	}
 
 	@Override

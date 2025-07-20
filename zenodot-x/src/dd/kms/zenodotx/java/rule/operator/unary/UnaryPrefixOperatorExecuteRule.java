@@ -7,20 +7,22 @@ import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
-import dd.kms.zenodotx.rule.Rule;
-import dd.kms.zenodotx.rule.compound.AbstractCombineRule;
+import dd.kms.zenodotx.rule.AbstractRule;
+import dd.kms.zenodotx.rule.EvaluationRule;
+import dd.kms.zenodotx.rule.compound.Pair;
 
-public class UnaryPrefixOperatorExecuteRule extends AbstractCombineRule<String, InstanceParseResult, InstanceParseResult, JavaSettings>
+public class UnaryPrefixOperatorExecuteRule extends AbstractRule<Pair<String, InstanceParseResult>, InstanceParseResult, JavaSettings> implements EvaluationRule<Pair<String, InstanceParseResult>, InstanceParseResult, JavaSettings>
 {
 	private final UnaryOperatorRegistry registry;
 
-	public UnaryPrefixOperatorExecuteRule(UnaryOperatorRegistry registry, Rule<Void, InstanceParseResult, JavaSettings> simpleExpression) {
-		super(simpleExpression);
+	public UnaryPrefixOperatorExecuteRule(UnaryOperatorRegistry registry) {
 		this.registry = registry;
 	}
 
 	@Override
-	protected InstanceParseResult combine(String unaryPrefixOperator, InstanceParseResult operandParseResult, JavaSettings settings) throws SemanticException {
+	public InstanceParseResult evaluate(Pair<String, InstanceParseResult> pair, JavaSettings settings) throws SemanticException, EvaluationException {
+		String unaryPrefixOperator = pair.getFirst();
+		InstanceParseResult operandParseResult = pair.getSecond();
 		EvaluationMode evaluationMode = settings.getEvaluationMode();
 		ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
 		ObjectInfo instanceInfo = operandParseResult.getEvaluatedResult();
