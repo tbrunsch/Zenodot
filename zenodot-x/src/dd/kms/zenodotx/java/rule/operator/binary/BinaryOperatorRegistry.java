@@ -7,6 +7,7 @@ import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.framework.matching.MatchRatings;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodotx.common.NullableOptional;
+import dd.kms.zenodotx.common.Pair;
 import dd.kms.zenodotx.exception.SemanticException;
 
 import javax.annotation.Nullable;
@@ -61,25 +62,30 @@ public class BinaryOperatorRegistry
 	public BinaryOperatorInfo getBestMatchingOperatorInfo(String operator, Class<?> lhsOperandType, Class<?> rhsOperandType) throws SemanticException {
 		Collection<BinaryOperatorInfo> operatorInfos = getOperatorInfos(operator);
 
-		TypeMatch bestTypeMatch = TypeMatch.NONE;
+		Pair<TypeMatch, TypeMatch> bestTypeMatches = new Pair<>(TypeMatch.NONE, TypeMatch.NONE);
 		List<BinaryOperatorInfo> bestMatchingOperatorInfos = new ArrayList<>();
 		for (BinaryOperatorInfo operatorInfo : operatorInfos) {
 			Class<?> lhsOperandClass = operatorInfo.getLhsOperandClass();
 			Class<?> rhsOperandClass = operatorInfo.getRhsOperandClass();
 			TypeMatch lhsTypeMatch = MatchRatings.rateTypeMatch(lhsOperandClass, lhsOperandType);
 			TypeMatch rhsTypeMatch = MatchRatings.rateTypeMatch(rhsOperandClass, rhsOperandType);
+
+			// Create a pair of type matches for which the first match is not better than the second match
 			int lhsRhsComparisonResult = lhsTypeMatch.compareTo(rhsTypeMatch);
-			TypeMatch typeMatch = lhsRhsComparisonResult >= 0 ? lhsTypeMatch : rhsTypeMatch;	// take the worst of both
-			int comparisonResult = typeMatch.compareTo(bestTypeMatch);
+			Pair<TypeMatch, TypeMatch> typeMatches = lhsRhsComparisonResult >= 0
+				? new Pair<>(lhsTypeMatch, rhsTypeMatch)
+				: new Pair<>(rhsTypeMatch, lhsTypeMatch);
+
+			int comparisonResult = compareTypeMatches(typeMatches, bestTypeMatches);
 			if (comparisonResult < 0) {
 				bestMatchingOperatorInfos.clear();
-				bestTypeMatch = typeMatch;
+				bestTypeMatches = typeMatches;
 			}
 			if (comparisonResult <= 0) {
 				bestMatchingOperatorInfos.add(operatorInfo);
 			}
 		}
-		if (bestTypeMatch == TypeMatch.NONE) {
+		if (bestTypeMatches.getSecond() == TypeMatch.NONE) {
 			if (lhsOperandType == InfoProvider.NO_TYPE || rhsOperandType == InfoProvider.NO_TYPE) {
 				throw new SemanticException("Binary operator '" + operator + "' cannot be applied to null");
 			} else {
@@ -97,6 +103,11 @@ public class BinaryOperatorRegistry
 			throw new IllegalStateException("Internal error: No best binary operator implementation found though there should be");
 		}
 		return bestMatchingOperatorInfos.get(0);
+	}
+
+	private static int compareTypeMatches(Pair<TypeMatch, TypeMatch> u, Pair<TypeMatch, TypeMatch> v) {
+		int firstComparisonResult = u.getFirst().compareTo(v.getFirst());
+		return firstComparisonResult != 0 ? firstComparisonResult : u.getSecond().compareTo(v.getSecond());
 	}
 
 	public <L, R> void register(String operator, Class<L> lhsOperandClass, Class<R> rhsOperandClass, Class<?> resultClass, BiFunction<L, R, ?> operatorImplementation) {
