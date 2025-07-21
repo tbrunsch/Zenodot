@@ -64,13 +64,7 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 		Boolean totalApplyShortCircuitEvaluation = null;
 		for (BinaryOperatorInfo operatorInfo : operatorInfos) {
 			Function<Object, NullableOptional<?>> shortCircuitImplementation = operatorInfo.getShortCircuitImplementation();
-			final boolean applyShortCircuitEvaluation;
-			if (shortCircuitImplementation == null) {
-				applyShortCircuitEvaluation = false;
-			} else {
-				NullableOptional<?> shortCircuitResultValue = shortCircuitImplementation.apply(lhsOperand);
-				applyShortCircuitEvaluation = shortCircuitResultValue.isPresent();
-			}
+			boolean applyShortCircuitEvaluation = isApplyShortCircuitEvaluation(lhsOperand, operatorInfo);
 			if (totalApplyShortCircuitEvaluation != null && applyShortCircuitEvaluation != totalApplyShortCircuitEvaluation) {
 				throw new SemanticException("Different implementations of operator '" + operatorInfo.getOperator() + "' dictate a different behavior regarding short circuit evaluation");
 			}
