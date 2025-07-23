@@ -3,6 +3,7 @@ package dd.kms.zenodotx.rule.simple;
 import dd.kms.zenodot.api.common.RegexUtils;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,10 @@ public class SyntaxRules
 
 	public static Pattern getPatternForStringAlternatives(Collection<String> strings) {
 		String regex = strings.stream()
+			/*
+			 * Sort the alternatives ascendingly by length to prefer matching longer strings
+			 */
+			.sorted(Comparator.comparingInt(String::length).reversed())
 			.map(s -> "(" + RegexUtils.escapeIfSpecial(s) + ")")
 			.collect(Collectors.joining("|"));
 		return Pattern.compile(regex);
