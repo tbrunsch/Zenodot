@@ -33,9 +33,9 @@ public class JavaRuleSet
 																			// suffix required to distinguish from double
 																			regexOr(
 																				// 123E-4f
-																				INTEGER_LITERAL_REGEX + EXPONENT_REGEX,
+																				"(" + INTEGER_LITERAL_REGEX + ")" + EXPONENT_REGEX,
 																				// 123.f, 123.45E6f
-																				INTEGER_LITERAL_REGEX + POTENTIALLY_EMPTY_DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?",
+																				"(" + INTEGER_LITERAL_REGEX + ")" + POTENTIALLY_EMPTY_DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?",
 																				// .123f, .123E-4f
 																				DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?"
 																			) + ")" + "[fF]"
@@ -47,9 +47,9 @@ public class JavaRuleSet
 																			// suffix optional
 																			regexOr(
 																				// 123E-4f
-																				INTEGER_LITERAL_REGEX + EXPONENT_REGEX,
+																				"(" + INTEGER_LITERAL_REGEX + ")" + EXPONENT_REGEX,
 																				// 123.f, 123.45E6f
-																				INTEGER_LITERAL_REGEX + POTENTIALLY_EMPTY_DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?",
+																				"(" + INTEGER_LITERAL_REGEX + ")" + POTENTIALLY_EMPTY_DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?",
 																				// .123f, .123E-4f
 																				DECIMALS_REGEX + "(" + EXPONENT_REGEX + ")?"
 																			) + ")" + "[dD]?"
