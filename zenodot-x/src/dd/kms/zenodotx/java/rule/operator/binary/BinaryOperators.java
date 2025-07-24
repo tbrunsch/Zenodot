@@ -37,9 +37,13 @@ public class BinaryOperators
 	}
 
 	public static void registerBinaryOperators8(BinaryOperatorRegistry registry) {
-		// We must explicitly unbox to prevent comparison of references
+		// Comparison of primitives: We must explicitly unbox to prevent comparison of references
 		registerComparisonOperator(registry, "==", (a, b) -> a.booleanValue() == b.booleanValue(), (a, b) -> a.charValue() == b.charValue(), (a, b) -> a.byteValue() == b.byteValue(), (a, b) -> a.shortValue() == b.shortValue(), (a, b) -> a.intValue() == b.intValue(), (a, b) -> a.longValue() == b.longValue(), (a, b) -> a.floatValue() == b.floatValue(), (a, b) -> a.doubleValue() == b.doubleValue());
 		registerComparisonOperator(registry, "!=", (a, b) -> a.booleanValue() != b.booleanValue(), (a, b) -> a.charValue() != b.charValue(), (a, b) -> a.byteValue() != b.byteValue(), (a, b) -> a.shortValue() != b.shortValue(), (a, b) -> a.intValue() != b.intValue(), (a, b) -> a.longValue() != b.longValue(), (a, b) -> a.floatValue() != b.floatValue(), (a, b) -> a.doubleValue() != b.doubleValue());
+
+		// Comparison of objects
+		registerOperator(registry, "==", Object.class, Object.class, boolean.class, (a, b) -> a == b);
+		registerOperator(registry, "!=", Object.class, Object.class, boolean.class, (a, b) -> a != b);
 	}
 
 	public static void registerBinaryOperators7(BinaryOperatorRegistry registry) {
