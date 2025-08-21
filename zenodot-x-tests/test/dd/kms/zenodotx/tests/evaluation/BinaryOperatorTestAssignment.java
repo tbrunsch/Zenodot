@@ -1,6 +1,5 @@
 package dd.kms.zenodotx.tests.evaluation;
 
-import dd.kms.zenodotx.exception.SyntaxException;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTest;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTestBuilder;
 import dd.kms.zenodotx.tests.evaluation.framework.TestData;
@@ -21,49 +20,32 @@ public class BinaryOperatorTestAssignment extends EvaluationTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass();
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
-
-		testBuilder
-			.addTest("reset().getCounter(FALSE())",						1)
-			.addTest("reset().getCounter(FALSE() && FALSE())",			1)
-			.addTest("reset().getCounter(FALSE() && TRUE())",			1)
-			.addTest("reset().getCounter(TRUE() && FALSE())",			2)
-			.addTest("reset().getCounter(TRUE() && TRUE())",			2)
-			.addTest("reset().getCounter(FALSE() || FALSE())",			2)
-			.addTest("reset().getCounter(FALSE() || TRUE())",			2)
-			.addTest("reset().getCounter(TRUE() || FALSE())",			1)
-			.addTest("reset().getCounter(TRUE() || TRUE())",			1)
-			.addTest("npeTrigger != null && npeTrigger.counter > 0",	false);
-
-		testBuilder
-			.addTestWithError("reset().getCounter(FALSE() && 5", SyntaxException.class)
-			.addTestWithError("reset().getCounter(TRUE() || 'X'", SyntaxException.class);
-
-		return testBuilder.build();
+		return new EvaluationTestBuilder()
+			.testInstance(testInstance)
+			.addTest("reset().get(d = 7.0).d",			7.0)
+			.addTest("reset().get(f = -1).f",			-1.f)
+			.addTest("reset().get(i = 13).i",			13)
+			.addTest("reset().get(d = f = i = -3).d",	-3.0)
+			.addTest("reset().get(d = f = i = -3).f",	-3.f)
+			.addTest("reset().get(d = f = i = -3).i",	-3)
+			.build();
 	}
 
 	private static class TestClass
 	{
-		private int counter 				= 0;
-		private final TestClass npeTrigger	= null;
+		private double 	d = 3.0;
+		private float 	f = 2.f;
+		private int		i = 5;
 
 		TestClass reset() {
-			counter = 0;
+			d = 3.0;
+			f = 2.f;
+			i = 5;
 			return this;
 		}
 
-		boolean FALSE() {
-			counter++;
-			return false;
-		}
-
-		boolean TRUE() {
-			counter++;
-			return true;
-		}
-
-		int getCounter(boolean dummy) {
-			return counter;
+		TestClass get(double dummy) {
+			return this;
 		}
 	}
 }
