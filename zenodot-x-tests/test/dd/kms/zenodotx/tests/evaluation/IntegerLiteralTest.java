@@ -20,7 +20,7 @@ public class IntegerLiteralTest extends EvaluationTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		TestClass testInstance = new TestClass();
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(() -> testInstance);
 
 		testBuilder
 			.addTest("120",						120)

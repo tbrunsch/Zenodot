@@ -18,9 +18,8 @@ public class FloatingPointLiteralTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		Object testInstance = new TestClass();
 		return new EvaluationTestBuilder()
-			.testInstance(testInstance)
+			.testInstanceProvider(TestClass::new)
 			.addTest("123f",					123f)
 			.addTest("getFloat(123f)",			123f)
 			.addTest("123e0",					123e0)

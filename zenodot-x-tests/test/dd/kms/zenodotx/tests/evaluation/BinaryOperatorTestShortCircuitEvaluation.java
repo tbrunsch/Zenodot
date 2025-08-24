@@ -20,24 +20,23 @@ public class BinaryOperatorTestShortCircuitEvaluation extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		Object testInstance = new TestClass();
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(TestClass::new);
 
 		testBuilder
-			.addTest("reset().getCounter(FALSE())",						1)
-			.addTest("reset().getCounter(FALSE() && FALSE())",			1)
-			.addTest("reset().getCounter(FALSE() && TRUE())",			1)
-			.addTest("reset().getCounter(TRUE() && FALSE())",			2)
-			.addTest("reset().getCounter(TRUE() && TRUE())",			2)
-			.addTest("reset().getCounter(FALSE() || FALSE())",			2)
-			.addTest("reset().getCounter(FALSE() || TRUE())",			2)
-			.addTest("reset().getCounter(TRUE() || FALSE())",			1)
-			.addTest("reset().getCounter(TRUE() || TRUE())",			1)
+			.addTest("getCounter(FALSE())",					1)
+			.addTest("getCounter(FALSE() && FALSE())",		1)
+			.addTest("getCounter(FALSE() && TRUE())",			1)
+			.addTest("getCounter(TRUE() && FALSE())",			2)
+			.addTest("getCounter(TRUE() && TRUE())",			2)
+			.addTest("getCounter(FALSE() || FALSE())",		2)
+			.addTest("getCounter(FALSE() || TRUE())",			2)
+			.addTest("getCounter(TRUE() || FALSE())",			1)
+			.addTest("getCounter(TRUE() || TRUE())",			1)
 			.addTest("npeTrigger != null && npeTrigger.counter > 0",	false);
 
 		testBuilder
-			.addTestWithError("reset().getCounter(FALSE() && 5", SyntaxException.class)
-			.addTestWithError("reset().getCounter(TRUE() || 'X'", SyntaxException.class);
+			.addTestWithError("getCounter(FALSE() && 5", SyntaxException.class)
+			.addTestWithError("getCounter(TRUE() || 'X'", SyntaxException.class);
 
 		return testBuilder.build();
 	}
@@ -46,11 +45,6 @@ public class BinaryOperatorTestShortCircuitEvaluation extends EvaluationTest
 	{
 		private int counter 				= 0;
 		private final TestClass npeTrigger	= null;
-
-		TestClass reset() {
-			counter = 0;
-			return this;
-		}
 
 		boolean FALSE() {
 			counter++;

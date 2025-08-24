@@ -20,7 +20,7 @@ public class ThisLiteralTest extends EvaluationTest
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass(23);
 		return new EvaluationTestBuilder()
-			.testInstance(testInstance)
+			.testInstanceProvider(() -> testInstance)
 			.addTest("this.value",		23)
 			.addTest("getValue(this)",	23)
 			.build();

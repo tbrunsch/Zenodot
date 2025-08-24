@@ -18,10 +18,8 @@ public class ParenthesisTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		Object testInstance = new TestClass();
-		final String getClass = "getClass()";
 		return new EvaluationTestBuilder()
-			.testInstance(testInstance)
+			.testInstanceProvider(TestClass::new)
 			.addTest("(getFloat(y).toString())",			"1.5")
 			.addTest("(getFloat(y)).toString()",			"1.5")
 			.addTest("(getFloat(y).toString()).length()",	3)

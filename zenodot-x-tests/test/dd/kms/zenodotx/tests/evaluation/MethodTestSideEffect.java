@@ -35,7 +35,8 @@ public class MethodTestSideEffect
 		TestClass testInstance = new TestClass();
 		String expression = "f(g(), s)";
 
-		JavaSettings settings = new JavaSettingsBuilder(InfoProvider.createObjectInfo(testInstance))
+		JavaSettings settings = new JavaSettingsBuilder()
+			.thisInfo(InfoProvider.createObjectInfo(testInstance))
 			.minimumMethodAccessModifier(AccessModifier.PACKAGE_PRIVATE)
 			.evaluationMode(evaluationMode)
 			.build();

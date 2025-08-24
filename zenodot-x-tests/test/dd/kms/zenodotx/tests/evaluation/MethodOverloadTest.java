@@ -19,8 +19,7 @@ public class MethodOverloadTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		Object testInstance = new TestClass();
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(TestClass::new);
 
 		testBuilder
 			.addTest("getTestClass(myInt).i",		3)

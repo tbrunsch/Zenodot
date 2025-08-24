@@ -18,9 +18,8 @@ public class MethodTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		Object testInstance = new TestClass();
 		return new EvaluationTestBuilder()
-			.testInstance(testInstance)
+			.testInstanceProvider(TestClass::new)
 			.addTest("getInt()",	3)
 			.addTest("getDouble()",	2.7)
 			.addTest("getString()",	"xyz")

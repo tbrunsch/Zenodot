@@ -22,7 +22,7 @@ public class ClassCastTest extends EvaluationTest
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass(5, -2.0, "abc");
 		String className = InfoProvider.createClassInfoUnchecked(TestClass.class.getName()).getUnqualifiedName();
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(() -> testInstance);
 
 		testBuilder
 			.addTest("merge((" + className + ") o1).i",			18)

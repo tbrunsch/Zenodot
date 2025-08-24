@@ -1,22 +1,23 @@
 package dd.kms.zenodotx.tests.evaluation.framework;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 public class TestData
 {
-	private final Object						testInstance;
-	private final @Nullable
-	TestConfigurator configureSettings;
-	private final TestExecutor testExecutor;
+	private final Supplier<Object>	testInstanceProvider;
+	@Nullable
+	private final TestConfigurator	configureSettings;
+	private final TestExecutor		testExecutor;
 
-	TestData(Object testInstance, @Nullable TestConfigurator configureSettings, TestExecutor testExecutor) {
-		this.testInstance = testInstance;
+	TestData(Supplier<Object> testInstanceProvider, @Nullable TestConfigurator configureSettings, TestExecutor testExecutor) {
+		this.testInstanceProvider = testInstanceProvider;
 		this.configureSettings = configureSettings;
 		this.testExecutor = testExecutor;
 	}
 
-	Object getTestInstance() {
-		return testInstance;
+	Supplier<Object> getTestInstanceProvider() {
+		return testInstanceProvider;
 	}
 
 	@Nullable

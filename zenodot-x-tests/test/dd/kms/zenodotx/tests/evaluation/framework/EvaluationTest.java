@@ -26,7 +26,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 	private boolean				testCompilation	= true;
 
 	protected EvaluationTest(TestData testData) {
-		super(testData.getTestInstance());
+		super(testData.getTestInstanceProvider());
 		TestConfigurator testConfigurator = testData.getConfigureSettingsFunction();
 		if (testConfigurator != null) {
 			testConfigurator.configure(this);
@@ -62,7 +62,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 	void testEvaluationWithError(String expression, Class<? extends Exception> expectedExceptionClass, boolean compile) {
 		try {
-			JavaSettings settings = settingsBuilder.build();
+			JavaSettings settings = getSettingsBuilder().build();
 			if (compile) {
 				CompiledExpression compiledExpression = ExpressionParser.compile(expression, -1, null, settings);
 				// TODO: Consider variables
@@ -80,7 +80,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 	private boolean runTest(String expression, boolean executeAssertions, Object expectedValue, boolean compile) {
 		try {
-			JavaSettings settings = settingsBuilder.build();
+			JavaSettings settings = getSettingsBuilder().build();
 			Object actualValue;
 			if (compile) {
 				CompiledExpression compiledExpression = ExpressionParser.compile(expression, -1, null, settings);

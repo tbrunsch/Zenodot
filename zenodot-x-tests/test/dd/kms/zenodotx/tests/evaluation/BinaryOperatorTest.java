@@ -20,7 +20,6 @@ public class BinaryOperatorTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		TestClass testInstance = new TestClass();
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder();
 
 		testBuilder
@@ -76,8 +75,9 @@ public class BinaryOperatorTest extends EvaluationTest
 			.addTest("true || false",			true || false)
 			.addTest("true || true",			true || true);
 
+		TestClass testInstance = new TestClass();
 		testBuilder
-			.testInstance(testInstance)
+			.testInstanceProvider(() -> testInstance)
 			.addTest("s instanceof String",												testInstance.s instanceof String)
 			.addTest("s instanceof Double",												false)
 			.addTest("o instanceof Object",												testInstance.o instanceof Object)

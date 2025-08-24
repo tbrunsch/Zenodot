@@ -19,15 +19,18 @@ public class BinaryOperatorTestAssignment extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		Object testInstance = new TestClass();
 		return new EvaluationTestBuilder()
-			.testInstance(testInstance)
-			.addTest("reset().get(d = 7.0).d",			7.0)
-			.addTest("reset().get(f = -1).f",			-1.f)
-			.addTest("reset().get(i = 13).i",			13)
-			.addTest("reset().get(d = f = i = -3).d",	-3.0)
-			.addTest("reset().get(d = f = i = -3).f",	-3.f)
-			.addTest("reset().get(d = f = i = -3).i",	-3)
+			.testInstanceProvider(TestClass::new)
+			.addTest("d = 7.0",				7.0)
+			.addTest("get(d = 7.0).d",		7.0)
+			.addTest("f = -1",				-1.f)
+			.addTest("get(f = -1).f",			-1.f)
+			.addTest("i = 13",				13)
+			.addTest("get(i = 13).i",			13)
+			.addTest("d = f = i = -3",		-3.0)
+			.addTest("get(d = f = i = -3).d",	-3.0)
+			.addTest("get(d = f = i = -3).f",	-3.f)
+			.addTest("get(d = f = i = -3).i",	-3)
 			.build();
 	}
 
@@ -36,13 +39,6 @@ public class BinaryOperatorTestAssignment extends EvaluationTest
 		private double 	d = 3.0;
 		private float 	f = 2.f;
 		private int		i = 5;
-
-		TestClass reset() {
-			d = 3.0;
-			f = 2.f;
-			i = 5;
-			return this;
-		}
 
 		TestClass get(double dummy) {
 			return this;

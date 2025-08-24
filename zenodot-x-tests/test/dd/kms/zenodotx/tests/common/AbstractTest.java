@@ -9,6 +9,8 @@ import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodot.impl.debug.ParserLoggers;
 import dd.kms.zenodotx.java.JavaSettingsBuilder;
 
+import java.util.function.Supplier;
+
 /**
  * This test uses {@link EvaluationMode#STATIC_TYPING} by default.
  */
@@ -16,19 +18,20 @@ public class AbstractTest<T extends AbstractTest<?>>
 {
 	public static final boolean	SKIP_UNSTABLE_TESTS	= "true".equalsIgnoreCase(System.getProperty("skipUnstableTests"));
 
-	protected final JavaSettingsBuilder		settingsBuilder;
-	protected final Variables				variables				= Variables.create();
+	private final Supplier<Object>		testInstanceProvider;
 
+	private final JavaSettingsBuilder	settingsBuilder			= new JavaSettingsBuilder();
+	private final Variables				variables				= Variables.create();
 
-	private boolean							stopAtError				= false;
-	private boolean							printLogEntriesAtError	= false;
+	private boolean						stopAtError				= false;
+	private boolean						printLogEntriesAtError	= false;
 
-	protected AbstractTest(Object testInstance) {
-		settingsBuilder = new JavaSettingsBuilder(InfoProvider.createObjectInfo(testInstance));
+	protected AbstractTest(Supplier<Object> testInstanceProvider) {
+		this.testInstanceProvider = testInstanceProvider;
 	}
 
 	public JavaSettingsBuilder getSettingsBuilder() {
-		return settingsBuilder;
+		return settingsBuilder.thisInfo(InfoProvider.createObjectInfo(testInstanceProvider.get()));
 	}
 
 	public void createVariable(String name, Object value, boolean isFinal) {

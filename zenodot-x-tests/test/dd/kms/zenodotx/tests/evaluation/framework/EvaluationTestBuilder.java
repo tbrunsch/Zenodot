@@ -5,16 +5,17 @@ import dd.kms.zenodotx.tests.common.AbstractTest;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class EvaluationTestBuilder
 {
 	private final ImmutableList.Builder<Object>	testDataBuilder	= ImmutableList.builder();
 
-	private Object						testInstance;
-	private @Nullable TestConfigurator testConfigurator;
+	private Supplier<Object>			testInstanceProvider	= () -> null;
+	private @Nullable TestConfigurator	testConfigurator;
 
-	public EvaluationTestBuilder testInstance(Object testInstance) {
-		this.testInstance = testInstance;
+	public EvaluationTestBuilder testInstanceProvider(Supplier<Object> testInstanceProvider) {
+		this.testInstanceProvider = testInstanceProvider;
 		return this;
 	}
 
@@ -39,7 +40,7 @@ public class EvaluationTestBuilder
 	}
 
 	private EvaluationTestBuilder addTest(TestExecutor testExecutor) {
-		testDataBuilder.add(new TestData(testInstance, testConfigurator, testExecutor));
+		testDataBuilder.add(new TestData(testInstanceProvider, testConfigurator, testExecutor));
 		return this;
 	}
 
