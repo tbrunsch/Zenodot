@@ -5,11 +5,11 @@ import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
 
-class ConstantParseResult implements InstanceParseResult
+public class ConstantParseResult implements InstanceParseResult
 {
 	private final ObjectInfo	constantInfo;
 
-	ConstantParseResult(ObjectInfo constantInfo) {
+	public ConstantParseResult(ObjectInfo constantInfo) {
 		this.constantInfo = constantInfo;
 	}
 

@@ -1,4 +1,4 @@
-package dd.kms.zenodotx.java.rule;
+package dd.kms.zenodotx.java.rule.literal;
 
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
@@ -6,6 +6,8 @@ import dd.kms.zenodotx.exception.EvaluationException;
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.java.JavaSettings;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
+import dd.kms.zenodotx.java.rule.AbstractSemanticJavaRule;
+import dd.kms.zenodotx.java.rule.ConstantParseResult;
 import dd.kms.zenodotx.rule.AbstractRule;
 import dd.kms.zenodotx.rule.simple.SemanticRule;
 import dd.kms.zenodotx.rule.simple.SimpleRule;

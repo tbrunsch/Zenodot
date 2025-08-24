@@ -5,11 +5,11 @@ import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.java.result.InstanceParseResult;
 
-class ThisParseResult implements InstanceParseResult
+public class ThisParseResult implements InstanceParseResult
 {
 	private final ObjectInfo evaluatedResult;
 
-	ThisParseResult(ObjectInfo thisInfo) {
+	public ThisParseResult(ObjectInfo thisInfo) {
 		this.evaluatedResult = thisInfo;
 	}
 
