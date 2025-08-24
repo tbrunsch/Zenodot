@@ -67,7 +67,36 @@ public class BinaryOperators
 	}
 
 	public static void registerBinaryOperators1(BinaryOperatorRegistry registry) {
-		registerOperator(registry, "=", Object.class, Object.class, Object.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", Object.class, Object.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, null, (classA, classB) -> classB);
+
+		registerOperator(registry, "=", char.class, char.class, char.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+
+		registerOperator(registry, "=", byte.class, byte.class, byte.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+
+		registerOperator(registry, "=", short.class, byte.class,	byte.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", short.class, short.class,	short.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+
+		registerOperator(registry, "=", int.class, char.class,	char.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", int.class, byte.class,	byte.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", int.class, int.class,	int.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+
+		registerOperator(registry, "=", long.class, char.class,	char.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", long.class, byte.class,	byte.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", long.class, int.class,	int.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", long.class, long.class,	long.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+
+		registerOperator(registry, "=", float.class, char.class,	char.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", float.class, byte.class,	byte.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", float.class, int.class,		int.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", float.class, long.class,	long.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", float.class, float.class,	float.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+
+		registerOperator(registry, "=", double.class, char.class,	char.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", double.class, byte.class,	byte.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", double.class, int.class,	int.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", double.class, long.class,	long.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", double.class, float.class,	float.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+		registerOperator(registry, "=", double.class, double.class,	double.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
 
 		registerOperatorWithAssignment(registry, "+=", char.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
 		registerOperatorWithAssignment(registry, "+=", byte.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
@@ -213,19 +242,23 @@ public class BinaryOperators
 		registerOperator(registry, operator, operandClass, boolean.class, implementation);
 	}
 
-	private static <O, R> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<O> operandClass, Class<R> resultClass, BiFunction<O, O, R> implementation) {
+	private static <O, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<O> operandClass, Class<RESULT> resultClass, BiFunction<O, O, RESULT> implementation) {
 		registerOperator(registry, operator, operandClass, operandClass, resultClass, implementation);
 	}
 
-	private static <O1, O2, R> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<O1> lhsOperandClass, Class<O2> rhsOperandClass, Class<R> resultClass, BiFunction<O1, O2, R> implementation) {
+	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandClass, Class<R> rhsOperandClass, Class<RESULT> resultClass, BiFunction<L, R, RESULT> implementation) {
 		registry.register(operator, lhsOperandClass, rhsOperandClass, resultClass, implementation);
 	}
 
-	private static <O1, O2, R> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<O1> lhsOperandClass, Class<O2> rhsOperandClass, Class<R> resultClass, BinaryOperatorMode operatorMode, BiFunction<O1, O2, R> implementation) {
+	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandClass, Class<R> rhsOperandClass, Class<RESULT> resultClass, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation) {
 		registry.register(operator, lhsOperandClass, rhsOperandClass, resultClass, operatorMode, implementation);
 	}
 
-	private static <O1, O2, R> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<O1> lhsOperandClass, Class<O2> rhsOperandClass, Class<R> resultClass, BinaryOperatorMode operatorMode, BiFunction<O1, O2, R> implementation, Function<O1, NullableOptional<R>> shortCircuitImplementation) {
+	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandClass, Class<R> rhsOperandClass, Class<RESULT> resultClass, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation, Function<L, NullableOptional<RESULT>> shortCircuitImplementation) {
 		registry.register(operator, lhsOperandClass, rhsOperandClass, resultClass, operatorMode, implementation, shortCircuitImplementation);
+	}
+
+	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandClass, Class<R> rhsOperandClass, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation, Function<L, NullableOptional<RESULT>> shortCircuitImplementation, BiFunction<Class<? extends L>, Class<? extends R>, Class<? extends RESULT>> resultClassProvider) {
+		registry.register(operator, lhsOperandClass, rhsOperandClass, operatorMode, implementation, shortCircuitImplementation, resultClassProvider);
 	}
 }

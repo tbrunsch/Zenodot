@@ -1,8 +1,11 @@
 package dd.kms.zenodotx.java.rule.operator.binary;
 
 import dd.kms.zenodot.api.Variables;
+import dd.kms.zenodot.api.common.ReflectionUtils;
+import dd.kms.zenodot.api.matching.TypeMatch;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.common.ObjectInfoProvider;
+import dd.kms.zenodot.framework.matching.MatchRatings;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodot.framework.wrappers.ObjectInfo;
 import dd.kms.zenodotx.Parser;
@@ -125,17 +128,25 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 		}
 
 		private ObjectInfo evaluate(ObjectInfo lhsOperandInfo, ObjectInfo rhsOperandInfo, EvaluationMode evaluationMode) throws EvaluationException {
-			ObjectInfo.ValueSetter lhsOperandSetter = lhsOperandInfo.getValueSetter();
-			ObjectInfo.ValueSetter rhsOperandSetter = rhsOperandInfo.getValueSetter();
+			String operator = operatorInfo.getOperator();
 			BinaryOperatorMode operatorMode = operatorInfo.getOperatorMode();
 
-			if (operatorMode.isWithAssignmentLeft() && lhsOperandSetter == null) {
-				String operator = operatorInfo.getOperator();
-				throw new EvaluationException("Operator \"" + operator + "\" cannot be applied because the left operand does not permit assignments");
+			String targetOperandSide = null;
+			ObjectInfo targetOperandInfo = null;
+			if (operatorMode.isWithAssignmentLeft()) {
+				targetOperandSide = "left";
+				targetOperandInfo = lhsOperandInfo;
+			} else if (operatorMode.isWithAssignmentRight()) {
+				targetOperandSide = "right";
+				targetOperandInfo = rhsOperandInfo;
 			}
-			if (operatorMode.isWithAssignmentRight() && rhsOperandSetter == null) {
-				String operator = operatorInfo.getOperator();
-				throw new EvaluationException("Operator \"" + operator + "\" cannot be applied because the right operand does not permit assignments");
+
+			ObjectInfo.ValueSetter targetOperandSetter = null;
+			if (targetOperandInfo != null) {
+				targetOperandSetter = targetOperandInfo.getValueSetter();
+				if (targetOperandSetter == null) {
+					throw new EvaluationException("Operator \"" + operator + "\" cannot be applied because the " + targetOperandSide + " operand does not permit assignments");
+				}
 			}
 
 			Object lhsOperand = lhsOperandInfo.getObject();
@@ -145,51 +156,92 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 			NullableOptional<?> shortCircuitValue = shortCircuitImplementation != null && lhsOperand != InfoProvider.INDETERMINATE_VALUE
 				? shortCircuitImplementation.apply(lhsOperand)
 				: NullableOptional.empty();
-			final Object operatorResult;
+			Object operatorResult;
 			if (shortCircuitValue.isPresent()) {
 				operatorResult = shortCircuitValue.get();
 			} else {
 				BiFunction<Object, Object, Object> operatorImplementation = operatorInfo.getImplementation();
-				operatorResult = evaluationMode != EvaluationMode.STATIC_TYPING && lhsOperand != InfoProvider.INDETERMINATE_VALUE && rhsOperand != InfoProvider.INDETERMINATE_VALUE
-					? operatorImplementation.apply(lhsOperand, rhsOperand)
-					: InfoProvider.INDETERMINATE_VALUE;
+				try {
+					operatorResult = evaluationMode != EvaluationMode.STATIC_TYPING && lhsOperand != InfoProvider.INDETERMINATE_VALUE && rhsOperand != InfoProvider.INDETERMINATE_VALUE
+						? operatorImplementation.apply(lhsOperand, rhsOperand)
+						: InfoProvider.INDETERMINATE_VALUE;
+				} catch (RuntimeException e) {
+					throw new EvaluationException("Error executing operator \"" + operator + "\": " + e.getMessage(), e);
+				}
 			}
 
-			Class<?> operatorResultClass = operatorInfo.getResultClass();
+			BiFunction<Class<?>, Class<?>, Class<?>> resultClassProvider = operatorInfo.getResultClassProvider();
+
+			Class<?> lhsOperandClass = lhsOperandInfo.getDeclaredType();
+			Class<?> rhsOperandClass = rhsOperandInfo.getDeclaredType();
+
+			/*
+			 * The result class of the operator implementation, not of the whole operator.
+			 * For the assignment operator this is a difference:
+			 *   - result class: class of RHS
+			 *   - operator's result class: class of LHS
+			 */
+			Class<?> resultClass = resultClassProvider.apply(lhsOperandClass, rhsOperandClass);
 
 			final ObjectInfo resultInfo;
 			switch (operatorMode) {
-				case RETURN_RESULT:
-				case RETURN_RESULT_ASSIGN_RESULT_LEFT:
+				case RETURN_RESULT: {
+					resultInfo = InfoProvider.createObjectInfo(operatorResult, resultClass);
+					break;
+				}
+				case RETURN_RESULT_ASSIGN_RESULT_LEFT: {
+					// e.g. assignment operator: result class = RHS class, but operator result class = LHS class
+					if (operatorResult != InfoProvider.INDETERMINATE_VALUE && operatorResult != null) {
+						try {
+							operatorResult = ReflectionUtils.convertTo(operatorResult, lhsOperandClass, true);
+						} catch (ClassCastException e) {
+							throw new EvaluationException("Instance of type '" + operatorResult.getClass().getName() + "' cannot be assigned to declared type '" + lhsOperandClass.getName() + "'");
+						}
+					}
+					resultInfo = InfoProvider.createObjectInfo(operatorResult, lhsOperandClass);
+					break;
+				}
 				case RETURN_RESULT_ASSIGN_RESULT_RIGHT: {
-					resultInfo = InfoProvider.createObjectInfo(operatorResult, operatorResultClass);
+					// analogy to assignment operator: operator result class = RHS class
+					if (operatorResult != InfoProvider.INDETERMINATE_VALUE && operatorResult != null) {
+						try {
+							operatorResult = ReflectionUtils.convertTo(operatorResult, rhsOperandClass, true);
+						} catch (ClassCastException e) {
+							throw new EvaluationException("Instance of type '" + operatorResult.getClass().getName() + "' cannot be assigned to declared type '" + rhsOperandClass.getName() + "'");
+						}
+					}
+					resultInfo = InfoProvider.createObjectInfo(operatorResult, rhsOperandClass);
 					break;
 				}
 				case RETURN_LEFT_OPERAND_ASSIGN_RESULT_LEFT: {
-					resultInfo = InfoProvider.createObjectInfo(lhsOperand, lhsOperandInfo.getDeclaredType());
+					resultInfo = InfoProvider.createObjectInfo(lhsOperand, lhsOperandClass);
 					break;
 				}
 				case RETURN_RIGHT_OPERAND_ASSIGN_RESULT_RIGHT: {
-					resultInfo = InfoProvider.createObjectInfo(rhsOperand, rhsOperandInfo.getDeclaredType());
+					resultInfo = InfoProvider.createObjectInfo(rhsOperand, rhsOperandClass);
 					break;
 				}
 				default:
 					throw new IllegalStateException("Unsupported operator mode: " + operatorMode);
 			}
 
-			if (operatorMode.isWithAssignmentLeft()) {
-				// TODO: Check that type of value to assign is assignable to target type
-				if (evaluationMode == EvaluationMode.DYNAMIC_TYPING) {
-					ObjectInfo assignInfo = InfoProvider.createObjectInfo(operatorResult, operatorResultClass, lhsOperandSetter);
-					lhsOperandSetter.setObjectInfo(assignInfo);
-				}
-			}
+			if (targetOperandInfo != null) {
+				ObjectInfo assignInfo = InfoProvider.createObjectInfo(operatorResult, resultClass, targetOperandSetter);
+				ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
+				Class<?> sourceType = objectInfoProvider.getType(assignInfo);
 
-			if (operatorMode.isWithAssignmentRight()) {
-				// TODO: Check that type of value to assign is assignable to target type
+				Class<?> declaredTargetType = targetOperandInfo.getDeclaredType();
+				TypeMatch typeMatch = MatchRatings.rateTypeMatch(declaredTargetType, sourceType);
+				if (typeMatch == TypeMatch.NONE) {
+					throw new EvaluationException("Instance of type '" + sourceType.getName() + "' cannot be assigned to declared type '" + declaredTargetType.getName() + "'");
+				}
+
 				if (evaluationMode == EvaluationMode.DYNAMIC_TYPING) {
-					ObjectInfo assignInfo = InfoProvider.createObjectInfo(operatorResult, operatorResultClass, rhsOperandSetter);
-					rhsOperandSetter.setObjectInfo(assignInfo);
+					try {
+						targetOperandSetter.setObjectInfo(assignInfo);
+					} catch (IllegalArgumentException e) {
+						throw new EvaluationException("Assignment failed: " + e.getMessage(), e);
+					}
 				}
 			}
 

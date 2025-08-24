@@ -119,11 +119,22 @@ public class BinaryOperatorRegistry
 	}
 
 	public <L, R> void register(String operator, Class<L> lhsOperandClass, Class<R> rhsOperandClass, Class<?> resultClass, BinaryOperatorMode operatorMode, BiFunction<L, R, ?> operatorImplementation, @Nullable Function<L, ? extends NullableOptional<?>> shortCircuitImplementation) {
+		register(operator, lhsOperandClass, rhsOperandClass, operatorMode, operatorImplementation, shortCircuitImplementation, (classA, classB) -> resultClass);
+	}
+
+	/**
+	 * @apiNote The result class is the class of the result of the {@code operatorImplementation}, not necessarily the result of the operator itself.
+	 *          Usually, both are the same. However, there is a difference for operators that assign the result to one of the two operands and
+	 *          eventually returns the operand. This is the case for the assignment operator "=": The assignment operator implementation is
+	 *          {@code (a, b) -> b}, i.e., its result class is the class of {@code b}. However, the whole operator's result class is that of {@code a}.
+	 */
+	public <L, R> void register(String operator, Class<L> lhsOperandClass, Class<R> rhsOperandClass, BinaryOperatorMode operatorMode, BiFunction<L, R, ?> operatorImplementation, @Nullable Function<L, ? extends NullableOptional<?>> shortCircuitImplementation, BiFunction<Class<? extends L>, Class<? extends R>, ? extends Class<?>> resultClassProvider) {
 		BiFunction<Object, Object, Object> wrappedImplementation = (a, b) -> operatorImplementation.apply(ReflectionUtils.convertTo(a, lhsOperandClass, false), ReflectionUtils.convertTo(b, rhsOperandClass, false));
 		Function<Object, NullableOptional<?>> wrappedShortCircuitImplementation = shortCircuitImplementation != null
 				? a -> shortCircuitImplementation.apply(ReflectionUtils.convertTo(a, lhsOperandClass, false))
 				: null;
-		BinaryOperatorInfo operatorInfo = new BinaryOperatorInfo(operator, lhsOperandClass, rhsOperandClass, resultClass, operatorMode, wrappedImplementation, wrappedShortCircuitImplementation);
+		BiFunction<Class<?>, Class<?>, Class<?>> wrappedResultClassProvider = (classA, classB) -> resultClassProvider.apply((Class<? extends L>) classA, (Class<? extends R>) classB);
+		BinaryOperatorInfo operatorInfo = new BinaryOperatorInfo(operator, lhsOperandClass, rhsOperandClass, wrappedResultClassProvider, operatorMode, wrappedImplementation, wrappedShortCircuitImplementation);
 		operatorInfos.put(operator, operatorInfo);
 	}
 }

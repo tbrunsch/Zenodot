@@ -11,20 +11,20 @@ public class BinaryOperatorInfo
 	private final String												operator;
 	private final Class<?>												lhsOperandClass;
 	private final Class<?>												rhsOperandClass;
-	private final Class<?>												resultClass;
+	private final BiFunction<Class<?>, Class<?>, Class<?>>				resultClassProvider;
 	private final BinaryOperatorMode									operatorMode;
 	private final BiFunction<Object, Object, Object>					implementation;
 	@Nullable
 	private final Function<Object, NullableOptional<? extends Object>>	shortCircuitImplementation;
 
-	public BinaryOperatorInfo(String operator, Class<?> lhsOperandClass, Class<?> rhsOperandClass, Class<?> resultClass, BinaryOperatorMode operatorMode, BiFunction<Object, Object, Object> implementation, @Nullable Function<Object, NullableOptional<? extends Object>> shortCircuitImplementation) {
+	public BinaryOperatorInfo(String operator, Class<?> lhsOperandClass, Class<?> rhsOperandClass, BiFunction<Class<?>, Class<?>, Class<?>> resultClassProvider, BinaryOperatorMode operatorMode, BiFunction<Object, Object, Object> implementation, @Nullable Function<Object, NullableOptional<? extends Object>> shortCircuitImplementation) {
 		if (shortCircuitImplementation != null && operatorMode == BinaryOperatorMode.RETURN_RIGHT_OPERAND_ASSIGN_RESULT_RIGHT) {
 			throw new IllegalArgumentException("Binary operators that support short circuit evaluation must not return the right operand");
 		}
 		this.operator = operator;
 		this.lhsOperandClass = lhsOperandClass;
 		this.rhsOperandClass = rhsOperandClass;
-		this.resultClass = resultClass;
+		this.resultClassProvider = resultClassProvider;
 		this.operatorMode = operatorMode;
 		this.implementation = implementation;
 		this.shortCircuitImplementation = shortCircuitImplementation;
@@ -42,8 +42,8 @@ public class BinaryOperatorInfo
 		return rhsOperandClass;
 	}
 
-	public Class<?> getResultClass() {
-		return resultClass;
+	public BiFunction<Class<?>, Class<?>, Class<?>> getResultClassProvider() {
+		return resultClassProvider;
 	}
 
 	public BinaryOperatorMode getOperatorMode() {
