@@ -20,12 +20,10 @@ import java.util.stream.Collectors;
 public class ExecutableDataProvider
 {
 	private static final Map<TypeMatch, Integer>	PARAMETER_TYPE_MATCH_RATING	= ImmutableMap.of(
-		TypeMatch.FULL,						3,
-		TypeMatch.INHERITANCE,				2,
-		TypeMatch.PRIMITIVE_CONVERSION,		2,
-		TypeMatch.BOXED,					1,
-		TypeMatch.BOXED_AND_CONVERSION,		1,
-		TypeMatch.BOXED_AND_INHERITANCE,	1
+		TypeMatch.FULL,			3,
+		TypeMatch.INHERITANCE,	2,
+		TypeMatch.WIDENING,		2,
+		TypeMatch.BOXED,		1
 	);
 
 	// TODO: Do we need this? Does the EvaluationMode suffice?

@@ -22,15 +22,14 @@ public class NullTest extends CompletionTest
 		Object testInstance = new TestClass();
 		CompletionTestBuilder testBuilder = new CompletionTestBuilder()
 			.testInstance(testInstance)
-			.configurator(test -> test.createVariable("myNull", null, false));
+			.configurator(test -> test.createVariable("nullV", null, false));
 
 		testBuilder
-			.addTest("f(",				"myNull", "sNull")
-			.addTest("f((String) oN",	"oNull")
-			.addTest("sNull.le",		"length()");
+			.addTest("f(nu",				"nullS", "nullV")
+			.addTest("nullS.le",		"length()");
 
 		testBuilder
-			.addTestWithError("myNull.",	ParseException.class)
+			.addTestWithError("nullV.",	ParseException.class)
 			.addTestWithError("null.",		ParseException.class);
 
 		return testBuilder.build();
@@ -38,10 +37,10 @@ public class NullTest extends CompletionTest
 
 	private static class TestClass
 	{
-		private String sNull = null;
-		private Object oNull = null;
-		private Integer iNull = null;
-		private double[] daNull = null;
+		private String nullS = null;
+		private Object nullO = null;
+		private Integer nullI = null;
+		private double[] nullDA = null;
 
 		int f(String s) { return 0; }
 	}

@@ -37,8 +37,8 @@ public class ExecutableDataProvider
 	// defines a priority when determining which overloaded executable (method/constructor) to call
 	private static final List<List<TypeMatch>>	ALLOWED_EXECUTABLE_RATINGS_BY_PHASE = Arrays.asList(
 		Arrays.asList(TypeMatch.FULL),
-		Arrays.asList(TypeMatch.INHERITANCE, TypeMatch.PRIMITIVE_CONVERSION),
-		Arrays.asList(TypeMatch.BOXED, TypeMatch.BOXED_AND_CONVERSION, TypeMatch.BOXED_AND_INHERITANCE)
+		Arrays.asList(TypeMatch.INHERITANCE, TypeMatch.WIDENING),
+		Arrays.asList(TypeMatch.BOXED)
 	);
 
 	private final ParserToolbox parserToolbox;

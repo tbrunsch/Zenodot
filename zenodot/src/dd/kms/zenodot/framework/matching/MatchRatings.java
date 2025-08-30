@@ -68,7 +68,7 @@ public class MatchRatings
 
 		if (actualClass == InfoProvider.NO_TYPE) {
 			// null object (only object without class) is convertible to any non-primitive class
-			return expectedClass.isPrimitive() ? TypeMatch.NONE : TypeMatch.FULL;
+			return expectedClass.isPrimitive() ? TypeMatch.NONE : TypeMatch.INHERITANCE;
 		}
 
 		if (actualClass.equals(expectedClass)) {
@@ -79,25 +79,22 @@ public class MatchRatings
 			return TypeMatch.NONE;
 		}
 
-		boolean primitiveConvertible = ReflectionUtils.isPrimitiveConvertibleTo(actualClass, expectedClass, false);
 		if (expectedClass.isPrimitive()) {
+			boolean primitiveConvertible = ReflectionUtils.isPrimitiveConvertibleTo(actualClass, expectedClass, false);
 			if (actualClass.isPrimitive()) {
 				return primitiveConvertible
-						? TypeMatch.PRIMITIVE_CONVERSION	// int -> double
-						: TypeMatch.NONE;					// int -> boolean
+						? TypeMatch.WIDENING    // int -> double
+						: TypeMatch.NONE;		// int -> boolean
 			} else {
-				Class<?> actualUnboxedClass = Primitives.unwrap(actualClass);
-				return	actualUnboxedClass == expectedClass	? TypeMatch.BOXED :					// Integer -> int
-						primitiveConvertible				? TypeMatch.BOXED_AND_CONVERSION	// Integer -> double
-															: TypeMatch.NONE;					// Integer -> boolean
+				return primitiveConvertible	? TypeMatch.BOXED	// Integer -> int or Integer -> double
+											: TypeMatch.NONE;	// Integer -> boolean
 			}
 		} else {
 			if (actualClass.isPrimitive()) {
 				Class<?> actualBoxedClass = Primitives.wrap(actualClass);
-				return	actualBoxedClass == expectedClass					? TypeMatch.BOXED :					// int -> Integer
-						primitiveConvertible								? TypeMatch.BOXED_AND_CONVERSION :	// int -> Double
-						expectedClass.isAssignableFrom(actualBoxedClass)	? TypeMatch.BOXED_AND_INHERITANCE	// int -> Number
-																			: TypeMatch.NONE;					// int -> String
+				return actualBoxedClass == expectedClass || expectedClass.isAssignableFrom(actualBoxedClass)
+						? TypeMatch.BOXED	// int -> Integer or int -> Number
+						: TypeMatch.NONE;	// int -> Double or int -> String
 			} else {
 				return	expectedClass.isAssignableFrom(actualClass)	? TypeMatch.INHERITANCE		// ArrayList -> List
 																	: TypeMatch.NONE;			// Integer -> Double
