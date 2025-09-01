@@ -293,7 +293,7 @@ public class OverloadResolver<T>
 				 */
 				throw new IllegalStateException("Internal error: Type " + parameterType1 + " and " + parameterType2 + "are not convertible to each other.");
 			}
-			return -1;
+			return 1;
 		}
 	}
 }
