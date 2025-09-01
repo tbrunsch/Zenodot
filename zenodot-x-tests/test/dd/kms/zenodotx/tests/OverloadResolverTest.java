@@ -36,6 +36,12 @@ public class OverloadResolverTest
 			.registerRegularOverload("Widening to long", long.class);
 		testOverloadResolver(resolver, "Widening to int");
 
+		// foo(double) vs. foo(int) called with foo((short) 1)
+		resolver = new OverloadResolver<String>(short.class)
+			.registerRegularOverload("Widening to double", double.class)
+			.registerRegularOverload("Widening to int", int.class);
+		testOverloadResolver(resolver, "Widening to int");
+
 		// foo(double) vs. foo(Integer) called with foo(1)
 		resolver = new OverloadResolver<String>(int.class)
 			.registerRegularOverload("Widening", double.class)
@@ -143,6 +149,36 @@ public class OverloadResolverTest
 			.registerRegularOverload("Better in first argument", int.class, Object.class)
 			.registerRegularOverload("Better in second argument", Integer.class, int.class);
 		testOverloadResolver(resolver, "Better in first argument", "Better in second argument");
+
+		// foo(long...) vs. foo(double...) called with foo(1)
+		resolver = new OverloadResolver<String>(int.class)
+			.registerVariadicOverload("Variadic longs", long[].class)
+			.registerVariadicOverload("Variadic doubles", double[].class);
+		testOverloadResolver(resolver, "Variadic longs");
+
+		// foo(Integer...) vs. foo(Long...) called with foo(1)
+		resolver = new OverloadResolver<String>(int.class)
+			.registerVariadicOverload("Variadic Integers", Integer[].class)
+			.registerVariadicOverload("Variadic Longs", Long[].class);
+		testOverloadResolver(resolver, "Variadic Integers");
+
+		// foo(Integer...) vs. foo(Long...) called with foo(1)
+		resolver = new OverloadResolver<String>(int.class)
+			.registerVariadicOverload("Variadic Integers", Integer[].class)
+			.registerVariadicOverload("Variadic Longs", Long[].class);
+		testOverloadResolver(resolver, "Variadic Integers");
+
+		// foo(Long) vs. foo(Double) called with foo(1)
+		resolver = new OverloadResolver<String>(int.class)
+			.registerRegularOverload("Long", Long.class)
+			.registerRegularOverload("Double", Double.class);
+		testOverloadResolver(resolver);
+
+		// foo(Long...) vs. foo(Double...) called with foo(1)
+		resolver = new OverloadResolver<String>(int.class)
+			.registerVariadicOverload("Variadic Longs", Long[].class)
+			.registerVariadicOverload("Variadic Doubles", Double[].class);
+		testOverloadResolver(resolver);
 	}
 
 	private void testOverloadResolver(OverloadResolver<String> resolver, String... expectedOverloadsArray) {
