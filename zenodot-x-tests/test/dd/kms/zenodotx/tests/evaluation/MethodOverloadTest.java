@@ -30,26 +30,13 @@ public class MethodOverloadTest extends EvaluationTest
 			.addTest("get(i)",	testInstance.get(testInstance.i))
 			.addTest("get(l)",	testInstance.get(testInstance.l))
 			.addTest("get(o1)",	testInstance.get(testInstance.o1))
-			.addTest("get(o2)",	testInstance.get(testInstance.o2));
+			.addTest("get(o2)",	testInstance.get(testInstance.o2))
+			.addTest("get(s)",	testInstance.get(testInstance.s));
 
 		testBuilder
 			.configurator(test -> test.evaluationMode(EvaluationMode.MIXED))
 			.addTest("get(o1)", testInstance.get(testInstance.o1))
 			.addTest("get(o2)", testInstance.get((Float) testInstance.o2));
-
-		testBuilder
-			.configurator(null)
-			/*
-			 * TODO: Our current understanding of the Java Specification was that different overloads that both can be
-			 *       called by widening the argument (here short -> int vs. short -> double) are considered equally good.
-			 *       However, it seems that the overload with the narrowest widening is preferred. The types according to
-			 *       preference are short, int, long, float, double. In this example, get(int) should be called.
-			 *
-			 * Potential sources:
-			 *   - JLS §15.12.2.5 – Choosing the Most Specific Method (https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.12.2.5)
-             *   - JLS §5.1.2 – Widening Primitive Conversion
-			 */
-			.addTestWithError("get(s)", SemanticException.class);
 
 		testBuilder
 			.addTest("getTestClass(myInt).i",		3)
