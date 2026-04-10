@@ -30,6 +30,18 @@ public class OverloadResolver<T>
 		return this;
 	}
 
+	public List<T> getMatchingOverloads() {
+		List<T> overloads = new ArrayList<>();
+		for (ParameterDescription parameterDescription : overloadsByParameterDescription.keySet()) {
+			ParameterMatchInfo matchInfo = createMatchInfo(parameterDescription);
+			if (matchInfo != null) {
+				T overload = overloadsByParameterDescription.get(parameterDescription);
+				overloads.add(overload);
+			}
+		}
+		return overloads;
+	}
+
 	/*
 	 * Overload resolution happens in at most 3 phases:
 	 *   1. Without automatic (un)boxing or variable number of parameters
