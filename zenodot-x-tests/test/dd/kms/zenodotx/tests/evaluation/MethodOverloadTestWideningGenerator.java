@@ -93,6 +93,7 @@ public class MethodOverloadTestWideningGenerator
 	private static String createTestCode(String successfulTests, String testsWithError, String overloads) throws IOException {
 		String testCodeTemplate = loadTestCodeTemplate();
 		return testCodeTemplate
+			.replace("$TEST_PACKAGE$",   MethodOverloadTestWideningGenerator.class.getPackage().getName())
 			.replace("$CLASS_NAME$",		TEST_CLASS_NAME)
 			.replace("$SUCCESSFUL_TESTS$",	successfulTests)
 			.replace("$TESTS_WITH_ERROR$",	testsWithError)

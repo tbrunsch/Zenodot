@@ -9,6 +9,8 @@ import org.junit.runners.Parameterized;
 
 import java.util.Collection;
 
+import static org.junit.runners.Parameterized.*;
+
 /* Auto generated unit test */
 
 @RunWith(Parameterized.class)
@@ -18,7 +20,7 @@ public class MethodOverloadTestWidening extends EvaluationTest
 		super(testData);
 	}
 
-	@Parameterized.Parameters(name = "{0}")
+	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		TestClass testInstance = new TestClass();
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(() -> testInstance);

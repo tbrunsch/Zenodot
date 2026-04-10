@@ -1,13 +1,15 @@
-package dd.kms.zenodotx.tests.evaluation;
+package $TEST_PACKAGE$;
 
 import dd.kms.zenodotx.exception.SemanticException;
-import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTest;
-import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTestBuilder;
-import dd.kms.zenodotx.tests.evaluation.framework.TestData;
+import $TEST_PACKAGE$.framework.EvaluationTest;
+import $TEST_PACKAGE$.framework.EvaluationTestBuilder;
+import $TEST_PACKAGE$.framework.TestData;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Collection;
+
+import static org.junit.runners.Parameterized.*;
 
 /* Auto generated unit test */
 
@@ -18,7 +20,7 @@ public class $CLASS_NAME$ extends EvaluationTest
 		super(testData);
 	}
 
-	@Parameterized.Parameters(name = "{0}")
+	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		TestClass testInstance = new TestClass();
 		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(() -> testInstance);
