@@ -3,15 +3,11 @@ package dd.kms.zenodotx.java.rule.operator.binary;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import dd.kms.zenodot.api.common.ReflectionUtils;
-import dd.kms.zenodot.api.matching.TypeMatch;
-import dd.kms.zenodot.framework.matching.MatchRatings;
-import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodotx.common.NullableOptional;
-import dd.kms.zenodotx.common.Pair;
 import dd.kms.zenodotx.exception.SemanticException;
+import dd.kms.zenodotx.java.overloadresolution.OverloadResolver;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -29,85 +25,36 @@ public class BinaryOperatorRegistry
 		return operatorInfos.get(operator);
 	}
 
-	public List<BinaryOperatorInfo> getBestMatchingOperatorInfos(String operator, Class<?> lhsOperandType) throws SemanticException {
+	public List<BinaryOperatorInfo> getMatchingOperatorInfos(String operator, Class<?> lhsOperandType) {
+		OverloadResolver<BinaryOperatorInfo> overloadResolver = new OverloadResolver<>(lhsOperandType);
 		Collection<BinaryOperatorInfo> operatorInfos = getOperatorInfos(operator);
-
-		TypeMatch bestTypeMatch = TypeMatch.NONE;
-		List<BinaryOperatorInfo> bestMatchingOperatorInfos = new ArrayList<>();
 		for (BinaryOperatorInfo operatorInfo : operatorInfos) {
-			Class<?> lhsOperandClass = operatorInfo.getLhsOperandClass();
-			TypeMatch typeMatch = MatchRatings.rateTypeMatch(lhsOperandClass, lhsOperandType);
-			int comparisonResult = typeMatch.compareTo(bestTypeMatch);
-			if (comparisonResult < 0) {
-				bestMatchingOperatorInfos.clear();
-				bestTypeMatch = typeMatch;
-			}
-			if (comparisonResult <= 0) {
-				bestMatchingOperatorInfos.add(operatorInfo);
-			}
+			overloadResolver.registerRegularOverload(operatorInfo, operatorInfo.getLhsOperandClass());
 		}
-		if (bestTypeMatch == TypeMatch.NONE) {
-			if (lhsOperandType == InfoProvider.NO_TYPE) {
-				throw new SemanticException("Binary operator '" + operator + "' cannot be applied to null");
-			} else {
-				throw new SemanticException("Binary operator '" + operator + "' cannot be applied to instances of type '" + lhsOperandType.getSimpleName() + "'");
-			}
-		}
-		if (bestMatchingOperatorInfos.isEmpty()) {
-			throw new IllegalStateException("Internal error: No best binary operator implementation found though there should be");
-		}
-		return bestMatchingOperatorInfos;
+		return overloadResolver.getMatchingOverloads();
 	}
 
 	public BinaryOperatorInfo getBestMatchingOperatorInfo(String operator, Class<?> lhsOperandType, Class<?> rhsOperandType) throws SemanticException {
+		OverloadResolver<BinaryOperatorInfo> overloadResolver = new OverloadResolver<>(lhsOperandType, rhsOperandType);
 		Collection<BinaryOperatorInfo> operatorInfos = getOperatorInfos(operator);
-
-		Pair<TypeMatch, TypeMatch> bestTypeMatches = new Pair<>(TypeMatch.NONE, TypeMatch.NONE);
-		List<BinaryOperatorInfo> bestMatchingOperatorInfos = new ArrayList<>();
 		for (BinaryOperatorInfo operatorInfo : operatorInfos) {
-			Class<?> lhsOperandClass = operatorInfo.getLhsOperandClass();
-			Class<?> rhsOperandClass = operatorInfo.getRhsOperandClass();
-			TypeMatch lhsTypeMatch = MatchRatings.rateTypeMatch(lhsOperandClass, lhsOperandType);
-			TypeMatch rhsTypeMatch = MatchRatings.rateTypeMatch(rhsOperandClass, rhsOperandType);
-
-			// Create a pair of type matches for which the first match is not better than the second match
-			int lhsRhsComparisonResult = lhsTypeMatch.compareTo(rhsTypeMatch);
-			Pair<TypeMatch, TypeMatch> typeMatches = lhsRhsComparisonResult >= 0
-				? new Pair<>(lhsTypeMatch, rhsTypeMatch)
-				: new Pair<>(rhsTypeMatch, lhsTypeMatch);
-
-			int comparisonResult = compareTypeMatches(typeMatches, bestTypeMatches);
-			if (comparisonResult < 0) {
-				bestMatchingOperatorInfos.clear();
-				bestTypeMatches = typeMatches;
-			}
-			if (comparisonResult <= 0) {
-				bestMatchingOperatorInfos.add(operatorInfo);
-			}
+			overloadResolver.registerRegularOverload(operatorInfo, operatorInfo.getLhsOperandClass(), operatorInfo.getRhsOperandClass());
 		}
-		if (bestTypeMatches.getSecond() == TypeMatch.NONE) {
-			if (lhsOperandType == InfoProvider.NO_TYPE || rhsOperandType == InfoProvider.NO_TYPE) {
-				throw new SemanticException("Binary operator '" + operator + "' cannot be applied to null");
-			} else {
-				throw new SemanticException("Binary operator '" + operator + "' cannot be applied to instances of type '" + lhsOperandType.getSimpleName() + "' and '" + rhsOperandType.getSimpleName() + "'");
-			}
-		}
-		if (bestMatchingOperatorInfos.size() > 1) {
+		List<BinaryOperatorInfo> bestMatchingOperatorInfos = overloadResolver.getBestMatchingOverloads();
+		int size = bestMatchingOperatorInfos.size();
+		if (size == 0) {
+			String leftTarget = BinaryOperators.createOperandDescription(lhsOperandType);
+			String rightTarget = BinaryOperators.createOperandDescription(rhsOperandType);
+			throw new SemanticException("Binary operator '" + operator + "' cannot be applied to " + leftTarget + " and " + rightTarget);
+		} else if (size > 1) {
 			Class<?> lhsOperandClass1 = bestMatchingOperatorInfos.get(0).getLhsOperandClass();
 			Class<?> rhsOperandClass1 = bestMatchingOperatorInfos.get(0).getRhsOperandClass();
 			Class<?> lhsOperandClass2 = bestMatchingOperatorInfos.get(1).getLhsOperandClass();
 			Class<?> rhsOperandClass2 = bestMatchingOperatorInfos.get(1).getRhsOperandClass();
 			throw new SemanticException("Binary operator '" + operator + "' is ambiguous for types '" + lhsOperandType.getSimpleName() + "' and '" + rhsOperandType.getSimpleName() + "': Implementations are available for ('" + lhsOperandClass1.getSimpleName() + "', '" + rhsOperandClass1.getSimpleName() + "') and ('" + lhsOperandClass2.getSimpleName() + "', '" + rhsOperandClass2.getSimpleName() + "')");
+		} else {
+			return bestMatchingOperatorInfos.get(0);
 		}
-		if (bestMatchingOperatorInfos.isEmpty()) {
-			throw new IllegalStateException("Internal error: No best binary operator implementation found though there should be");
-		}
-		return bestMatchingOperatorInfos.get(0);
-	}
-
-	private static int compareTypeMatches(Pair<TypeMatch, TypeMatch> u, Pair<TypeMatch, TypeMatch> v) {
-		int firstComparisonResult = u.getFirst().compareTo(v.getFirst());
-		return firstComparisonResult != 0 ? firstComparisonResult : u.getSecond().compareTo(v.getSecond());
 	}
 
 	public <L, R> void register(String operator, Class<L> lhsOperandClass, Class<R> rhsOperandClass, Class<?> resultClass, BiFunction<L, R, ?> operatorImplementation) {

@@ -1,5 +1,6 @@
 package dd.kms.zenodotx.java.rule.operator.binary;
 
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
 import dd.kms.zenodotx.common.NullableOptional;
 
 import java.util.function.BiFunction;
@@ -260,5 +261,9 @@ public class BinaryOperators
 
 	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandClass, Class<R> rhsOperandClass, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation, Function<L, NullableOptional<RESULT>> shortCircuitImplementation, BiFunction<Class<? extends L>, Class<? extends R>, Class<? extends RESULT>> resultClassProvider) {
 		registry.register(operator, lhsOperandClass, rhsOperandClass, operatorMode, implementation, shortCircuitImplementation, resultClassProvider);
+	}
+
+	static String createOperandDescription(Class<?> operandClass) {
+		return operandClass == InfoProvider.NO_TYPE ? "null" : "instances of type '" + operandClass.getSimpleName() + "'";
 	}
 }

@@ -42,7 +42,13 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 		ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
 		ObjectInfo lhsOperandInfo = lhs.getEvaluatedResult();
 		Class<?> lhsOperandType = objectInfoProvider.getType(lhsOperandInfo);
-		List<BinaryOperatorInfo> operatorInfos = registry.getBestMatchingOperatorInfos(operator, lhsOperandType);
+
+		List<BinaryOperatorInfo> operatorInfos = registry.getMatchingOperatorInfos(operator, lhsOperandType);
+		if (operatorInfos.isEmpty()) {
+			String operandDescription = BinaryOperators.createOperandDescription(lhsOperandType);
+			throw new SemanticException("Binary operator '" + operator + "' cannot be applied to " + operandDescription);
+		}
+
 		Object lhsOperand = lhsOperandInfo.getObject();
 		boolean shortCircuitEvaluation = isApplyShortCircuitEvaluation(lhsOperand, operatorInfos);
 		JavaSettings rhsSettings = getRightHandSideSettings(settings, shortCircuitEvaluation);
@@ -66,7 +72,6 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 	private static boolean isApplyShortCircuitEvaluation(Object lhsOperand, List<BinaryOperatorInfo> operatorInfos) throws SemanticException {
 		Boolean totalApplyShortCircuitEvaluation = null;
 		for (BinaryOperatorInfo operatorInfo : operatorInfos) {
-			Function<Object, NullableOptional<?>> shortCircuitImplementation = operatorInfo.getShortCircuitImplementation();
 			boolean applyShortCircuitEvaluation = isApplyShortCircuitEvaluation(lhsOperand, operatorInfo);
 			if (totalApplyShortCircuitEvaluation != null && applyShortCircuitEvaluation != totalApplyShortCircuitEvaluation) {
 				throw new SemanticException("Different implementations of operator '" + operatorInfo.getOperator() + "' dictate a different behavior regarding short circuit evaluation");
