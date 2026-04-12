@@ -175,55 +175,55 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 				}
 			}
 
-			BiFunction<Class<?>, Class<?>, Class<?>> resultClassProvider = operatorInfo.getResultClassProvider();
+			BiFunction<Class<?>, Class<?>, Class<?>> resultTypeProvider = operatorInfo.getResultTypeProvider();
 
-			Class<?> lhsOperandClass = lhsOperandInfo.getDeclaredType();
-			Class<?> rhsOperandClass = rhsOperandInfo.getDeclaredType();
+			Class<?> lhsOperandType = lhsOperandInfo.getDeclaredType();
+			Class<?> rhsOperandType = rhsOperandInfo.getDeclaredType();
 
 			/*
-			 * The result class of the operator implementation, not of the whole operator.
+			 * The result type of the operator implementation, not of the whole operator.
 			 * For the assignment operator this is a difference:
-			 *   - result class: class of RHS
-			 *   - operator's result class: class of LHS
+			 *   - result type: type of RHS
+			 *   - operator's result type: type of LHS
 			 */
-			Class<?> resultClass = resultClassProvider.apply(lhsOperandClass, rhsOperandClass);
+			Class<?> resultType = resultTypeProvider.apply(lhsOperandType, rhsOperandType);
 
 			final ObjectInfo resultInfo;
 			switch (operatorMode) {
 				case RETURN_RESULT: {
-					resultInfo = InfoProvider.createObjectInfo(operatorResult, resultClass);
+					resultInfo = InfoProvider.createObjectInfo(operatorResult, resultType);
 					break;
 				}
 				case RETURN_RESULT_ASSIGN_RESULT_LEFT: {
-					// e.g. assignment operator: result class = RHS class, but operator result class = LHS class
+					// e.g. assignment operator: result type = RHS type, but operator result type = LHS type
 					if (operatorResult != InfoProvider.INDETERMINATE_VALUE && operatorResult != null) {
 						try {
-							operatorResult = ReflectionUtils.convertTo(operatorResult, lhsOperandClass, true);
+							operatorResult = ReflectionUtils.convertTo(operatorResult, lhsOperandType, true);
 						} catch (ClassCastException e) {
-							throw new EvaluationException("Instance of type '" + operatorResult.getClass().getName() + "' cannot be assigned to declared type '" + lhsOperandClass.getName() + "'");
+							throw new EvaluationException("Instance of type '" + operatorResult.getClass().getName() + "' cannot be assigned to declared type '" + lhsOperandType.getName() + "'");
 						}
 					}
-					resultInfo = InfoProvider.createObjectInfo(operatorResult, lhsOperandClass);
+					resultInfo = InfoProvider.createObjectInfo(operatorResult, lhsOperandType);
 					break;
 				}
 				case RETURN_RESULT_ASSIGN_RESULT_RIGHT: {
-					// analogy to assignment operator: operator result class = RHS class
+					// analogy to assignment operator: operator result type = RHS type
 					if (operatorResult != InfoProvider.INDETERMINATE_VALUE && operatorResult != null) {
 						try {
-							operatorResult = ReflectionUtils.convertTo(operatorResult, rhsOperandClass, true);
+							operatorResult = ReflectionUtils.convertTo(operatorResult, rhsOperandType, true);
 						} catch (ClassCastException e) {
-							throw new EvaluationException("Instance of type '" + operatorResult.getClass().getName() + "' cannot be assigned to declared type '" + rhsOperandClass.getName() + "'");
+							throw new EvaluationException("Instance of type '" + operatorResult.getClass().getName() + "' cannot be assigned to declared type '" + rhsOperandType.getName() + "'");
 						}
 					}
-					resultInfo = InfoProvider.createObjectInfo(operatorResult, rhsOperandClass);
+					resultInfo = InfoProvider.createObjectInfo(operatorResult, rhsOperandType);
 					break;
 				}
 				case RETURN_LEFT_OPERAND_ASSIGN_RESULT_LEFT: {
-					resultInfo = InfoProvider.createObjectInfo(lhsOperand, lhsOperandClass);
+					resultInfo = InfoProvider.createObjectInfo(lhsOperand, lhsOperandType);
 					break;
 				}
 				case RETURN_RIGHT_OPERAND_ASSIGN_RESULT_RIGHT: {
-					resultInfo = InfoProvider.createObjectInfo(rhsOperand, rhsOperandClass);
+					resultInfo = InfoProvider.createObjectInfo(rhsOperand, rhsOperandType);
 					break;
 				}
 				default:
@@ -231,7 +231,7 @@ public class BinaryOperatorExecuteRule extends AbstractRule<InstanceParseResult,
 			}
 
 			if (targetOperandInfo != null) {
-				ObjectInfo assignInfo = InfoProvider.createObjectInfo(operatorResult, resultClass, targetOperandSetter);
+				ObjectInfo assignInfo = InfoProvider.createObjectInfo(operatorResult, resultType, targetOperandSetter);
 				ObjectInfoProvider objectInfoProvider = new ObjectInfoProvider(evaluationMode);
 				Class<?> sourceType = objectInfoProvider.getType(assignInfo);
 
