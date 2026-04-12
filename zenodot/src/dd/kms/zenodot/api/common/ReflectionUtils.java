@@ -3,6 +3,7 @@ package dd.kms.zenodot.api.common;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Primitives;
+import dd.kms.zenodot.framework.wrappers.InfoProvider;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -60,6 +61,10 @@ public class ReflectionUtils
 		} else {
 			throw new IllegalArgumentException("The classes '" + class1 + "' and '" + class2 + "' are not primitive convertible to each other");
 		}
+	}
+
+	public static boolean isPrimitive(Class<?> clazz) {
+		return clazz != InfoProvider.NO_TYPE && clazz.isPrimitive();
 	}
 
 	public static Class<?> getPrimitiveClass(Class<?> clazz) throws IllegalArgumentException {
