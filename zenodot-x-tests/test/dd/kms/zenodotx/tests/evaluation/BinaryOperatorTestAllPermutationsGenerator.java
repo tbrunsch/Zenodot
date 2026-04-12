@@ -30,6 +30,9 @@ public class BinaryOperatorTestAllPermutationsGenerator
 		addOperator10Tests(testCollectionMethodCallLines, testCollectionMethodLines);
 		addOperator9Tests(testCollectionMethodCallLines, testCollectionMethodLines);
 		addOperator8Tests(testCollectionMethodCallLines, testCollectionMethodLines);
+		addOperator7Tests(testCollectionMethodCallLines, testCollectionMethodLines);
+		addOperator6Tests(testCollectionMethodCallLines, testCollectionMethodLines);
+		addOperator5Tests(testCollectionMethodCallLines, testCollectionMethodLines);
 
 		String successfulTests = String.join("\r\n", testCollectionMethodCallLines);
 		String testsWithError = String.join("\r\n", testCollectionMethodLines);
@@ -91,6 +94,33 @@ public class BinaryOperatorTestAllPermutationsGenerator
 			testCollectionMethodLines,
 			(successfulTestLines, testWithErrorLines) -> addIdentityComparisonOperatorTests("==", successfulTestLines, testWithErrorLines),
 			(successfulTestLines, testWithErrorLines) -> addIdentityComparisonOperatorTests("!=", successfulTestLines, testWithErrorLines)
+		);
+	}
+
+	private static void addOperator7Tests(List<String> testCollectionMethodCallLines, List<String> testCollectionMethodLines) {
+		createTestCollectionMethod(
+			7,
+			testCollectionMethodCallLines,
+			testCollectionMethodLines,
+			(successfulTestLines, testWithErrorLines) -> addBitOperatorTests("&", successfulTestLines, testWithErrorLines)
+		);
+	}
+
+	private static void addOperator6Tests(List<String> testCollectionMethodCallLines, List<String> testCollectionMethodLines) {
+		createTestCollectionMethod(
+			6,
+			testCollectionMethodCallLines,
+			testCollectionMethodLines,
+			(successfulTestLines, testWithErrorLines) -> addBitOperatorTests("^", successfulTestLines, testWithErrorLines)
+		);
+	}
+
+	private static void addOperator5Tests(List<String> testCollectionMethodCallLines, List<String> testCollectionMethodLines) {
+		createTestCollectionMethod(
+			5,
+			testCollectionMethodCallLines,
+			testCollectionMethodLines,
+			(successfulTestLines, testWithErrorLines) -> addBitOperatorTests("|", successfulTestLines, testWithErrorLines)
 		);
 	}
 
@@ -272,6 +302,41 @@ public class BinaryOperatorTestAllPermutationsGenerator
 				}
 				if (lhsPrimitive && rhsPrimitive) {
 					addSuccessfulTestOrTestWithError(operator, boxedVarName1, boxedVarName2, successfulTestLines, testWithErrorLines, comparisonBoxedBoxedValid);
+				}
+			}
+		}
+		successfulTestLines.add(";\n");
+		testWithErrorLines.add(";\n");
+	}
+
+	private static void addBitOperatorTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
+		addTestBuilderLine(successfulTestLines);
+		addTestBuilderLine(testWithErrorLines);
+		for (Type lhsType : Type.values()) {
+			for (Type rhsType : Type.values()) {
+				String varName1 = lhsType.getVariableName1();
+				String varName2 = rhsType.getVariableName2();
+				String boxedVarName1 = lhsType.getBoxedVariableName1();
+				String boxedVarName2 = rhsType.getBoxedVariableName2();
+				boolean comparisonValid = lhsType == Type.BOOLEAN && rhsType == Type.BOOLEAN || lhsType.isIntegerType() && rhsType.isIntegerType();
+				if (comparisonValid) {
+					addSuccessfulTest(operator, varName1, varName2, successfulTestLines);
+					addSuccessfulTest(operator, varName1, boxedVarName2, successfulTestLines);
+					addSuccessfulTest(operator, boxedVarName1, varName2, successfulTestLines);
+					addSuccessfulTest(operator, boxedVarName1, boxedVarName2, successfulTestLines);
+				} else {
+					boolean lhsPrimitive = lhsType.isPrimitive();
+					boolean rhsPrimitive = rhsType.isPrimitive();
+					addTestWithError(operator, varName1, varName2, testWithErrorLines);
+					if (rhsPrimitive) {
+						addTestWithError(operator, varName1, boxedVarName2, testWithErrorLines);
+					}
+					if (lhsPrimitive) {
+						addTestWithError(operator, boxedVarName1, varName2, testWithErrorLines);
+					}
+					if (lhsPrimitive && rhsPrimitive) {
+						addTestWithError(operator, boxedVarName1, boxedVarName2, testWithErrorLines);
+					}
 				}
 			}
 		}
