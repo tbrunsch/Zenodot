@@ -1,5 +1,6 @@
 package dd.kms.zenodotx.tests.evaluation;
 
+import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTest;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTestBuilder;
@@ -35,8 +36,9 @@ public class BinaryOperatorTestShortCircuitEvaluation extends EvaluationTest
 			.addTest("npeTrigger != null && npeTrigger.counter > 0",	false);
 
 		testBuilder
-			.addTestWithError("getCounter(FALSE() && 5", SyntaxException.class)
-			.addTestWithError("getCounter(TRUE() || 'X'", SyntaxException.class);
+			.addTestWithError("getCounter(FALSE() && 5", SemanticException.class)
+			.addTestWithError("getCounter(TRUE() || 'X'", SemanticException.class)
+			.addTestWithError("getCounter(FALSE() && false", SyntaxException.class);
 
 		return testBuilder.build();
 	}
