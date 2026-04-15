@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,6 +36,7 @@ public class BinaryOperatorTestAllPermutationsGenerator
 		addOperator5Tests(testCollectionMethodCallLines, testCollectionMethodLines);
 		addOperator4Tests(testCollectionMethodCallLines, testCollectionMethodLines);
 		addOperator3Tests(testCollectionMethodCallLines, testCollectionMethodLines);
+		addOperator1Tests(testCollectionMethodCallLines, testCollectionMethodLines);
 
 		String successfulTests = String.join("\r\n", testCollectionMethodCallLines);
 		String testsWithError = String.join("\r\n", testCollectionMethodLines);
@@ -131,7 +133,7 @@ public class BinaryOperatorTestAllPermutationsGenerator
 			4,
 			testCollectionMethodCallLines,
 			testCollectionMethodLines,
-			(successfulTestLines, testWithErrorLines) -> addBooleanOperatorTests("&&", successfulTestLines, testWithErrorLines)
+			(successfulTestLines, testWithErrorLines) -> addLogicOperatorTests("&&", successfulTestLines, testWithErrorLines)
 		);
 	}
 
@@ -140,7 +142,27 @@ public class BinaryOperatorTestAllPermutationsGenerator
 			3,
 			testCollectionMethodCallLines,
 			testCollectionMethodLines,
-			(successfulTestLines, testWithErrorLines) -> addBooleanOperatorTests("||", successfulTestLines, testWithErrorLines)
+			(successfulTestLines, testWithErrorLines) -> addLogicOperatorTests("||", successfulTestLines, testWithErrorLines)
+		);
+	}
+
+	private static void addOperator1Tests(List<String> testCollectionMethodCallLines, List<String> testCollectionMethodLines) {
+		createTestCollectionMethod(
+			1,
+			testCollectionMethodCallLines,
+			testCollectionMethodLines,
+			(successfulTestLines, testWithErrorLines) -> addAssignmentOperatorTests(successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addNumericOperatorWithAssignmentTests("+=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addNumericOperatorWithAssignmentTests("-=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addNumericOperatorWithAssignmentTests("*=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addNumericOperatorWithAssignmentTests("/=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addNumericOperatorWithAssignmentTests("%=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addBitOperatorWithAssignmentTests("&=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addBitOperatorWithAssignmentTests("^=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addBitOperatorWithAssignmentTests("|=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addShiftOperatorWithAssignmentTests("<<=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addShiftOperatorWithAssignmentTests(">>=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addShiftOperatorWithAssignmentTests(">>>=", successfulTestLines, testWithErrorLines)
 		);
 	}
 
@@ -364,7 +386,7 @@ public class BinaryOperatorTestAllPermutationsGenerator
 		testWithErrorLines.add(";\n");
 	}
 
-	private static void addBooleanOperatorTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
+	private static void addLogicOperatorTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
 		addTestBuilderLine(successfulTestLines);
 		addTestBuilderLine(testWithErrorLines);
 		for (Type lhsType : Type.values()) {
@@ -397,6 +419,50 @@ public class BinaryOperatorTestAllPermutationsGenerator
 		}
 		successfulTestLines.add(";\n");
 		testWithErrorLines.add(";\n");
+	}
+
+	private static void addAssignmentOperatorTests(List<String> successfulTestLines, List<String> testWithErrorLines) {
+		addTestBuilderLine(successfulTestLines);
+		addTestBuilderLine(testWithErrorLines);
+		for (Type lhsType : Type.values()) {
+			for (Type rhsType : Type.values()) {
+				String varNameForAssignment = lhsType.getVariableNameForAssignment();
+				String varName2 = rhsType.getVariableName2();
+				String boxedVarNameForAssignment = lhsType.getBoxedVariableNameForAssignment();
+				String boxedVarName2 = rhsType.getBoxedVariableName2();
+				boolean lhsPrimitive = lhsType.isPrimitive();
+				boolean rhsPrimitive = rhsType.isPrimitive();
+
+				boolean assignmentUnboxedUnboxedValid = lhsType.isAssignableFrom(rhsType);
+				boolean assignmentUnboxedBoxedValid = assignmentUnboxedUnboxedValid;
+				boolean assignmentBoxedUnboxedValid = lhsType == rhsType;
+				boolean assignmentBoxedBoxedValid = assignmentBoxedUnboxedValid;
+				addSuccessfulTestOrTestWithError("=", varNameForAssignment, varName2, successfulTestLines, testWithErrorLines, assignmentUnboxedUnboxedValid);
+				if (rhsPrimitive) {
+					addSuccessfulTestOrTestWithError("=", varNameForAssignment, boxedVarName2, successfulTestLines, testWithErrorLines, assignmentUnboxedBoxedValid);
+				}
+				if (lhsPrimitive) {
+					addSuccessfulTestOrTestWithError("=", boxedVarNameForAssignment, varName2, successfulTestLines, testWithErrorLines, assignmentBoxedUnboxedValid);
+				}
+				if (lhsPrimitive && rhsPrimitive) {
+					addSuccessfulTestOrTestWithError("=", boxedVarNameForAssignment, boxedVarName2, successfulTestLines, testWithErrorLines, assignmentBoxedBoxedValid);
+				}
+			}
+		}
+		successfulTestLines.add(";\n");
+		testWithErrorLines.add(";\n");
+	}
+
+	private static void addNumericOperatorWithAssignmentTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
+		// TODO
+	}
+
+	private static void addBitOperatorWithAssignmentTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
+		// TODO
+	}
+
+	private static void addShiftOperatorWithAssignmentTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
+		// TODO
 	}
 
 	private static String createTestCollectionCallLine(String methodName) {
@@ -488,7 +554,24 @@ public class BinaryOperatorTestAllPermutationsGenerator
 			.replace("$STRING_VARIABLE_2$",				Type.STRING.getVariableName2())
 			.replace("$OBJECT_VARIABLE_1$",				Type.OBJECT.getVariableName1())
 			.replace("$OBJECT_VARIABLE_2$",				Type.OBJECT.getVariableName2())
-			;
+			.replace("$BOOLEAN_VARIABLE_FOR_ASSIGNMENT$",			Type.BOOLEAN.getVariableNameForAssignment())
+			.replace("$CHAR_VARIABLE_FOR_ASSIGNMENT$",				Type.CHAR.getVariableNameForAssignment())
+			.replace("$BYTE_VARIABLE_FOR_ASSIGNMENT$",				Type.BYTE.getVariableNameForAssignment())
+			.replace("$SHORT_VARIABLE_FOR_ASSIGNMENT$",				Type.SHORT.getVariableNameForAssignment())
+			.replace("$INT_VARIABLE_FOR_ASSIGNMENT$",				Type.INT.getVariableNameForAssignment())
+			.replace("$LONG_VARIABLE_FOR_ASSIGNMENT$",				Type.LONG.getVariableNameForAssignment())
+			.replace("$FLOAT_VARIABLE_FOR_ASSIGNMENT$",				Type.FLOAT.getVariableNameForAssignment())
+			.replace("$DOUBLE_VARIABLE_FOR_ASSIGNMENT$",				Type.DOUBLE.getVariableNameForAssignment())
+			.replace("$BOOLEAN_VARIABLE_BOXED_FOR_ASSIGNMENT$",		Type.BOOLEAN.getBoxedVariableNameForAssignment())
+			.replace("$CHAR_VARIABLE_BOXED_FOR_ASSIGNMENT$",			Type.CHAR.getBoxedVariableNameForAssignment())
+			.replace("$BYTE_VARIABLE_BOXED_FOR_ASSIGNMENT$",			Type.BYTE.getBoxedVariableNameForAssignment())
+			.replace("$SHORT_VARIABLE_BOXED_FOR_ASSIGNMENT$",		Type.SHORT.getBoxedVariableNameForAssignment())
+			.replace("$INT_VARIABLE_BOXED_FOR_ASSIGNMENT$",			Type.INT.getBoxedVariableNameForAssignment())
+			.replace("$LONG_VARIABLE_BOXED_FOR_ASSIGNMENT$",			Type.LONG.getBoxedVariableNameForAssignment())
+			.replace("$FLOAT_VARIABLE_BOXED_FOR_ASSIGNMENT$",		Type.FLOAT.getBoxedVariableNameForAssignment())
+			.replace("$DOUBLE_VARIABLE_BOXED_FOR_ASSIGNMENT$",		Type.DOUBLE.getBoxedVariableNameForAssignment())
+			.replace("$STRING_VARIABLE_FOR_ASSIGNMENT$",				Type.STRING.getVariableNameForAssignment())
+			.replace("$OBJECT_VARIABLE_FOR_ASSIGNMENT$",				Type.OBJECT.getVariableNameForAssignment());
 	}
 
 	private static String loadTestCodeTemplate() throws IOException {
@@ -515,21 +598,23 @@ public class BinaryOperatorTestAllPermutationsGenerator
 		BOOLEAN("bool", TypeOfType.LOGIC),
 		CHAR("c", TypeOfType.INTEGER_NUMBER),
 		BYTE("b", TypeOfType.INTEGER_NUMBER),
-		SHORT("s", TypeOfType.INTEGER_NUMBER),
-		INT("i", TypeOfType.INTEGER_NUMBER),
-		LONG("l", TypeOfType.INTEGER_NUMBER),
-		FLOAT("f", TypeOfType.FLOATING_POINT_NUMBER),
-		DOUBLE("d", TypeOfType.FLOATING_POINT_NUMBER),
+		SHORT("s", TypeOfType.INTEGER_NUMBER, Type.BYTE),
+		INT("i", TypeOfType.INTEGER_NUMBER, Type.SHORT, Type.CHAR),
+		LONG("l", TypeOfType.INTEGER_NUMBER, Type.INT),
+		FLOAT("f", TypeOfType.FLOATING_POINT_NUMBER, Type.LONG),
+		DOUBLE("d", TypeOfType.FLOATING_POINT_NUMBER, Type.FLOAT),
 		STRING("str", TypeOfType.TEXT),
-		OBJECT("o", TypeOfType.OBJECT)
+		OBJECT("o", TypeOfType.OBJECT, Type.BOOLEAN, Type.DOUBLE, Type.STRING)
 		;
 
 		private final String variableNamePrefix;
 		private final TypeOfType type;
+		private final Type[] assignableTypes;
 
-		Type(String variableNamePrefix, TypeOfType type) {
+		Type(String variableNamePrefix, TypeOfType type, Type... assignableTypes) {
 			this.variableNamePrefix = variableNamePrefix;
 			this.type = type;
+			this.assignableTypes = assignableTypes;
 		}
 
 		String getVariableName1() {
@@ -540,12 +625,20 @@ public class BinaryOperatorTestAllPermutationsGenerator
 			return variableNamePrefix + "2";
 		}
 
+		String getVariableNameForAssignment() {
+			return variableNamePrefix;
+		}
+
 		String getBoxedVariableName1() {
-			return variableNamePrefix.toUpperCase() + "1";
+			return getVariableName1().toUpperCase();
 		}
 
 		String getBoxedVariableName2() {
-			return variableNamePrefix.toUpperCase() + "2";
+			return getVariableName2().toUpperCase();
+		}
+
+		String getBoxedVariableNameForAssignment() {
+			return getVariableNameForAssignment().toUpperCase();
 		}
 
 		boolean isIntegerType() {
@@ -578,6 +671,13 @@ public class BinaryOperatorTestAllPermutationsGenerator
 				default:
 					throw new IllegalStateException("Unexpected type: " + type);
 			}
+		}
+
+		boolean isAssignableFrom(Type type) {
+			if (this == type) {
+				return true;
+			}
+			return Arrays.stream(assignableTypes).anyMatch(assignableType -> assignableType.isAssignableFrom(type));
 		}
 	}
 
