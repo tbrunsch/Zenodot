@@ -548,7 +548,42 @@ public class BinaryOperatorTestAllPermutationsGenerator
 	}
 
 	private static void addShiftOperatorWithAssignmentTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
-		// TODO
+		addTestBuilderLine(successfulTestLines);
+		addTestBuilderLine(testWithErrorLines);
+		for (Type lhsType : Type.values()) {
+			for (Type rhsType : Type.values()) {
+				String varNameForAssignment = lhsType.getVariableNameForAssignment();
+				String varName2 = rhsType.getVariableName2();
+				String boxedVarNameForAssignment = lhsType.getBoxedVariableNameForAssignment();
+				String boxedVarName2 = rhsType.getBoxedVariableName2();
+				boolean lhsPrimitive = lhsType.isPrimitive();
+				boolean rhsPrimitive = rhsType.isPrimitive();
+
+				boolean assignmentUnboxedUnboxedValid;
+				boolean assignmentUnboxedBoxedValid;
+				boolean assignmentBoxedUnboxedValid;
+				boolean assignmentBoxedBoxedValid;
+				if (!lhsType.isIntegerType() || !rhsType.isIntegerType()) {
+					assignmentUnboxedUnboxedValid = assignmentUnboxedBoxedValid = assignmentBoxedUnboxedValid = assignmentBoxedBoxedValid = false;
+				} else {
+					assignmentUnboxedUnboxedValid = assignmentUnboxedBoxedValid = true;
+					assignmentBoxedUnboxedValid = assignmentBoxedBoxedValid = lhsType.isAssignableFrom(Type.INT);
+				}
+
+				addSuccessfulTestOrTestWithError(operator, varNameForAssignment, varName2, successfulTestLines, testWithErrorLines, assignmentUnboxedUnboxedValid);
+				if (rhsPrimitive) {
+					addSuccessfulTestOrTestWithError(operator, varNameForAssignment, boxedVarName2, successfulTestLines, testWithErrorLines, assignmentUnboxedBoxedValid);
+				}
+				if (lhsPrimitive) {
+					addSuccessfulTestOrTestWithError(operator, boxedVarNameForAssignment, varName2, successfulTestLines, testWithErrorLines, assignmentBoxedUnboxedValid);
+				}
+				if (lhsPrimitive && rhsPrimitive) {
+					addSuccessfulTestOrTestWithError(operator, boxedVarNameForAssignment, boxedVarName2, successfulTestLines, testWithErrorLines, assignmentBoxedBoxedValid);
+				}
+			}
+		}
+		successfulTestLines.add(";\n");
+		testWithErrorLines.add(";\n");
 	}
 
 	private static String createTestCollectionCallLine(String methodName) {
