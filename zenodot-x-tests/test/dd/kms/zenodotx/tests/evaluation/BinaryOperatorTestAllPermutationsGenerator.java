@@ -454,7 +454,39 @@ public class BinaryOperatorTestAllPermutationsGenerator
 	}
 
 	private static void addNumericOperatorWithAssignmentTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
-		// TODO
+		addTestBuilderLine(successfulTestLines);
+		addTestBuilderLine(testWithErrorLines);
+		for (Type lhsType : Type.values()) {
+			if (lhsType == Type.STRING && "+=".equals(operator)) {
+				// String concatenations will be handled differently
+				continue;
+			}
+			for (Type rhsType : Type.values()) {
+				String varNameForAssignment = lhsType.getVariableNameForAssignment();
+				String varName2 = rhsType.getVariableName2();
+				String boxedVarNameForAssignment = lhsType.getBoxedVariableNameForAssignment();
+				String boxedVarName2 = rhsType.getBoxedVariableName2();
+				boolean lhsPrimitive = lhsType.isPrimitive();
+				boolean rhsPrimitive = rhsType.isPrimitive();
+
+				boolean assignmentUnboxedUnboxedValid = lhsType.isNumeric() && rhsType.isNumeric();
+				boolean assignmentUnboxedBoxedValid = assignmentUnboxedUnboxedValid;
+				boolean assignmentBoxedUnboxedValid = lhsType.isAssignableFrom(Type.INT) && lhsType.isAssignableFrom(rhsType);
+				boolean assignmentBoxedBoxedValid = assignmentBoxedUnboxedValid;
+				addSuccessfulTestOrTestWithError(operator, varNameForAssignment, varName2, successfulTestLines, testWithErrorLines, assignmentUnboxedUnboxedValid);
+				if (rhsPrimitive) {
+					addSuccessfulTestOrTestWithError(operator, varNameForAssignment, boxedVarName2, successfulTestLines, testWithErrorLines, assignmentUnboxedBoxedValid);
+				}
+				if (lhsPrimitive) {
+					addSuccessfulTestOrTestWithError(operator, boxedVarNameForAssignment, varName2, successfulTestLines, testWithErrorLines, assignmentBoxedUnboxedValid);
+				}
+				if (lhsPrimitive && rhsPrimitive) {
+					addSuccessfulTestOrTestWithError(operator, boxedVarNameForAssignment, boxedVarName2, successfulTestLines, testWithErrorLines, assignmentBoxedBoxedValid);
+				}
+			}
+		}
+		successfulTestLines.add(";\n");
+		testWithErrorLines.add(";\n");
 	}
 
 	private static void addBitOperatorWithAssignmentTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
