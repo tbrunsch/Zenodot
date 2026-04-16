@@ -7172,6 +7172,27 @@ public class BinaryOperatorTestAllPermutations extends EvaluationTest
 			.addTest("D %= D2",	testInstance.D %= testInstance.D2)
 		;
 
+		testBuilder
+			.addTest("str += bool2",	testInstance.str += testInstance.bool2)
+			.addTest("str += BOOL2",	testInstance.str += testInstance.BOOL2)
+			.addTest("str += c2",	testInstance.str += testInstance.c2)
+			.addTest("str += C2",	testInstance.str += testInstance.C2)
+			.addTest("str += b2",	testInstance.str += testInstance.b2)
+			.addTest("str += B2",	testInstance.str += testInstance.B2)
+			.addTest("str += s2",	testInstance.str += testInstance.s2)
+			.addTest("str += S2",	testInstance.str += testInstance.S2)
+			.addTest("str += i2",	testInstance.str += testInstance.i2)
+			.addTest("str += I2",	testInstance.str += testInstance.I2)
+			.addTest("str += l2",	testInstance.str += testInstance.l2)
+			.addTest("str += L2",	testInstance.str += testInstance.L2)
+			.addTest("str += f2",	testInstance.str += testInstance.f2)
+			.addTest("str += F2",	testInstance.str += testInstance.F2)
+			.addTest("str += d2",	testInstance.str += testInstance.d2)
+			.addTest("str += D2",	testInstance.str += testInstance.D2)
+			.addTest("str += str2",	testInstance.str += testInstance.str2)
+			.addTest("str += o2",	testInstance.str += testInstance.o2)
+		;
+
 
 		testBuilder
 			.addTestWithError("bool = c2",	SemanticException.class)

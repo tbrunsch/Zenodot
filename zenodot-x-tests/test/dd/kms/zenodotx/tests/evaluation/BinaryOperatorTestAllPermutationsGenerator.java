@@ -157,6 +157,7 @@ public class BinaryOperatorTestAllPermutationsGenerator
 			(successfulTestLines, testWithErrorLines) -> addNumericOperatorWithAssignmentTests("*=", successfulTestLines, testWithErrorLines),
 			(successfulTestLines, testWithErrorLines) -> addNumericOperatorWithAssignmentTests("/=", successfulTestLines, testWithErrorLines),
 			(successfulTestLines, testWithErrorLines) -> addNumericOperatorWithAssignmentTests("%=", successfulTestLines, testWithErrorLines),
+			(successfulTestLines, testWithErrorLines) -> addStringConcatenationWithAssignmentTests(successfulTestLines),
 			(successfulTestLines, testWithErrorLines) -> addBitOperatorWithAssignmentTests("&=", successfulTestLines, testWithErrorLines),
 			(successfulTestLines, testWithErrorLines) -> addBitOperatorWithAssignmentTests("^=", successfulTestLines, testWithErrorLines),
 			(successfulTestLines, testWithErrorLines) -> addBitOperatorWithAssignmentTests("|=", successfulTestLines, testWithErrorLines),
@@ -487,6 +488,22 @@ public class BinaryOperatorTestAllPermutationsGenerator
 		}
 		successfulTestLines.add(";\n");
 		testWithErrorLines.add(";\n");
+	}
+
+	private static void addStringConcatenationWithAssignmentTests(List<String> successfulTestLines) {
+		addTestBuilderLine(successfulTestLines);
+		for (Type rhsType : Type.values()) {
+			String varNameForAssignment = Type.STRING.getVariableNameForAssignment();
+			String varName2 = rhsType.getVariableName2();
+			String boxedVarName2 = rhsType.getBoxedVariableName2();
+			boolean rhsPrimitive = rhsType.isPrimitive();
+
+			addSuccessfulTest("+=", varNameForAssignment, varName2, successfulTestLines);
+			if (rhsPrimitive) {
+				addSuccessfulTest("+=", varNameForAssignment, boxedVarName2, successfulTestLines);
+			}
+		}
+		successfulTestLines.add(";\n");
 	}
 
 	private static void addBitOperatorWithAssignmentTests(String operator, List<String> successfulTestLines, List<String> testWithErrorLines) {
