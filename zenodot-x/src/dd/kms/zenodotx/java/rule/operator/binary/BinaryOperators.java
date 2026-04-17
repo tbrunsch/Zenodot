@@ -67,6 +67,8 @@ public class BinaryOperators
 	public static void registerBinaryOperators1(BinaryOperatorRegistry registry) {
 		registerOperator(registry, "=", Object.class, Object.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> !ReflectionUtils.isPrimitive(lhsClass));
 
+		registerOperator(registry, "=", boolean.class, boolean.class, boolean.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
+
 		registerOperator(registry, "=", char.class, char.class, char.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
 
 		registerOperator(registry, "=", byte.class, byte.class, byte.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
