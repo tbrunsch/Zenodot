@@ -14,9 +14,9 @@ import static org.junit.runners.Parameterized.*;
 /* Auto generated unit test */
 
 @RunWith(Parameterized.class)
-public class MethodOverloadTestWidening extends EvaluationTest
+public class MethodOverloadWideningTest extends EvaluationTest
 {
-	public MethodOverloadTestWidening(TestData testData) {
+	public MethodOverloadWideningTest(TestData testData) {
 		super(testData);
 	}
 

@@ -12,12 +12,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This class generates the test {@link BinaryOperatorTestAllPermutations} and writes it to the console.
+ * This class generates the test {@link BinaryOperatorAllPermutationsTest} and writes it to the console.
  */
-public class BinaryOperatorTestAllPermutationsGenerator
+public class BinaryOperatorAllPermutationsTestGenerator
 {
-	private static final String	TEST_CODE_TEMPLATE_FILE_NAME	= "BinaryOperatorTestAllPermutationsTemplate.java";
-	private static final String	TEST_CLASS_NAME					= "BinaryOperatorTestAllPermutations";
+	private static final String	TEST_CODE_TEMPLATE_FILE_NAME	= "BinaryOperatorAllPermutationsTestTemplate.java";
+	private static final String	TEST_CLASS_NAME					= "BinaryOperatorAllPermutationsTest";
 	private static final String	TEST_BUILDER_NAME				= "testBuilder";
 	private static final String	TEST_INSTANCE_CLASS_NAME		= "TestClass";
 	private static final String	TEST_INSTANCE_NAME				= "testInstance";
@@ -632,7 +632,7 @@ public class BinaryOperatorTestAllPermutationsGenerator
 	private static String createTestCode(String testCollectionMethodCalls, String testCollectionMethods) throws IOException {
 		String testCodeTemplate = loadTestCodeTemplate();
 		return testCodeTemplate
-			.replace("$TEST_PACKAGE$",					BinaryOperatorTestAllPermutationsGenerator.class.getPackage().getName())
+			.replace("$TEST_PACKAGE$",					BinaryOperatorAllPermutationsTestGenerator.class.getPackage().getName())
 			.replace("$CLASS_NAME$",					TEST_CLASS_NAME)
 			.replace("$TEST_BUILDER_NAME$",				TEST_BUILDER_NAME)
 			.replace("$TEST_INSTANCE_CLASS$",			TEST_INSTANCE_CLASS_NAME)
@@ -696,7 +696,7 @@ public class BinaryOperatorTestAllPermutationsGenerator
 	}
 
 	private static String loadTestCodeTemplate() throws IOException {
-		URL resourceDirectoryUrl = BinaryOperatorTestAllPermutationsGenerator.class.getResource("/");
+		URL resourceDirectoryUrl = BinaryOperatorAllPermutationsTestGenerator.class.getResource("/");
 		URI resourceDirectoryUri;
 		try {
 			resourceDirectoryUri = resourceDirectoryUrl.toURI();

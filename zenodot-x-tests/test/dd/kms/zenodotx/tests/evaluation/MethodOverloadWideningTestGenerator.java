@@ -13,12 +13,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * This class generates the test {@link MethodOverloadTestWidening} and writes it to the console.
+ * This class generates the test {@link MethodOverloadWideningTest} and writes it to the console.
  */
-public class MethodOverloadTestWideningGenerator
+public class MethodOverloadWideningTestGenerator
 {
-	private static final String	TEST_CODE_TEMPLATE_FILE_NAME	= "MethodOverloadTestWideningTemplate.java";
-	private static final String	TEST_CLASS_NAME					= "MethodOverloadTestWidening";
+	private static final String	TEST_CODE_TEMPLATE_FILE_NAME	= "MethodOverloadWideningTestTemplate.java";
+	private static final String	TEST_CLASS_NAME					= "MethodOverloadWideningTest";
 
 	public static void main(String[] args) throws IOException {
 		List<String> successfulTestLines = new ArrayList<>();
@@ -93,7 +93,7 @@ public class MethodOverloadTestWideningGenerator
 	private static String createTestCode(String successfulTests, String testsWithError, String overloads) throws IOException {
 		String testCodeTemplate = loadTestCodeTemplate();
 		return testCodeTemplate
-			.replace("$TEST_PACKAGE$",   MethodOverloadTestWideningGenerator.class.getPackage().getName())
+			.replace("$TEST_PACKAGE$",   MethodOverloadWideningTestGenerator.class.getPackage().getName())
 			.replace("$CLASS_NAME$",		TEST_CLASS_NAME)
 			.replace("$SUCCESSFUL_TESTS$",	successfulTests)
 			.replace("$TESTS_WITH_ERROR$",	testsWithError)
@@ -109,7 +109,7 @@ public class MethodOverloadTestWideningGenerator
 	}
 
 	private static String loadTestCodeTemplate() throws IOException {
-		URL resourceDirectoryUrl = MethodOverloadTestWideningGenerator.class.getResource("/");
+		URL resourceDirectoryUrl = MethodOverloadWideningTestGenerator.class.getResource("/");
 		URI resourceDirectoryUri;
 		try {
 			resourceDirectoryUri = resourceDirectoryUrl.toURI();

@@ -13,9 +13,9 @@ import java.util.Collection;
 import static org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class BinaryOperatorTestShortCircuitEvaluation extends EvaluationTest
+public class BinaryOperatorShortCircuitEvaluationTest extends EvaluationTest
 {
-	public BinaryOperatorTestShortCircuitEvaluation(TestData testData) {
+	public BinaryOperatorShortCircuitEvaluationTest(TestData testData) {
 		super(testData);
 	}
 

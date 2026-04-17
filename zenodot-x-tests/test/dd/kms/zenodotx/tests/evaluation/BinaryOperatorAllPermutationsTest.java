@@ -15,9 +15,9 @@ import static org.junit.runners.Parameterized.Parameters;
 /* Auto generated unit test */
 
 @RunWith(Parameterized.class)
-public class BinaryOperatorTestAllPermutations extends EvaluationTest
+public class BinaryOperatorAllPermutationsTest extends EvaluationTest
 {
-	public BinaryOperatorTestAllPermutations(TestData testData) {
+	public BinaryOperatorAllPermutationsTest(TestData testData) {
 		super(testData);
 	}
 

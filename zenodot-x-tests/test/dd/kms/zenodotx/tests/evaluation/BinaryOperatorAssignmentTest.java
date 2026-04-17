@@ -13,9 +13,9 @@ import java.util.Collection;
 import static org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class BinaryOperatorTestAssignment extends EvaluationTest
+public class BinaryOperatorAssignmentTest extends EvaluationTest
 {
-	public BinaryOperatorTestAssignment(TestData testData) {
+	public BinaryOperatorAssignmentTest(TestData testData) {
 		super(testData);
 	}
 

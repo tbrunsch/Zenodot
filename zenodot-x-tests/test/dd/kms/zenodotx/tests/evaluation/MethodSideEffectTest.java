@@ -17,11 +17,11 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class MethodTestSideEffect
+public class MethodSideEffectTest
 {
 	private final EvaluationMode	evaluationMode;
 
-	public MethodTestSideEffect(EvaluationMode evaluationMode) {
+	public MethodSideEffectTest(EvaluationMode evaluationMode) {
 		this.evaluationMode = evaluationMode;
 	}
 

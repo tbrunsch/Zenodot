@@ -12,9 +12,9 @@ import org.junit.runners.Parameterized.Parameters;
 import java.util.Collection;
 
 @RunWith(Parameterized.class)
-public class MethodOverloadTestWithDynamicTyping extends EvaluationTest
+public class MethodOverloadWithDynamicTypingTest extends EvaluationTest
 {
-	public MethodOverloadTestWithDynamicTyping(TestData testData) {
+	public MethodOverloadWithDynamicTypingTest(TestData testData) {
 		super(testData);
 	}
 
