@@ -65,7 +65,7 @@ public class BinaryOperators
 	}
 
 	public static void registerBinaryOperators1(BinaryOperatorRegistry registry) {
-		registerOperator(registry, "=", Object.class, Object.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB);
+		registerOperator(registry, "=", Object.class, Object.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> !ReflectionUtils.isPrimitive(lhsClass));
 
 		registerOperator(registry, "=", char.class, char.class, char.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b);
 
@@ -288,9 +288,10 @@ public class BinaryOperators
 		registry.register(operatorInfo);
 	}
 
-	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandType, Class<R> rhsOperandType, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation, BiFunction<Class<? extends L>, Class<? extends R>, Class<? extends RESULT>> resultTypeProvider) {
+	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandType, Class<R> rhsOperandType, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation, BiFunction<Class<? extends L>, Class<? extends R>, Class<? extends RESULT>> resultTypeProvider, BiPredicate<Class<? extends L>, Class<? extends R>> applicableToOperandTypesPredicate) {
 		BinaryOperatorInfo operatorInfo = new BinaryOperatorInfoBuilder<>(operator, lhsOperandType, rhsOperandType, resultTypeProvider, implementation)
 			.operatorMode(operatorMode)
+			.restrictApplicability(applicableToOperandTypesPredicate)
 			.build();
 		registry.register(operatorInfo);
 	}
