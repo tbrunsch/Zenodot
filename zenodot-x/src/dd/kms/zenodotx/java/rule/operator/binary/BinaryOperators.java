@@ -220,16 +220,16 @@ public class BinaryOperators
 	private static <T> void registerOperatorWithAssignment(BinaryOperatorRegistry registry, String operator, Class<T> lhsType, BiFunction<T, Character, ?> charImpl, BiFunction<T, Byte, ?> byteImpl, BiFunction<T, Short, ?> shortImpl, BiFunction<T, Integer, ?> intImpl, BiFunction<T, Long, ?> longImpl, BiFunction<T, Float, ?> floatImpl, BiFunction<T, Double, ?> doubleImpl) {
 		registerOperatorWithAssignment(registry, operator, lhsType, charImpl, byteImpl, shortImpl, intImpl, longImpl);
 
-		registerOperator(registry, operator, lhsType, float.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> lhsType.cast(floatImpl.apply(a, b)));
-		registerOperator(registry, operator, lhsType, double.class,	lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> lhsType.cast(doubleImpl.apply(a, b)));
+		registerOperator(registry, operator, lhsType, float.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(floatImpl.apply(a, b), lhsType, true));
+		registerOperator(registry, operator, lhsType, double.class,	lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(doubleImpl.apply(a, b), lhsType, true));
 	}
 
 	private static <T> void registerOperatorWithAssignment(BinaryOperatorRegistry registry, String operator, Class<T> lhsType, BiFunction<T, Character, ?> charImpl, BiFunction<T, Byte, ?> byteImpl, BiFunction<T, Short, ?> shortImpl, BiFunction<T, Integer, ?> intImpl, BiFunction<T, Long, ?> longImpl) {
-		registerOperator(registry, operator, lhsType, char.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> lhsType.cast(charImpl.apply(a, b)));
-		registerOperator(registry, operator, lhsType, byte.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> lhsType.cast(byteImpl.apply(a, b)));
-		registerOperator(registry, operator, lhsType, short.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> lhsType.cast(shortImpl.apply(a, b)));
-		registerOperator(registry, operator, lhsType, int.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> lhsType.cast(intImpl.apply(a, b)));
-		registerOperator(registry, operator, lhsType, long.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> lhsType.cast(longImpl.apply(a, b)));
+		registerOperator(registry, operator, lhsType, char.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(charImpl.apply(a, b), lhsType, true));
+		registerOperator(registry, operator, lhsType, byte.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(byteImpl.apply(a, b), lhsType, true));
+		registerOperator(registry, operator, lhsType, short.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(shortImpl.apply(a, b), lhsType, true));
+		registerOperator(registry, operator, lhsType, int.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(intImpl.apply(a, b), lhsType, true));
+		registerOperator(registry, operator, lhsType, long.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(longImpl.apply(a, b), lhsType, true));
 	}
 
 	private static <O> void registerComparisonOperator(BinaryOperatorRegistry registry, String operator, Class<O> operandType, BiFunction<O, O, Boolean> implementation) {
