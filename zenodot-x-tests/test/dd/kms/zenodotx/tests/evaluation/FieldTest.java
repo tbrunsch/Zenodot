@@ -20,7 +20,7 @@ public class FieldTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(TestClass::new);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(new TestClass());
 
 		testBuilder
 			.addTest("i", 3)

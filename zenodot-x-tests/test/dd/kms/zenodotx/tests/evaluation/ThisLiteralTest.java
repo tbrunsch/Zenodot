@@ -18,9 +18,8 @@ public class ThisLiteralTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		Object testInstance = new TestClass(23);
 		return new EvaluationTestBuilder()
-			.testInstanceProvider(() -> testInstance)
+			.testInstance(new TestClass(23))
 			.addTest("this.value",		23)
 			.addTest("getValue(this)",	23)
 			.build();

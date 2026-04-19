@@ -1,6 +1,7 @@
 package $TEST_PACKAGE$;
 
 import dd.kms.zenodotx.exception.SemanticException;
+import dd.kms.zenodotx.tests.common.ResettableTestClass;
 import $TEST_PACKAGE$.framework.EvaluationTest;
 import $TEST_PACKAGE$.framework.EvaluationTestBuilder;
 import $TEST_PACKAGE$.framework.TestData;
@@ -24,7 +25,7 @@ public class $CLASS_NAME$ extends EvaluationTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		$TEST_INSTANCE_CLASS$ $TEST_INSTANCE_NAME$ = new TestClass();
-		EvaluationTestBuilder $TEST_BUILDER_NAME$ = new EvaluationTestBuilder().testInstanceProvider(() -> $TEST_INSTANCE_NAME$);
+		EvaluationTestBuilder $TEST_BUILDER_NAME$ = new EvaluationTestBuilder().testInstance($TEST_INSTANCE_NAME$);
 
 $TEST_COLLECTION_METHOD_CALLS$
 
@@ -32,7 +33,7 @@ $TEST_COLLECTION_METHOD_CALLS$
 	}
 $TEST_COLLECTION_METHODS$
 
-	private static class $TEST_INSTANCE_CLASS$
+	private static class $TEST_INSTANCE_CLASS$ implements ResettableTestClass
 	{
 		final boolean	$BOOLEAN_VARIABLE_1$ = false;
 		final boolean	$BOOLEAN_VARIABLE_2$ = true;
@@ -89,5 +90,31 @@ $TEST_COLLECTION_METHODS$
 		Double	$DOUBLE_VARIABLE_BOXED_FOR_ASSIGNMENT$;
 		String	$STRING_VARIABLE_FOR_ASSIGNMENT$;
 		Object	$OBJECT_VARIABLE_FOR_ASSIGNMENT$;
+
+		$TEST_INSTANCE_CLASS$() {
+			reset();
+		}
+
+		@Override
+		public void reset() {
+			$BOOLEAN_VARIABLE_FOR_ASSIGNMENT$ = false;
+			$CHAR_VARIABLE_FOR_ASSIGNMENT$ = 0;
+			$BYTE_VARIABLE_FOR_ASSIGNMENT$ = 0;
+			$SHORT_VARIABLE_FOR_ASSIGNMENT$ = 0;
+			$INT_VARIABLE_FOR_ASSIGNMENT$ = 0;
+			$LONG_VARIABLE_FOR_ASSIGNMENT$ = 0;
+			$FLOAT_VARIABLE_FOR_ASSIGNMENT$ = 0;
+			$DOUBLE_VARIABLE_FOR_ASSIGNMENT$ = 0;
+			$BOOLEAN_VARIABLE_BOXED_FOR_ASSIGNMENT$ = false;
+			$CHAR_VARIABLE_BOXED_FOR_ASSIGNMENT$ = 0;
+			$BYTE_VARIABLE_BOXED_FOR_ASSIGNMENT$ = 0;
+			$SHORT_VARIABLE_BOXED_FOR_ASSIGNMENT$ = 0;
+			$INT_VARIABLE_BOXED_FOR_ASSIGNMENT$ = 0;
+			$LONG_VARIABLE_BOXED_FOR_ASSIGNMENT$ = 0L;
+			$FLOAT_VARIABLE_BOXED_FOR_ASSIGNMENT$ = 0f;
+			$DOUBLE_VARIABLE_BOXED_FOR_ASSIGNMENT$ = 0d;
+			$STRING_VARIABLE_FOR_ASSIGNMENT$ = null;
+			$OBJECT_VARIABLE_FOR_ASSIGNMENT$ = null;
+		}
 	}
 }

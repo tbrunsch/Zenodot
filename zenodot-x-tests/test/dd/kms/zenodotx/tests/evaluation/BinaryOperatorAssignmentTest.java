@@ -2,6 +2,7 @@ package dd.kms.zenodotx.tests.evaluation;
 
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodotx.exception.SemanticException;
+import dd.kms.zenodotx.tests.common.ResettableTestClass;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTest;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTestBuilder;
 import dd.kms.zenodotx.tests.evaluation.framework.TestData;
@@ -21,7 +22,7 @@ public class BinaryOperatorAssignmentTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		EvaluationTestBuilder builder = new EvaluationTestBuilder().testInstanceProvider(TestClass::new);
+		EvaluationTestBuilder builder = new EvaluationTestBuilder().testInstance(new TestClass());
 
 		builder
 			.addTest("d = 7.0",				7.0)
@@ -101,15 +102,19 @@ public class BinaryOperatorAssignmentTest extends EvaluationTest
 		return builder.build();
 	}
 
-	private static class TestClass
+	private static class TestClass implements ResettableTestClass
 	{
-		private double 	d = 3.0;
-		private float 	f = 2.f;
-		private int		i = 5;
+		private double 	d;
+		private float 	f;
+		private int		i;
 
-		private A a1 = A.A1;
-		private A b1 = B.B1;
-		private B b2 = B.B2;
+		private A a1;
+		private A b1;
+		private B b2;
+
+		TestClass() {
+			reset();
+		}
 
 		A getA1() {
 			return a1;
@@ -125,6 +130,16 @@ public class BinaryOperatorAssignmentTest extends EvaluationTest
 
 		TestClass get(Object dummy) {
 			return this;
+		}
+
+		@Override
+		public void reset() {
+			d = 3.0;
+			f = 2.f;
+			i = 5;
+			a1 = A.A1;
+			b1 = B.B1;
+			b2 = B.B2;
 		}
 	}
 

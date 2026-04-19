@@ -26,7 +26,7 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 	private boolean				testCompilation	= true;
 
 	protected EvaluationTest(TestData testData) {
-		super(testData.getTestInstanceProvider());
+		super(testData.getTestInstance());
 		TestConfigurator testConfigurator = testData.getConfigureSettingsFunction();
 		if (testConfigurator != null) {
 			testConfigurator.configure(this);
@@ -40,13 +40,21 @@ public abstract class EvaluationTest extends AbstractTest<EvaluationTest>
 
 	@Test
 	public void testEvaluation() {
-		testExecutor.executeTest(this, false);
+		try {
+			testExecutor.executeTest(this, false);
+		} finally {
+			resetTestInstance();
+		}
 	}
 
 	@Test
 	public void testCompilation() {
 		Assume.assumeTrue("The compilation test has been excluded for this class", testCompilation);
-		testExecutor.executeTest(this, true);
+		try {
+			testExecutor.executeTest(this, true);
+		} finally {
+			resetTestInstance();
+		}
 	}
 
 	void testEvaluation(String expression, Object expectedValue, boolean compile) {

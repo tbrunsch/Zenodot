@@ -77,7 +77,7 @@ public class BinaryOperatorTest extends EvaluationTest
 
 		TestClass testInstance = new TestClass();
 		testBuilder
-			.testInstanceProvider(() -> testInstance)
+			.testInstance(testInstance)
 			.addTest("s instanceof String",												testInstance.s instanceof String)
 			.addTest("s instanceof Double",												false)
 			.addTest("o instanceof Object",												testInstance.o instanceof Object)

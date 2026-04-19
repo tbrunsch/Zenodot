@@ -20,9 +20,8 @@ public class ClassCastTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		Object testInstance = new TestClass(5, -2.0, "abc");
 		String className = InfoProvider.createClassInfoUnchecked(TestClass.class.getName()).getUnqualifiedName();
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(() -> testInstance);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(new TestClass(5, -2.0, "abc"));
 
 		testBuilder
 			.addTest("merge((" + className + ") o1).i",			18)

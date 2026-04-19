@@ -2,6 +2,7 @@ package dd.kms.zenodotx.tests.evaluation;
 
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodotx.exception.SemanticException;
+import dd.kms.zenodotx.tests.common.ResettableTestClass;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTest;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTestBuilder;
 import dd.kms.zenodotx.tests.evaluation.framework.TestData;
@@ -20,7 +21,7 @@ public class UnaryOperatorTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(TestClass::new);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(new TestClass());
 
 		testBuilder
 			.addTest("++b",			(byte) 14)
@@ -63,14 +64,25 @@ public class UnaryOperatorTest extends EvaluationTest
 		return testBuilder.build();
 	}
 
-	private static class TestClass
+	private static class TestClass implements ResettableTestClass
 	{
-		private byte b = 13;
-		private int	i = -21;
-		private float f = 2.5f;
+		private byte b;
+		private int	i;
+		private float f;
 		private final String s = "Test";
 		private final int j = 123;
 
+		TestClass() {
+			reset();
+		}
+
 		TestClass get(int dummy) { return this; }
+
+		@Override
+		public void reset() {
+			b = 13;
+			i = -21;
+			f = 2.5f;
+		}
 	}
 }

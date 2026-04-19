@@ -2,20 +2,29 @@ package dd.kms.zenodotx.tests.evaluation.framework;
 
 import com.google.common.collect.ImmutableList;
 import dd.kms.zenodotx.tests.common.AbstractTest;
+import dd.kms.zenodotx.tests.common.ResettableTestClass;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class EvaluationTestBuilder
 {
 	private final ImmutableList.Builder<Object>	testDataBuilder	= ImmutableList.builder();
 
-	private Supplier<Object>			testInstanceProvider	= () -> null;
+	private Object						testInstance		= null;
 	private @Nullable TestConfigurator	testConfigurator;
 
-	public EvaluationTestBuilder testInstanceProvider(Supplier<Object> testInstanceProvider) {
-		this.testInstanceProvider = testInstanceProvider;
+	/**
+	 * @param testInstance The instance the literal {@code this} points to during test execution.
+	 *                     If the class if {@code testInstance} implements {@link ResettableTestClass},
+	 *                     then the method {@link ResettableTestClass#reset()} is automatically called
+	 *                     after adding a test and after test execution to ensure that the test instance
+	 *                     is in its initial state at the beginning of each test. This is required for
+	 *                     tests with side effects that shall be executed independently of each other,
+	 *                     i.e., without relying on the side effect of the previous test.
+	 */
+	public EvaluationTestBuilder testInstance(Object testInstance) {
+		this.testInstance = testInstance;
 		return this;
 	}
 
@@ -40,7 +49,10 @@ public class EvaluationTestBuilder
 	}
 
 	private EvaluationTestBuilder addTest(TestExecutor testExecutor) {
-		testDataBuilder.add(new TestData(testInstanceProvider, testConfigurator, testExecutor));
+		testDataBuilder.add(new TestData(testInstance, testConfigurator, testExecutor));
+		if (testInstance instanceof ResettableTestClass) {
+			((ResettableTestClass) testInstance).reset();
+		}
 		return this;
 	}
 

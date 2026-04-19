@@ -2,6 +2,7 @@ package dd.kms.zenodotx.tests.evaluation;
 
 import dd.kms.zenodotx.exception.SemanticException;
 import dd.kms.zenodotx.exception.SyntaxException;
+import dd.kms.zenodotx.tests.common.ResettableTestClass;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTest;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTestBuilder;
 import dd.kms.zenodotx.tests.evaluation.framework.TestData;
@@ -21,7 +22,7 @@ public class BinaryOperatorShortCircuitEvaluationTest extends EvaluationTest
 
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(TestClass::new);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(new TestClass());
 
 		testBuilder
 			.addTest("getCounter(FALSE())",					1)
@@ -43,10 +44,14 @@ public class BinaryOperatorShortCircuitEvaluationTest extends EvaluationTest
 		return testBuilder.build();
 	}
 
-	private static class TestClass
+	private static class TestClass implements ResettableTestClass
 	{
-		private int counter 				= 0;
+		private int counter;
 		private final TestClass npeTrigger	= null;
+
+		TestClass() {
+			reset();
+		}
 
 		boolean FALSE() {
 			counter++;
@@ -60,6 +65,11 @@ public class BinaryOperatorShortCircuitEvaluationTest extends EvaluationTest
 
 		int getCounter(boolean dummy) {
 			return counter;
+		}
+
+		@Override
+		public void reset() {
+			counter = 0;
 		}
 	}
 }

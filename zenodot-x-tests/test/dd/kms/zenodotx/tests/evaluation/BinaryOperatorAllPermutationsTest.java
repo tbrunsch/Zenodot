@@ -1,6 +1,7 @@
 package dd.kms.zenodotx.tests.evaluation;
 
 import dd.kms.zenodotx.exception.SemanticException;
+import dd.kms.zenodotx.tests.common.ResettableTestClass;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTest;
 import dd.kms.zenodotx.tests.evaluation.framework.EvaluationTestBuilder;
 import dd.kms.zenodotx.tests.evaluation.framework.TestData;
@@ -24,7 +25,7 @@ public class BinaryOperatorAllPermutationsTest extends EvaluationTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		TestClass testInstance = new TestClass();
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(() -> testInstance);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
 		collectTestDataForOperator12(testBuilder, testInstance);
 		collectTestDataForOperator11(testBuilder, testInstance);
@@ -10321,7 +10322,7 @@ public class BinaryOperatorAllPermutationsTest extends EvaluationTest
 
 	}
 
-	private static class TestClass
+	private static class TestClass implements ResettableTestClass
 	{
 		final boolean	bool1 = false;
 		final boolean	bool2 = true;
@@ -10378,5 +10379,31 @@ public class BinaryOperatorAllPermutationsTest extends EvaluationTest
 		Double	D;
 		String	str;
 		Object	o;
+
+		TestClass() {
+			reset();
+		}
+
+		@Override
+		public void reset() {
+			bool = false;
+			c = 0;
+			b = 0;
+			s = 0;
+			i = 0;
+			l = 0;
+			f = 0;
+			d = 0;
+			BOOL = false;
+			C = 0;
+			B = 0;
+			S = 0;
+			I = 0;
+			L = 0L;
+			F = 0f;
+			D = 0d;
+			str = null;
+			o = null;
+		}
 	}
 }

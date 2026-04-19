@@ -23,7 +23,7 @@ public class MethodOverloadWideningTest extends EvaluationTest
 	@Parameters(name = "{0}")
 	public static Collection<Object> getTestData() {
 		TestClass testInstance = new TestClass();
-		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstanceProvider(() -> testInstance);
+		EvaluationTestBuilder testBuilder = new EvaluationTestBuilder().testInstance(testInstance);
 
 		testBuilder
 			.addTest("getBooleanChar(bool)",	testInstance.getBooleanChar(testInstance.bool))

@@ -20,7 +20,7 @@ public class SpacesTest extends EvaluationTest
 	public static Collection<Object> getTestData() {
 		Object testInstance = new TestClass("abc", (short) 13, 'X', 123456789, -13e02f, 1L, false, 2.34e-56);
 		return new EvaluationTestBuilder()
-			.testInstanceProvider(() -> testInstance)
+			.testInstance(testInstance)
 			.addTest(" s ", "abc")
 			.addTest("  getTestClass (  s , sValue,  c ,i  ,  f , l,b,d  ) . sValue ",	(short) 13)
 			.addTest("  getTestClass (  \"xyz\" , sValue,  c ,i  ,  f , l,b,d  ) .s",	"xyz" + "_xyz")
