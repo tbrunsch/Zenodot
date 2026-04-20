@@ -22,7 +22,7 @@ public class BinaryOperatorInfoBuilder<L, R, RESULT>
 	private Function<L, ? extends NullableOptional<?>>	shortCircuitImplementation	= null;
 
 	@Nullable
-	private BiPredicate<Class<? extends L>, Class<? extends R>>	applicableToOperandTypesPredicate		= null;
+	private BiPredicate<? super Class<? extends L>, ? super Class<? extends R>>	applicableToOperandTypesPredicate		= null;
 
 	public BinaryOperatorInfoBuilder(String operator, Class<L> lhsOperandType, Class<R> rhsOperandType, Class<RESULT> resultType, BiFunction<L, R, ?> operatorImplementation) {
 		this(operator, lhsOperandType, rhsOperandType, (typeLhs, typeRhs) -> resultType, operatorImplementation);
@@ -55,7 +55,7 @@ public class BinaryOperatorInfoBuilder<L, R, RESULT>
 		return this;
 	}
 
-	public BinaryOperatorInfoBuilder<L, R, RESULT> restrictApplicability(BiPredicate<Class<? extends L>, Class<? extends R>> applicableToOperandTypesPredicate) {
+	public BinaryOperatorInfoBuilder<L, R, RESULT> restrictApplicability(BiPredicate<? super Class<? extends L>, ? super Class<? extends R>> applicableToOperandTypesPredicate) {
 		this.applicableToOperandTypesPredicate = applicableToOperandTypesPredicate;
 		return this;
 	}
