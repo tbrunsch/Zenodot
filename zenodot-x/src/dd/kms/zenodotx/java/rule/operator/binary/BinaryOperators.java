@@ -65,6 +65,14 @@ public class BinaryOperators
 	}
 
 	public static void registerBinaryOperators1(BinaryOperatorRegistry registry) {
+		registerAssignmentOperator(registry);
+		registerNumericOperatorsWithAssignment(registry);
+		registerStringConcatenationOperatorWithAssignment(registry);
+		registerBitOperatorsWithAssignment(registry);
+		registerShiftOperatorsWithAssignment(registry);
+	}
+
+	private static void registerAssignmentOperator(BinaryOperatorRegistry registry) {
 		registerOperator(registry, "=", Object.class, Object.class, (lhsType, rhsType) -> rhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsType, rhsType) -> !ReflectionUtils.isPrimitive(lhsType));
 
 		registerOperator(registry, "=", boolean.class, boolean.class, (lhsType, rhsType) -> rhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsType, rhsType) -> ReflectionUtils.isPrimitive(lhsType));
@@ -75,88 +83,116 @@ public class BinaryOperators
 		registerOperator(registry, "=", long.class, long.class, (lhsType, rhsType) -> rhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsType, rhsType) -> ReflectionUtils.isPrimitive(lhsType));
 		registerOperator(registry, "=", float.class, float.class, (lhsType, rhsType) -> rhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsType, rhsType) -> ReflectionUtils.isPrimitive(lhsType));
 		registerOperator(registry, "=", double.class, double.class, (lhsType, rhsType) -> rhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsType, rhsType) -> ReflectionUtils.isPrimitive(lhsType));
+	}
 
-		registerOperatorWithAssignment(registry, "+=", char.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
-		registerOperatorWithAssignment(registry, "+=", byte.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
-		registerOperatorWithAssignment(registry, "+=", short.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
-		registerOperatorWithAssignment(registry, "+=", int.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
-		registerOperatorWithAssignment(registry, "+=", long.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
-		registerOperatorWithAssignment(registry, "+=", float.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
-		registerOperatorWithAssignment(registry, "+=", double.class,	(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
+	private static void registerNumericOperatorsWithAssignment(BinaryOperatorRegistry registry) {
+		BiPredicate<Class<?>, Class<?>> applicabilityPredicate = (lhsType, rhsType) -> {
+			if (lhsType.isPrimitive()) {
+				return true;
+			}
+			Class<?> primitiveLhsType = ReflectionUtils.getPrimitiveClass(lhsType);
+			return ReflectionUtils.isPrimitiveConvertibleTo(int.class, primitiveLhsType, false) && ReflectionUtils.isPrimitiveConvertibleTo(rhsType, primitiveLhsType, false);
+		};
+		registerOperatorWithAssignment(registry, "+=", char.class, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "+=", byte.class, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "+=", short.class, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "+=", int.class, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "+=", long.class, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "+=", float.class, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "+=", double.class, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, applicabilityPredicate);
 
-		registerOperatorWithAssignment(registry, "-=", char.class,		(a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b);
-		registerOperatorWithAssignment(registry, "-=", byte.class,		(a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b);
-		registerOperatorWithAssignment(registry, "-=", short.class,		(a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b);
-		registerOperatorWithAssignment(registry, "-=", int.class,		(a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b);
-		registerOperatorWithAssignment(registry, "-=", long.class,		(a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b);
-		registerOperatorWithAssignment(registry, "-=", float.class,		(a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b);
-		registerOperatorWithAssignment(registry, "-=", double.class,	(a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b);
+		registerOperatorWithAssignment(registry, "-=", char.class, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "-=", byte.class, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "-=", short.class, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "-=", int.class, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "-=", long.class, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "-=", float.class, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "-=", double.class, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, (a, b) -> a - b, applicabilityPredicate);
 
-		registerOperatorWithAssignment(registry, "*=", char.class,		(a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b);
-		registerOperatorWithAssignment(registry, "*=", byte.class,		(a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b);
-		registerOperatorWithAssignment(registry, "*=", short.class,		(a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b);
-		registerOperatorWithAssignment(registry, "*=", int.class,		(a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b);
-		registerOperatorWithAssignment(registry, "*=", long.class,		(a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b);
-		registerOperatorWithAssignment(registry, "*=", float.class,		(a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b);
-		registerOperatorWithAssignment(registry, "*=", double.class,	(a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b);
+		registerOperatorWithAssignment(registry, "*=", char.class, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "*=", byte.class, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "*=", short.class, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "*=", int.class, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "*=", long.class, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "*=", float.class, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "*=", double.class, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, (a, b) -> a * b, applicabilityPredicate);
 
-		registerOperatorWithAssignment(registry, "/=", char.class,		(a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b);
-		registerOperatorWithAssignment(registry, "/=", byte.class,		(a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b);
-		registerOperatorWithAssignment(registry, "/=", short.class,		(a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b);
-		registerOperatorWithAssignment(registry, "/=", int.class,		(a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b);
-		registerOperatorWithAssignment(registry, "/=", long.class,		(a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b);
-		registerOperatorWithAssignment(registry, "/=", float.class,		(a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b);
-		registerOperatorWithAssignment(registry, "/=", double.class,	(a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b);
+		registerOperatorWithAssignment(registry, "/=", char.class, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "/=", byte.class, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "/=", short.class, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "/=", int.class, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "/=", long.class, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "/=", float.class, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "/=", double.class, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, (a, b) -> a / b, applicabilityPredicate);
 
-		registerOperatorWithAssignment(registry, "%=", char.class,		(a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b);
-		registerOperatorWithAssignment(registry, "%=", byte.class,		(a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b);
-		registerOperatorWithAssignment(registry, "%=", short.class,		(a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b);
-		registerOperatorWithAssignment(registry, "%=", int.class,		(a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b);
-		registerOperatorWithAssignment(registry, "%=", long.class,		(a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b);
-		registerOperatorWithAssignment(registry, "%=", float.class,		(a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b);
-		registerOperatorWithAssignment(registry, "%=", double.class,	(a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b);
+		registerOperatorWithAssignment(registry, "%=", char.class, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "%=", byte.class, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "%=", short.class, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "%=", int.class, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "%=", long.class, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "%=", float.class, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "%=", double.class, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, applicabilityPredicate);
+	}
 
+	private static void registerStringConcatenationOperatorWithAssignment(BinaryOperatorRegistry registry) {
+		registerOperator(registry, "+=", String.class, Object.class, String.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> a + b);
+	}
+
+	private static void registerBitOperatorsWithAssignment(BinaryOperatorRegistry registry) {
+		BiPredicate<Class<?>, Class<?>> applicabilityPredicate = (lhsType, rhsType) -> {
+			if (lhsType.isPrimitive()) {
+				return true;
+			}
+			Class<?> primitiveLhsType = ReflectionUtils.getPrimitiveClass(lhsType);
+			return ReflectionUtils.isPrimitiveConvertibleTo(int.class, primitiveLhsType, false) && ReflectionUtils.isPrimitiveConvertibleTo(rhsType, primitiveLhsType, false);
+		};
 		registerOperator(registry, "&=", boolean.class, boolean.class, boolean.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> a & b);
-		registerOperatorWithAssignment(registry, "&=", char.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
-		registerOperatorWithAssignment(registry, "&=", byte.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
-		registerOperatorWithAssignment(registry, "&=", short.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
-		registerOperatorWithAssignment(registry, "&=", int.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
-		registerOperatorWithAssignment(registry, "&=", long.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
+		registerOperatorWithAssignment(registry, "&=", char.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "&=", byte.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "&=", short.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "&=", int.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "&=", long.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, applicabilityPredicate);
 
 		registerOperator(registry, "^=", boolean.class, boolean.class, boolean.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> a ^ b);
-		registerOperatorWithAssignment(registry, "^=", char.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
-		registerOperatorWithAssignment(registry, "^=", byte.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
-		registerOperatorWithAssignment(registry, "^=", short.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
-		registerOperatorWithAssignment(registry, "^=", int.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
-		registerOperatorWithAssignment(registry, "^=", long.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
+		registerOperatorWithAssignment(registry, "^=", char.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "^=", byte.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "^=", short.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "^=", int.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "^=", long.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, applicabilityPredicate);
 
 		registerOperator(registry, "|=", boolean.class, boolean.class, boolean.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> a | b);
-		registerOperatorWithAssignment(registry, "|=", char.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b);
-		registerOperatorWithAssignment(registry, "|=", byte.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b);
-		registerOperatorWithAssignment(registry, "|=", short.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b);
-		registerOperatorWithAssignment(registry, "|=", int.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b);
-		registerOperatorWithAssignment(registry, "|=", long.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b);
+		registerOperatorWithAssignment(registry, "|=", char.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "|=", byte.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "|=", short.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "|=", int.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "|=", long.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, applicabilityPredicate);
+	}
 
-		registerOperatorWithAssignment(registry, "<<=", char.class,		(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b);
-		registerOperatorWithAssignment(registry, "<<=", byte.class,		(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b);
-		registerOperatorWithAssignment(registry, "<<=", short.class,	(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b);
-		registerOperatorWithAssignment(registry, "<<=", int.class,		(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b);
-		registerOperatorWithAssignment(registry, "<<=", long.class,		(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b);
+	private static void registerShiftOperatorsWithAssignment(BinaryOperatorRegistry registry) {
+		BiPredicate<Class<?>, Class<?>> applicabilityPredicate = (lhsType, rhsType) -> {
+			if (lhsType.isPrimitive()) {
+				return true;
+			}
+			Class<?> primitiveLhsType = ReflectionUtils.getPrimitiveClass(lhsType);
+			return ReflectionUtils.isPrimitiveConvertibleTo(int.class, primitiveLhsType, false);
+		};
+		registerOperatorWithAssignment(registry, "<<=", char.class,		(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "<<=", byte.class,		(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "<<=", short.class,	(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "<<=", int.class,		(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, "<<=", long.class,		(a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, (a, b) -> a << b, applicabilityPredicate);
 
-		registerOperatorWithAssignment(registry, ">>=", char.class,		(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b);
-		registerOperatorWithAssignment(registry, ">>=", byte.class,		(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b);
-		registerOperatorWithAssignment(registry, ">>=", short.class,	(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b);
-		registerOperatorWithAssignment(registry, ">>=", int.class,		(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b);
-		registerOperatorWithAssignment(registry, ">>=", long.class,		(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b);
+		registerOperatorWithAssignment(registry, ">>=", char.class,		(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, ">>=", byte.class,		(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, ">>=", short.class,	(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, ">>=", int.class,		(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, ">>=", long.class,		(a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, (a, b) -> a >> b, applicabilityPredicate);
 
-		registerOperatorWithAssignment(registry, ">>>=", char.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b);
-		registerOperatorWithAssignment(registry, ">>>=", byte.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b);
-		registerOperatorWithAssignment(registry, ">>>=", short.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b);
-		registerOperatorWithAssignment(registry, ">>>=", int.class,		(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b);
-		registerOperatorWithAssignment(registry, ">>>=", long.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b);
-
-		// String concatenation
-		registerOperator(registry, "+=", String.class, Object.class, String.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> a + b);
+		registerOperatorWithAssignment(registry, ">>>=", char.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, ">>>=", byte.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, ">>>=", short.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, ">>>=", int.class,		(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, applicabilityPredicate);
+		registerOperatorWithAssignment(registry, ">>>=", long.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, applicabilityPredicate);
 	}
 
 	private static void registerNumericOperator(BinaryOperatorRegistry registry, String operator, BiFunction<Character, Character, Integer> charImpl, BiFunction<Byte, Byte, Integer> byteImpl, BiFunction<Short, Short, Integer> shortImpl, BiFunction<Integer, Integer, Integer> intImpl, BiFunction<Long, Long, Long> longImpl, BiFunction<Float, Float, Float> floatImpl, BiFunction<Double, Double, Double> doubleImpl) {
@@ -223,19 +259,19 @@ public class BinaryOperators
 		registerOperator(registry, operator, long.class,		long.class,			long.class,	longLongImpl);
 	}
 
-	private static <T> void registerOperatorWithAssignment(BinaryOperatorRegistry registry, String operator, Class<T> lhsType, BiFunction<T, Character, ?> charImpl, BiFunction<T, Byte, ?> byteImpl, BiFunction<T, Short, ?> shortImpl, BiFunction<T, Integer, ?> intImpl, BiFunction<T, Long, ?> longImpl, BiFunction<T, Float, ?> floatImpl, BiFunction<T, Double, ?> doubleImpl) {
-		registerOperatorWithAssignment(registry, operator, lhsType, charImpl, byteImpl, shortImpl, intImpl, longImpl);
+	private static <T> void registerOperatorWithAssignment(BinaryOperatorRegistry registry, String operator, Class<T> lhsType, BiFunction<T, Character, ?> charImpl, BiFunction<T, Byte, ?> byteImpl, BiFunction<T, Short, ?> shortImpl, BiFunction<T, Integer, ?> intImpl, BiFunction<T, Long, ?> longImpl, BiFunction<T, Float, ?> floatImpl, BiFunction<T, Double, ?> doubleImpl, BiPredicate<Class<?>, Class<?>> applicableToOperandTypesPredicate) {
+		registerOperatorWithAssignment(registry, operator, lhsType, charImpl, byteImpl, shortImpl, intImpl, longImpl, applicableToOperandTypesPredicate);
 
-		registerOperator(registry, operator, lhsType, float.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(floatImpl.apply(a, b), lhsType, true));
-		registerOperator(registry, operator, lhsType, double.class,	lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(doubleImpl.apply(a, b), lhsType, true));
+		registerOperator(registry, operator, lhsType, float.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(floatImpl.apply(a, b), lhsType, true), applicableToOperandTypesPredicate);
+		registerOperator(registry, operator, lhsType, double.class,	lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(doubleImpl.apply(a, b), lhsType, true), applicableToOperandTypesPredicate);
 	}
 
-	private static <T> void registerOperatorWithAssignment(BinaryOperatorRegistry registry, String operator, Class<T> lhsType, BiFunction<T, Character, ?> charImpl, BiFunction<T, Byte, ?> byteImpl, BiFunction<T, Short, ?> shortImpl, BiFunction<T, Integer, ?> intImpl, BiFunction<T, Long, ?> longImpl) {
-		registerOperator(registry, operator, lhsType, char.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(charImpl.apply(a, b), lhsType, true));
-		registerOperator(registry, operator, lhsType, byte.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(byteImpl.apply(a, b), lhsType, true));
-		registerOperator(registry, operator, lhsType, short.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(shortImpl.apply(a, b), lhsType, true));
-		registerOperator(registry, operator, lhsType, int.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(intImpl.apply(a, b), lhsType, true));
-		registerOperator(registry, operator, lhsType, long.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(longImpl.apply(a, b), lhsType, true));
+	private static <T> void registerOperatorWithAssignment(BinaryOperatorRegistry registry, String operator, Class<T> lhsType, BiFunction<T, Character, ?> charImpl, BiFunction<T, Byte, ?> byteImpl, BiFunction<T, Short, ?> shortImpl, BiFunction<T, Integer, ?> intImpl, BiFunction<T, Long, ?> longImpl, BiPredicate<Class<?>, Class<?>> applicableToOperandTypesPredicate) {
+		registerOperator(registry, operator, lhsType, char.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(charImpl.apply(a, b), lhsType, true), applicableToOperandTypesPredicate);
+		registerOperator(registry, operator, lhsType, byte.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(byteImpl.apply(a, b), lhsType, true), applicableToOperandTypesPredicate);
+		registerOperator(registry, operator, lhsType, short.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(shortImpl.apply(a, b), lhsType, true), applicableToOperandTypesPredicate);
+		registerOperator(registry, operator, lhsType, int.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(intImpl.apply(a, b), lhsType, true), applicableToOperandTypesPredicate);
+		registerOperator(registry, operator, lhsType, long.class,		lhsType, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> ReflectionUtils.convertTo(longImpl.apply(a, b), lhsType, true), applicableToOperandTypesPredicate);
 	}
 
 	private static <O> void registerComparisonOperator(BinaryOperatorRegistry registry, String operator, Class<O> operandType, BiFunction<O, O, Boolean> implementation) {
@@ -262,6 +298,14 @@ public class BinaryOperators
 	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandType, Class<R> rhsOperandType, Class<RESULT> resultType, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation) {
 		BinaryOperatorInfo operatorInfo = new BinaryOperatorInfoBuilder<>(operator, lhsOperandType, rhsOperandType, resultType, implementation)
 			.operatorMode(operatorMode)
+			.build();
+		registry.register(operatorInfo);
+	}
+
+	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandType, Class<R> rhsOperandType, Class<RESULT> resultType, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation, BiPredicate<Class<?>, Class<?>> applicableToOperandTypesPredicate) {
+		BinaryOperatorInfo operatorInfo = new BinaryOperatorInfoBuilder<>(operator, lhsOperandType, rhsOperandType, resultType, implementation)
+			.operatorMode(operatorMode)
+			.restrictApplicability(applicableToOperandTypesPredicate)
 			.build();
 		registry.register(operatorInfo);
 	}
