@@ -65,16 +65,16 @@ public class BinaryOperators
 	}
 
 	public static void registerBinaryOperators1(BinaryOperatorRegistry registry) {
-		registerOperator(registry, "=", Object.class, Object.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> !ReflectionUtils.isPrimitive(lhsClass));
+		registerOperator(registry, "=", Object.class, Object.class, (classA, classB) -> classB, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsClass, rhsClass) -> !ReflectionUtils.isPrimitive(lhsClass));
 
-		registerOperator(registry, "=", boolean.class, boolean.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
-		registerOperator(registry, "=", char.class, char.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
-		registerOperator(registry, "=", byte.class, byte.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
-		registerOperator(registry, "=", short.class, short.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
-		registerOperator(registry, "=", int.class, int.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
-		registerOperator(registry, "=", long.class, long.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
-		registerOperator(registry, "=", float.class, float.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
-		registerOperator(registry, "=", double.class, double.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (classA, classB) -> classB, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
+		registerOperator(registry, "=", boolean.class, boolean.class, (classA, classB) -> classB, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
+		registerOperator(registry, "=", char.class, char.class, (classA, classB) -> classB, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
+		registerOperator(registry, "=", byte.class, byte.class, (classA, classB) -> classB, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
+		registerOperator(registry, "=", short.class, short.class, (classA, classB) -> classB, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
+		registerOperator(registry, "=", int.class, int.class, (classA, classB) -> classB, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
+		registerOperator(registry, "=", long.class, long.class, (classA, classB) -> classB, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
+		registerOperator(registry, "=", float.class, float.class, (classA, classB) -> classB, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
+		registerOperator(registry, "=", double.class, double.class, (classA, classB) -> classB, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> b, (lhsClass, rhsClass) -> ReflectionUtils.isPrimitive(lhsClass));
 
 		registerOperatorWithAssignment(registry, "+=", char.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
 		registerOperatorWithAssignment(registry, "+=", byte.class,		(a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b, (a, b) -> a + b);
@@ -271,7 +271,7 @@ public class BinaryOperators
 		registry.register(operatorInfo);
 	}
 
-	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandType, Class<R> rhsOperandType, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation, BiFunction<Class<? extends L>, Class<? extends R>, Class<? extends RESULT>> resultTypeProvider, BiPredicate<Class<? extends L>, Class<? extends R>> applicableToOperandTypesPredicate) {
+	private static <L, R, RESULT> void registerOperator(BinaryOperatorRegistry registry, String operator, Class<L> lhsOperandType, Class<R> rhsOperandType, BiFunction<Class<? extends L>, Class<? extends R>, Class<? extends RESULT>> resultTypeProvider, BinaryOperatorMode operatorMode, BiFunction<L, R, RESULT> implementation, BiPredicate<Class<? extends L>, Class<? extends R>> applicableToOperandTypesPredicate) {
 		BinaryOperatorInfo operatorInfo = new BinaryOperatorInfoBuilder<>(operator, lhsOperandType, rhsOperandType, resultTypeProvider, implementation)
 			.operatorMode(operatorMode)
 			.restrictApplicability(applicableToOperandTypesPredicate)
