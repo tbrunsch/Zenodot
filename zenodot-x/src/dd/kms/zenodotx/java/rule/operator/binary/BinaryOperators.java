@@ -116,18 +116,21 @@ public class BinaryOperators
 		registerOperatorWithAssignment(registry, "%=", float.class,		(a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b);
 		registerOperatorWithAssignment(registry, "%=", double.class,	(a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b, (a, b) -> a % b);
 
+		registerOperator(registry, "&=", boolean.class, boolean.class, boolean.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> a & b);
 		registerOperatorWithAssignment(registry, "&=", char.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
 		registerOperatorWithAssignment(registry, "&=", byte.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
 		registerOperatorWithAssignment(registry, "&=", short.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
 		registerOperatorWithAssignment(registry, "&=", int.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
 		registerOperatorWithAssignment(registry, "&=", long.class,		(a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b, (a, b) -> a & b);
 
+		registerOperator(registry, "^=", boolean.class, boolean.class, boolean.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> a ^ b);
 		registerOperatorWithAssignment(registry, "^=", char.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
 		registerOperatorWithAssignment(registry, "^=", byte.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
 		registerOperatorWithAssignment(registry, "^=", short.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
 		registerOperatorWithAssignment(registry, "^=", int.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
 		registerOperatorWithAssignment(registry, "^=", long.class,		(a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b, (a, b) -> a ^ b);
 
+		registerOperator(registry, "|=", boolean.class, boolean.class, boolean.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> a | b);
 		registerOperatorWithAssignment(registry, "|=", char.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b);
 		registerOperatorWithAssignment(registry, "|=", byte.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b);
 		registerOperatorWithAssignment(registry, "|=", short.class,		(a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b, (a, b) -> a | b);
