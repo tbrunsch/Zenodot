@@ -151,6 +151,9 @@ public class BinaryOperators
 		registerOperatorWithAssignment(registry, ">>>=", short.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b);
 		registerOperatorWithAssignment(registry, ">>>=", int.class,		(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b);
 		registerOperatorWithAssignment(registry, ">>>=", long.class,	(a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b, (a, b) -> a >>> b);
+
+		// String concatenation
+		registerOperator(registry, "+=", String.class, Object.class, String.class, BinaryOperatorMode.RETURN_RESULT_ASSIGN_RESULT_LEFT, (a, b) -> a + b);
 	}
 
 	private static void registerNumericOperator(BinaryOperatorRegistry registry, String operator, BiFunction<Character, Character, Integer> charImpl, BiFunction<Byte, Byte, Integer> byteImpl, BiFunction<Short, Short, Integer> shortImpl, BiFunction<Integer, Integer, Integer> intImpl, BiFunction<Long, Long, Long> longImpl, BiFunction<Float, Float, Float> floatImpl, BiFunction<Double, Double, Double> doubleImpl) {
