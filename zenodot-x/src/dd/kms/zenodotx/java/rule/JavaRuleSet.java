@@ -93,12 +93,12 @@ public class JavaRuleSet
 	// endregion
 
 	// region Packages
-	private final Rule<Void, Package, JavaSettings>		rootPackage	=	new RootPackageRule();
-	private final Rule<Package, Package, JavaSettings>	subPackage	=	new SubPackageRule();
-	private final Rule<Void, Package, JavaSettings>		packageRule	=	rootPackage
+	private final Rule<Void, String, JavaSettings>		rootPackage	=	new RootPackageRule();
+	private final Rule<String, String, JavaSettings>	subPackage	=	new SubPackageRule();
+	private final Rule<Void, String, JavaSettings>		packageRule	=	rootPackage
 																			.then(
 																				repeat(
-																					Rules.<Package, JavaSettings>character('.')
+																					Rules.<String, JavaSettings>character('.')
 																					.then(subPackage)
 																					.name(".SubPackage")
 																				)
@@ -106,7 +106,7 @@ public class JavaRuleSet
 	// endregion
 
 	// region Classes
-	private final Rule<Package, Class<?>, JavaSettings>		qualifiedTopLevelClass	=	new QualifiedTopLevelClassRule();
+	private final Rule<String, Class<?>, JavaSettings>		qualifiedTopLevelClass	=	new QualifiedTopLevelClassRule();
 	private final Rule<Class<?>, Class<?>, JavaSettings>	nestedClass				=	new NestedClassRule();
 	private final Rule<Void, Class<?>, JavaSettings>		importedClass			=	new ImportedClassRule();
 	private final Rule<Void, Class<?>, JavaSettings>		classRule				=	or(
