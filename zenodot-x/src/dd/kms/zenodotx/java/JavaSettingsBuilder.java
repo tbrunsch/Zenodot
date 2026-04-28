@@ -1,5 +1,6 @@
 package dd.kms.zenodotx.java;
 
+import dd.kms.zenodot.api.Variables;
 import dd.kms.zenodot.api.common.AccessModifier;
 import dd.kms.zenodot.api.settings.EvaluationMode;
 import dd.kms.zenodot.framework.wrappers.InfoProvider;
@@ -11,6 +12,7 @@ public class JavaSettingsBuilder
 	private EvaluationMode		evaluationMode				= EvaluationMode.STATIC_TYPING;
 	private AccessModifier		minimumFieldAccessModifier	= AccessModifier.PRIVATE;
 	private AccessModifier		minimumMethodAccessModifier	= AccessModifier.PRIVATE;
+	private Variables			variables					= Variables.create();
 
 	public JavaSettingsBuilder thisInfo(ObjectInfo thisInfo) {
 		this.thisInfo = thisInfo;
@@ -32,7 +34,12 @@ public class JavaSettingsBuilder
 		return this;
 	}
 
+	public JavaSettingsBuilder variables(Variables variables) {
+		this.variables = variables;
+		return this;
+	}
+
 	public JavaSettings build() {
-		return new JavaSettings(thisInfo, evaluationMode, minimumFieldAccessModifier, minimumMethodAccessModifier);
+		return new JavaSettings(thisInfo, evaluationMode, minimumFieldAccessModifier, minimumMethodAccessModifier, variables);
 	}
 }
